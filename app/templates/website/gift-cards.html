@@ -1,0 +1,231 @@
+{% extends "layouts/base.html" %}
+{% block title %}Gift Cards, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ HERO ============ -->
+    <section class="ok-pagehero">
+      <div class="position-absolute ok-fill ok-opacity-30">
+        {% if site.get('giftcards_hero_img') %}<img src="{{ site.get('giftcards_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Gift Cards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+      </div>
+      <div class="ok-pagehero-veil"></div>
+      <div class="position-absolute -left-24 -top-24 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
+      <div class="ok-container text-center">
+<h1 class="ok-display ok-mb-5 max-w-2xl mx-auto" data-reveal="up" data-reveal-delay="0.08">
+          {{ site.get('giftcards_hero_heading') or 'Give the gift of a smash' }} <span class="text-nowrap"><i class="fa-solid fa-burger"></i></span>
+        </h1>
+        <p class="text-w-80 ok-fs-lg ok-mb-3 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('giftcards_hero_text') or 'Delivered instantly by email or scheduled for the perfect moment. Any amount, redeemable on everything we make.' }}</p>
+        <p class="ok-fs-sm text-w-55" data-reveal="up" data-reveal-delay="0.2">Never expires · Redeemable online &amp; in-store · Delivered in seconds</p>
+      </div>
+    </section>
+
+    <!-- ============ BUILDER + PREVIEW ============ -->
+    <section class="ok-section">
+      <div class="ok-container ok-grid ok-grid-lg-2 ok-gap-8 ok-gap-3rem-lg align-items-start">
+
+        <!-- ---- LEFT: builder form ---- -->
+        <form method="post" action="/gift-cards/buy" class="ok-card ok-p-3 ok-paddin-2rem-md">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <h2 class="ok-h2 ok-fs-2xl ok-mb-3">{{ site.get('giftcards_build_heading') or 'Build your gift card' }}</h2>
+
+          <!-- design -->
+          <label class="ok-label">1 · Choose a design</label>
+          <div class="ok-grid ok-grid-2 ok-grid-sm-4 gap-2 ok-mb-3" data-chip-group>
+            <button type="button" class="chip is-active justify-content-center ok-py-3"><i class="fa-solid fa-burger"></i> Classic</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-cake-candles"></i> Birthday</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-heart"></i> Thank You</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-hands-clapping"></i> Congrats</button>
+          </div>
+
+          <!-- amount -->
+          <label class="ok-label">2 · Choose an amount</label>
+          <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
+            <button type="button" class="chip">$10</button>
+            <button type="button" class="chip is-active">$25</button>
+            <button type="button" class="chip">$50</button>
+            <button type="button" class="chip">$100</button>
+            <button type="button" class="chip">Custom</button>
+          </div>
+          <div class="ok-mb-3">
+            <label class="ok-label !text-slate !font-normal !text-xs">Custom amount ($5–$500)</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="font-display fw-bold ok-fs-lg">$</span>
+              <input type="number" min="5" max="500" placeholder="Enter a custom amount" class="ok-input">
+            </div>
+          </div>
+
+          <div class="divider ok-mb-3"></div>
+
+          <!-- recipient -->
+          <label class="ok-label">3 · Who's it for?</label>
+          <div class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mb-3">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Recipient name</label>
+              <input type="text" placeholder="Alex" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Recipient email</label>
+              <input type="email" placeholder="alex@email.com" class="ok-input">
+            </div>
+          </div>
+          <div class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mb-3">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Your name</label>
+              <input type="text" value="Jordan" aria-label="Recipient name" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Your email</label>
+              <input type="email" placeholder="you@email.com" class="ok-input">
+            </div>
+          </div>
+
+          <!-- message -->
+          <div class="ok-mb-3">
+            <label class="ok-label">4 · Personal message <span class="ok-hint fw-normal">(optional)</span></label>
+            <textarea rows="3" maxlength="200" placeholder="Happy birthday! Grab a smash on me" class="ok-textarea">Happy birthday! Grab a smash on me</textarea>
+            <p class="ok-hint mt-1">Up to 200 characters.</p>
+          </div>
+
+          <div class="divider ok-mb-3"></div>
+
+          <!-- delivery -->
+          <label class="ok-label">5 · Delivery</label>
+          <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
+            <button type="button" class="chip is-active"><i class="fa-solid fa-paper-plane"></i> Send now</button>
+            <button type="button" class="chip"><i class="fa-solid fa-calendar-days"></i> Schedule</button>
+          </div>
+          <div class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mb-3">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Delivery date</label>
+              <input type="date" value="2026-07-18" aria-label="Delivery date" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Delivery time</label>
+              <select aria-label="Delivery time" class="ok-select">
+                <option>Morning (9:00 AM)</option>
+                <option>Midday (12:00 PM)</option>
+                <option>Evening (6:00 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" data-add-cart="Gift card" class="btn btn-primary btn-block btn-lg">Buy &amp; Send Gift Card</button>
+          <p class="ok-hint text-center ok-mt-3"><i class="fa-solid fa-lock"></i> Secure checkout · You won't be charged in this demo.</p>
+        </form>
+
+        <!-- ---- RIGHT: sticky preview ---- -->
+        <div class="ok-positi-sticky-lg ok-top-7rem-lg">
+          <h2 class="ok-h2 ok-fs-2xl ok-mb-5">How it'll look</h2>
+
+          <!-- gift card -->
+          <div class="ok-rounded-2xl bg-ink text-white ok-p-3 ok-paddin-175rem-md ok-shadow-2xl position-relative overflow-hidden">
+            <div class="position-absolute -right-16 -top-16 ok-w-56 ok-h-56 rounded-pill bg-yellow-25 blur-2xl"></div>
+            <div class="position-absolute ok-fill border-2 border-yellow-30 ok-rounded-2xl pe-none"></div>
+            <div class="position-relative">
+              <div class="d-flex align-items-center justify-content-between ok-mb-8">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="OK Smashed Burger" class="ok-h-10 w-auto">
+                <span class="badge badge-yellow">Gift Card</span>
+              </div>
+              <div class="ok-mb-8">
+                <div class="ok-fs-xs text-uppercase tracking-widest text-w-50 mb-1">Value</div>
+                <div class="font-display ok-fw-800 ok-fs-5xl text-yellow ok-lh-none">$25.00</div>
+              </div>
+              <div class="d-flex align-items-end justify-content-between ok-gap-3">
+                <div class="ok-fs-sm ok-lh-relaxed">
+                  <div><span class="text-w-50">To:</span> <b>Alex</b></div>
+                  <div><span class="text-w-50">From:</span> <b>Jordan</b></div>
+                </div>
+                <div class="text-end ok-fs-xs text-w-40 font-mono">OKGC-2026<br>····-····</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- message preview -->
+          <div class="ok-card ok-p-5 ok-mt-3">
+            <div class="d-flex align-items-center gap-2 mb-2 text-muted-warm ok-fs-xs fw-semibold text-uppercase tracking-wide">
+              <span><i class="fa-solid fa-comment"></i></span> Your message
+            </div>
+            <p class="fst-italic text-ink">"Happy birthday! Grab a smash on me <i class="fa-solid fa-burger"></i>"</p>
+            <div class="divider ok-my-3"></div>
+            <div class="d-flex align-items-center justify-content-between ok-fs-sm">
+              <span class="text-muted-warm">Delivery</span>
+              <span class="fw-semibold"><i class="fa-solid fa-paper-plane"></i> Send now · Jul 18, 2026</span>
+            </div>
+          </div>
+
+          <p class="ok-hint text-center ok-mt-3">This preview updates to match your choices in the final product.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHECK BALANCE ============ -->
+    <section class="ok-section bg-cream-40">
+      <div class="ok-container max-w-2xl">
+        <div class="text-center ok-mb-3"><h2 class="ok-h2">Check your balance</h2></div>
+        <div class="ok-card ok-p-3 ok-paddin-2rem-md">
+          <label class="ok-label">Gift card code</label>
+          <form method="post" action="/gift-cards/balance" class="d-flex flex-column flex-sm-row ok-gap-3">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <input name="code" type="text" required class="ok-input font-mono tracking-wide" placeholder="OKGC-XXXXXX">
+            <button type="submit" class="btn btn-dark flex-shrink-0">Check balance</button>
+          </form>
+          <div class="ok-mt-5 d-flex align-items-center justify-content-between ok-rounded-xl bg-cream-70 ok-px-5 ok-py-3">
+            <div>
+              <div class="ok-fs-xs text-uppercase tracking-wide text-muted-warm fw-semibold">Available balance</div>
+              <div class="font-display ok-fw-800 ok-fs-2xl text-ok-green">$25.00</div>
+            </div>
+            <a href="/menu" class="btn btn-primary btn-sm">Spend it <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <p class="ok-hint ok-mt-3">Enter the 12-digit code from your gift card email to see the remaining balance.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ site.get('giftcards_how_heading') or 'How it works' }}</h2></div>
+        <div class="ok-grid ok-grid-md-3 ok-gap-3">
+          <div class="text-center">
+            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-palette icon-lg"></i></div>
+            <h3 class="font-display fw-bold ok-fs-lg mb-1">1 · Design it</h3>
+            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">Pick a design and amount, then add a personal message for the lucky recipient.</p>
+          </div>
+          <div class="text-center">
+            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-paper-plane icon-lg"></i></div>
+            <h3 class="font-display fw-bold ok-fs-lg mb-1">2 · Send it</h3>
+            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">Deliver instantly by email or schedule it to arrive on the perfect day.</p>
+          </div>
+          <div class="text-center">
+            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-burger icon-lg"></i></div>
+            <h3 class="font-display fw-bold ok-fs-lg mb-1">3 · They smash</h3>
+            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">They redeem the code online or in-store on anything we make. Never expires.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORPORATE / BULK BANNER ============ -->
+    <section class="ok-section pt-0">
+      <div class="ok-container">
+        <div class="ok-card bg-ink text-white overflow-hidden position-relative">
+          <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
+          <div class="position-relative ok-p-8 ok-paddin-3rem-md ok-grid ok-grid-md-2 ok-gap-3 align-items-center">
+            <div>
+              <h2 class="ok-h2 ok-mb-3">{{ site.get('giftcards_corporate_heading') or 'Corporate & bulk gift cards' }}</h2>
+              <p class="text-w-70 ok-mb-5 max-w-md">Reward your team or thank your clients. Order gift cards in bulk with custom branding, volume discounts and a single invoice. Our team will help you set it up.</p>
+              <div class="d-flex flex-wrap ok-gap-3">
+                <a href="/contact" class="btn btn-primary">Talk to our team</a>
+                <a href="/faq" class="btn btn-secondary !bg-transparent !text-white !border-white">Learn more</a>
+              </div>
+              <p class="ok-fs-sm text-w-50 ok-mt-3">Prefer email? Reach us at <b class="text-white">corporate@oksmashedburger.com</b></p>
+            </div>
+            <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
+              <div class="ok-card overflow-hidden -rotate-2 ok-shadow-2xl">
+                <img data-ph="Corporate Gifting" data-ph-ratio="4/3" class="ph-img" alt="">
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center ok-fs-xs text-muted-warm ok-mt-3 max-w-2xl mx-auto">Gift cards are issued by OK Brands and never expire. Not redeemable for cash except where required by law. See our full <a href="/faq" class="link-underline">gift card terms &amp; conditions</a>.</p>
+      </div>
+    </section>
+{% endblock %}

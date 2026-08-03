@@ -1,0 +1,252 @@
+{% extends "layouts/base.html" %}
+{% block title %}About Us, {{ brand_name }}{% endblock %}
+{% block content %}
+
+{# All six CMS fields from PAGE_CONTENT["about"] stay wired up:
+   about_hero_heading, about_hero_text, about_story_heading,
+   about_values_heading, about_team_heading, about_cta_heading. #}
+
+<!-- ============ 1. HERO ============ -->
+<section class="ok-abt-hero position-relative overflow-hidden">
+  <img src="{{ site.get('about_hero_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
+  <div class="ok-abt-hero-veil"></div>
+  <div class="ok-container position-relative text-center">
+    <h1 class="ok-abt-hero-h">{{ site.get('about_hero_heading') or 'About Us' }}</h1>
+    <span class="ok-squiggle ok-squiggle--light" aria-hidden="true"></span>
+  </div>
+</section>
+
+<!-- ============ 2. AS SEEN IN ============ -->
+<section class="ok-press d-none">
+  <div class="ok-container text-center">
+    <div class="ok-press-label">As seen in</div>
+    <div class="ok-press-row">
+      {% for name in ['Entrepreneur','Philly Voice','The Inquirer','Eater','QSR','Food &amp; Wine','Foodbeast','Thrillist'] %}
+      <span class="ok-press-logo">{{ name|safe }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. STORY (video left, copy right) ============ -->
+<section class="ok-band ok-band--white">
+  <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
+    {# Video slot. Set `about_video` in site settings to an .mp4 or a
+       YouTube/Vimeo link. Until one is set the photo is shown, so the
+       section never renders empty. #}
+    {% set _vid = site.get('about_video') %}
+    <div class="ok-abt-frame ok-abt-media">
+      {% if _vid and ('youtube' in _vid or 'youtu.be' in _vid or 'vimeo' in _vid) %}
+        {% set _base = _vid.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/').replace('vimeo.com/', 'player.vimeo.com/video/') %}
+        {% set _base = _base.split('&')[0].split('?')[0] %}
+        {% set _vid_id = _base.rsplit('/', 1)[-1] %}
+        {# Background video, same approach the reference site uses: playback is
+           driven by the YouTube IFrame API (enablejsapi) rather than URL params,
+           the iframe is sized by JS to cover the box, and it is dropped entirely
+           on phones where autoplay is unreliable, leaving the poster image. #}
+        {% if 'vimeo' in _base %}
+          {% set _embed = _base ~ '?background=1&autoplay=1&loop=1&muted=1' %}
+        {% else %}
+          {% set _embed = _base ~ '?controls=0&rel=0&playsinline=1&enablejsapi=1&origin=' ~ request.url_root.rstrip('/') %}
+        {% endif %}
+        <div class="ok-vidbg" data-ytbg>
+          <img src="{{ site.get('about_img') or site_defaults.get('about_img') }}" alt="" class="ok-vidbg-poster">
+          <div class="ok-vidbg-frame">
+            <iframe src="{{ _embed }}" title="About {{ brand_name }}" tabindex="-1" aria-hidden="true"
+                    allow="autoplay; encrypted-media" frameborder="0"></iframe>
+          </div>
+        </div>
+      {% elif _vid %}
+        <video poster="{{ site.get('about_img') or site_defaults.get('about_img') }}"
+               autoplay muted loop playsinline preload="metadata">
+          <source src="{{ _vid }}" type="video/mp4">
+        </video>
+      {% else %}
+        <img src="{{ site.get('about_img') or site_defaults.get('about_img') }}" alt="Inside an {{ brand_name }} kitchen" class="w-100 ok-cover">
+      {% endif %}
+    </div>
+    <div>
+      <h2 class="ok-abt-h">{{ site.get('about_story_heading') or 'Start the day off right with one of our delicious smash burgers' }}</h2>
+      <p class="ok-abt-body ok-mt-5">{{ site.get('about_hero_text') or (brand_name ~ ' is a fast-casual smash-burger concept built on a simple belief: people deserve something better. Quality ingredients, made from scratch, freshly cooked, handcrafted, consistent, and served with a smile.') }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. TWO FEATURE CARDS ============ -->
+<section class="ok-band ok-band--warm">
+  <div class="ok-container">
+    <div class="ok-grid ok-grid-md-2 ok-gap-8">
+      <article class="ok-card overflow-hidden d-flex flex-column">
+        <div class="ok-media ok-ratio !rounded-none">
+          <img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
+        </div>
+        <div class="ok-card-body">
+          <h3 class="ok-abt-cardh">Cooked Fresh And From Scratch</h3>
+          <p class="ok-abt-body-sm ok-mt-3">We're passionate about the quality and consistency of our food, which is why we cook everything fresh and from scratch. We make our sauces in-house, hand-form every patty, toast our own buns, and never let a burger sit.</p>
+        </div>
+      </article>
+      <article class="ok-card overflow-hidden d-flex flex-column">
+        <div class="ok-media ok-ratio !rounded-none">
+          <img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
+        </div>
+        <div class="ok-card-body">
+          <h3 class="ok-abt-cardh">Community Focused And Locally-sourced</h3>
+          <p class="ok-abt-body-sm ok-mt-3">We love the communities we're in, so much that we source our ingredients from local businesses: our beef, our produce and our bakery buns all come from partners right here in Philadelphia.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. MEET US AT THE TABLE (image left, copy right) ============ -->
+{# Same shape and type scale as "How it all started" below: container-width
+   two-column band, uppercase heading, contained image. #}
+<section class="ok-band ok-band--white">
+  <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
+    <div class="ok-abt-frame">
+      <img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
+    </div>
+    <div>
+      <h2 class="ok-abt-h">Meet Us At The Table</h2>
+      <p class="ok-abt-body ok-mt-5">We'll be playing upbeat music to set the vibes, pouring hand-spun shakes, cold-pressed lemonade and fresh soda.</p>
+      <p class="ok-abt-body ok-mt-3">We're excited to be able to start your day off right and we hope to serve you soon!</p>
+      <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. FULL-BLEED BAND + OVERLAPPING CARD ============ -->
+<section class="ok-abt-band position-relative overflow-hidden">
+  <img src="{{ site.get('catering_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
+  <div class="ok-container position-relative">
+    <div class="ok-abt-band-card">
+      <h2 class="ok-abt-h">{{ site.get('about_values_heading') or 'Different smashes for different folks' }}</h2>
+      <span class="ok-squiggle ok-squiggle--left" aria-hidden="true"></span>
+      <p class="ok-abt-body ok-mt-3">We are the lunch crowd, the late-night crew, the family Fridays and the game-day groups, serving different smashes for different folks.</p>
+      <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. HOW IT ALL STARTED (copy left, image right) ============ -->
+<section class="ok-band ok-band--white">
+  <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
+    <div>
+      <h2 class="ok-abt-h">{{ site.get('about_team_heading') or 'How it all started' }}</h2>
+      <p class="ok-abt-body ok-mt-5">In 2021, two friends set up a single flat-top in a Fishtown pop-up with one idea: press a ball of fresh beef hard onto a screaming-hot griddle, let the edges lace and caramelize, and serve it before it ever had a chance to cool down. The line went around the block by week two.</p>
+      <p class="ok-abt-body ok-mt-3">Four neighborhood kitchens later, nothing about the craft has changed. What's new is the tech that gets it to you faster: live tracking, easy reorders and rewards on every bite.</p>
+      <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
+    </div>
+    <div class="ok-abt-tilt">
+      <img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8. WHAT LOCALS HAVE TO SAY ============ -->
+{% set avatar_colors = ['#4285F4','#E0A200','#06C167','#D32323','#7C3AED'] %}
+{% set reviews = content_list('testimonials') %}{# Customer reviews: editable in Admin > Website Content #}
+<section class="ok-band ok-band--white">
+  <div class="ok-container">
+    <h2 class="ok-abt-h text-center">What locals have to say</h2>
+    <div class="position-relative ok-mt-10">
+      <button type="button" onclick="document.getElementById('abtReviews').scrollBy({left:-320,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -left-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border border-hairline" aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
+      <div id="abtReviews" class="ok-edgefade d-flex ok-gap-5 overflow-x-auto hide-scrollbar snap-x py-2">
+        {% for r in reviews %}
+        <article class="ok-card d-flex flex-column ok-abt-review snap-start">
+          <div class="ok-card-body">
+            <div class="d-flex align-items-center ok-gap-25 ok-mb-3">
+              <span class="ok-w-9 ok-h-9 rounded-pill ok-grid ok-place-center text-white fw-bold flex-shrink-0" style="background:{{ avatar_colors[loop.index0 % avatar_colors|length] }}">{{ r.name[0] }}</span>
+              <span class="ok-min-w-0 flex-grow-1">
+                <span class="d-block fw-bold ok-fs-sm ok-lh-tight text-truncate">{{ r.name }}</span>
+                <span class="d-block ok-fs-xs text-muted-warm">{{ r.when }}</span>
+              </span>
+              <i class="fa-brands fa-google text-muted-warm"></i>
+            </div>
+            <div class="d-flex ok-gap-05 ok-stars ok-fs-sm ok-mb-3">{% for i in range(5) %}{% if r.stars >= i+1 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star text-muted-warm-40"></i>{% endif %}{% endfor %}</div>
+            <p class="ok-abt-body-sm ok-clamp-5">{{ r.text }}</p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      <button type="button" onclick="document.getElementById('abtReviews').scrollBy({left:320,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -right-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border border-hairline" aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9. INSTAGRAM ============ -->
+<section class="ok-band ok-band--warm">
+  <div class="ok-container">
+    <h2 class="ok-abt-h text-center ok-mb-8">Follow us on Instagram</h2>
+    <a href="https://instagram.com/oksmashedburger/reels/" target="_blank" rel="noopener" class="d-flex align-items-center ok-gap-3 ok-mb-5 ok-mw-lg mx-auto">
+      <span class="ok-w-12 ok-h-12 rounded-pill bg-white ok-grid ok-place-center ok-p-25 flex-shrink-0 ok-shadow-md"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="" class="ok-contain"></span>
+      <span class="ok-min-w-0">
+        <span class="d-block fw-bold">oksmashedburger</span>
+        <span class="d-block ok-abt-body-sm text-truncate">Real smashed burgers, fast · Philadelphia · Find your nearest location</span>
+      </span>
+    </a>
+    <div class="ok-cardgrid ok-cardgrid--4 ok-mw-lg mx-auto">
+      {% for i in range(1, 9) %}
+      {% set _reel = site.get('ig_' ~ i ~ '_reel') %}
+      <a href="{{ _reel or 'https://instagram.com/oksmashedburger/reels/' }}" target="_blank" rel="noopener"
+         class="ok-tile ok-ratio-reel d-block ok-rounded-xl bg-ink">
+        <img src="{{ site.get('ig_' ~ i ~ '_img') or site_defaults.get('ig_' ~ i ~ '_img') }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy">
+        <span class="ok-reel-badge"><i class="fa-solid fa-play"></i></span>
+        <span class="tile-icon"><i class="fa-brands fa-instagram"></i></span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10. CLOSING CTA ============ -->
+<section class="ok-abt-cta">
+  <div class="ok-container text-center">
+    <h2 class="ok-abt-h">{{ site.get('about_cta_heading') or 'Hungry yet?' }}</h2>
+    <p class="ok-abt-body ok-mt-3 ok-mw-sm mx-auto">Pick your kitchen, build your order and we'll smash it fresh.</p>
+    <a href="/menu" class="btn btn-primary btn-lg ok-mt-5">Order online</a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Background video, driven the same way the reference site does it: the
+// YouTube IFrame API mutes and plays it, restarts it on end, and JS keeps the
+// 16:9 frame large enough to cover the 4:3 box. Skipped on phones, where the
+// markup hides the frame and the poster image shows instead.
+(function () {
+  var wrap = document.querySelector("[data-ytbg]");
+  if (!wrap) return;
+  var frame = wrap.querySelector("iframe");
+  if (!frame || !window.matchMedia("(min-width: 768px)").matches) return;
+
+  function cover() {
+    var w = wrap.offsetWidth, h = wrap.offsetHeight, r = 16 / 9;
+    var fw = w, fh = w / r;
+    if (fh < h) { fh = h; fw = h * r; }
+    frame.style.width = fw + "px";
+    frame.style.height = fh + "px";
+  }
+  cover();
+  window.addEventListener("resize", cover);
+
+  window.onYouTubeIframeAPIReady = function () {
+    new YT.Player(frame, {
+      events: {
+        onReady: function (e) { e.target.mute(); e.target.playVideo(); },
+        onStateChange: function (e) {
+          // Reveal only once it is really playing, so YouTube's branded
+          // loading frame is never shown; the poster covers it until then.
+          if (e.data === YT.PlayerState.PLAYING) wrap.classList.add("is-playing");
+          if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+        }
+      }
+    });
+  };
+  var s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(s);
+})();
+</script>
+{% endblock %}

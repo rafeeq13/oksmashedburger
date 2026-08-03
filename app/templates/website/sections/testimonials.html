@@ -1,0 +1,38 @@
+<!-- What locals have to say (testimonials) -->
+{% set avatar_colors = ['#4285F4','#E0A200','#06C167','#D32323','#7C3AED'] %}
+{% set testimonials = content_list('testimonials') %}{# Customer reviews: editable in Admin > Website Content #}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'What locals have to say' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+    </div>
+
+    <div class="position-relative" data-reveal="up">
+      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:-336,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -left-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
+
+      <div id="localsScroll" class="ok-edgefade d-flex ok-gap-5 overflow-x-auto hide-scrollbar snap-x px-1 py-2 scroll-smooth">
+        {% for t in testimonials %}
+        <article class="ok-w-195rem flex-shrink-0 snap-start ok-card ok-card-hover d-flex flex-column">
+          <div class="ok-card-body position-relative">
+            <span class="font-display ok-fs-6xl ok-lh-none text-yellow-30 position-absolute top-2 right-5 ok-nodrag" aria-hidden="true">&ldquo;</span>
+            <div class="d-flex ok-gap-05 text-yellow ok-fs-sm ok-mb-3">{% for i in range(5) %}{% if t.stars >= i+1 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star text-muted-warm-40"></i>{% endif %}{% endfor %}</div>
+            <p class="ok-fs-95rem text-ink-80 ok-lh-relaxed line-clamp-5">{{ t.text }}</p>
+            <div class="ok-card-foot d-flex align-items-center ok-gap-3 border-top ok-bc-varokhairline">
+              <div class="ok-w-11 ok-h-11 rounded-pill ok-grid ok-place-center text-white fw-bold flex-shrink-0 ok-shadow-md" style="background:{{ avatar_colors[loop.index0 % avatar_colors|length] }}">{{ t.name[0] }}</div>
+              <div class="ok-min-w-0 flex-grow-1">
+                <div class="fw-bold ok-fs-sm ok-lh-tight text-truncate">{{ t.name }}</div>
+                <div class="ok-fs-xs text-muted-warm">{{ t.when }}</div>
+              </div>
+              <i class="fa-brands fa-google text-muted-warm-60"></i>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:336,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -right-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </div>
+</section>

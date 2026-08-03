@@ -1,0 +1,92 @@
+{% extends "layouts/base.html" %}
+{% block title %}Deals & Offers, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ HERO BANNER (jet) ============ -->
+    <section class="ok-pagehero">
+      <div class="position-absolute ok-fill ok-opacity-30">
+        {% if site.get('deals_hero_img') %}<img src="{{ site.get('deals_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Deals banner" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+      </div>
+      <div class="ok-pagehero-veil"></div>
+      <div class="position-absolute -left-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
+      <div class="ok-container text-center">
+        <div class="max-w-2xl mx-auto">
+<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ site.get('deals_hero_heading') or 'Deals & Offers' }}</h1>
+          <p class="text-w-80 ok-fs-lg ok-mb-7 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('deals_hero_text') or 'Save on smashed favorites. Start an order straight from any deal, most need no code at all.' }}</p>
+          <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 bg-w-10 border border-w-20 rounded-pill ok-px-3 py-2">
+            <span class="ok-fs-sm d-inline-flex align-items-center gap-1"><i class="fa-solid fa-hands-clapping"></i> New here? Enjoy</span>
+            <span class="chip is-active !bg-okyellow !text-jet !border-okyellow fw-bold tracking-wide">Free delivery</span>
+            <span class="ok-fs-sm text-w-70">on your first order</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROMO-CODE ENTRY ============ -->
+    <section class="bg-yellow">
+      <div class="ok-container ok-py-5 d-flex flex-column flex-sm-row align-items-center ok-gap-3 justify-content-between">
+        <div class="d-flex align-items-center gap-2 fw-semibold text-ink">
+          <span class="ok-fs-xl"><i class="fa-solid fa-tag"></i></span> Have a promo code? Apply it before you order.
+        </div>
+        <form method="post" action="/cart/promo" class="d-flex gap-2 w-100 ok-width-auto-sm">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input name="promo" class="ok-input ok-width-14rem-sm" placeholder="Enter promo code" aria-label="Promo code" required>
+          <button class="btn ok-btn-onyellow">Apply code</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ DEAL GRID ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="d-flex align-items-end justify-content-between ok-mb-3">
+          <div><h2 class="ok-h2">{{ site.get('deals_list_heading') or 'All deals' }}</h2></div>
+          <span class="ok-fs-sm text-muted-warm d-none d-sm-block">{{ coupons|length }} offer{{ '' if coupons|length == 1 else 's' }} available</span>
+        </div>
+
+        {% if coupons %}
+        <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
+          {% for c in coupons %}
+          <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup d-flex flex-column">
+            <div class="position-relative ok-ar-1610 overflow-hidden">
+              <img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">
+              {% if c.kind == 'free_delivery' %}<span class="badge badge-green position-absolute top-3 left-3">Free delivery</span>
+              {% elif c.kind == 'percent' %}<span class="badge badge-green position-absolute top-3 left-3">-{{ c.value|int }}%</span>
+              {% else %}<span class="badge badge-deal position-absolute top-3 left-3">Save ${{ '%.0f'|format(c.value) }}</span>{% endif %}
+            </div>
+            <div class="ok-p-3 d-flex flex-column flex-grow-1">
+              <h3 class="font-display fw-bold ok-fs-lg">{{ c.description or c.code }}</h3>
+              <p class="ok-fs-sm text-muted-warm ok-mb-3 flex-grow-1">
+                {% if c.kind == 'free_delivery' %}Free delivery{% elif c.kind == 'percent' %}{{ c.value|int }}% off your order{% else %}${{ '%.2f'|format(c.value) }} off{% endif %}{% if c.min_order and c.min_order > 0 %} on orders over ${{ '%.0f'|format(c.min_order) }}{% endif %}.
+              </p>
+              {% if c.requires_code %}
+              <p class="ok-fs-xs text-muted-warm ok-mb-3">Use code <b>{{ c.code }}</b>{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
+              {% else %}
+              <p class="ok-fs-xs text-ok-green fw-semibold ok-mb-3"><i class="fa-solid fa-circle-check"></i> No code needed{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
+              {% endif %}
+              <form method="post" action="/cart/promo">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                <input type="hidden" name="promo" value="{{ c.code }}">
+                <input type="hidden" name="next" value="/menu">
+                <button class="btn btn-primary btn-sm btn-block">Order now</button>
+              </form>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="ok-card ok-p-10 text-center text-muted-warm">No active deals right now, check back soon!</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ============ TERMS NOTE ============ -->
+    <section class="ok-pb-14">
+      <div class="ok-container">
+        <div class="ok-card bg-cream-40 ok-p-3 text-center">
+          <p class="ok-fs-sm text-muted-warm">One offer per order. Deals cannot be combined and are available at participating locations for a limited time.
+            <a href="/faq" class="link-underline">See full terms &amp; conditions</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+{% endblock %}

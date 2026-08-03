@@ -1,0 +1,24 @@
+<!-- About the brand -->
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--white') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container ok-grid ok-grid-md-2 ok-gap-5 ok-gap-5rem-lg align-items-center">
+    <div class="ok-mask position-relative ok-r-175rem overflow-hidden ok-shadow-2xl">
+      <img src="{{ site.get('about_img') or site_defaults.get('about_img') }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=900&h=1000&fit=crop&q=70'" alt="The {{ brand_name }} team" data-el="img" class="w-100 ok-ar-45 ok-cover"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>
+      <!-- single overlay chip, anchored inside the frame -->
+      <div class="position-absolute left-6 bottom-6 ok-rounded-2xl ok-px-5 ok-py-35 text-ink" style="background:var(--grad-gold); box-shadow:var(--sh-gold);">
+        <div class="font-display ok-fw-900 ok-fs-2xl ok-lh-none">2021</div>
+        <div class="ok-fs-6rem fw-bold text-uppercase ok-ls-16em mt-1 text-ink-75">Established in Philly</div>
+      </div>
+    </div>
+
+    <div>
+<h2 class="ok-title ok-mt-3" data-reveal="up" data-reveal-delay="0.06">{{ (cfg.get('heading') or ('Learn all about the ' ~ brand_name ~ ' magic'))|safe }}</h2>
+      <span class="ok-squiggle ok-squiggle--left" aria-hidden="true" data-reveal="up" data-reveal-delay="0.1"></span>
+      <p class="ok-subtitle" data-reveal="up" data-reveal-delay="0.14">{{ cfg.get('subheading') or (brand_name ~ ' is a fast-casual smash-burger concept built on a simple belief: people deserve something better. Quality ingredients, cooked to order, handcrafted, consistent, and served with a smile.') }}</p>
+      <p class="ok-subtitle !mt-4" data-reveal="up" data-reveal-delay="0.18">{{ cfg.get('body2') or "We're obsessed with the details, that's why we smash every patty fresh on the flat-top, toast our buns, make our sauces in-house, and never let a burger sit. Delivery or pickup, you get the same OK-good burger every time." }}</p>
+      <div class="ok-mt-9" data-elw="btn" data-reveal="up" data-reveal-delay="0.22"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+        <a href="{{ cfg.get('cta_href') or '/about' }}" data-el="btn" class="btn btn-primary btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'Know us better' }} <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</section>

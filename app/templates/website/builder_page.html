@@ -1,0 +1,11 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ page.meta_title or page.title }}, {{ brand_name }}{% endblock %}
+{% block description %}{{ page.meta_description or 'Order ' ~ brand_name ~ ' for delivery or pickup.' }}{% endblock %}
+{% block head_extra %}{% if page.head_code %}{{ page.head_code|safe }}{% endif %}{% endblock %}
+{% block content %}
+<style>{{ page.css|safe }}</style>
+<div class="gjs-page">
+{{ (expanded_html if expanded_html is defined else page.html)|safe }}
+</div>
+{% if page.is_home %}{% include "partials/mobile_order_cta.html" %}{% endif %}
+{% endblock %}

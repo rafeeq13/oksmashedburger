@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Your Order — OK Smashed Burger</title>
+  <meta name="description" content="Live order tracking for OK Smashed Burger. Follow your smash burger from the kitchen to your door with real-time status, driver details and a live map.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+  <style>
+    /* Live pill pulse + map marker */
+    @keyframes okLive{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+    .live-dot{ animation:okLive 1.2s ease-in-out infinite; }
+    @keyframes okPing{ 0%{ transform:scale(1); opacity:.6; } 100%{ transform:scale(2.4); opacity:0; } }
+    .map-ping{ animation:okPing 1.8s ease-out infinite; }
+    /* Vertical timeline connector */
+    .tl-item{ position:relative; padding-left:2.25rem; padding-bottom:1.4rem; }
+    .tl-item::before{ content:""; position:absolute; left:.63rem; top:1.5rem; bottom:-.2rem; width:2px; background:var(--ok-line); }
+    .tl-item:last-child::before{ display:none; }
+    .tl-dot{ position:absolute; left:0; top:.1rem; width:1.3rem; height:1.3rem; border-radius:9999px; display:grid; place-items:center; font-size:.7rem;
+      background:#fff; border:2px solid var(--ok-line); color:var(--ok-slate); }
+    .tl-item.done .tl-dot{ background:var(--ok-green); border-color:var(--ok-green); color:#fff; }
+    .tl-item.done::before{ background:var(--ok-green); }
+    .tl-item.active .tl-dot{ background:var(--ok-yellow); border-color:var(--ok-yellow); color:var(--ok-jet); box-shadow:0 0 0 4px rgba(255,199,44,.25); }
+    .tl-item.upcoming .tl-title{ color:var(--ok-slate); }
+  </style>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="bg-softyellow/20">
+    <!-- ============ ORDER HEADER BAR ============ -->
+    <section class="bg-jet text-white">
+      <div class="ok-container py-5 md:py-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-okyellow text-jet grid place-items-center text-2xl shrink-0"><i class="fa-solid fa-location-arrow icon-lg"></i></div>
+          <div>
+            <div class="text-white/60 text-xs uppercase font-semibold tracking-wide">Order #OK-4021</div>
+            <div class="font-display font-bold leading-tight">OK Smashed Burger — Center City</div>
+            <div class="text-white/60 text-sm flex items-center gap-1"><i class="fa-solid fa-car"></i>Delivery · 1234 Walnut St, Apt 5B</div>
+          </div>
+        </div>
+        <!-- Prominent ETA -->
+        <div class="ok-card !bg-okyellow !border-okyellow text-jet px-5 py-3 text-center shrink-0">
+          <div class="text-xs uppercase font-bold tracking-wide">Estimated arrival</div>
+          <div class="font-display font-extrabold text-2xl leading-none mt-1" id="etaBig">Arriving in ~12 min</div>
+          <div class="text-sm font-semibold mt-.5" id="etaTime">7:42 PM</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ok-section !py-8 md:!py-10">
+      <div class="ok-container">
+
+        <!-- ============ STATUS HEADLINE + STEPPER ============ -->
+        <div class="ok-card p-6 md:p-8">
+          <div class="text-center mb-8">
+            <h1 class="ok-h1 mt-1" id="statusHeadline">Your order is being prepared <i class="fa-solid fa-kitchen-set"></i></h1>
+            <p class="text-slate mt-2" id="statusSub">Hang tight — the grill is hot and your smash is on it.</p>
+          </div>
+
+          <!-- Animated 6-stage stepper -->
+          <div class="tracker" id="tracker">
+            <div class="tracker-step is-done">
+              <div class="dot"><i class="fa-solid fa-receipt icon-lg"></i></div>
+              <div class="tracker-label">Placed</div>
+            </div>
+            <div class="tracker-step is-done">
+              <div class="dot"><i class="fa-solid fa-circle-check icon-lg"></i></div>
+              <div class="tracker-label">Confirmed</div>
+            </div>
+            <div class="tracker-step is-active">
+              <div class="dot"><i class="fa-solid fa-kitchen-set icon-lg"></i></div>
+              <div class="tracker-label">Preparing</div>
+            </div>
+            <div class="tracker-step">
+              <div class="dot"><i class="fa-solid fa-bag-shopping icon-lg"></i></div>
+              <div class="tracker-label">Ready</div>
+            </div>
+            <div class="tracker-step">
+              <div class="dot"><i class="fa-solid fa-car icon-lg"></i></div>
+              <div class="tracker-label">Out for Delivery</div>
+            </div>
+            <div class="tracker-step">
+              <div class="dot"><i class="fa-solid fa-house icon-lg"></i></div>
+              <div class="tracker-label">Delivered</div>
+            </div>
+          </div>
+
+          <!-- Delivered prompt (hidden until the demo finishes) -->
+          <div id="deliveredPrompt" class="hidden mt-8 text-center bg-okgreen/10 border border-okgreen/30 rounded-2xl p-5">
+            <div class="font-display font-bold text-lg text-okgreen">Delivered! Enjoy <i class="fa-solid fa-burger"></i></div>
+            <p class="text-sm text-slate mt-1 mb-3">We hope every bite hits. How did we do?</p>
+            <a href="orders.html" class="btn btn-primary">Rate your order <i class="fa-solid fa-star fill-current"></i></a>
+          </div>
+        </div>
+
+        <!-- ============ MAIN GRID ============ -->
+        <div class="grid lg:grid-cols-3 gap-6 mt-6">
+
+          <!-- LEFT: map + driver -->
+          <div class="lg:col-span-2 space-y-6">
+
+            <!-- Live map -->
+            <div class="ok-card overflow-hidden relative">
+              <div class="relative aspect-[16/9]">
+                <img data-ph="Live driver location" data-ph-type="map" data-ph-ratio="16/9" class="ph-img" alt="">
+
+                <!-- LIVE pill -->
+                <div class="absolute top-3 left-3 flex items-center gap-2 bg-jet/85 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur">
+                  <span class="live-dot w-2 h-2 rounded-full bg-okred inline-block"></span> LIVE
+                </div>
+
+                <!-- ETA chip -->
+                <div class="absolute top-3 right-3 bg-white/95 text-jet text-xs font-bold px-3 py-1.5 rounded-full shadow inline-flex items-center gap-1" id="mapEta"><i class="fa-solid fa-car"></i> ~12 min away</div>
+
+                <!-- Animated driver marker -->
+                <div class="absolute left-[22%] bottom-[28%]">
+                  <span class="map-ping absolute inset-0 -m-1 rounded-full bg-okyellow"></span>
+                  <span class="relative w-6 h-6 rounded-full bg-okyellow border-2 border-jet grid place-items-center text-xs shadow-lg"><i class="fa-solid fa-car"></i></span>
+                </div>
+              </div>
+              <div class="p-4 flex items-center justify-between text-sm">
+                <span class="text-slate">Live driver location updates every few seconds.</span>
+                <span class="badge badge-green">On the way</span>
+              </div>
+            </div>
+
+            <!-- Driver card -->
+            <div class="ok-card p-5">
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full overflow-hidden shrink-0 border-2 border-okyellow">
+                  <img data-ph="Marcus D." data-ph-type="avatar" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-display font-bold text-lg leading-tight">Marcus D.</h3>
+                    <span class="badge badge-yellow">4.9<i class="fa-solid fa-star fill-current"></i></span>
+                  </div>
+                  <div class="text-sm text-slate">Your delivery driver</div>
+                  <div class="text-sm font-semibold mt-.5 flex items-center gap-1"><i class="fa-solid fa-car"></i>Toyota Prius · <span class="tracking-wide">ABC-1234</span></div>
+                </div>
+              </div>
+              <div class="flex gap-3 mt-4">
+                <a href="tel:+10000000000" class="btn btn-secondary flex-1"><i class="fa-solid fa-phone"></i> Call</a>
+                <a href="contact.html" class="btn btn-dark flex-1"><i class="fa-solid fa-comment"></i> Message</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: timeline + order details -->
+          <div class="space-y-6">
+
+            <!-- Vertical timeline -->
+            <div class="ok-card p-5">
+              <h3 class="font-display font-bold text-lg mb-4">Order timeline</h3>
+              <ul id="timeline">
+                <li class="tl-item done"><span class="tl-dot"><i class="fa-solid fa-circle-check"></i></span>
+                  <div class="tl-title font-semibold text-sm">Order placed</div>
+                  <div class="text-xs text-slate">7:18 PM</div>
+                </li>
+                <li class="tl-item done"><span class="tl-dot"><i class="fa-solid fa-circle-check"></i></span>
+                  <div class="tl-title font-semibold text-sm">Order confirmed</div>
+                  <div class="text-xs text-slate">7:19 PM · Center City</div>
+                </li>
+                <li class="tl-item active"><span class="tl-dot">•</span>
+                  <div class="tl-title font-semibold text-sm">Preparing your food</div>
+                  <div class="text-xs text-slate">7:26 PM · In the kitchen</div>
+                </li>
+                <li class="tl-item upcoming"><span class="tl-dot">•</span>
+                  <div class="tl-title font-semibold text-sm">Ready for pickup</div>
+                  <div class="text-xs text-slate">Estimated 7:33 PM</div>
+                </li>
+                <li class="tl-item upcoming"><span class="tl-dot">•</span>
+                  <div class="tl-title font-semibold text-sm">Out for delivery</div>
+                  <div class="text-xs text-slate">Estimated 7:35 PM</div>
+                </li>
+                <li class="tl-item upcoming"><span class="tl-dot">•</span>
+                  <div class="tl-title font-semibold text-sm">Delivered</div>
+                  <div class="text-xs text-slate">Estimated 7:42 PM</div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Order details (collapsible) -->
+            <div class="ok-card overflow-hidden acc-item is-open" id="detailsAcc">
+              <button class="acc-q px-5" aria-expanded="true">
+                <span class="font-display text-lg">Order details</span>
+                <span class="acc-icon">+</span>
+              </button>
+              <div class="acc-a px-5">
+                <ul class="space-y-3">
+                  <li class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg overflow-hidden shrink-0"><img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt=""></div>
+                    <div class="flex-1 min-w-0"><div class="font-semibold text-sm leading-tight">Double Bacon Smash</div><div class="text-xs text-slate">Qty 1</div></div>
+                    <div class="font-bold text-sm">$12.99</div>
+                  </li>
+                  <li class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg overflow-hidden shrink-0"><img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt=""></div>
+                    <div class="flex-1 min-w-0"><div class="font-semibold text-sm leading-tight">Loaded OK Fries</div><div class="text-xs text-slate">Qty 1</div></div>
+                    <div class="font-bold text-sm">$6.99</div>
+                  </li>
+                  <li class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-lg overflow-hidden shrink-0"><img data-ph="Vanilla Malt Shake" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt=""></div>
+                    <div class="flex-1 min-w-0"><div class="font-semibold text-sm leading-tight">Vanilla Malt Shake</div><div class="text-xs text-slate">Qty 2</div></div>
+                    <div class="font-bold text-sm">$5.49</div>
+                  </li>
+                </ul>
+                <div class="divider my-4"></div>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between"><span class="text-slate">Subtotal</span><span class="font-semibold">$24.47</span></div>
+                  <div class="flex justify-between"><span class="text-slate">Delivery fee</span><span class="font-semibold">$1.99</span></div>
+                  <div class="flex justify-between"><span class="text-slate">Tax</span><span class="font-semibold">$2.01</span></div>
+                  <div class="flex justify-between items-center pt-1">
+                    <span class="font-display font-bold">Total</span>
+                    <span class="font-display font-extrabold text-lg">$28.47</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ============ HELP ROW ============ -->
+        <div class="ok-card mt-6 p-5 md:p-6 flex flex-col sm:flex-row items-center gap-4 justify-between text-center sm:text-left">
+          <div>
+            <div class="font-display font-bold text-lg">Something wrong with your order?</div>
+            <p class="text-sm text-slate">Our team is here to help — reach out and we'll make it right.</p>
+          </div>
+          <div class="flex flex-wrap gap-3 justify-center shrink-0">
+            <a href="contact.html" class="btn btn-secondary">Contact support</a>
+            <a href="faq.html" class="btn btn-ghost">Order FAQ</a>
+            <button class="btn btn-danger" id="cancelBtn">Cancel order</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ DEMO SCRIPT (framework-free) ============ -->
+    <script>
+      (function () {
+        // --- Stage definitions: keeps stepper, headline, ETA & timeline in sync ---
+        var stages = [
+          { eyebrow: "Order received",   headline: "Order placed <i class='fa-solid fa-receipt'></i>",                  sub: "We've got your order — sending it to the kitchen.",        eta: "Arriving in ~24 min", chip: "<i class='fa-solid fa-receipt'></i> Order received" },
+          { eyebrow: "Confirmed",        headline: "Your order is confirmed <i class='fa-solid fa-circle-check'></i>",        sub: "Center City has your order and is getting started.",       eta: "Arriving in ~20 min", chip: "<i class='fa-solid fa-circle-check'></i> Confirmed" },
+          { eyebrow: "In the kitchen",   headline: "Your order is being prepared <i class='fa-solid fa-kitchen-set'></i>", sub: "Hang tight — the grill is hot and your smash is on it.",   eta: "Arriving in ~12 min", chip: "<i class='fa-solid fa-kitchen-set'></i> Cooking" },
+          { eyebrow: "Packed & ready",   headline: "Your order is ready <i class='fa-solid fa-bag-shopping'></i>",           sub: "Sealed hot and waiting for your driver.",                  eta: "Arriving in ~9 min",  chip: "<i class='fa-solid fa-bag-shopping'></i> Ready" },
+          { eyebrow: "On the move",      headline: "Marcus is on the way <i class='fa-solid fa-car'></i>",           sub: "Your driver has your order and is heading to you now.",    eta: "Arriving in ~5 min",  chip: "<i class='fa-solid fa-car'></i> On the way" },
+          { eyebrow: "Delivered",        headline: "Delivered! Enjoy <i class='fa-solid fa-burger'></i>",               sub: "Your order has arrived. Thanks for choosing OK!",          eta: "Delivered",           chip: "<i class='fa-solid fa-house'></i> Delivered" }
+        ];
+
+        var steps    = Array.prototype.slice.call(document.querySelectorAll("#tracker .tracker-step"));
+        var tlItems  = Array.prototype.slice.call(document.querySelectorAll("#timeline .tl-item"));
+        var headline = document.getElementById("statusHeadline");
+        var eyebrow  = document.getElementById("statusEyebrow");
+        var sub      = document.getElementById("statusSub");
+        var etaBig   = document.getElementById("etaBig");
+        var mapEta   = document.getElementById("mapEta");
+        var prompt   = document.getElementById("deliveredPrompt");
+
+        var active = 2; // start on "Preparing" (index 2)
+
+        function render() {
+          steps.forEach(function (s, i) {
+            s.classList.toggle("is-done",  i < active);
+            s.classList.toggle("is-active", i === active);
+            // finished the last step -> mark it done, not active
+            if (active >= steps.length - 1 && i === steps.length - 1) {
+              s.classList.add("is-done"); s.classList.remove("is-active");
+            }
+          });
+          tlItems.forEach(function (t, i) {
+            t.classList.remove("done", "active", "upcoming");
+            if (i < active) t.classList.add("done");
+            else if (i === active) t.classList.add(active >= steps.length - 1 ? "done" : "active");
+            else t.classList.add("upcoming");
+          });
+
+          var st = stages[Math.min(active, stages.length - 1)];
+          if (eyebrow) eyebrow.textContent = st.eyebrow;
+          headline.innerHTML   = st.headline;
+          sub.textContent      = st.sub;
+          etaBig.textContent   = st.eta;
+          mapEta.innerHTML     = st.chip;
+          // re-render any Lucide icons injected via innerHTML above
+          if (window.OK && OK.icons) OK.icons();
+        }
+
+        render();
+
+        var timer = setInterval(function () {
+          if (active >= steps.length - 1) {
+            clearInterval(timer);
+            prompt.classList.remove("hidden");
+            if (window.OK && OK.toast) OK.toast("Order delivered — enjoy! <i class='fa-solid fa-burger'></i>");
+            return;
+          }
+          active++;
+          render();
+        }, 4000);
+
+        // Cancel-order demo
+        var cancelBtn = document.getElementById("cancelBtn");
+        if (cancelBtn) cancelBtn.addEventListener("click", function () {
+          if (window.OK && OK.toast) OK.toast("Cancellation request sent (demo)");
+        });
+      })();
+    </script>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ u.full_name }}, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="mb-5"><a href="/admin/customers{{ qs }}" class="link-underline text-sm"><i class="fa-solid fa-arrow-left"></i> Back to customers</a></div>
+
+<div class="flex flex-wrap items-center gap-4 mb-6">
+  <span class="w-14 h-14 rounded-full bg-softyellow text-okamber grid place-items-center font-display font-extrabold text-2xl shrink-0">{{ (u.first_name or u.email)[0]|upper }}</span>
+  <div>
+    <h2 class="ok-h2">{{ u.full_name }}</h2>
+    <p class="text-slate text-sm">{{ u.email }}{% if u.phone %} · {{ u.phone }}{% endif %} · joined {{ u.created_at.strftime('%b %Y') if u.created_at else '-' }}</p>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="grid sm:grid-cols-4 gap-4 mb-6">
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">{{ stats.orders }}</div><div class="text-sm text-slate">Orders</div></div>
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">${{ '%.2f'|format(stats.spend) }}</div><div class="text-sm text-slate">Total spend</div></div>
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">${{ '%.2f'|format(stats.aov) }}</div><div class="text-sm text-slate">Avg order</div></div>
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">{{ '{:,}'.format(u.loyalty_points) }}</div><div class="text-sm text-slate">Loyalty points</div></div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6 items-start">
+  <!-- Orders -->
+  <div class="lg:col-span-2 ok-card p-5">
+    <h3 class="font-display font-bold text-lg mb-4">Order history</h3>
+    {% if orders %}
+    <div class="divide-y divide-[var(--ok-line)]">
+      {% for o in orders %}
+      <a href="/admin/orders/{{ o.number }}{{ qs }}" class="py-3 flex items-center justify-between gap-3  -mx-2 px-2 rounded-lg transition">
+        <div class="min-w-0">
+          <span class="font-bold">{{ o.number }}</span>
+          <span class="text-xs text-slate">· {{ o.created_at.strftime('%b %d, %Y') }} · {{ o.store.name }} · {{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</span>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}
+          <span class="font-bold w-16 text-right">${{ '%.2f'|format(o.total) }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}<p class="text-slate text-sm py-6 text-center">No orders yet.</p>{% endif %}
+  </div>
+
+  <!-- Sidebar: favorites + addresses -->
+  <div class="space-y-6">
+    <div class="ok-card p-5">
+      <h3 class="font-display font-bold text-lg mb-3">Favorites <span class="text-slate text-sm font-normal">({{ favs|length }})</span></h3>
+      {% if favs %}
+      <div class="space-y-2">
+        {% for p in favs %}
+        <div class="flex items-center gap-3 text-sm">
+          <img src="{{ p.image_url }}" alt="" class="w-9 h-9 rounded-lg object-cover shrink-0">
+          <span class="flex-1 truncate">{{ p.name }}</span>
+          <span class="text-slate">${{ '%.2f'|format(p.base_price) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-slate text-sm">No favorites.</p>{% endif %}
+    </div>
+
+    <div class="ok-card p-5">
+      <h3 class="font-display font-bold text-lg mb-3">Saved addresses <span class="text-slate text-sm font-normal">({{ addrs|length }})</span></h3>
+      {% if addrs %}
+      <div class="space-y-3">
+        {% for a in addrs %}
+        <div class="text-sm">
+          <div class="font-semibold flex items-center gap-2">{{ a.label }}{% if a.is_default %}<span class="badge badge-soft">Default</span>{% endif %}</div>
+          <div class="text-slate">{{ a.one_line }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}<p class="text-slate text-sm">No saved addresses.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

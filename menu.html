@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu — OK Smashed Burger</title>
+  <meta name="description" content="Browse the full OK Smashed Burger menu — smashed burgers, crispy chicken, loaded sides, thick shakes, combos and more. Filter by diet, sort and add to cart.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="pb-24 lg:pb-0">
+    <!-- ============ BREADCRUMB ============ -->
+    <nav class="ok-container pt-5 text-sm text-slate" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-2">
+        <li><a href="index.html" class="hover:text-okamber">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="font-semibold text-jet" aria-current="page">Menu</li>
+      </ol>
+    </nav>
+
+    <!-- ============ PAGE HEAD ============ -->
+    <div class="ok-container pt-3 pb-5">
+      <h1 class="ok-h1 mb-1">The Full Menu</h1>
+      <p class="text-slate">Fresh-smashed to order. Delivery, pickup or dine-in across Philadelphia.</p>
+    </div>
+
+    <!-- ============ LOCATION / ORDER-TYPE BAR ============ -->
+    <section class="bg-okyellow">
+      <div class="ok-container py-4 flex flex-col md:flex-row items-center gap-3 justify-between">
+        <div class="flex items-center gap-2 font-semibold text-jet text-center md:text-left">
+          <span class="text-xl"><i class="fa-solid fa-location-dot"></i></span> Delivering to <b>Philadelphia · 19107</b>
+          <button data-open="location" class="link-underline ml-1">Change</button>
+        </div>
+        <div class="flex gap-2" data-chip-group>
+          <button class="chip is-active bg-white"><i class="fa-solid fa-car"></i> Delivery</button>
+          <button class="chip bg-white"><i class="fa-solid fa-bag-shopping"></i> Pickup</button>
+          <button class="chip bg-white"><i class="fa-solid fa-utensils"></i> Dine-in</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STICKY CATEGORY NAV + INLINE COLLAPSIBLE SEARCH ============ -->
+    <div class="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur border-b border-[var(--ok-line)] mt-4">
+      <div class="ok-container">
+        <div class="menu-catbar relative flex items-center gap-2 py-3" id="menuCatbar">
+          <!-- category pills -->
+          <div class="flex gap-2 overflow-x-auto hide-scrollbar min-w-0 flex-1" data-chip-group>
+            <a href="#burgers" class="chip is-active shrink-0"><i class="fa-solid fa-burger"></i> Burgers</a>
+            <a href="#chicken" class="chip shrink-0"><i class="fa-solid fa-drumstick-bite"></i> Chicken</a>
+            <a href="#sides" class="chip shrink-0"><i class="fa-solid fa-utensils"></i> Sides</a>
+            <a href="#shakes" class="chip shrink-0"><i class="fa-solid fa-glass-water"></i> Shakes</a>
+            <a href="#combos" class="chip shrink-0"><i class="fa-solid fa-basket-shopping"></i> Combos</a>
+            <a href="#vegan" class="chip shrink-0"><i class="fa-solid fa-leaf"></i> Vegan</a>
+            <a href="#kids" class="chip shrink-0"><i class="fa-solid fa-baby"></i> Kids</a>
+            <a href="#drinks" class="chip shrink-0"><i class="fa-solid fa-glass-water"></i> Drinks</a>
+          </div>
+          <!-- inline search toggle (right of the pills) -->
+          <button type="button" data-msearch-open class="chip shrink-0 !px-3" aria-label="Search the menu" title="Search the menu"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <!-- expanding search field: overlays the pills when open -->
+          <div class="menu-search-panel absolute inset-y-0 left-0 right-0 flex items-center py-2">
+            <div class="flex items-center gap-2 w-full bg-white rounded-full border-2 border-jet shadow-md pl-4 pr-1.5 h-11">
+              <span class="text-slate"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input data-msearch-input type="search" placeholder="Search burgers, sides, shakes…" class="bg-transparent w-full focus:outline-none text-sm" aria-label="Search the menu">
+              <button type="button" data-msearch-close class="w-8 h-8 grid place-items-center rounded-full text-slate hover:bg-softyellow shrink-0" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ BODY: FILTERS + GRID ============ -->
+    <div class="ok-container py-8 grid lg:grid-cols-[260px_1fr] gap-8 items-start">
+
+      <!-- ---- FILTERS SIDEBAR (stacks above content on mobile) ---- -->
+      <aside class="lg:sticky lg:top-36 self-start">
+        <div class="ok-card p-5">
+          <div class="flex items-center gap-2 mb-5">
+            <span aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+            <h2 class="font-display font-bold text-lg">Filters &amp; Sort</h2>
+          </div>
+          <div class="space-y-6">
+
+            <!-- sort -->
+            <div>
+              <label class="ok-label" for="sortBy">Sort by</label>
+              <select id="sortBy" class="ok-select">
+                <option>Recommended</option>
+                <option>Most popular</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+                <option>Highest rated</option>
+                <option>Calories: Low to High</option>
+              </select>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- dietary -->
+            <div>
+              <p class="ok-label">Dietary</p>
+              <div class="space-y-2.5 text-sm">
+                <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-4 h-4 accent-okamber rounded"> <span class="inline-flex items-center gap-1"><i class="fa-solid fa-leaf"></i> Vegan</span></label>
+                <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-4 h-4 accent-okamber rounded"> <span class="inline-flex items-center gap-1"><i class="fa-solid fa-bowl-food"></i> Vegetarian</span></label>
+                <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-4 h-4 accent-okamber rounded"> <span class="inline-flex items-center gap-1"><i class="fa-solid fa-wheat-awn"></i> Gluten-friendly</span></label>
+                <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-4 h-4 accent-okamber rounded"> <span class="inline-flex items-center gap-1"><i class="fa-solid fa-fire"></i> Spicy</span></label>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- price range -->
+            <div>
+              <p class="ok-label">Max price <span class="text-slate font-normal">· <span id="priceOut">$15</span></span></p>
+              <input id="priceRange" type="range" min="4" max="25" value="15" class="w-full accent-okamber">
+              <div class="flex justify-between ok-hint mt-1"><span>$4</span><span>$25+</span></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- protein quick chips -->
+            <div>
+              <p class="ok-label">Popular filters</p>
+              <div class="flex flex-wrap gap-2" data-chip-group>
+                <button class="chip is-active" data-multi>All</button>
+                <button class="chip" data-multi>Beef</button>
+                <button class="chip" data-multi>Chicken</button>
+                <button class="chip" data-multi>Under 600 cal</button>
+              </div>
+            </div>
+
+            <button class="btn btn-ghost btn-sm btn-block !justify-center border border-[var(--ok-line)]">Reset filters</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ---- MENU GRID ---- -->
+      <div class="min-w-0">
+
+        <!-- ===== BURGERS ===== -->
+        <section id="burgers" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Burgers</h2>
+            </div>
+            <span class="badge badge-soft hidden sm:inline-flex">6 items</span>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+
+            <!-- card -->
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="The OK Classic Double" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-new absolute top-3 left-3"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">The OK Classic Double</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Two smashed patties, American cheese, pickles &amp; OK sauce.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">720 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$11.49</span>
+                  <button data-add-cart="The OK Classic Double" aria-label="Add The OK Classic Double to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- card -->
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Double Bacon Smash" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-deal absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Hot</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Double Bacon Smash</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Double patty, smoked bacon, aged cheddar &amp; crispy onions.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">890 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$12.99</span>
+                  <button data-add-cart="Double Bacon Smash" aria-label="Add Double Bacon Smash to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- card -->
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Spicy Jalapeño Smash" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-red absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Spicy</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Spicy Jalapeño Smash</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Pepper jack, fresh jalapeños, chipotle mayo &amp; a kick of heat.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">760 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$11.99</span>
+                  <button data-add-cart="Spicy Jalapeño Smash" aria-label="Add Spicy Jalapeño Smash to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- card -->
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Mushroom Swiss Smash" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Mushroom Swiss Smash</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Sautéed mushrooms, melted Swiss, garlic aioli on a brioche bun.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">680 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$11.49</span>
+                  <button data-add-cart="Mushroom Swiss Smash" aria-label="Add Mushroom Swiss Smash to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- card -->
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="The Big OK Triple" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">Big appetite</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">The Big OK Triple</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Three patties, triple cheese, bacon &amp; the works. Go big.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">1120 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$14.99</span>
+                  <button data-add-cart="The Big OK Triple" aria-label="Add The Big OK Triple to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- SOLD OUT card -->
+            <article class="ok-card overflow-hidden flex flex-col opacity-60">
+              <div class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Truffle Deluxe Smash" data-ph-ratio="4/3" class="ph-img grayscale" alt="">
+                <span class="badge badge-red absolute top-3 left-3">Sold out</span>
+              </div>
+              <div class="p-4 flex flex-col flex-1">
+                <h3 class="font-display font-bold text-lg leading-tight">Truffle Deluxe Smash</h3>
+                <p class="text-sm text-slate mt-1 mb-3">Double patty, truffle aioli, Swiss &amp; caramelized onions.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">810 cal</span>
+                  <span class="badge badge-soft">Gluten · Dairy</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg text-slate">$13.49</span>
+                  <button disabled aria-label="Truffle Deluxe Smash is sold out" class="w-10 h-10 rounded-full btn grid place-items-center !p-0 text-xl bg-[var(--ok-line)] text-slate cursor-not-allowed">+</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ===== CHICKEN ===== -->
+        <section id="chicken" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Chicken</h2>
+            </div>
+            <span class="badge badge-soft hidden sm:inline-flex">4 items</span>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Buffalo Crisp Chicken" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-red absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Spicy</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Buffalo Crisp Chicken</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Crispy thigh, buffalo glaze, ranch slaw &amp; pickles.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">640 cal</span>
+                  <span class="badge badge-soft">Gluten · Egg</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$10.99</span>
+                  <button data-add-cart="Buffalo Crisp Chicken" aria-label="Add Buffalo Crisp Chicken to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Nashville Hot Chicken" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-deal absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Hot</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Nashville Hot Chicken</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Fiery cayenne crust, dill pickles &amp; cool comeback sauce.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">690 cal</span>
+                  <span class="badge badge-soft">Gluten · Egg</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$11.49</span>
+                  <button data-add-cart="Nashville Hot Chicken" aria-label="Add Nashville Hot Chicken to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Classic Crispy Chicken" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Classic Crispy Chicken</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Buttermilk-fried fillet, lettuce, tomato &amp; OK mayo.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">610 cal</span>
+                  <span class="badge badge-soft">Gluten · Egg</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$9.99</span>
+                  <button data-add-cart="Classic Crispy Chicken" aria-label="Add Classic Crispy Chicken to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Grilled Chicken Deluxe" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-green absolute top-3 left-3">Lighter</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Grilled Chicken Deluxe</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Flame-grilled fillet, avocado, greens &amp; honey mustard.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">520 cal</span>
+                  <span class="badge badge-soft">Gluten</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$10.49</span>
+                  <button data-add-cart="Grilled Chicken Deluxe" aria-label="Add Grilled Chicken Deluxe to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ===== SIDES ===== -->
+        <section id="sides" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Sides</h2>
+            </div>
+            <span class="badge badge-soft hidden sm:inline-flex">4 items</span>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Loaded OK Fries" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-new absolute top-3 left-3"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Loaded OK Fries</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Cheese sauce, crispy onions &amp; OK drizzle over golden fries.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">560 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$6.99</span>
+                  <button data-add-cart="Loaded OK Fries" aria-label="Add Loaded OK Fries to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Classic Fries" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-green absolute top-3 left-3"><i class="fa-solid fa-leaf"></i> Vegan</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Classic Sea-Salt Fries</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Crispy skin-on fries tossed in flaky sea salt.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">380 cal</span>
+                  <span class="badge badge-green">Vegan · GF</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$3.99</span>
+                  <button data-add-cart="Classic Sea-Salt Fries" aria-label="Add Classic Sea-Salt Fries to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Crispy Onion Rings" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Crispy Onion Rings</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Beer-battered thick-cut rings with smoky dip.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">440 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$4.99</span>
+                  <button data-add-cart="Crispy Onion Rings" aria-label="Add Crispy Onion Rings to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Mac & Cheese Bites" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">Shareable</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Mac &amp; Cheese Bites</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Golden-fried mac bites with a molten cheddar center.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">490 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$5.49</span>
+                  <button data-add-cart="Mac & Cheese Bites" aria-label="Add Mac and Cheese Bites to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ===== SHAKES ===== -->
+        <section id="shakes" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Shakes</h2>
+            </div>
+            <span class="badge badge-soft hidden sm:inline-flex">3 items</span>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Classic Vanilla Shake" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Classic Vanilla Shake</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Hand-spun Madagascar vanilla with whipped cream.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">520 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$5.49</span>
+                  <button data-add-cart="Classic Vanilla Shake" aria-label="Add Classic Vanilla Shake to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Salted Caramel Shake" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-new absolute top-3 left-3"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Salted Caramel Shake</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Buttery caramel swirl, sea salt &amp; caramel drizzle.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">610 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$5.99</span>
+                  <button data-add-cart="Salted Caramel Shake" aria-label="Add Salted Caramel Shake to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Cookies & Cream Shake" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Cookies &amp; Cream Shake</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Crushed chocolate cookies blended into thick vanilla.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">640 cal</span>
+                  <span class="badge badge-green">Vegetarian</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$5.99</span>
+                  <button data-add-cart="Cookies & Cream Shake" aria-label="Add Cookies and Cream Shake to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ===== COMBOS ===== -->
+        <section id="combos" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Combos</h2>
+            </div>
+            <a href="deals.html" class="link-underline text-sm hidden sm:inline-flex items-center gap-1">See all deals <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="ok-card p-6 sm:p-8 bg-softyellow/40 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+            <div class="w-24 h-24 rounded-2xl overflow-hidden shrink-0"><img data-ph="Smash Combo Meal" data-ph-ratio="1/1" class="ph-img" alt=""></div>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-xl">Make any burger a combo</h3>
+              <p class="text-slate text-sm mt-1">Add fries and a drink to any burger for just <b class="text-jet">+$3.99</b>. Build yours on the item page.</p>
+            </div>
+            <a href="item.html" class="btn btn-dark shrink-0">Build a combo</a>
+          </div>
+        </section>
+
+        <!-- ===== VEGAN ===== -->
+        <section id="vegan" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Vegan</h2>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Beyond OK Smash" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-green absolute top-3 left-3"><i class="fa-solid fa-leaf"></i> Vegan</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Beyond OK Smash</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Plant-based patty, vegan cheese, lettuce &amp; vegan OK sauce.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">590 cal</span>
+                  <span class="badge badge-green">Vegan</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$12.49</span>
+                  <button data-add-cart="Beyond OK Smash" aria-label="Add Beyond OK Smash to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Crispy Cauliflower Sandwich" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-green absolute top-3 left-3"><i class="fa-solid fa-leaf"></i> Vegan</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Crispy Cauliflower Sando</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Golden cauliflower, slaw &amp; vegan chipotle mayo.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">540 cal</span>
+                  <span class="badge badge-green">Vegan</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$10.99</span>
+                  <button data-add-cart="Crispy Cauliflower Sando" aria-label="Add Crispy Cauliflower Sando to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ===== KIDS ===== -->
+        <section id="kids" class="scroll-mt-40 mb-12">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Kids</h2>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Kids Smash Meal" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">Kids meal</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Kids Smash Meal</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Single smash slider, small fries, juice box &amp; a treat.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">480 cal</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$6.99</span>
+                  <button data-add-cart="Kids Smash Meal" aria-label="Add Kids Smash Meal to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Kids Chicken Tenders" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">Kids meal</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Kids Chicken Tenders</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Two crispy tenders, small fries, juice box &amp; a treat.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">510 cal</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$6.99</span>
+                  <button data-add-cart="Kids Chicken Tenders" aria-label="Add Kids Chicken Tenders to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ===== DRINKS ===== -->
+        <section id="drinks" class="scroll-mt-40">
+          <div class="flex items-end justify-between mb-5">
+            <div>
+              <h2 class="ok-h2">Drinks</h2>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Fountain Soda" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Fountain Soda</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Free refills in-store. Choose from 8 flavors.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">0–210 cal</span>
+                  <span class="badge badge-green">Vegan</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$2.49</span>
+                  <button data-add-cart="Fountain Soda" aria-label="Add Fountain Soda to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Fresh Lemonade" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-green absolute top-3 left-3"><i class="fa-solid fa-leaf"></i> Vegan</span>
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Fresh-Squeezed Lemonade</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">House-made, tart &amp; sweet. Ask for the strawberry swirl.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">180 cal</span>
+                  <span class="badge badge-green">Vegan · GF</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$3.49</span>
+                  <button data-add-cart="Fresh-Squeezed Lemonade" aria-label="Add Fresh-Squeezed Lemonade to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+              <a href="item.html" class="block relative aspect-[4/3] overflow-hidden">
+                <img data-ph="Cold Brew Coffee" data-ph-ratio="4/3" class="ph-img group-hover:scale-105 transition" alt="">
+              </a>
+              <div class="p-4 flex flex-col flex-1">
+                <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Iced Cold Brew</h3></a>
+                <p class="text-sm text-slate mt-1 mb-3">Slow-steeped 18 hours, smooth &amp; bold over ice.</p>
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  <span class="badge badge-soft">15 cal</span>
+                  <span class="badge badge-green">Vegan</span>
+                </div>
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="font-bold text-lg">$3.99</span>
+                  <button data-add-cart="Iced Cold Brew" aria-label="Add Iced Cold Brew to cart" class="w-10 h-10 rounded-full btn-primary btn grid place-items-center !p-0 text-xl">+</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- allergen note -->
+        <p class="ok-hint mt-10 max-w-2xl">Calorie counts are estimates and may vary by customization. For full allergen details, see our <a href="faq.html" class="link-underline">allergen guide</a>. 2,000 calories a day is used for general nutrition advice.</p>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ STICKY MOBILE MINI-CART ============ -->
+  <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-jet text-white px-4 py-3 flex items-center justify-between shadow-[0_-8px_24px_rgba(0,0,0,.2)]">
+    <div class="flex items-center gap-2 font-semibold">
+      <span class="text-lg"><i class="fa-solid fa-bag-shopping"></i></span>
+      <span>3 items · <b class="text-okyellow">$28.47</b></span>
+    </div>
+    <a href="cart.html" class="btn btn-primary btn-sm">View cart <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <div id="site-footer"></div>
+
+  <!-- page-specific: price range live label -->
+  <script>
+    (function(){
+      var r = document.getElementById('priceRange'), out = document.getElementById('priceOut');
+      if(r && out){ r.addEventListener('input', function(){ out.textContent = r.value >= 25 ? '$25+' : '$' + r.value; }); }
+    })();
+  </script>
+</body>
+</html>

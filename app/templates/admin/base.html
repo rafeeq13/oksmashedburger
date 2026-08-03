@@ -1,0 +1,18 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block page_title %}{{ admin_store.name if admin_store else 'Admin' }}{% endblock %}
+
+{% block topbar_actions %}
+  {% if can_switch and admin_stores %}
+  <form method="get" class="flex items-center gap-1.5">
+    <i class="fa-solid fa-store text-slate text-xs hidden sm:inline"></i>
+    <select name="store" onchange="this.form.submit()" class="ok-select text-jet text-sm py-1.5">
+      {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+    </select>
+  </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="p-4 lg:p-6 max-w-[1440px]">{% block admin %}{% endblock %}</div>
+{% endblock %}

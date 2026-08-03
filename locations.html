@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Locations — OK Smashed Burger</title>
+  <meta name="description" content="Find your nearest OK Smashed Burger. Search by address or ZIP for delivery, pickup or dine-in across Philadelphia — hours, directions and store details.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO (soft) ============ -->
+    <section class="bg-softyellow/50 border-b border-[var(--ok-line)]">
+      <div class="ok-container py-10 md:py-14">
+        <div class="max-w-2xl">
+          <h1 class="ok-display mt-2 mb-3">Find your OK Smashed Burger</h1>
+          <p class="text-slate text-lg mb-6">Fresh-smashed and close by. Search your address or ZIP to see stores near you — with live hours, delivery zones and directions.</p>
+
+          <!-- Search row -->
+          <form onsubmit="return false" class="flex flex-col sm:flex-row gap-3 mb-4">
+            <div class="flex items-center gap-2 ok-input sm:flex-1 bg-white">
+              <span class="text-okamber"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input class="w-full bg-transparent focus:outline-none" placeholder="Enter address or ZIP" value="19107" aria-label="Enter address or ZIP">
+            </div>
+            <button class="btn btn-dark">Search</button>
+            <button class="btn btn-secondary"><i class="fa-solid fa-location-dot"></i> Use my location</button>
+          </form>
+
+          <!-- Order-type chips + open now -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex gap-2" data-chip-group>
+              <button class="chip is-active"><i class="fa-solid fa-car"></i> Delivery</button>
+              <button class="chip"><i class="fa-solid fa-bag-shopping"></i> Pickup</button>
+              <button class="chip"><i class="fa-solid fa-utensils"></i> Dine-in</button>
+            </div>
+            <span class="w-px h-6 bg-[var(--ok-line)] mx-1 hidden sm:block"></span>
+            <div data-chip-group>
+              <button class="chip" data-multi><i class="fa-solid fa-clock"></i> Open now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LOCATOR: list + sticky map ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
+
+          <!-- LEFT: scrollable store list -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div><h2 class="font-display font-bold text-2xl">4 stores nearby</h2></div>
+              <label class="text-sm text-slate flex items-center gap-2">Sort
+                <select class="ok-select !w-auto !py-1.5 !px-3 text-sm">
+                  <option>Distance</option>
+                  <option>Open now</option>
+                  <option>Rating</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="space-y-4 lg:max-h-[74vh] lg:overflow-y-auto lg:pr-2 hide-scrollbar">
+
+              <!-- Store card 1 — Center City -->
+              <article class="ok-card ok-card-hover p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full bg-jet text-okyellow grid place-items-center text-xs font-bold">1</span>
+                      <h3 class="font-display font-bold text-lg">Center City</h3>
+                    </div>
+                    <p class="text-sm text-slate mt-1">1520 Chestnut St, Philadelphia · 19102</p>
+                  </div>
+                  <span class="badge badge-soft shrink-0">0.4 mi</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-sm">
+                  <span class="text-okgreen font-semibold"><span class="status-dot" style="background:#2E7D32"></span> Open</span>
+                  <span class="text-slate">until 11 PM</span>
+                  <span class="w-px h-4 bg-[var(--ok-line)]"></span>
+                  <a href="tel:+12155550110" class="link-underline">(215) 555-0110</a>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Delivery</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Pickup</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Dine-in</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Drive-thru</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4">
+                  <a href="menu.html" class="btn btn-primary btn-sm">Order Now</a>
+                  <a href="#" class="btn btn-secondary btn-sm">Directions</a>
+                  <a href="#store-details" class="btn btn-ghost btn-sm">Details</a>
+                </div>
+              </article>
+
+              <!-- Store card 2 — Fishtown -->
+              <article class="ok-card ok-card-hover p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full bg-jet text-okyellow grid place-items-center text-xs font-bold">2</span>
+                      <h3 class="font-display font-bold text-lg">Fishtown</h3>
+                    </div>
+                    <p class="text-sm text-slate mt-1">1201 Frankford Ave, Philadelphia · 19125</p>
+                  </div>
+                  <span class="badge badge-soft shrink-0">1.8 mi</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-sm">
+                  <span class="text-okgreen font-semibold"><span class="status-dot" style="background:#2E7D32"></span> Open</span>
+                  <span class="text-slate">until 12 AM</span>
+                  <span class="w-px h-4 bg-[var(--ok-line)]"></span>
+                  <a href="tel:+12155550132" class="link-underline">(215) 555-0132</a>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Delivery</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Pickup</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Dine-in</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4">
+                  <a href="menu.html" class="btn btn-primary btn-sm">Order Now</a>
+                  <a href="#" class="btn btn-secondary btn-sm">Directions</a>
+                  <a href="#store-details" class="btn btn-ghost btn-sm">Details</a>
+                </div>
+              </article>
+
+              <!-- Store card 3 — University City -->
+              <article class="ok-card ok-card-hover p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full bg-jet text-okyellow grid place-items-center text-xs font-bold">3</span>
+                      <h3 class="font-display font-bold text-lg">University City</h3>
+                    </div>
+                    <p class="text-sm text-slate mt-1">3720 Spruce St, Philadelphia · 19104</p>
+                  </div>
+                  <span class="badge badge-soft shrink-0">2.3 mi</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-sm">
+                  <span class="text-okgreen font-semibold"><span class="status-dot" style="background:#2E7D32"></span> Open</span>
+                  <span class="text-slate">until 11 PM</span>
+                  <span class="w-px h-4 bg-[var(--ok-line)]"></span>
+                  <a href="tel:+12155550148" class="link-underline">(215) 555-0148</a>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Delivery</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Pickup</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Dine-in</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4">
+                  <a href="menu.html" class="btn btn-primary btn-sm">Order Now</a>
+                  <a href="#" class="btn btn-secondary btn-sm">Directions</a>
+                  <a href="#store-details" class="btn btn-ghost btn-sm">Details</a>
+                </div>
+              </article>
+
+              <!-- Store card 4 — South Philly (closed) -->
+              <article class="ok-card ok-card-hover p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full bg-jet text-okyellow grid place-items-center text-xs font-bold">4</span>
+                      <h3 class="font-display font-bold text-lg">South Philly</h3>
+                    </div>
+                    <p class="text-sm text-slate mt-1">1801 S Broad St, Philadelphia · 19148</p>
+                  </div>
+                  <span class="badge badge-soft shrink-0">3.1 mi</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-sm">
+                  <span class="text-okred font-semibold"><span class="status-dot" style="background:#C62828"></span> Closed</span>
+                  <span class="text-slate">opens 11 AM</span>
+                  <span class="w-px h-4 bg-[var(--ok-line)]"></span>
+                  <a href="tel:+12155550175" class="link-underline">(215) 555-0175</a>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Delivery</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Pickup</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Dine-in</span>
+                  <span class="chip !py-1 !px-3 !text-xs !cursor-default">Drive-thru</span>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4">
+                  <a href="menu.html" class="btn btn-primary btn-sm">Order Now</a>
+                  <a href="#" class="btn btn-secondary btn-sm">Directions</a>
+                  <a href="#store-details" class="btn btn-ghost btn-sm">Details</a>
+                </div>
+              </article>
+
+            </div>
+          </div>
+
+          <!-- RIGHT: sticky map -->
+          <div class="lg:sticky lg:top-24">
+            <div class="ok-card overflow-hidden relative">
+              <div class="relative">
+                <img data-ph="Store map" data-ph-type="map" data-ph-ratio="4/5" class="ph-img w-full" alt="">
+
+                <!-- Pin overlays -->
+                <span class="absolute" style="top:22%;left:34%">
+                  <span class="grid place-items-center w-9 h-9 rounded-full bg-jet text-okyellow font-bold text-sm shadow-lg ring-4 ring-white">1</span>
+                </span>
+                <span class="absolute" style="top:38%;left:62%">
+                  <span class="grid place-items-center w-9 h-9 rounded-full bg-jet text-okyellow font-bold text-sm shadow-lg ring-4 ring-white">2</span>
+                </span>
+                <span class="absolute" style="top:56%;left:28%">
+                  <span class="grid place-items-center w-9 h-9 rounded-full bg-jet text-okyellow font-bold text-sm shadow-lg ring-4 ring-white">3</span>
+                </span>
+                <span class="absolute" style="top:72%;left:54%">
+                  <span class="grid place-items-center w-9 h-9 rounded-full bg-okred text-white font-bold text-sm shadow-lg ring-4 ring-white">4</span>
+                </span>
+
+                <!-- "You" marker -->
+                <span class="absolute" style="top:47%;left:46%">
+                  <span class="block w-4 h-4 rounded-full bg-okamber ring-4 ring-white shadow"></span>
+                </span>
+
+                <!-- Map controls (decorative) -->
+                <div class="absolute top-3 right-3 flex flex-col gap-1">
+                  <button class="w-9 h-9 rounded-lg bg-white shadow grid place-items-center font-bold text-lg" aria-label="Zoom in">+</button>
+                  <button class="w-9 h-9 rounded-lg bg-white shadow grid place-items-center font-bold text-lg" aria-label="Zoom out">−</button>
+                </div>
+                <button class="absolute bottom-3 right-3 btn btn-secondary btn-sm shadow"><i class="fa-solid fa-location-dot"></i> Recenter</button>
+              </div>
+              <!-- Legend -->
+              <div class="p-4 flex flex-wrap items-center gap-4 text-sm border-t border-[var(--ok-line)]">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-jet"></span> Open store</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-okred"></span> Closed</span>
+                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-okamber"></span> You</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EXPANDED STORE DETAILS (Center City) ============ -->
+    <section id="store-details" class="ok-section bg-softyellow/40 border-t border-[var(--ok-line)]">
+      <div class="ok-container">
+        <div class="flex items-end justify-between mb-6">
+          <div>
+            <h2 class="ok-h2">Center City</h2>
+            <p class="text-slate mt-1">1520 Chestnut St, Philadelphia · 19102 · <span class="text-okgreen font-semibold"><span class="status-dot" style="background:#2E7D32"></span> Open until 11 PM</span></p>
+          </div>
+          <a href="menu.html" class="btn btn-primary hidden sm:inline-flex">Order from this store</a>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <!-- Weekly hours -->
+          <div class="ok-card p-6 lg:col-span-1">
+            <h3 class="font-display font-bold text-lg mb-4">Weekly hours</h3>
+            <table class="w-full text-sm">
+              <tbody>
+                <tr class="border-b border-[var(--ok-line)]">
+                  <td class="py-2 font-semibold">Monday</td><td class="py-2 text-right text-slate">11 AM – 11 PM</td>
+                </tr>
+                <tr class="border-b border-[var(--ok-line)]">
+                  <td class="py-2 font-semibold">Tuesday</td><td class="py-2 text-right text-slate">11 AM – 11 PM</td>
+                </tr>
+                <tr class="border-b border-[var(--ok-line)]">
+                  <td class="py-2 font-semibold">Wednesday</td><td class="py-2 text-right text-slate">11 AM – 11 PM</td>
+                </tr>
+                <tr class="border-b border-[var(--ok-line)] bg-softyellow/60">
+                  <td class="py-2 font-semibold">Thursday <span class="badge badge-yellow ml-1">Today</span></td><td class="py-2 text-right font-semibold">11 AM – 11 PM</td>
+                </tr>
+                <tr class="border-b border-[var(--ok-line)]">
+                  <td class="py-2 font-semibold">Friday</td><td class="py-2 text-right text-slate">11 AM – 12 AM</td>
+                </tr>
+                <tr class="border-b border-[var(--ok-line)]">
+                  <td class="py-2 font-semibold">Saturday</td><td class="py-2 text-right text-slate">11 AM – 12 AM</td>
+                </tr>
+                <tr>
+                  <td class="py-2 font-semibold">Sunday</td><td class="py-2 text-right text-slate">12 PM – 10 PM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Amenities + contact -->
+          <div class="ok-card p-6 lg:col-span-2">
+            <h3 class="font-display font-bold text-lg mb-4">Amenities</h3>
+            <ul class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mb-6">
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Delivery within 4 mi</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Curbside pickup</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Dine-in seating (48)</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Drive-thru lane</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Wheelchair accessible</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Free Wi-Fi</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> OK Rewards enabled</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Late-night menu</li>
+            </ul>
+
+            <div class="divider mb-6"></div>
+
+            <div class="grid sm:grid-cols-2 gap-6">
+              <div>
+                <h4 class="font-semibold mb-2">Contact</h4>
+                <p class="text-sm text-slate mb-1">Phone: <a href="tel:+12155550110" class="link-underline">(215) 555-0110</a></p>
+                <p class="text-sm text-slate">Manager: Dana R.</p>
+              </div>
+              <div>
+                <h4 class="font-semibold mb-2">Popular times</h4>
+                <div class="flex items-end gap-1 h-16">
+                  <div class="flex-1 bg-okyellow/40 rounded-t" style="height:30%"></div>
+                  <div class="flex-1 bg-okyellow/50 rounded-t" style="height:50%"></div>
+                  <div class="flex-1 bg-okyellow/60 rounded-t" style="height:70%"></div>
+                  <div class="flex-1 bg-okyellow rounded-t" style="height:100%"></div>
+                  <div class="flex-1 bg-okyellow/70 rounded-t" style="height:80%"></div>
+                  <div class="flex-1 bg-okyellow/50 rounded-t" style="height:55%"></div>
+                  <div class="flex-1 bg-okyellow/40 rounded-t" style="height:35%"></div>
+                </div>
+                <p class="text-xs text-slate mt-1">Busiest around 7–8 PM</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-6">
+              <a href="menu.html" class="btn btn-primary btn-sm">Order Now</a>
+              <a href="#" class="btn btn-secondary btn-sm">Get Directions</a>
+              <button data-open="location" class="btn btn-ghost btn-sm">Set as my store</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CTA ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-12 grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h2 class="ok-h2 mb-3">Can't find a store near you?</h2>
+              <p class="text-white/70 mb-5">We're smashing our way across Philadelphia. Drop your ZIP and we'll let you know the moment a new OK opens nearby.</p>
+              <form onsubmit="return false" class="flex flex-col sm:flex-row gap-2">
+                <input type="text" placeholder="Your ZIP code" class="ok-input sm:w-48 text-jet">
+                <button class="btn btn-primary">Notify me</button>
+              </form>
+            </div>
+            <div class="justify-self-center md:justify-self-end w-full max-w-xs"><img data-ph="New locations coming" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img rounded-2xl" alt=""></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

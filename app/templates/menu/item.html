@@ -1,0 +1,104 @@
+{% extends "layouts/base.html" %}
+{% block main_class %}pb-28{% endblock %}
+{% block title %}{{ product.name }}, {{ brand_name }}{% endblock %}
+
+{% block content %}
+<div class="ok-container ok-py-3 ok-paddin-2rem-md">
+  <nav class="ok-fs-sm text-muted-warm ok-mb-3"><a href="/" class="">Home</a> <span class="mx-1 text-muted-warm-60">/</span> <a href="/menu" class="">Menu</a> <span class="mx-1 text-muted-warm-60">/</span> <span class="fw-semibold text-ink">{{ product.name }}</span></nav>
+
+  <div class="ok-grid ok-grid-lg-2 ok-gap-8 ok-gap-3rem-lg align-items-start">
+    <!-- Gallery -->
+    <div class="ok-positi-sticky-lg ok-top-7rem-lg">
+      <div class="ok-card overflow-hidden position-relative ok-aspect-square">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="w-100 h-100 ok-cover">
+        {% if 'popular' in (product.tags or []) %}<span class="badge badge-new position-absolute top-4 left-4"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
+        {% if not available %}<span class="badge badge-red position-absolute top-4 right-4">Sold out here</span>{% endif %}
+        <form method="post" action="/favorites/toggle" class="position-absolute bottom-4 right-4">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="hidden" name="next" value="/item/{{ product.slug }}">
+          <button type="submit" class="d-inline-flex align-items-center gap-2 rounded-pill bg-w-95 ok-shadow-md ok-px-3 ok-h-10 fw-semibold ok-fs-sm {% if product.id in favorite_ids %}text-brandred{% else %}text-ink {% endif %} transition">
+            <i class="{% if product.id in favorite_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+            {{ 'Saved' if product.id in favorite_ids else 'Save' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Details -->
+    <div>
+      <h1 class="ok-h1">{{ product.name }}</h1>
+      <div class="d-flex align-items-center ok-gap-3 mt-2 ok-fs-sm text-muted-warm">
+        <span class="text-yellow"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></span>
+        4.9 · 320 ratings
+      </div>
+      <div class="d-flex align-items-center ok-gap-3 ok-my-3"><span class="font-display ok-fw-800 ok-fs-3xl" id="itemPrice">${{ '%.2f'|format(price) }}</span>
+        {% if store %}<span class="ok-fs-sm text-muted-warm">at {{ store.name }}</span>{% endif %}</div>
+      <p class="text-muted-warm ok-mb-3">{{ product.description or '' }}</p>
+      {% if product.is_vegan %}
+      <div class="d-flex flex-wrap ok-gap-15 ok-mb-3">
+        <span class="badge badge-green">Vegan</span>
+      </div>
+      {% endif %}
+
+      <form method="post" action="/cart/add" id="addForm">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="qty" id="qtyField" value="1">
+        <input type="hidden" name="next" value="/cart">
+
+        {% if product.variants %}
+        <div class="ok-mb-5">
+          <label class="ok-label">Choose your size</label>
+          <div class="d-flex flex-wrap gap-2">
+            {% for v in product.variants %}
+            <label class="chip ok-pointer"><input type="radio" name="variant_id" value="{{ v.id }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if product.addons %}
+        <div class="ok-mb-5">
+          <label class="ok-label">Add-ons</label>
+          <div class="ok-stack-2">
+            {% for a in product.addons %}
+            <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer">
+              <span class="fw-medium">{{ a.name }}</span>
+              <span class="d-flex align-items-center ok-gap-3"><span class="text-muted-warm ok-fs-sm">+${{ '%.2f'|format(a.price) }}</span><input type="checkbox" name="addon_ids" value="{{ a.id }}" class="ok-w-5 ok-h-5 accent-okyellow"></span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="ok-mb-5">
+          <label class="ok-label">Special instructions</label>
+          <textarea name="notes" rows="2" class="ok-textarea" placeholder="No pickles, extra sauce, etc."></textarea>
+        </div>
+
+        <div class="d-flex align-items-center ok-gap-3">
+          <div class="qty"><button type="button" data-step="-">&minus;</button><span>1</span><button type="button" data-step="+">+</button></div>
+          {% if available %}
+          <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Add to cart · ${{ '%.2f'|format(price) }}</button>
+          {% else %}
+          <button type="button" disabled class="btn btn-lg flex-grow-1 bg-cream text-muted-warm cursor-not-allowed">Sold out at this store</button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Sync the quantity stepper into the hidden field on submit.
+  var addForm = document.getElementById("addForm");
+  if (addForm) addForm.addEventListener("submit", function () {
+    var span = addForm.querySelector(".qty span");
+    var field = document.getElementById("qtyField");
+    if (span && field) field.value = parseInt(span.textContent, 10) || 1;
+  });
+</script>
+{% endblock %}

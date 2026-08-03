@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — OK Smashed Burger</title>
+  <meta name="description" content="Your OK Smashed Burger account dashboard — loyalty points, recent orders, saved addresses, payment methods and profile.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="bg-softyellow/20">
+    <!-- ============ PAGE HEADER STRIP ============ -->
+    <section class="bg-jet text-white d-none">
+      <div class="ok-container py-6 md:py-8">
+        <nav class="text-white/50 text-xs mb-2" aria-label="Breadcrumb">
+          <a href="index.html" class="hover:text-okyellow">Home</a> <span class="mx-1">/</span> <span class="text-white/80">My Account</span>
+        </nav>
+        <h1 class="ok-h1">My Account</h1>
+      </div>
+    </section>
+
+    <div class="ok-container py-8 md:py-10">
+      <div class="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8 items-start">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="ok-card p-4 lg:sticky lg:top-24">
+          <div class="flex items-center gap-3 pb-4 mb-3 border-b border-[var(--ok-line)]">
+            <img data-ph="Jordan Miller" data-ph-type="avatar" data-ph-ratio="1/1" class="w-11 h-11 rounded-full shrink-0" alt="">
+            <div class="min-w-0">
+              <div class="font-display font-bold leading-tight truncate">Jordan Miller</div>
+              <div class="text-xs text-slate truncate">Gold member · 1,240 pts</div>
+            </div>
+          </div>
+          <nav class="flex lg:flex-col gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
+            <a href="account.html" aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm bg-jet text-white whitespace-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="orders.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+            <a href="favorites.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
+            <a href="rewards.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
+          </nav>
+          <div class="mt-3 pt-3 border-t border-[var(--ok-line)]">
+            <a href="login.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-okred hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+          </div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <div class="space-y-8">
+
+          <!-- Welcome header -->
+          <div class="ok-card overflow-hidden relative bg-jet text-white">
+            <div class="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-okyellow/20 blur-3xl"></div>
+            <div class="relative p-6 md:p-8 flex flex-col sm:flex-row sm:items-center gap-5 justify-between">
+              <div class="flex items-center gap-4">
+                <img data-ph="Jordan Miller" data-ph-type="avatar" data-ph-ratio="1/1" class="w-16 h-16 rounded-full ring-4 ring-white/10 shrink-0" alt="">
+                <div>
+                  <h2 class="font-display font-extrabold text-2xl md:text-3xl leading-tight inline-flex items-center gap-2">Hi, Jordan <i class="fa-solid fa-hand"></i></h2>
+                  <p class="text-white/70 text-sm mt-1">Welcome back — you have <b class="text-okyellow">1,240 points</b> ready to spend.</p>
+                </div>
+              </div>
+              <a href="menu.html" class="btn btn-primary shrink-0 self-start sm:self-auto">Start an order</a>
+            </div>
+          </div>
+
+          <!-- Stat cards -->
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="ok-card p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-softyellow grid place-items-center text-2xl shrink-0"><i class="fa-solid fa-star icon-lg"></i></div>
+              <div>
+                <div class="font-display font-extrabold text-2xl leading-none">1,240</div>
+                <div class="text-sm text-slate mt-1">Loyalty points</div>
+              </div>
+            </div>
+            <div class="ok-card p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-softyellow grid place-items-center text-2xl shrink-0"><i class="fa-solid fa-receipt icon-lg"></i></div>
+              <div>
+                <div class="font-display font-extrabold text-2xl leading-none">37</div>
+                <div class="text-sm text-slate mt-1">Total orders</div>
+              </div>
+            </div>
+            <div class="ok-card p-5 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full bg-softyellow grid place-items-center text-2xl shrink-0"><i class="fa-solid fa-heart icon-lg"></i></div>
+              <div>
+                <div class="font-display font-extrabold text-2xl leading-none">8</div>
+                <div class="text-sm text-slate mt-1">Saved favorites</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rewards mini-card -->
+          <div class="ok-card overflow-hidden">
+            <div class="p-6 grid md:grid-cols-[1fr_auto] gap-5 items-center">
+              <div class="w-full">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="badge badge-yellow">Gold</span>
+                </div>
+                <h3 class="font-display font-bold text-lg mb-2">260 points to your next free burger</h3>
+                <div class="h-3 w-full rounded-full bg-softyellow overflow-hidden" role="progressbar" aria-valuenow="1240" aria-valuemin="0" aria-valuemax="1500" aria-label="Progress to next reward">
+                  <div class="h-full rounded-full bg-okyellow" style="width:82%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-slate mt-1.5">
+                  <span>1,240 pts</span>
+                  <span>1,500 pts · Free Classic Smash</span>
+                </div>
+              </div>
+              <a href="rewards.html" class="btn btn-secondary shrink-0 justify-self-start md:justify-self-end">View rewards</a>
+            </div>
+          </div>
+
+          <!-- Recent order -->
+          <section>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="ok-h2 text-xl">Recent order</h2>
+              <a href="orders.html" class="link-underline text-sm inline-flex items-center gap-1">View all orders <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="ok-card p-5">
+              <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-display font-bold text-lg">Order #OK-4021</span>
+                    <span class="badge badge-yellow">Active</span>
+                  </div>
+                  <p class="text-sm text-slate mt-1">Placed today · 6:12 PM · OK Smashed Burger — Center City</p>
+                </div>
+                <div class="text-right">
+                  <div class="font-display font-bold text-lg">$29.47</div>
+                  <div class="text-xs text-slate">3 items</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 mb-5">
+                <div class="flex -space-x-3">
+                  <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                </div>
+                <p class="text-sm text-slate">The OK Classic, Double Bacon Smash, Loaded OK Fries</p>
+              </div>
+              <div class="divider mb-4"></div>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm font-semibold text-okgreen flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-okgreen inline-block"></span> Preparing · ETA ~25 min</span>
+                <div class="flex gap-2 ml-auto">
+                  <a href="tracking.html" class="btn btn-dark btn-sm">Track order</a>
+                  <button data-add-cart="Order #OK-4021" class="btn btn-primary btn-sm">Reorder</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Saved addresses -->
+          <section>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="ok-h2 text-xl">Saved addresses</h2>
+              <button data-add-cart="New address" class="btn btn-secondary btn-sm">+ Add address</button>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div class="ok-card p-5">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="font-display font-bold">Home</span>
+                  </div>
+                  <span class="badge badge-soft">Default</span>
+                </div>
+                <p class="text-sm text-slate">1420 Pine Street, Apt 3B<br>Philadelphia, PA 19102</p>
+                <div class="divider my-4"></div>
+                <div class="flex gap-4 text-sm">
+                  <button class="link-underline">Edit</button>
+                  <button class="link-underline !text-okred hover:!text-okred/70">Delete</button>
+                </div>
+              </div>
+              <div class="ok-card p-5">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-briefcase text-xl"></i>
+                    <span class="font-display font-bold">Work</span>
+                  </div>
+                </div>
+                <p class="text-sm text-slate">1801 Market Street, Floor 12<br>Philadelphia, PA 19103</p>
+                <div class="divider my-4"></div>
+                <div class="flex gap-4 text-sm">
+                  <button class="link-underline">Edit</button>
+                  <button class="link-underline !text-okred hover:!text-okred/70">Delete</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Payment methods -->
+          <section>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="ok-h2 text-xl">Payment methods</h2>
+              <button data-add-cart="New card" class="btn btn-secondary btn-sm">+ Add card</button>
+            </div>
+            <div class="ok-card divide-y divide-[var(--ok-line)]">
+              <div class="p-4 md:p-5 flex items-center gap-4">
+                <div class="w-12 h-9 rounded-md bg-jet text-white grid place-items-center text-[.7rem] font-bold tracking-wider shrink-0">VISA</div>
+                <div class="min-w-0">
+                  <div class="font-semibold">Visa •••• 4242</div>
+                  <div class="text-xs text-slate">Expires 08/27</div>
+                </div>
+                <span class="badge badge-soft ml-2 hidden sm:inline-flex">Default</span>
+                <div class="flex gap-3 text-sm ml-auto">
+                  <button class="link-underline">Edit</button>
+                  <button class="link-underline !text-okred hover:!text-okred/70">Remove</button>
+                </div>
+              </div>
+              <div class="p-4 md:p-5 flex items-center gap-4">
+                <div class="w-12 h-9 rounded-md bg-jet text-white grid place-items-center text-[.62rem] font-bold tracking-wide shrink-0">MC</div>
+                <div class="min-w-0">
+                  <div class="font-semibold">Mastercard •••• 8888</div>
+                  <div class="text-xs text-slate">Expires 11/26</div>
+                </div>
+                <div class="flex gap-3 text-sm ml-auto">
+                  <button class="link-underline">Set default</button>
+                  <button class="link-underline !text-okred hover:!text-okred/70">Remove</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profile quick section -->
+          <section>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="ok-h2 text-xl">Profile</h2>
+              <button data-add-cart="Profile update" class="btn btn-secondary btn-sm">Edit profile</button>
+            </div>
+            <div class="ok-card p-5 grid sm:grid-cols-3 gap-5">
+              <div>
+                <div class="ok-label !mb-1 text-slate">Full name</div>
+                <div class="font-semibold">Jordan Miller</div>
+              </div>
+              <div>
+                <div class="ok-label !mb-1 text-slate">Email</div>
+                <div class="font-semibold break-all">jordan.miller@email.com</div>
+              </div>
+              <div>
+                <div class="ok-label !mb-1 text-slate">Phone</div>
+                <div class="font-semibold">(215) 555-0182</div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

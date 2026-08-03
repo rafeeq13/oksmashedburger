@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — OK Smashed Burger</title>
+  <meta name="description" content="Your OK Smashed Burger order is confirmed. View your receipt, track your delivery live and see the rewards points you just earned.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+  <style>
+    /* Page-scoped success flourish (framework-free) */
+    @keyframes okPop{ 0%{ transform:scale(.4); opacity:0; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+    @keyframes okRing{ 0%{ transform:scale(.8); opacity:.55; } 100%{ transform:scale(1.9); opacity:0; } }
+    .oc-check{ animation:okPop .55s cubic-bezier(.2,.8,.2,1) both; }
+    .oc-ring{ animation:okRing 1.8s ease-out infinite; }
+  </style>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ SUCCESS HERO ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container max-w-2xl">
+        <div class="text-center">
+          <!-- Green success circle with animated rings -->
+          <div class="relative w-24 h-24 mx-auto mb-6">
+            <span class="oc-ring absolute inset-0 rounded-full bg-okgreen/30"></span>
+            <span class="oc-ring absolute inset-0 rounded-full bg-okgreen/20" style="animation-delay:.6s"></span>
+            <div class="oc-check relative w-24 h-24 rounded-full bg-okgreen text-white grid place-items-center text-5xl shadow-xl"><i class="fa-solid fa-circle-check icon-xl"></i></div>
+          </div>
+          <h1 class="ok-display mt-1 mb-3">Order confirmed!</h1>
+          <p class="text-slate text-lg max-w-md mx-auto">Thanks Jordan — we've sent a receipt to your email. Sit tight, the kitchen is already firing up your smash. <i class="fa-solid fa-fire"></i></p>
+        </div>
+
+        <!-- Key facts row -->
+        <div class="ok-card mt-8 p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div>
+            <div class="text-xs text-slate uppercase font-semibold tracking-wide mb-1">ETA</div>
+            <div class="font-display font-bold text-okgreen text-sm sm:text-base">Arriving ~7:42 PM</div>
+          </div>
+          <div class="sm:border-l sm:border-[var(--ok-line)]">
+            <div class="text-xs text-slate uppercase font-semibold tracking-wide mb-1">Order #</div>
+            <div class="font-display font-bold text-sm sm:text-base">#OK-4021</div>
+          </div>
+          <div class="sm:border-l sm:border-[var(--ok-line)]">
+            <div class="text-xs text-slate uppercase font-semibold tracking-wide mb-1">Store</div>
+            <div class="font-display font-bold text-sm sm:text-base leading-tight">Center City</div>
+          </div>
+          <div class="sm:border-l sm:border-[var(--ok-line)]">
+            <div class="text-xs text-slate uppercase font-semibold tracking-wide mb-1">Type</div>
+            <div class="font-display font-bold text-sm sm:text-base inline-flex items-center gap-1"><i class="fa-solid fa-car"></i> Delivery</div>
+          </div>
+        </div>
+
+        <!-- Primary CTAs -->
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="tracking.html" class="btn btn-primary btn-lg btn-block sm:!w-auto"><i class="fa-solid fa-location-arrow"></i> Track your order</a>
+          <a href="orders.html" class="btn btn-secondary btn-lg btn-block sm:!w-auto">View order details</a>
+        </div>
+        <p class="text-center text-sm text-slate mt-4">
+          Need to change something? <a href="contact.html" class="link-underline">Contact us</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ REWARDS NOTE + SUMMARY ============ -->
+    <section class="pb-4">
+      <div class="ok-container max-w-2xl">
+
+        <!-- Reward note -->
+        <a href="rewards.html" class="ok-card ok-card-hover block bg-softyellow border-okyellow/60 p-4 sm:p-5 flex items-center gap-4">
+          <div class="w-12 h-12 shrink-0 rounded-full bg-okyellow text-jet grid place-items-center text-2xl shadow"><i class="fa-solid fa-hands-clapping icon-lg"></i></div>
+          <div class="flex-1">
+            <div class="font-display font-bold">You just earned 240 OK Rewards points!</div>
+            <div class="text-sm text-slate">You're only 260 points away from a free Classic Smash.</div>
+          </div>
+          <span class="text-okamber text-xl hidden sm:block"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+
+        <!-- Order summary card -->
+        <div class="ok-card mt-5 overflow-hidden">
+          <div class="flex items-center justify-between p-5 border-b border-[var(--ok-line)]">
+            <h2 class="font-display font-bold text-lg">Order summary</h2>
+            <span class="badge badge-green">Paid</span>
+          </div>
+
+          <ul class="divide-y divide-[var(--ok-line)]">
+            <!-- line item -->
+            <li class="flex items-center gap-4 p-4">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold leading-tight">Double Bacon Smash</div>
+                <div class="text-xs text-slate">Two patties, bacon, cheddar, pickles</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-xs text-slate">Qty 1</div>
+                <div class="font-bold">$12.99</div>
+              </div>
+            </li>
+            <li class="flex items-center gap-4 p-4">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold leading-tight">Loaded OK Fries</div>
+                <div class="text-xs text-slate">Cheese sauce, crispy onions, OK drizzle</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-xs text-slate">Qty 1</div>
+                <div class="font-bold">$6.99</div>
+              </div>
+            </li>
+            <li class="flex items-center gap-4 p-4">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="Vanilla Malt Shake" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold leading-tight">Vanilla Malt Shake</div>
+                <div class="text-xs text-slate">Hand-spun · extra thick</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-xs text-slate">Qty 2</div>
+                <div class="font-bold">$5.49</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- Totals -->
+          <div class="p-5 bg-softyellow/30 border-t border-[var(--ok-line)] space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate">Subtotal</span><span class="font-semibold">$24.47</span></div>
+            <div class="flex justify-between"><span class="text-slate">Delivery fee</span><span class="font-semibold">$1.99</span></div>
+            <div class="flex justify-between"><span class="text-slate">Tax</span><span class="font-semibold">$2.01</span></div>
+            <div class="divider my-2"></div>
+            <div class="flex justify-between items-center">
+              <span class="font-display font-bold text-base">Total</span>
+              <span class="font-display font-extrabold text-xl">$28.47</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT HAPPENS NEXT ============ -->
+    <section class="ok-section pt-6">
+      <div class="ok-container max-w-2xl">
+        <div class="text-center mb-8">
+          <h2 class="ok-h2">What happens next</h2>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-5">
+          <div class="ok-card p-5 text-center">
+            <div class="w-14 h-14 rounded-full bg-okgreen/10 text-okgreen grid place-items-center text-2xl mx-auto mb-3"><i class="fa-solid fa-kitchen-set icon-lg"></i></div>
+            <h3 class="font-display font-bold mb-1">1 · We cook</h3>
+            <p class="text-sm text-slate">Our team smashes and grills your order fresh to order at Center City.</p>
+          </div>
+          <div class="ok-card p-5 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow text-jet grid place-items-center text-2xl mx-auto mb-3"><i class="fa-solid fa-bag-shopping icon-lg"></i></div>
+            <h3 class="font-display font-bold mb-1">2 · We pack</h3>
+            <p class="text-sm text-slate">Everything's sealed hot and handed to your driver, Marcus.</p>
+          </div>
+          <div class="ok-card p-5 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow text-jet grid place-items-center text-2xl mx-auto mb-3"><i class="fa-solid fa-location-arrow icon-lg"></i></div>
+            <h3 class="font-display font-bold mb-1">3 · Track live</h3>
+            <p class="text-sm text-slate">Follow every step to your door with live map tracking.</p>
+          </div>
+        </div>
+        <div class="text-center mt-8">
+          <a href="tracking.html" class="btn btn-dark btn-lg">Follow your order live <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

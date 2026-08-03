@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}Subscribers, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="flex flex-wrap items-end justify-between gap-3 mb-5">
+  <div>
+    <h2 class="ok-h2 mb-1">Newsletter subscribers</h2>
+    <p class="text-slate text-sm">Sign-ups from the “Get the good stuff first” form in the site footer.</p>
+  </div>
+  <a href="/admin/subscribers/export.csv" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Export CSV</a>
+</div>
+
+<div class="grid sm:grid-cols-3 gap-4 mb-5">
+  <div class="ok-card p-4"><div class="text-xs text-slate font-semibold uppercase tracking-wide">Total</div><div class="font-display font-bold text-2xl mt-1">{{ total }}</div></div>
+  <div class="ok-card p-4"><div class="text-xs text-slate font-semibold uppercase tracking-wide">Subscribed</div><div class="font-display font-bold text-2xl mt-1">{{ active }}</div></div>
+  <div class="ok-card p-4"><div class="text-xs text-slate font-semibold uppercase tracking-wide">Unsubscribed</div><div class="font-display font-bold text-2xl mt-1">{{ total - active }}</div></div>
+</div>
+
+<form method="get" class="mb-4 flex gap-2 max-w-md">
+  <input name="q" value="{{ q }}" placeholder="Search an email address" class="ok-input w-full text-sm">
+  <button class="btn btn-secondary btn-sm">Search</button>
+</form>
+
+<div class="ok-card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-black/[0.03] text-left">
+      <tr>
+        <th class="p-3 font-semibold">Email</th>
+        <th class="p-3 font-semibold">Source</th>
+        <th class="p-3 font-semibold">Signed up</th>
+        <th class="p-3 font-semibold">Status</th>
+        <th class="p-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in rows %}
+      <tr class="border-t border-black/5">
+        <td class="p-3"><a href="mailto:{{ s.email }}" class="link-underline">{{ s.email }}</a></td>
+        <td class="p-3 text-slate">{{ s.source or '—' }}</td>
+        <td class="p-3 text-slate">{{ s.created_at.strftime('%b %d, %Y') if s.created_at else '—' }}</td>
+        <td class="p-3">
+          {% if s.is_active %}<span class="badge badge-green">Subscribed</span>
+          {% else %}<span class="badge badge-soft">Unsubscribed</span>{% endif %}
+        </td>
+        <td class="p-3 text-right whitespace-nowrap">
+          <form method="post" action="/admin/subscribers/{{ s.id }}/toggle" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button class="btn btn-secondary btn-sm">{{ 'Unsubscribe' if s.is_active else 'Resubscribe' }}</button></form>
+          <form method="post" action="/admin/subscribers/{{ s.id }}/delete" class="inline" onsubmit="return confirm('Remove {{ s.email }} from the list?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button class="w-8 h-8 grid place-items-center rounded-lg text-ok-red hover:bg-ok-red/10 align-middle" title="Delete"><i class="fa-solid fa-trash"></i></button></form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="p-8 text-center text-slate">No subscribers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

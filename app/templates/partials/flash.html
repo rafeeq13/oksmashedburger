@@ -1,0 +1,13 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div id="ok-flash" class="position-fixed ok-z-90 bottom-5 left-1/2 -translate-x-1/2 d-flex flex-column gap-2 align-items-center ok-px-3 w-100 max-w-md">
+  {% for cat, msg in messages %}
+  <div class="w-100 ok-card ok-px-3 ok-py-3 d-flex align-items-center ok-gap-3 ok-shadow-xl {% if cat == 'error' %}border-ok-red{% elif cat == 'success' %}border-okgreen{% endif %}">
+    <i class="fa-solid {% if cat == 'error' %}fa-circle-exclamation text-ok-red{% elif cat == 'success' %}fa-circle-check text-ok-green{% else %}fa-circle-info text-gold{% endif %}"></i>
+    <span class="ok-fs-sm fw-medium">{{ msg }}</span>
+  </div>
+  {% endfor %}
+</div>
+<script>setTimeout(function(){var f=document.getElementById('ok-flash');if(f){f.style.transition='opacity .4s';f.style.opacity='0';setTimeout(function(){f.remove();},400);}},4500);</script>
+{% endif %}
+{% endwith %}

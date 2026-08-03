@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deals & Offers — OK Smashed Burger</title>
+  <meta name="description" content="Save big on smashed favorites. BOGO days, combo deals, free delivery, student discounts and loyalty bonuses from OK Smashed Burger in Philadelphia.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO BANNER (jet) ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-15">
+        <img data-ph="Deals banner" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -left-20 -top-20 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-12 md:py-20">
+        <div class="max-w-2xl">
+          <span class="badge badge-yellow mb-4"><i class="fa-solid fa-fire"></i> Limited-time offers</span>
+          <h1 class="ok-display mb-3">Deals &amp; <span class="text-okyellow">Offers</span></h1>
+          <p class="text-white/80 text-lg mb-6">Save big on smashed favorites — bundles, BOGO days, free delivery and more, refreshed every week.</p>
+          <div class="inline-flex flex-wrap items-center gap-2 bg-white/10 border border-white/20 rounded-full pl-4 pr-2 py-2">
+            <span class="text-sm inline-flex items-center gap-1"><i class="fa-solid fa-hands-clapping"></i> New here? Use code</span>
+            <span class="chip is-active !bg-okyellow !text-jet !border-okyellow font-bold tracking-wide">OKFIRST</span>
+            <span class="text-sm text-white/70">for free delivery</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROMO-CODE ENTRY ============ -->
+    <section class="bg-okyellow">
+      <div class="ok-container py-5 flex flex-col sm:flex-row items-center gap-3 justify-between">
+        <div class="flex items-center gap-2 font-semibold text-jet">
+          <span class="text-xl"><i class="fa-solid fa-tag"></i></span> Have a promo code? Apply it before you order.
+        </div>
+        <form onsubmit="return false" class="flex gap-2 w-full sm:w-auto">
+          <input class="ok-input sm:w-56" placeholder="Enter promo code" aria-label="Promo code">
+          <button class="btn btn-primary">Apply code</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ FILTER CHIPS ============ -->
+    <section class="border-b border-[var(--ok-line)] sticky top-16 md:top-20 bg-white/95 backdrop-blur z-30">
+      <div class="ok-container py-3">
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar" data-chip-group>
+          <button class="chip is-active">All</button>
+          <button class="chip">BOGO</button>
+          <button class="chip">Combos</button>
+          <button class="chip">Free Delivery</button>
+          <button class="chip">Loyalty</button>
+          <button class="chip">Limited Time</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURED DEAL ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <h2 class="ok-h2 mb-6">Featured offer</h2>
+
+        <article class="ok-card overflow-hidden grid md:grid-cols-2">
+          <div class="relative aspect-[4/3] md:aspect-auto md:min-h-[340px] overflow-hidden">
+            <img data-ph="Double Date Bundle" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
+            <span class="badge badge-deal absolute top-4 left-4">Save $6</span>
+          </div>
+          <div class="p-6 md:p-8 flex flex-col justify-center">
+            <h3 class="font-display font-extrabold text-2xl md:text-3xl mt-1 mb-2">Double Date Bundle — Save $6</h3>
+            <p class="text-slate mb-4">Two Classic Smash combos plus two hand-spun shakes. The easiest date night in Philly — smashed, stacked and ready fast.</p>
+            <div class="flex items-center gap-3 mb-4">
+              <span class="font-bold text-2xl">$21.99</span>
+              <span class="text-slate line-through">$27.99</span>
+              <span class="badge badge-green">21% off</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mb-5 text-sm">
+              <span class="chip !py-1 !px-3 !text-xs !cursor-default">Code: <b class="ml-1">DATE6</b></span>
+              <span class="text-slate">Expires Jul 31</span>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button data-add-cart="Double Date Bundle" class="btn btn-primary btn-lg">Add to order</button>
+              <a href="menu.html" class="btn btn-secondary btn-lg">Browse menu</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ DEAL GRID ============ -->
+    <section class="ok-section pt-0">
+      <div class="ok-container">
+        <div class="flex items-end justify-between mb-6">
+          <div><h2 class="ok-h2">All deals</h2></div>
+          <span class="text-sm text-slate hidden sm:block">8 offers available</span>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+          <!-- Deal 1 — BOGO Tuesdays -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="BOGO Tuesdays" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3">BOGO</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">BOGO Tuesdays</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Buy any Classic Smash, get one free — every Tuesday, all day.</p>
+              <p class="text-xs text-slate mb-3">Code <b>BOGOTUE</b> · Expires Jul 31</p>
+              <button data-add-cart="BOGO Tuesdays" class="btn btn-primary btn-sm btn-block">Add to order</button>
+            </div>
+          </article>
+
+          <!-- Deal 2 — Family Feast Box -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Family Feast Box" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3">Save $8</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Family Feast Box</h3>
+              <p class="text-sm text-slate mb-3 flex-1">4 burgers, 2 large fries and 4 drinks. Friday-night sorted.</p>
+              <p class="text-xs text-slate mb-3">Code <b>FEAST8</b> · Expires Jul 31</p>
+              <button data-add-cart="Family Feast Box" class="btn btn-primary btn-sm btn-block">Add to order</button>
+            </div>
+          </article>
+
+          <!-- Deal 3 — Free Fries Friday -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Free Fries Friday" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-yellow absolute top-3 left-3">Free side</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Free Fries Friday</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Free regular OK fries with any burger, every Friday.</p>
+              <p class="text-xs text-slate mb-3">Code <b>FRYDAY</b> · Expires Jul 31</p>
+              <button class="btn btn-secondary btn-sm btn-block" data-add-cart="Free Fries Friday">Use code</button>
+            </div>
+          </article>
+
+          <!-- Deal 4 — Student 15% off -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Student discount" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-green absolute top-3 left-3">-15%</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Student 15% Off</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Show a valid student ID and save 15% on any order.</p>
+              <p class="text-xs text-slate mb-3">Code <b>STUDENT15</b> · Expires Jul 31</p>
+              <button class="btn btn-secondary btn-sm btn-block" data-add-cart="Student 15% Off">Use code</button>
+            </div>
+          </article>
+
+          <!-- Deal 5 — Combo Meal Deal -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Combo meal deal" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3">Save $4</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Combo Meal Deal</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Any smash burger + fries + drink for one low bundled price.</p>
+              <p class="text-xs text-slate mb-3">Code <b>COMBO4</b> · Expires Jul 31</p>
+              <button data-add-cart="Combo Meal Deal" class="btn btn-primary btn-sm btn-block">Add to order</button>
+            </div>
+          </article>
+
+          <!-- Deal 6 — Late-night Shake Combo -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Late-night shake combo" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-new absolute top-3 left-3">New</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Late-Night Shake Combo</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Smash slider + hand-spun shake after 9 PM. Sweet dreams.</p>
+              <p class="text-xs text-slate mb-3">Code <b>NIGHTCAP</b> · Expires Jul 31</p>
+              <button data-add-cart="Late-Night Shake Combo" class="btn btn-primary btn-sm btn-block">Add to order</button>
+            </div>
+          </article>
+
+          <!-- Deal 7 — Loyalty Double Points Weekend -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Double points weekend" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-yellow absolute top-3 left-3">2× points</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Double Points Weekend</h3>
+              <p class="text-sm text-slate mb-3 flex-1">OK Rewards members earn 2× points on every order, Sat &amp; Sun.</p>
+              <p class="text-xs text-slate mb-3">Auto-applied for members · Expires Jul 31</p>
+              <a href="rewards.html" class="btn btn-secondary btn-sm btn-block">Join Rewards</a>
+            </div>
+          </article>
+
+          <!-- Deal 8 — Free Delivery over $20 -->
+          <article class="ok-card ok-card-hover overflow-hidden group flex flex-col">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Free delivery over 20" data-ph-type="food" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-green absolute top-3 left-3">Free delivery</span>
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <h3 class="font-display font-bold text-lg">Free Delivery over $20</h3>
+              <p class="text-sm text-slate mb-3 flex-1">Spend $20 or more and delivery is on us. New customers only.</p>
+              <p class="text-xs text-slate mb-3">Code <b>OKFIRST</b> · Expires Jul 31</p>
+              <button class="btn btn-secondary btn-sm btn-block" data-add-cart="Free Delivery over $20">Use code</button>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TERMS NOTE ============ -->
+    <section class="pb-14">
+      <div class="ok-container">
+        <div class="ok-card bg-softyellow/40 p-6 text-center">
+          <p class="text-sm text-slate">One offer per order. Deals cannot be combined and are available at participating locations for a limited time.
+            <a href="faq.html" class="link-underline">See full terms &amp; conditions</a>.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

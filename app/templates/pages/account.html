@@ -1,0 +1,270 @@
+{% extends "layouts/base.html" %}
+{% block main_class %}bg-softyellow/20{% endblock %}
+{% block title %}My Account, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ PAGE HEADER STRIP ============ -->
+    <section class="bg-ink text-white d-none">
+      <div class="ok-container ok-py-3 ok-paddin-2rem-md">
+        <nav class="text-w-50 ok-fs-xs mb-2" aria-label="Breadcrumb">
+          <a href="/" class="">Home</a> <span class="mx-1">/</span> <span class="text-w-80">My Account</span>
+        </nav>
+        <h1 class="ok-h1">My Account</h1>
+      </div>
+    </section>
+
+    <div class="ok-container ok-py-8 ok-paddin-25rem-md">
+      <div class="ok-grid ok-gc-260px1fr-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
+          <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
+            <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+            <div class="ok-min-w-0">
+              <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
+              <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }} · {{ current_user.loyalty_points }} pts</div>
+            </div>
+          </div>
+          <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
+            <a href="/account" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="/orders" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+            <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
+            <a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
+          </nav>
+          <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
+            <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red text-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+          </div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <div class="ok-stack-8">
+
+          <!-- Welcome header -->
+          <div class="ok-card overflow-hidden position-relative bg-ink text-white d-none">
+            <div class="position-absolute -right-10 -top-16 ok-w-64 ok-h-64 rounded-pill bg-yellow-20 blur-3xl"></div>
+            <div class="position-relative ok-p-3 ok-paddin-2rem-md d-flex flex-column flex-sm-row align-items-sm-center ok-gap-5 justify-content-between">
+              <div class="d-flex align-items-center ok-gap-3">
+                <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-16 ok-h-16 rounded-pill ok-ring-4 ring-white/10 flex-shrink-0" alt="">
+                <div>
+                  <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl ok-lh-tight d-inline-flex align-items-center gap-2">Hi, {{ current_user.first_name or 'there' }} <i class="fa-solid fa-hand"></i></h2>
+                  <p class="text-w-70 ok-fs-sm mt-1">Welcome back, you have <b class="text-yellow">{{ current_user.loyalty_points }} points</b> ready to spend.</p>
+                </div>
+              </div>
+              <a href="/menu" class="btn btn-primary flex-shrink-0 align-self-start ok-aligns-auto-sm">Start an order</a>
+            </div>
+          </div>
+
+          <!-- Stat cards -->
+          <div class="ok-grid ok-grid-sm-3 ok-gap-3">
+            <div class="ok-card ok-p-5 d-flex align-items-center ok-gap-3">
+              <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-star icon-lg"></i></div>
+              <div>
+                <div class="font-display ok-fw-800 ok-fs-2xl ok-lh-none">{{ current_user.loyalty_points }}</div>
+                <div class="ok-fs-sm text-muted-warm mt-1">Loyalty points</div>
+              </div>
+            </div>
+            <div class="ok-card ok-p-5 d-flex align-items-center ok-gap-3">
+              <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-receipt icon-lg"></i></div>
+              <div>
+                <div class="font-display ok-fw-800 ok-fs-2xl ok-lh-none">{{ order_count }}</div>
+                <div class="ok-fs-sm text-muted-warm mt-1">Total orders</div>
+              </div>
+            </div>
+            <a href="/favorites" class="ok-card ok-card-hover ok-p-5 d-flex align-items-center ok-gap-3">
+              <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-heart icon-lg"></i></div>
+              <div>
+                <div class="font-display ok-fw-800 ok-fs-2xl ok-lh-none">{{ favorites_count }}</div>
+                <div class="ok-fs-sm text-muted-warm mt-1">Saved favorites</div>
+              </div>
+            </a>
+          </div>
+
+          <!-- Rewards mini-card -->
+          <div class="ok-card overflow-hidden">
+            <div class="ok-p-3 ok-grid ok-gc-1frauto-md ok-gap-5 align-items-center">
+              <div class="w-100">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="badge badge-yellow">Gold</span>
+                </div>
+                <h3 class="font-display fw-bold ok-fs-lg mb-2">{{ reward_to_go }} points to your next reward</h3>
+                <div class="ok-h-3 w-100 rounded-pill bg-cream overflow-hidden" role="progressbar" aria-valuenow="{{ current_user.loyalty_points }}" aria-valuemin="0" aria-valuemax="{{ reward_target }}" aria-label="Progress to next reward">
+                  <div class="h-100 rounded-pill bg-yellow" style="width:{{ reward_pct }}%"></div>
+                </div>
+                <div class="d-flex justify-content-between ok-fs-xs text-muted-warm ok-mt-15">
+                  <span>{{ '{:,}'.format(current_user.loyalty_points) }} pts</span>
+                  <span>{{ '{:,}'.format(reward_target) }} pts · next reward</span>
+                </div>
+              </div>
+              <a href="/rewards" class="btn btn-secondary flex-shrink-0 justify-self-start ok-justif-end-md">View rewards</a>
+            </div>
+          </div>
+
+          <!-- Recent order -->
+          <section>
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <h2 class="ok-h2 ok-fs-xl">Recent order</h2>
+              <a href="/orders" class="link-underline ok-fs-sm d-inline-flex align-items-center gap-1">View all orders <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            {% if recent_order %}
+            {% set o = recent_order %}
+            <div class="ok-card ok-p-5">
+              <div class="d-flex flex-wrap align-items-start justify-content-between ok-gap-3 ok-mb-3">
+                <div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="font-display fw-bold ok-fs-lg">{{ o.number }}</span>
+                    {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>
+                    {% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
+                    {% else %}<span class="badge badge-yellow">{{ o.status.replace('_',' ')|title }}</span>{% endif %}
+                  </div>
+                  <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
+                </div>
+                <div class="text-end">
+                  <div class="font-display fw-bold ok-fs-lg">${{ '%.2f'|format(o.total) }}</div>
+                  <div class="ok-fs-xs text-muted-warm">{{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</div>
+                </div>
+              </div>
+              <p class="ok-fs-sm text-muted-warm ok-mb-5">{{ o.items|map(attribute='name')|join(', ') }}</p>
+              <div class="divider ok-mb-3"></div>
+              <div class="d-flex flex-wrap align-items-center ok-gap-3">
+                <span class="ok-fs-sm fw-semibold text-ok-green d-flex align-items-center ok-gap-15"><span class="ok-w-2 ok-h-2 rounded-pill bg-ok-green d-inline-block"></span> {{ o.status.replace('_',' ')|title }}{% if o.status not in ['completed','cancelled'] %} · ETA ~{{ o.store.avg_prep_minutes }} min{% endif %}</span>
+                <div class="d-flex gap-2 ml-auto">
+                  {% if o.status not in ['completed','cancelled'] %}<a href="/tracking/{{ o.number }}" class="btn btn-dark btn-sm">Track order</a>{% endif %}
+                  <form method="post" action="/orders/{{ o.number }}/reorder"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="btn btn-primary btn-sm">Reorder</button></form>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="ok-card ok-p-8 text-center text-muted-warm"><p class="ok-mb-3">No orders yet.</p><a href="/menu" class="btn btn-primary btn-sm">Start an order</a></div>
+            {% endif %}
+          </section>
+
+          <!-- Saved addresses -->
+          <section id="addresses">
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <h2 class="ok-h2 ok-fs-xl">Saved addresses</h2>
+            </div>
+            <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+              {% for a in addresses %}
+              <div class="ok-card ok-p-5">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-location-dot ok-fs-xl"></i>
+                    <span class="font-display fw-bold">{{ a.label }}</span>
+                  </div>
+                  {% if a.is_default %}<span class="badge badge-soft">Default</span>{% endif %}
+                </div>
+                <p class="ok-fs-sm text-muted-warm">{{ a.one_line }}{% if a.phone %}<br>{{ a.phone }}{% endif %}</p>
+                <div class="divider ok-my-3"></div>
+                <div class="d-flex ok-gap-3 ok-fs-sm">
+                  {% if not a.is_default %}
+                  <form method="post" action="/account/addresses/{{ a.id }}/default"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline">Set default</button></form>
+                  {% endif %}
+                  <form method="post" action="/account/addresses/{{ a.id }}/delete" onsubmit="return confirm('Remove this address?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline !text-okred">Delete</button></form>
+                </div>
+              </div>
+              {% else %}
+              <div class="ok-card ok-p-5 ok-fs-sm text-muted-warm ok-gridco-span2span2-sm">No saved addresses yet. Add one below for faster delivery checkout.</div>
+              {% endfor %}
+            </div>
+
+            <details class="ok-card ok-p-5 ok-mt-3">
+              <summary class="ok-pointer fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-plus"></i> Add a new address</summary>
+              <form method="post" action="/account/addresses" class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mt-3">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                <div><label class="ok-label !text-xs">Label</label><input name="label" class="ok-input py-2 ok-fs-sm" placeholder="Home"></div>
+                <div><label class="ok-label !text-xs">Recipient</label><input name="recipient" class="ok-input py-2 ok-fs-sm" placeholder="{{ current_user.full_name }}"></div>
+                <div class="ok-gridco-span2span2-sm"><label class="ok-label !text-xs">Street address</label><input name="line1" required class="ok-input py-2 ok-fs-sm" placeholder="1420 Pine Street"></div>
+                <div><label class="ok-label !text-xs">Apt / unit</label><input name="line2" class="ok-input py-2 ok-fs-sm" placeholder="Apt 3B"></div>
+                <div><label class="ok-label !text-xs">ZIP</label><input name="zip_code" class="ok-input py-2 ok-fs-sm" placeholder="19102"></div>
+                <div><label class="ok-label !text-xs">City</label><input name="city" aria-label="City" class="ok-input py-2 ok-fs-sm" value="Philadelphia"></div>
+                <div><label class="ok-label !text-xs">State</label><input name="state" aria-label="State" class="ok-input py-2 ok-fs-sm" value="PA"></div>
+                <div class="ok-gridco-span2span2-sm"><label class="ok-label !text-xs">Phone</label><input name="phone" class="ok-input py-2 ok-fs-sm" placeholder="(215) 555-0100"></div>
+                <label class="ok-gridco-span2span2-sm d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_default" class="ok-w-4 ok-h-4 accent-okyellow"> Set as default</label>
+                <div class="ok-gridco-span2span2-sm"><button class="btn btn-primary btn-block">Save address</button></div>
+              </form>
+            </details>
+          </section>
+
+          <!-- Payment methods -->
+          <section>
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <h2 class="ok-h2 ok-fs-xl">Payment methods</h2>
+              <button data-add-cart="New card" class="btn btn-secondary btn-sm">+ Add card</button>
+            </div>
+            <div class="ok-card divide-y ok-divide-y">
+              <div class="ok-p-3 ok-paddin-125rem-md d-flex align-items-center ok-gap-3">
+                <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-7rem fw-bold tracking-wider flex-shrink-0">VISA</div>
+                <div class="ok-min-w-0">
+                  <div class="fw-semibold">Visa •••• 4242</div>
+                  <div class="ok-fs-xs text-muted-warm">Expires 08/27</div>
+                </div>
+                <span class="badge badge-soft ms-2 d-none d-sm-inline-flex">Default</span>
+                <div class="d-flex ok-gap-3 ok-fs-sm ml-auto">
+                  <button class="link-underline">Edit</button>
+                  <button class="link-underline !text-okred">Remove</button>
+                </div>
+              </div>
+              <div class="ok-p-3 ok-paddin-125rem-md d-flex align-items-center ok-gap-3">
+                <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-62rem fw-bold tracking-wide flex-shrink-0">MC</div>
+                <div class="ok-min-w-0">
+                  <div class="fw-semibold">Mastercard •••• 8888</div>
+                  <div class="ok-fs-xs text-muted-warm">Expires 11/26</div>
+                </div>
+                <div class="d-flex ok-gap-3 ok-fs-sm ml-auto">
+                  <button class="link-underline">Set default</button>
+                  <button class="link-underline !text-okred">Remove</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profile quick section -->
+          <section>
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <h2 class="ok-h2 ok-fs-xl">Profile</h2>
+            </div>
+            <div class="ok-card ok-p-5 ok-grid ok-grid-sm-3 ok-gap-5 ok-mb-3">
+              <div>
+                <div class="ok-label !mb-1 text-muted-warm">Full name</div>
+                <div class="fw-semibold">{{ current_user.full_name }}</div>
+              </div>
+              <div>
+                <div class="ok-label !mb-1 text-muted-warm">Email</div>
+                <div class="fw-semibold text-break">{{ current_user.email }}</div>
+              </div>
+              <div>
+                <div class="ok-label !mb-1 text-muted-warm">Phone</div>
+                <div class="fw-semibold">{{ current_user.phone or 'Not set' }}</div>
+              </div>
+            </div>
+            <details class="ok-card ok-p-5">
+              <summary class="ok-pointer fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-pen"></i> Edit profile &amp; password</summary>
+              <div class="ok-grid ok-grid-md-2 ok-gap-3 ok-mt-5">
+                <form method="post" action="/account/profile" class="ok-stack-3">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                  <div class="ok-grid ok-grid-2 ok-gap-3">
+                    <div><label class="ok-label !text-xs">First name</label><input name="first_name" aria-label="First name" value="{{ current_user.first_name or '' }}" class="ok-input py-2 ok-fs-sm"></div>
+                    <div><label class="ok-label !text-xs">Last name</label><input name="last_name" aria-label="Last name" value="{{ current_user.last_name or '' }}" class="ok-input py-2 ok-fs-sm"></div>
+                  </div>
+                  <div><label class="ok-label !text-xs">Email</label><input name="email" type="email" aria-label="Email address" value="{{ current_user.email }}" class="ok-input py-2 ok-fs-sm"></div>
+                  <div><label class="ok-label !text-xs">Phone</label><input name="phone" value="{{ current_user.phone or '' }}" class="ok-input py-2 ok-fs-sm" placeholder="(215) 555-0100"></div>
+                  <button class="btn btn-primary btn-sm">Save profile</button>
+                </form>
+                <form method="post" action="/account/password" class="ok-stack-3">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                  <div><label class="ok-label !text-xs">Current password</label><input name="current" type="password" aria-label="Current password" autocomplete="current-password" class="ok-input py-2 ok-fs-sm"></div>
+                  <div><label class="ok-label !text-xs">New password</label><input name="new" type="password" aria-label="New password" autocomplete="new-password" class="ok-input py-2 ok-fs-sm"></div>
+                  <div><label class="ok-label !text-xs">Confirm new password</label><input name="confirm" type="password" aria-label="Confirm new password" autocomplete="new-password" class="ok-input py-2 ok-fs-sm"></div>
+                  <button class="btn btn-dark btn-sm">Change password</button>
+                </form>
+              </div>
+            </details>
+          </section>
+
+        </div>
+      </div>
+    </div>
+{% endblock %}

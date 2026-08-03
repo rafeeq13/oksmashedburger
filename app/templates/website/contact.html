@@ -1,0 +1,199 @@
+{% extends "layouts/base.html" %}
+{% block title %}Contact Us, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ HERO ============ -->
+    <section class="ok-pagehero">
+      <div class="position-absolute ok-fill ok-opacity-30">
+        {% if site.get('contact_hero_img') %}<img src="{{ site.get('contact_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Contact hero" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+      </div>
+      <div class="ok-pagehero-veil"></div>
+      <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
+      <div class="ok-container position-relative text-center">
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('contact_hero_heading') or 'Get in touch' }}</h1>
+        <p class="text-w-75 ok-fs-lg max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('contact_hero_text') or 'Questions, catering, franchising or just some love for the OK sauce, we read every message and reply fast.' }}</p>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT: form + info ============ -->
+    <section class="ok-section">
+      <div class="ok-container ok-grid ok-gc-105fr1fr-lg ok-gap-8 ok-gap-3rem-lg align-items-start">
+
+        <!-- LEFT: contact form -->
+        <div class="ok-card ok-p-7 ok-paddin-25rem-sm ok-positi-sticky-lg ok-top-7rem-lg" data-reveal="up">
+<h2 class="font-display ok-fw-900 ok-fs-3xl tracking-tight mb-2">Drop us a line</h2>
+          <p class="text-muted-warm ok-fs-sm ok-mb-8">Fill out the form and our team will get back to you within one business day.</p>
+
+          <form method="post" action="/contact" class="ok-stack-5" data-validate novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+              <div class="ok-float">
+                <input id="name" name="name" type="text" autocomplete="name" placeholder=" " class="ok-input" value="{{ current_user.full_name if current_user else '' }}">
+                <label for="name">Full name</label>
+              </div>
+              <div class="ok-float">
+                <input id="email" name="email" type="email" autocomplete="email" placeholder=" " class="ok-input" value="{{ current_user.email if current_user else '' }}" data-rule="email">
+                <label for="email">Email address</label>
+              </div>
+            </div>
+
+            <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+              <div class="ok-float">
+                <select id="subject" name="subject" class="ok-select">
+                  <option>General enquiry</option>
+                  <option>Order issue</option>
+                  <option>Catering</option>
+                  <option>Franchising</option>
+                  <option>Feedback</option>
+                </select>
+                <label for="subject">Subject</label>
+              </div>
+              <div class="ok-float">
+                <input id="order" name="order" type="text" placeholder=" " class="ok-input">
+                <label for="order">Order number (optional)</label>
+              </div>
+            </div>
+
+            <div class="ok-float">
+              <textarea id="message" name="message" rows="5" required placeholder=" " class="ok-textarea" data-rule="required"></textarea>
+              <label for="message">How can we help?</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Send message <i class="fa-solid fa-paper-plane"></i></button>
+
+            <p class="ok-hint text-center d-flex align-items-center justify-content-center gap-2 flex-wrap"><i class="fa-solid fa-truck text-gold"></i> For live order help, <a href="/tracking" class="link-underline">track your order</a> instead, it's the fastest way to see status.</p>
+          </form>
+        </div>
+
+        <!-- RIGHT: contact info + map -->
+        <div class="ok-stack-5">
+          <div class="ok-grid ok-grid-sm-2 ok-gap-5" data-reveal-stagger>
+            <!-- Phone -->
+            <div class="ok-card ok-card-hover ok-p-3">
+              <div class="ok-w-12 ok-h-12 ok-rounded-2xl ok-grid ok-place-center ok-fs-xl ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-phone icon-lg"></i></div>
+              <h3 class="font-display fw-bold ok-fs-lg">Call us</h3>
+              <a href="tel:+12155550100" class="link-underline ok-fs-sm">(215) 555-0100</a>
+              <p class="ok-fs-xs text-muted-warm ok-mt-15">Daily · 11 AM to 12 AM</p>
+            </div>
+            <!-- Email -->
+            <div class="ok-card ok-card-hover ok-p-3">
+              <div class="ok-w-12 ok-h-12 ok-rounded-2xl ok-grid ok-place-center ok-fs-xl ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-envelope icon-lg"></i></div>
+              <h3 class="font-display fw-bold ok-fs-lg">Email us</h3>
+              <a href="mailto:hello@oksmashedburger.com" class="link-underline ok-fs-sm text-break">hello@oksmashedburger.com</a>
+              <p class="ok-fs-xs text-muted-warm ok-mt-15">We reply within 1 business day</p>
+            </div>
+            <!-- HQ -->
+            <div class="ok-card ok-card-hover ok-p-3">
+              <div class="ok-w-12 ok-h-12 ok-rounded-2xl ok-grid ok-place-center ok-fs-xl ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-location-dot icon-lg"></i></div>
+              <h3 class="font-display fw-bold ok-fs-lg">Visit HQ</h3>
+              <p class="ok-fs-sm text-muted-warm mt-1">1201 Frankford Ave<br>Philadelphia, PA 19125</p>
+            </div>
+            <!-- Hours -->
+            <div class="ok-card ok-card-hover ok-p-3">
+              <div class="ok-w-12 ok-h-12 ok-rounded-2xl ok-grid ok-place-center ok-fs-xl ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-clock icon-lg"></i></div>
+              <h3 class="font-display fw-bold ok-fs-lg">Hours</h3>
+              <p class="ok-fs-sm text-muted-warm mt-1">Mon to Sun<br>11 AM to 12 AM</p>
+            </div>
+          </div>
+
+          <!-- Social links row -->
+          <div class="ok-card ok-p-3" data-reveal="up">
+            <h3 class="font-display fw-bold ok-mb-3">Follow the smash</h3>
+            <div class="d-flex flex-wrap ok-gap-25">
+              <a href="#" aria-label="Instagram" class="d-flex align-items-center gap-2 chip"><span class="ok-fs-lg"><i class="fa-brands fa-instagram"></i></span> Instagram</a>
+              <a href="#" aria-label="Facebook" class="d-flex align-items-center gap-2 chip"><span class="ok-fs-lg"><i class="fa-brands fa-facebook-f"></i></span> Facebook</a>
+              <a href="#" aria-label="TikTok" class="d-flex align-items-center gap-2 chip"><span class="ok-fs-lg"><i class="fa-brands fa-tiktok"></i></span> TikTok</a>
+              <a href="#" aria-label="X" class="d-flex align-items-center gap-2 chip"><span class="ok-fs-lg"><i class="fa-brands fa-x-twitter"></i></span> X</a>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="ok-card overflow-hidden" data-reveal="up">
+            <div class="position-relative ok-ar-1610 bg-cream-40">
+              <iframe src="https://maps.google.com/maps?q=1201%20Frankford%20Ave%2C%20Philadelphia%2C%20PA%2019125&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="OK Smashed Burger HQ map"></iframe>
+            </div>
+            <div class="ok-p-5 d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
+              <div>
+                <div class="font-display fw-bold ok-fs-sm">OK Smashed Burger HQ</div>
+                <div class="ok-fs-xs text-muted-warm">1201 Frankford Ave, Philadelphia · 19125</div>
+              </div>
+              <a href="https://maps.google.com/?q=1201+Frankford+Ave,+Philadelphia,+PA+19125" target="_blank" rel="noopener" class="btn btn-secondary btn-sm flex-shrink-0">Directions</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ QUICK-LINKS BAND (FAQ topics) ============ -->
+    <section class="ok-section bg-cream-30 border-top ok-bc-varokhairline">
+      <div class="ok-container">
+        <div class="ok-sechead ok-sechead--center ok-mb-5" data-reveal="up">
+<h2 class="font-display ok-fw-900 ok-fs-3xl ok-fs-25rem-md text-uppercase ok-ls-025em ok-lh-105">{{ site.get('contact_faq_heading') or 'Quick answers, no waiting' }}</h2>
+          <p class="max-w-xl mx-auto">A lot of questions have instant answers in our help center. Jump straight to a topic.</p>
+        </div>
+        <div class="ok-grid ok-grid-2 ok-grid-md-4 ok-gap-3 ok-gap-125rem-md" data-reveal-stagger>
+          {% for icon, label, sub in [
+            ('bag-shopping','Ordering','Placing & editing orders'),
+            ('truck','Delivery','Areas, times & tracking'),
+            ('gift','Rewards','Points, perks & gift cards'),
+            ('wheat-awn','Allergens','Ingredients & nutrition')] %}
+          <a href="/faq" class="ok-card ok-card-hover ok-p-3 text-center ok-hovergroup">
+            <div class="ok-w-14 ok-h-14 ok-rounded-2xl ok-grid ok-place-center mx-auto ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-{{ icon }} icon-xl"></i></div>
+            <div class="font-display fw-bold">{{ label }}</div>
+            <p class="ok-fs-xs text-muted-warm ok-mt-15">{{ sub }}</p>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="text-center ok-mt-5" data-reveal="up">
+          <a href="/faq" class="btn btn-dark btn-lg">Browse all FAQs</a>
+        </div>
+      </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Inline validation feedback. The server stays the source of truth, this only
+// gives the guest immediate, friendly feedback before the round trip.
+(function () {
+  var form = document.querySelector("form[data-validate]");
+  if (!form) return;
+
+  function errorEl(field) {
+    var wrap = field.closest(".ok-float") || field.parentElement;
+    var el = wrap.querySelector(".ok-err");
+    if (!el) { el = document.createElement("span"); el.className = "ok-err"; wrap.appendChild(el); }
+    return el;
+  }
+
+  function check(field) {
+    var rule = field.getAttribute("data-rule");
+    var val = (field.value || "").trim();
+    var msg = "";
+    if (rule === "required" && !val) msg = "Please tell us how we can help.";
+    if (rule === "email" && val && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)) msg = "That email address does not look right.";
+    field.classList.toggle("is-invalid", !!msg);
+    field.classList.toggle("is-valid", !msg && !!val);
+    errorEl(field).textContent = msg;
+    return !msg;
+  }
+
+  var fields = form.querySelectorAll("[data-rule]");
+  fields.forEach(function (f) {
+    f.addEventListener("blur", function () { check(f); });
+    f.addEventListener("input", function () { if (f.classList.contains("is-invalid")) check(f); });
+  });
+
+  form.addEventListener("submit", function (e) {
+    var ok = true;
+    fields.forEach(function (f) { if (!check(f)) ok = false; });
+    if (!ok) {
+      e.preventDefault();
+      var first = form.querySelector(".is-invalid");
+      if (first) first.focus();
+      if (window.OK && OK.toast) OK.toast("Please check the highlighted fields");
+    }
+  });
+})();
+</script>
+{% endblock %}

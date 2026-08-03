@@ -1,0 +1,362 @@
+/* =========================================================
+   OK Smashed Burger — Template Design System
+   Brand: White/Yellow primary, Black accent (SRS §9.2)
+   These utility component classes layer on top of Tailwind.
+   ========================================================= */
+
+:root{
+  --ok-yellow:#FFC72C;
+  --ok-amber:#E0A200;
+  --ok-soft:#FFF3CC;
+  --ok-jet:#141414;
+  --ok-slate:#6B6B6B;
+  --ok-green:#2E7D32;
+  --ok-red:#C62828;
+  --ok-brand-red:#E11B22;
+  --ok-line:#ececec;
+}
+
+html{ -webkit-text-size-adjust:100%; scroll-padding-top:6rem; }
+body{ font-family:'Quicksand','Inter',system-ui,sans-serif; font-weight:500; }
+
+/* Icons (Font Awesome) ----------------------------------- */
+.fa-solid, .fa-brands, .fa-regular{ flex-shrink:0; vertical-align:-0.06em; }
+.icon-lg{ font-size:1.4rem; }
+.icon-xl{ font-size:1.85rem; }
+/* status dot used in place of ●-glyph */
+.status-dot{ width:.55rem; height:.55rem; border-radius:9999px; display:inline-block; vertical-align:middle; }
+h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
+
+::selection{ background:var(--ok-yellow); color:var(--ok-jet); }
+
+/* Layout ------------------------------------------------- */
+.ok-container{ width:100%; max-width:1200px; margin-inline:auto; padding-inline:1rem; }
+@media (min-width:768px){ .ok-container{ padding-inline:1.5rem; } }
+.ok-section{ padding-block:3rem; }
+@media (min-width:768px){ .ok-section{ padding-block:4.5rem; } }
+
+/* Buttons ------------------------------------------------ */
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  font-weight:700; border-radius:9999px; padding:.7rem 1.4rem; line-height:1;
+  transition:transform .12s ease, background .18s ease, box-shadow .18s ease; cursor:pointer;
+  white-space:nowrap; border:1px solid transparent; }
+.btn:active{ transform:translateY(1px) scale(.99); }
+.btn-primary{ background:var(--ok-yellow); color:var(--ok-jet); box-shadow:0 6px 16px rgba(255,199,44,.35); }
+.btn-primary:hover{  background-color: black;
+  color: white;
+  border: #000;}
+.btn-secondary{ background:#fff; color:var(--ok-jet); border-color:var(--ok-jet); }
+.btn-secondary:hover{}
+.btn-dark{ background:var(--ok-jet); color:#fff; }
+.btn-dark:hover{}
+.btn-danger{ background:var(--ok-red); color:#fff; }
+.btn-ghost{ background:transparent; color:var(--ok-jet); }
+.btn-ghost:hover{}
+.btn-sm{ padding:.45rem .9rem; font-size:.85rem; }
+.btn-lg{ padding:.95rem 1.9rem; font-size:1.05rem; }
+.btn-block{ width:100%; }
+/* keep large buttons compact on small phones so pairs stay inline */
+@media (max-width: 400px){
+  .btn-lg{ padding:.7rem 1.05rem; font-size:.95rem; }
+}
+
+/* Cards & surfaces --------------------------------------- */
+.ok-card{ background:#fff; border:1px solid var(--ok-line); border-radius:1rem;
+  box-shadow:0 4px 20px rgba(20,20,20,.06); }
+.ok-card-hover{ transition:transform .18s ease, box-shadow .18s ease; }
+.ok-card-hover:hover{}
+
+/* Badges & chips ----------------------------------------- */
+.badge{ display:inline-flex; align-items:center; gap:.35rem; font-size:.72rem; font-weight:700;
+  padding:.28rem .6rem; border-radius:9999px; text-transform:uppercase; letter-spacing:.03em; }
+.badge-deal{ background:var(--ok-brand-red); color:#fff; }
+.badge-yellow{ background:var(--ok-yellow); color:var(--ok-jet); }
+.badge-soft{ background:var(--ok-soft); color:#8a6d00; }
+.badge-green{ background:#e4f2e5; color:var(--ok-green); }
+.badge-red{ background:#fbe5e5; color:var(--ok-red); }
+.badge-new{ background:var(--ok-jet); color:var(--ok-yellow); }
+
+.chip{ display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .8rem; border-radius:9999px;
+  border:1.5px solid var(--ok-line); background:#fff; font-weight:600; font-size:.9rem; cursor:pointer;
+  transition:all .15s ease; white-space:nowrap; }
+.chip:hover{}
+.chip.is-active{ background:var(--ok-jet); color:#fff; border-color:var(--ok-jet); }
+.chip:has(input:checked){ background:var(--ok-jet); color:#fff; border-color:var(--ok-jet); }
+
+/* Forms -------------------------------------------------- */
+.ok-input, .ok-select, .ok-textarea{ width:100%; border:1.5px solid #dcdcdc; border-radius:.7rem;
+  padding:.75rem .9rem; font-size:.95rem; background:#fff; transition:border .15s ease, box-shadow .15s ease; }
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus{ outline:none; border-color:var(--ok-yellow);
+  box-shadow:0 0 0 3px rgba(255,199,44,.3); }
+.ok-label{ display:block; font-weight:600; font-size:.85rem; margin-bottom:.35rem; color:var(--ok-jet); }
+.ok-hint{ font-size:.78rem; color:var(--ok-slate); }
+
+/* Quantity stepper --------------------------------------- */
+.qty{ display:inline-flex; align-items:center; border:1.5px solid var(--ok-line); border-radius:9999px; overflow:hidden; }
+.qty button{ width:2.1rem; height:2.1rem; font-size:1.15rem; font-weight:700; background:#fff; cursor:pointer; color:var(--ok-jet); }
+.qty button:hover{}
+.qty span{ min-width:2rem; text-align:center; font-weight:700; }
+
+/* Typographic scale -------------------------------------- */
+/* One consistent hierarchy: display > h1 > h2 > h3 across the whole site */
+.ok-eyebrow{ display:inline-block; font-family:'Inter',sans-serif; font-weight:700; font-size:.75rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ok-amber); }
+.ok-display{ font-family:'Poppins',sans-serif; font-weight:900; font-size:clamp(2.1rem,4.5vw,3.25rem);
+  line-height:1.06; letter-spacing:-0.02em; }
+.ok-h1{ font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(1.65rem,3vw,2.15rem);
+  line-height:1.12; letter-spacing:-0.015em; }
+.ok-h2{ font-family:'Poppins',sans-serif; font-weight:800; font-size:clamp(1.375rem,2.4vw,1.75rem);
+  line-height:1.18; letter-spacing:-0.01em; }
+.ok-h3{ font-family:'Poppins',sans-serif; font-weight:700; font-size:1.125rem; line-height:1.3; }
+.ok-lead{ font-size:1.0625rem; line-height:1.65; color:var(--ok-slate); }
+
+/* Hover tooltip (tippy-style) — appended to <body> so card overflow can't clip it */
+.ok-tip{ position:absolute; z-index:90; max-width:260px; background:var(--ok-jet,#141414); color:#fff;
+  font-family:'Inter',sans-serif; font-size:.78rem; font-weight:400; line-height:1.45; padding:.55rem .7rem;
+  border-radius:.55rem; box-shadow:0 10px 30px rgba(0,0,0,.22); pointer-events:none; opacity:0;
+  transform:translateY(3px); transition:opacity .12s ease, transform .12s ease; }
+.ok-tip.is-visible{ opacity:1; transform:translateY(0); }
+.ok-tip::after{ content:""; position:absolute; left:var(--tip-arrow,50%); transform:translateX(-50%);
+  border:6px solid transparent; }
+.ok-tip[data-place="top"]::after{ top:100%; border-top-color:var(--ok-jet,#141414); }
+.ok-tip[data-place="bottom"]::after{ bottom:100%; border-bottom-color:var(--ok-jet,#141414); }
+
+/* Header --------------------------------------------------*/
+.ok-header{ position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--ok-line);
+  transition:box-shadow .2s ease; }
+.ok-header.is-scrolled{ box-shadow:0 6px 20px rgba(20,20,20,.08); }
+.nav-link{ font-weight:600; font-size:.95rem; color:var(--ok-jet); padding:.4rem .2rem; position:relative; }
+.nav-link:hover{}
+.nav-link.is-active::after{ content:""; position:absolute; left:0; right:0; bottom:-2px; height:3px;
+  background:var(--ok-yellow); border-radius:3px; }
+.nav-link{ white-space:nowrap; }
+
+/* Collapsible header search -------------------------------*/
+.hdr-search{ position:relative; }
+.hdr-search .search-panel{ position:absolute; top:50%; right:0; transform:translateY(-50%) scaleX(.94);
+  transform-origin:right center; opacity:0; visibility:hidden; pointer-events:none; z-index:60;
+  transition:opacity .18s ease, transform .18s ease; }
+.hdr-search.is-open .search-panel{ opacity:1; visibility:visible; pointer-events:auto; transform:translateY(-50%) scaleX(1); }
+.hdr-search.is-open .search-toggle{ opacity:0; pointer-events:none; }
+.search-toggle{
+  color: #191919 !important;
+}
+
+/* Inline collapsible search on the menu category bar --------*/
+.menu-catbar{ position:relative; }
+.menu-search-panel{ opacity:0; visibility:hidden; transform:scale(.99); transform-origin:right center;
+  transition:opacity .16s ease, transform .16s ease; z-index:20; pointer-events:none; }
+.menu-catbar.is-searching .menu-search-panel{ opacity:1; visibility:visible; transform:scale(1); pointer-events:auto; }
+
+/* Order tracker ------------------------------------------ */
+.tracker{ display:flex; align-items:flex-start; }
+.tracker-step{ flex:1; text-align:center; position:relative; }
+.tracker-step .dot{ width:2.9rem; height:2.9rem; border-radius:9999px; display:grid; place-items:center;
+  margin:0 auto; background:#fff; border:3px solid var(--ok-line); color:var(--ok-slate); position:relative; z-index:2;
+  transition:all .3s ease; }
+.tracker-step::before{ content:""; position:absolute; top:1.45rem; left:-50%; width:100%; height:4px;
+  background:var(--ok-line); z-index:1; }
+.tracker-step:first-child::before{ display:none; }
+.tracker-step.is-done .dot{ background:var(--ok-green); border-color:var(--ok-green); color:#fff; }
+.tracker-step.is-active .dot{ background:var(--ok-yellow); border-color:var(--ok-yellow); color:var(--ok-jet);
+  box-shadow:0 0 0 6px rgba(255,199,44,.25); animation:pulse 1.6s infinite; }
+.tracker-step.is-done::before, .tracker-step.is-active::before{ background:var(--ok-green); }
+.tracker-label{ margin-top:.6rem; font-size:.8rem; font-weight:600; }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 6px rgba(255,199,44,.25);} 50%{ box-shadow:0 0 0 12px rgba(255,199,44,0);} }
+
+/* ── Admin: clean, professional typography (Inter, not the playful display font) ── */
+.admin-ui{ font-family:'Inter',sans-serif; font-weight:400; -webkit-font-smoothing:antialiased; letter-spacing:-0.005em; }
+.admin-ui .font-display,
+.admin-ui .ok-h1, .admin-ui .ok-h2, .admin-ui .ok-h3, .admin-ui .ok-display{
+  font-family:'Inter',sans-serif !important; letter-spacing:-0.018em; }
+.admin-ui .ok-h1{ font-weight:700; font-size:clamp(1.4rem,2.2vw,1.7rem); line-height:1.2; }
+.admin-ui .ok-h2{ font-weight:700; font-size:clamp(1.15rem,1.9vw,1.375rem); line-height:1.25; }
+.admin-ui .ok-h3{ font-weight:600; }
+/* tone the heavy brand weights (800/900) down to a crisp 700 in admin */
+.admin-ui .font-extrabold,
+.admin-ui .font-black{ font-weight:700; }
+.admin-ui .font-bold{ font-weight:600; }
+.admin-ui table{ font-variant-numeric:tabular-nums; }
+
+/* Thin scrollbar for the admin sidebar nav (visible + subtle on the dark panel) */
+.admin-scroll{ scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.28) transparent; }
+.admin-scroll::-webkit-scrollbar{ width:8px; }
+.admin-scroll::-webkit-scrollbar-track{ background:transparent; }
+.admin-scroll::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.22); border-radius:8px; }
+.admin-scroll::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,.35); }
+
+/* Admin table filter + pagination toolbar */
+.tbl-pagebtn{ padding:.35rem .7rem; border-radius:.55rem; font-weight:600; border:1px solid var(--ok-line); background:#fff; }
+.tbl-pagebtn.is-active{ background:var(--ok-jet); color:#fff; border-color:var(--ok-jet); }
+.tbl-pagebtn:disabled{ opacity:.4; cursor:not-allowed; }
+
+/* Toast -------------------------------------------------- */
+#ok-toast-wrap{ position:fixed; z-index:100; bottom:1.25rem; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; gap:.5rem; align-items:center; pointer-events:none; }
+.ok-toast{ background:var(--ok-jet); color:#fff; padding:.75rem 1.1rem; border-radius:.7rem; font-weight:600;
+  font-size:.9rem; box-shadow:0 10px 30px rgba(0,0,0,.25); display:flex; gap:.5rem; align-items:center;
+  animation:toastIn .25s ease; }
+.ok-toast .tick{ color:var(--ok-yellow); }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(12px);} to{ opacity:1; transform:translateY(0);} }
+
+/* Accordion ---------------------------------------------- */
+.acc-item{ border-bottom:1px solid var(--ok-line); }
+.acc-q{ width:100%; text-align:left; padding:1.1rem 0; font-weight:700; display:flex; justify-content:space-between; gap:1rem; align-items:center; cursor:pointer; }
+.acc-a{ max-height:0; overflow:hidden; transition:max-height .3s ease; color:var(--ok-slate); }
+.acc-item.is-open .acc-a{ max-height:400px; padding-bottom:1.1rem; }
+.acc-item.is-open .acc-icon{ transform:rotate(45deg); }
+.acc-icon{ transition:transform .25s ease; color:var(--ok-amber); font-size:1.4rem; line-height:1; }
+
+/* Mobile drawer ------------------------------------------ */
+.drawer-backdrop{ position:fixed; inset:0; background:rgba(20,20,20,.5); z-index:60; opacity:0; visibility:hidden; transition:.2s; }
+.drawer-backdrop.is-open{ opacity:1; visibility:visible; }
+.drawer{ position:fixed; top:0; right:0; height:100%; width:min(86%,340px); background:#fff; z-index:70;
+  transform:translateX(100%); transition:transform .25s ease; padding:1.25rem; overflow-y:auto; }
+.drawer.is-open{ transform:translateX(0); }
+
+/* Misc --------------------------------------------------- */
+.ph-img{ display:block; width:100%; height:100%; object-fit:cover; background:var(--ok-soft); }
+.divider{ height:1px; background:var(--ok-line); }
+.link-underline{ color:var(--ok-jet); text-decoration:underline; text-underline-offset:3px; font-weight:600; }
+.link-underline:hover{}
+.hide-scrollbar::-webkit-scrollbar{ display:none; }
+.hide-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+
+/* Thin, light scrollbar for modals / scroll panels on light backgrounds */
+.modal-scroll{ scrollbar-width:thin; scrollbar-color:rgba(20,20,20,.16) transparent; }
+.modal-scroll::-webkit-scrollbar{ width:6px; }
+.modal-scroll::-webkit-scrollbar-track{ background:transparent; }
+.modal-scroll::-webkit-scrollbar-thumb{ background:rgba(20,20,20,.16); border-radius:999px; }
+.modal-scroll::-webkit-scrollbar-thumb:hover{ background:rgba(20,20,20,.3); }
+
+/* Print / PDF export ------------------------------------- */
+@media print{
+  @page{ margin:0; }
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  html,body{ background:#fff !important; }
+  .ok-header{ position:static !important; box-shadow:none !important; }
+  [class*="sticky"]{ position:static !important; }
+  /* interaction-only overlays never print */
+  #locModal, #locBackdrop, .drawer, .drawer-backdrop, .menu-search-panel, #ok-toast-wrap{ display:none !important; }
+  /* keep components from splitting across pages */
+  .ok-card, article, blockquote, .tracker-step, .acc-item{ break-inside:avoid; }
+  a{ text-decoration:none !important; }
+}
+
+/* ── DataTables theming (admin tables) — responsive ────────────── */
+.dataTables_wrapper{ font-size:.875rem; color:var(--ok-jet); }
+
+/* Control rows: length+filter (top) and info+pagination (bottom) are wrapped
+   into flex containers via the init `dom` string, so they wrap gracefully. */
+.dt-top, .dt-bottom{ display:flex; align-items:center; flex-wrap:wrap; gap:.65rem .9rem;
+  padding:.8rem 1rem; margin:0; background:#f8f9fb; }
+.dt-top{ border-bottom:1px solid var(--ok-line); border-radius:1rem 1rem 0 0; }
+.dt-bottom{ border-radius:0 0 1rem 1rem; }
+.dataTables_wrapper .dataTables_length{ order:1; margin:0; color:var(--ok-slate); font-size:.8rem; }
+.dataTables_wrapper .dataTables_filter{ order:2; margin:0 0 0 auto; }
+.dataTables_wrapper .dataTables_info{ order:1; margin:0; padding:0; color:var(--ok-slate); font-size:.8rem; }
+.dataTables_wrapper .dataTables_paginate{ order:2; margin:0 0 0 auto; padding:0; display:flex; align-items:center; flex-wrap:wrap; gap:.3rem; }
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label{ margin:0; font-weight:500; display:inline-flex; align-items:center; gap:.5rem; }
+
+/* Inputs */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{
+  border:1px solid var(--ok-line); border-radius:.6rem; margin:0; background:#fff; color:var(--ok-jet);
+  font-size:.85rem; height:2.4rem; box-sizing:border-box; transition:border-color .15s, box-shadow .15s; }
+.dataTables_wrapper .dataTables_length select{
+  padding:.5rem 2rem .5rem .7rem; cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%236B6B6B'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M6%209l6%206%206-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right .6rem center; background-size:.85rem; }
+.dataTables_wrapper .dataTables_filter input{
+  width:17rem; max-width:100%; padding:.5rem .7rem .5rem 2.2rem;
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%236B6B6B'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx='11'%20cy='11'%20r='7'/%3E%3Cpath%20d='M21%2021l-4.3-4.3'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:left .7rem center; background-size:.95rem; }
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus{ outline:none; border-color:var(--ok-yellow); box-shadow:0 0 0 3px rgba(255,199,44,.25); }
+
+/* Pagination — square, equal-sized, wrapping buttons */
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+  min-width:2.3rem; height:2.3rem; padding:0 .55rem !important; margin:0 !important;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--ok-line) !important; border-radius:.55rem !important;
+  background:#fff !important; color:var(--ok-jet) !important; font-weight:600; font-size:.85rem; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover{
+  background:var(--ok-jet) !important; color:#fff !important; border-color:var(--ok-jet) !important; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover{ opacity:.35; color:var(--ok-slate) !important; background:#fff !important; }
+.dataTables_wrapper .dataTables_paginate .ellipsis{ padding:0 .2rem; color:var(--ok-slate); }
+
+/* Table: its own horizontal scroll so controls never scroll off-screen */
+.dt-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.dataTable{ border-collapse:collapse !important; margin:0 !important; width:100% !important; }
+table.dataTable thead th{ border-bottom:2px solid var(--ok-line); white-space:nowrap; }
+table.dataTable thead th.dt-nosort, table.dataTable thead th.sorting_disabled{ background:none; }
+table.dataTable tbody td{ border-bottom:1px solid var(--ok-line); }
+table.dataTable.no-footer{ border-bottom:0 !important; }
+
+/* Mobile: stack controls full-width, centre the pager */
+@media (max-width:640px){
+  .dataTables_wrapper .dataTables_filter{ order:1; margin:0; width:100%; }
+  .dataTables_wrapper .dataTables_filter label,
+  .dataTables_wrapper .dataTables_filter input{ width:100%; }
+  .dataTables_wrapper .dataTables_length{ order:2; }
+  .dataTables_wrapper .dataTables_info{ order:2; width:100%; text-align:center; }
+  .dataTables_wrapper .dataTables_paginate{ order:1; margin:0; width:100%; justify-content:center; }
+}
+
+/* keep the no-hover rule: neutralize DataTables' pagination button hover */
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover{ background:#fff !important; color:var(--ok-jet) !important; border-color:var(--ok-line) !important; box-shadow:none !important; }
+
+/* ============ Delivery zones module (admin Settings) ============ */
+.seg-tabs{ display:inline-flex; gap:.25rem; background:#141414; border-radius:.9rem; padding:.32rem; max-width:100%; overflow-x:auto; }
+.seg-tab{ padding:.6rem 1.5rem; border-radius:.6rem; font-weight:600; font-size:.9rem; color:rgba(255,255,255,.55); white-space:nowrap; transition:color .15s, background .15s; cursor:pointer; }
+.seg-tab:hover{ color:#fff; }
+.seg-tab.is-active{ background:#FFC72C; color:#141414; }
+/* faint square grid behind the radius map */
+.zmap-grid{ background-image:linear-gradient(rgba(148,163,184,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.16) 1px,transparent 1px); background-size:54px 54px; }
+/* dark inputs used inside the (dark) zone create/edit forms */
+.zinput{ width:100%; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.16); color:#fff; border-radius:.6rem; padding:.5rem .7rem; font-size:.85rem; }
+.zinput:focus{ outline:none; border-color:#FFC72C; box-shadow:0 0 0 3px rgba(255,199,44,.18); }
+.zinput::placeholder{ color:rgba(255,255,255,.4); }
+.zlabel{ display:block; font-size:.68rem; font-weight:600; letter-spacing:.02em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:.3rem; }
+.zstat-l{ font-size:.66rem; font-weight:600; letter-spacing:.03em; text-transform:uppercase; color:rgba(255,255,255,.45); }
+.zstat-v{ font-size:.92rem; font-weight:700; color:#fff; margin-top:.1rem; }
+
+/* ============ Collapsible admin sidebar (desktop lg+) ============ */
+.adm-sidebar{ transition:width .2s ease, transform .2s ease; }
+.adm-content{ transition:padding-left .2s ease; }
+.adm-collapse-icon{ transition:transform .2s ease; }
+.admin-collapsed .adm-collapse-icon{ transform:rotate(180deg); }
+@media (min-width:1024px){
+  .admin-collapsed .adm-sidebar{ width:4.75rem; }
+  .admin-collapsed .adm-content{ padding-left:4.75rem; }
+  .admin-collapsed .adm-sidebar .sb-text{ display:none !important; }
+  .admin-collapsed .adm-sidebar .sb-section{ display:none !important; }
+  .admin-collapsed .adm-sidebar .sb-header{ justify-content:center; padding-left:.5rem; padding-right:.5rem; }
+  .admin-collapsed .adm-sidebar .sb-navlink{ justify-content:center; padding-left:.5rem; padding-right:.5rem; }
+  .admin-collapsed .adm-sidebar .sb-footer{ justify-content:center; padding-left:.25rem; padding-right:.25rem; }
+  .admin-collapsed .adm-sidebar .sb-logout{ display:none; }
+}
+
+/* ============ Sidebar section groups (accordion) ============ */
+.sb-group-body{ display:grid; grid-template-rows:1fr; transition:grid-template-rows .25s ease; }
+.sb-group-body > *{ overflow:hidden; min-height:0; }
+.sb-group.collapsed .sb-group-body{ grid-template-rows:0fr; }
+.sb-chevron{ transition:transform .2s ease; }
+.sb-group.collapsed .sb-chevron{ transform:rotate(180deg); }
+@media (min-width:1024px){
+  /* icon-only sidebar: force every group open so all icons stay visible */
+  .admin-collapsed .sb-group-body{ grid-template-rows:1fr !important; }
+}
+
+/* ============ Page-builder per-section styling (canvas CMS) ============ */
+/* Each home section is wrapped in .pb-sec; inline CSS vars set from config drive
+   these !important overrides so an admin can restyle any section. */
+
+.pb-sec[style*="--pb-bg"] > section{ background-color:var(--pb-bg) !important; background-image:none !important; }
+.pb-sec[style*="--pb-hcolor"] :is(h1,h2,h3){ color:var(--pb-hcolor) !important; }
+.pb-sec[style*="--pb-tcolor"] :is(p,li){ color:var(--pb-tcolor) !important; }
+.pb-sec[style*="--pb-font"] :is(h1,h2,h3){ font-family:var(--pb-font) !important; }
+.pb-sec[style*="--pb-overlay"] .pb-overlay{ opacity:var(--pb-overlay) !important; }

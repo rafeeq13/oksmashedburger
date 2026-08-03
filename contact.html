@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — OK Smashed Burger</title>
+  <meta name="description" content="Get in touch with OK Smashed Burger. Reach us for order help, catering, franchising or feedback — by form, phone, email or at our Philadelphia HQ.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO (jet) ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-20">
+        <img data-ph="Contact hero" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-20 text-center">
+        <span class="badge badge-yellow mb-4"><i class="fa-solid fa-comment"></i> We're here to help</span>
+        <h1 class="ok-display mb-4">Get in <span class="text-okyellow">touch</span></h1>
+        <p class="text-white/80 text-lg max-w-xl mx-auto">Questions, catering, franchising or just some love for the OK sauce — we read every message and reply fast.</p>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT: form + info ============ -->
+    <section class="ok-section">
+      <div class="ok-container grid lg:grid-cols-2 gap-8 items-start">
+
+        <!-- LEFT: contact form -->
+        <div class="ok-card p-6 sm:p-8">
+          <h2 class="font-display font-extrabold text-2xl mb-1">Drop us a line</h2>
+          <p class="text-slate text-sm mb-6">Fill out the form and our team will get back to you within one business day.</p>
+
+          <form onsubmit="return false" class="space-y-5">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label for="name" class="ok-label">Full name</label>
+                <input id="name" type="text" autocomplete="name" placeholder="Jordan Miller" class="ok-input">
+              </div>
+              <div>
+                <label for="email" class="ok-label">Email address</label>
+                <input id="email" type="email" autocomplete="email" placeholder="you@email.com" class="ok-input">
+              </div>
+            </div>
+
+            <div>
+              <label for="subject" class="ok-label">Subject</label>
+              <select id="subject" class="ok-select">
+                <option>General enquiry</option>
+                <option>Order issue</option>
+                <option>Catering</option>
+                <option>Franchising</option>
+                <option>Feedback</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="order" class="ok-label">Order number <span class="text-slate font-normal">(optional)</span></label>
+              <input id="order" type="text" placeholder="e.g. #4021" class="ok-input">
+            </div>
+
+            <div>
+              <label for="message" class="ok-label">Message</label>
+              <textarea id="message" rows="5" placeholder="How can we help?" class="ok-textarea"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" onclick="OK.toast('Thanks! Your message has been sent')">Send message</button>
+
+            <p class="ok-hint text-center"><i class="fa-solid fa-truck"></i> For live order help, <a href="tracking.html" class="link-underline">track your order</a> instead — it's the fastest way to see status.</p>
+          </form>
+        </div>
+
+        <!-- RIGHT: contact info + map -->
+        <div class="space-y-4">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <!-- Phone -->
+            <div class="ok-card ok-card-hover p-5">
+              <div class="w-11 h-11 rounded-full bg-softyellow grid place-items-center text-xl mb-3"><i class="fa-solid fa-phone icon-lg"></i></div>
+              <h3 class="font-display font-bold">Call us</h3>
+              <a href="tel:+12155550100" class="link-underline text-sm">(215) 555-0100</a>
+              <p class="text-xs text-slate mt-1">Daily · 11 AM – 12 AM</p>
+            </div>
+            <!-- Email -->
+            <div class="ok-card ok-card-hover p-5">
+              <div class="w-11 h-11 rounded-full bg-softyellow grid place-items-center text-xl mb-3"><i class="fa-solid fa-envelope icon-lg"></i></div>
+              <h3 class="font-display font-bold">Email us</h3>
+              <a href="mailto:hello@oksmashedburger.com" class="link-underline text-sm break-all">hello@oksmashedburger.com</a>
+              <p class="text-xs text-slate mt-1">We reply within 1 business day</p>
+            </div>
+            <!-- HQ -->
+            <div class="ok-card ok-card-hover p-5">
+              <div class="w-11 h-11 rounded-full bg-softyellow grid place-items-center text-xl mb-3"><i class="fa-solid fa-location-dot icon-lg"></i></div>
+              <h3 class="font-display font-bold">Visit HQ</h3>
+              <p class="text-sm text-slate">1201 Frankford Ave<br>Philadelphia, PA 19125</p>
+            </div>
+            <!-- Hours -->
+            <div class="ok-card ok-card-hover p-5">
+              <div class="w-11 h-11 rounded-full bg-softyellow grid place-items-center text-xl mb-3"><i class="fa-solid fa-clock icon-lg"></i></div>
+              <h3 class="font-display font-bold">Hours</h3>
+              <p class="text-sm text-slate">Mon – Sun<br>11 AM – 12 AM</p>
+            </div>
+          </div>
+
+          <!-- Social links row -->
+          <div class="ok-card p-5">
+            <h3 class="font-display font-bold mb-3">Follow the smash</h3>
+            <div class="flex flex-wrap gap-3">
+              <a href="#" aria-label="Instagram" class="flex items-center gap-2 chip"><span class="text-lg"><i class="fa-brands fa-instagram"></i></span> Instagram</a>
+              <a href="#" aria-label="Facebook" class="flex items-center gap-2 chip"><span class="text-lg"><i class="fa-brands fa-facebook-f"></i></span> Facebook</a>
+              <a href="#" aria-label="TikTok" class="flex items-center gap-2 chip"><span class="text-lg"><i class="fa-brands fa-tiktok"></i></span> TikTok</a>
+              <a href="#" aria-label="X" class="flex items-center gap-2 chip"><span class="text-lg"><i class="fa-brands fa-x-twitter"></i></span> X</a>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="ok-card overflow-hidden">
+            <div class="relative">
+              <img data-ph="OK HQ location" data-ph-type="map" data-ph-ratio="16/9" class="ph-img w-full" alt="">
+              <span class="absolute" style="top:44%;left:48%">
+                <span class="grid place-items-center w-9 h-9 rounded-full bg-okbrandred text-white font-bold text-sm shadow-lg ring-4 ring-white">OK</span>
+              </span>
+            </div>
+            <div class="p-4 flex items-center justify-between gap-3 border-t border-[var(--ok-line)]">
+              <div>
+                <div class="font-semibold text-sm">OK Smashed Burger HQ</div>
+                <div class="text-xs text-slate">1201 Frankford Ave, Philadelphia · 19125</div>
+              </div>
+              <a href="#" class="btn btn-secondary btn-sm shrink-0">Directions</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ QUICK-LINKS BAND (FAQ topics) ============ -->
+    <section class="ok-section bg-softyellow/40 border-t border-[var(--ok-line)]">
+      <div class="ok-container">
+        <div class="text-center mb-8">
+          <h2 class="ok-h2">Quick answers, no waiting</h2>
+          <p class="text-slate mt-2 max-w-xl mx-auto">A lot of questions have instant answers in our help center. Jump straight to a topic.</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <a href="faq.html" class="ok-card ok-card-hover p-5 text-center group">
+            <div class="text-3xl mb-2"><i class="fa-solid fa-bag-shopping icon-xl"></i></div>
+            <div class="font-semibold">Ordering</div>
+            <p class="text-xs text-slate mt-1">Placing & editing orders</p>
+          </a>
+          <a href="faq.html" class="ok-card ok-card-hover p-5 text-center group">
+            <div class="text-3xl mb-2"><i class="fa-solid fa-truck icon-xl"></i></div>
+            <div class="font-semibold">Delivery</div>
+            <p class="text-xs text-slate mt-1">Areas, times & tracking</p>
+          </a>
+          <a href="faq.html" class="ok-card ok-card-hover p-5 text-center group">
+            <div class="text-3xl mb-2"><i class="fa-solid fa-gift icon-xl"></i></div>
+            <div class="font-semibold">Rewards</div>
+            <p class="text-xs text-slate mt-1">Points, perks & gift cards</p>
+          </a>
+          <a href="faq.html" class="ok-card ok-card-hover p-5 text-center group">
+            <div class="text-3xl mb-2"><i class="fa-solid fa-wheat-awn icon-xl"></i></div>
+            <div class="font-semibold">Allergens</div>
+            <p class="text-xs text-slate mt-1">Ingredients & nutrition</p>
+          </a>
+        </div>
+        <div class="text-center mt-8">
+          <a href="faq.html" class="btn btn-dark">Browse all FAQs</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

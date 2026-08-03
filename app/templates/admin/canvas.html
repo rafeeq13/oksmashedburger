@@ -1,0 +1,296 @@
+{% extends "admin/base.html" %}
+{% block title %}Visual Editor, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+  <div class="min-w-0">
+    <h2 class="ok-h2 leading-tight">Visual editor</h2>
+    <p class="text-slate text-xs">Drag layers to reorder, click a section to restyle it live, use the eye to hide/show, and add new sections.</p>
+    <p class="text-xs mt-1 flex items-center gap-1.5 flex-wrap"><i class="fa-solid fa-wand-magic-sparkles text-okamber"></i> Need to edit <b>every</b> text, card, button &amp; link and drag any element?
+      <form method="post" action="/admin/builder/new-home{{ qs }}" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline font-semibold">Edit the home in the full drag-drop builder →</button></form></p>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <span id="cvStatus" class="text-xs text-slate"></span>
+    <div class="relative">
+      <button id="cvAddBtn" type="button" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plus"></i> Add section</button>
+      <div id="cvAddMenu" class="hidden absolute right-0 mt-1 w-52 bg-white border border-[var(--ok-line)] rounded-lg shadow-xl z-30 py-1">
+        <button type="button" data-add="banner" class="cv-addopt"><i class="fa-solid fa-bullhorn w-4 text-slate"></i> Announcement bar</button>
+        <button type="button" data-add="content" class="cv-addopt"><i class="fa-solid fa-align-center w-4 text-slate"></i> Text block</button>
+        <button type="button" data-add="image" class="cv-addopt"><i class="fa-solid fa-image w-4 text-slate"></i> Image + text</button>
+      </div>
+    </div>
+    <button id="cvSave" type="button" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+  </div>
+</div>
+
+<div class="flex flex-col lg:flex-row gap-3" style="height:80vh; min-height:460px">
+  <!-- Layers -->
+  <div class="w-full lg:w-60 shrink-0 rounded-xl border border-[var(--ok-line)] bg-white overflow-y-auto">
+    <div class="px-3 py-2 border-b border-[var(--ok-line)] text-[.65rem] font-bold uppercase tracking-wide text-slate">Sections</div>
+    <div id="cvLayers" class="p-2 space-y-1">
+      {% for s in state %}
+      <div class="cv-layer flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer select-none {% if not s.enabled %}cv-off{% endif %}" draggable="true" data-key="{{ s.key }}" data-sid="{{ s.sid }}" data-custom="{{ 1 if s.custom else 0 }}">
+        <i class="fa-solid fa-grip-vertical text-slate/40 text-xs shrink-0"></i>
+        <span class="flex-1 min-w-0 text-sm font-medium truncate">{{ s.label }}</span>
+        <button type="button" class="cv-eye w-6 h-6 grid place-items-center rounded text-slate shrink-0" title="Hide / show on the website"><i class="fa-solid fa-{{ 'eye' if s.enabled else 'eye-slash' }}"></i></button>
+        {% if s.custom %}<button type="button" class="cv-del w-6 h-6 grid place-items-center rounded text-okred shrink-0" title="Delete"><i class="fa-solid fa-trash text-xs"></i></button>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="flex-1 min-w-0 rounded-xl overflow-hidden border border-[var(--ok-line)] bg-white">
+    <iframe id="cvFrame" src="/?pbedit=1" class="w-full h-full block bg-white" title="Home canvas"></iframe>
+  </div>
+
+  <!-- Inspector -->
+  <aside class="w-full lg:w-80 shrink-0 rounded-xl border border-[var(--ok-line)] bg-white overflow-y-auto">
+    <div id="cvEmpty" class="p-8 text-center text-slate text-sm">
+      <i class="fa-solid fa-arrow-pointer text-3xl mb-3 block text-slate/40"></i>
+      Select a section (layer or on the page) to edit its style and text.
+    </div>
+    <div id="cvPanel" class="hidden"></div>
+  </aside>
+</div>
+
+<style>
+  .cv-layer.cv-sel{ background:rgba(255,199,44,.16); box-shadow:inset 3px 0 0 #E0A200; }
+  .cv-layer:hover{ background:rgba(0,0,0,.03); }
+  .cv-layer.cv-off .cv-eye{ color:#C62828; }
+  .cv-layer.cv-off span{ opacity:.5; }
+  .cv-layer.cv-drag{ opacity:.4; }
+  .cv-addopt{ display:flex; align-items:center; gap:.5rem; width:100%; text-align:left; padding:.5rem .75rem; font-size:.85rem; }
+  .cv-addopt:hover{ background:rgba(0,0,0,.04); }
+</style>
+
+<script>
+(function () {
+  var STATE = {{ state|tojson }};
+  var FONTS = {{ fonts|tojson }};
+  var CSRF = "{{ csrf_token }}";
+  var byKey = {}; STATE.forEach(function (s) { byKey[s.key] = s; });
+
+  var frame = document.getElementById('cvFrame');
+  var panel = document.getElementById('cvPanel');
+  var empty = document.getElementById('cvEmpty');
+  var statusEl = document.getElementById('cvStatus');
+  var layers = document.getElementById('cvLayers');
+  var doc = null, selKey = null, dragCard = null;
+
+  function status(t, warn) { statusEl.textContent = t || ''; statusEl.className = 'text-xs ' + (warn ? 'text-okred' : 'text-slate'); }
+  function markDirty() { status('Unsaved changes', true); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function sel(k) { return doc ? doc.querySelector('.pb-sec[data-section="' + k + '"]') : null; }
+  function card(k) { return layers.querySelector('.cv-layer[data-key="' + k + '"]'); }
+  function layerKeys() { return Array.prototype.map.call(layers.querySelectorAll('.cv-layer'), function (c) { return c.dataset.key; }); }
+
+  /* ---- iframe: selection outline + click-to-select ---- */
+  frame.addEventListener('load', function () {
+    doc = frame.contentDocument; if (!doc) return;
+    if (!doc.getElementById('cv-style')) {
+      var st = doc.createElement('style'); st.id = 'cv-style';
+      st.textContent = '.pb-sec{outline:2px dashed transparent;outline-offset:-2px;transition:outline-color .15s;cursor:pointer;}'
+        + '.pb-sec:hover{outline-color:rgba(224,162,0,.55);}.pb-sec.cv-sel{outline:3px solid #E0A200 !important;}'
+        + '.pb-sec.cv-disabled{opacity:.4;}';
+      doc.head.appendChild(st);
+    }
+    doc.querySelectorAll('.pb-sec').forEach(function (el) {
+      var k = el.dataset.section;
+      if (byKey[k]) el.classList.toggle('cv-disabled', !byKey[k].enabled);
+      if (!el._cv) { el._cv = 1; el.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); select(k); }, true); }
+    });
+    syncOrder();
+    if (selKey && byKey[selKey]) select(selKey, true);
+  });
+
+  function syncOrder() {
+    if (!doc) return;
+    var first = doc.querySelector('.pb-sec'); if (!first) return;
+    var parent = first.parentNode;
+    layerKeys().forEach(function (k) { var el = sel(k); if (el) parent.appendChild(el); });
+  }
+
+  /* ---- selection ---- */
+  function select(key, keepScroll) {
+    selKey = key;
+    layers.querySelectorAll('.cv-layer').forEach(function (c) { c.classList.toggle('cv-sel', c.dataset.key === key); });
+    if (doc) doc.querySelectorAll('.pb-sec').forEach(function (el) { el.classList.toggle('cv-sel', el.dataset.section === key); });
+    var el = sel(key); if (el && !keepScroll) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    renderPanel(key);
+  }
+
+  /* ---- hide / show ---- */
+  function toggleEnabled(key) {
+    var s = byKey[key]; s.enabled = !s.enabled;
+    var c = card(key); if (c) { c.classList.toggle('cv-off', !s.enabled); var i = c.querySelector('.cv-eye i'); if (i) i.className = 'fa-solid fa-' + (s.enabled ? 'eye' : 'eye-slash'); }
+    var el = sel(key); if (el) el.classList.toggle('cv-disabled', !s.enabled);
+    if (selKey === key) renderPanel(key);
+    markDirty();
+  }
+
+  /* ---- live style ---- */
+  function applyStyle(key) {
+    var el = sel(key); if (!el) return;
+    var c = byKey[key].config;
+    setVar(el, '--pb-bg', c.style_bg); setVar(el, '--pb-hcolor', c.style_hcolor);
+    setVar(el, '--pb-tcolor', c.style_tcolor); setVar(el, '--pb-font', c.style_font);
+    setVar(el, '--pb-overlay', c.style_overlay);
+    // card-level styling
+    setVar(el, '--pb-cardbg', c.style_cardbg); setVar(el, '--pb-cardborder', c.style_cardborder);
+    setVar(el, '--pb-cardhead', c.style_cardhead); setVar(el, '--pb-cardtext', c.style_cardtext);
+    setVar(el, '--pb-cardradius', c.style_cardradius ? c.style_cardradius + 'px' : '');
+    el.style.paddingTop = c.style_pt ? c.style_pt + 'px' : '';
+    el.style.paddingBottom = c.style_pb ? c.style_pb + 'px' : '';
+    el.style.textAlign = c.style_align || '';
+  }
+  function setVar(el, n, v) { if (v || v === 0) el.style.setProperty(n, v); else el.style.removeProperty(n); }
+
+  // Live per-element (button / image) alignment + size within a section.
+  function applyEls(key) {
+    var el = sel(key); if (!el) return;
+    var c = byKey[key].config;
+    var bw = el.querySelector('[data-elw="btn"]'); if (bw) bw.style.textAlign = c.btn_align || '';
+    var b = el.querySelector('[data-el="btn"]');
+    if (b) {
+      if (c.btn_size === 'sm') { b.style.fontSize = '.8rem'; b.style.padding = '.45rem 1rem'; }
+      else if (c.btn_size === 'lg') { b.style.fontSize = '1.05rem'; b.style.padding = '.9rem 1.75rem'; }
+      else { b.style.fontSize = ''; b.style.padding = ''; }
+    }
+    var img = el.querySelector('[data-el="img"]');
+    if (img) {
+      img.style.width = c.img_w ? c.img_w + '%' : '';
+      if (c.img_align === 'center') { img.style.marginLeft = 'auto'; img.style.marginRight = 'auto'; }
+      else if (c.img_align === 'right') { img.style.marginLeft = 'auto'; img.style.marginRight = '0'; }
+      else if (c.img_align === 'left') { img.style.marginLeft = '0'; img.style.marginRight = 'auto'; }
+      else { img.style.marginLeft = ''; img.style.marginRight = ''; }
+      img.style.display = (c.img_w || c.img_align) ? 'block' : '';
+    }
+  }
+  function seg(label, key, opts) {
+    var cur = byKey[selKey].config[key] || '';
+    return '<div><span class="text-xs text-slate">' + label + '</span><div class="flex gap-1 mt-1">' +
+      opts.map(function (o) { return '<button type="button" data-set="' + key + '" data-val="' + o[0] + '" class="flex-1 py-1.5 rounded-lg border text-sm ' + (cur === o[0] ? 'border-okyellow bg-okyellow/10' : 'border-[var(--ok-line)]') + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
+  }
+
+  function colorRow(label, ctl, cur, dflt) {
+    return '<div class="flex items-center justify-between gap-2"><span class="text-xs text-slate">' + label + '</span>'
+      + '<span class="flex items-center gap-1"><input type="color" data-ctl="' + ctl + '" value="' + (cur || dflt) + '" class="w-8 h-7 rounded border border-[var(--ok-line)] p-0.5 bg-white cursor-pointer">'
+      + '<button type="button" data-reset="' + ctl + '" class="text-xs text-slate hover:text-okred px-1" title="Reset">&times;</button></span></div>';
+  }
+
+  function renderPanel(key) {
+    var s = byKey[key], c = s.config;
+    empty.classList.add('hidden'); panel.classList.remove('hidden');
+    var h = '<div class="p-4 space-y-4">';
+    h += '<div class="flex items-center justify-between gap-2 pb-3 border-b border-[var(--ok-line)]"><div class="font-display font-bold leading-tight">' + esc(s.label) + (s.custom ? ' <span class="text-[.55rem] uppercase bg-okyellow/20 text-okamber px-1.5 py-0.5 rounded align-middle">Custom</span>' : '') + '</div>'
+      + '<button type="button" data-enable class="text-xs px-2 py-1 rounded-lg ' + (s.enabled ? 'bg-okgreen/15 text-okgreen' : 'bg-gray-200 text-slate') + '">' + (s.enabled ? 'Visible' : 'Hidden') + '</button></div>';
+    h += '<div class="space-y-2.5"><div class="ok-label !text-[.65rem]">Style</div>';
+    h += colorRow('Background', 'style_bg', c.style_bg, '#ffffff');
+    h += colorRow('Heading color', 'style_hcolor', c.style_hcolor, '#141414');
+    h += colorRow('Text color', 'style_tcolor', c.style_tcolor, '#6b6b6b');
+    h += '<div><span class="text-xs text-slate">Heading font</span><select data-ctl="style_font" class="ok-input py-1.5 text-sm mt-1">';
+    FONTS.forEach(function (f) { h += '<option value="' + esc(f[0]) + '"' + (c.style_font === f[0] ? ' selected' : '') + '>' + esc(f[1]) + '</option>'; });
+    h += '</select></div>';
+    h += '<div><span class="text-xs text-slate">Overlay darkness</span><input type="range" min="0" max="1" step="0.05" data-ctl="style_overlay" value="' + (c.style_overlay != null && c.style_overlay !== '' ? c.style_overlay : '0.35') + '" class="w-full accent-okyellow"></div>';
+    h += '<div class="grid grid-cols-2 gap-2"><div><span class="text-xs text-slate">Top pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pt" value="' + (c.style_pt || 0) + '" class="w-full accent-okyellow"></div><div><span class="text-xs text-slate">Bottom pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pb" value="' + (c.style_pb || 0) + '" class="w-full accent-okyellow"></div></div>';
+    h += '<div><span class="text-xs text-slate">Text align</span><div class="flex gap-1 mt-1">' + ['left', 'center', 'right'].map(function (a) { return '<button type="button" data-align="' + a + '" class="flex-1 py-1.5 rounded-lg border text-sm ' + (c.style_align === a ? 'border-okyellow bg-okyellow/10' : 'border-[var(--ok-line)]') + '"><i class="fa-solid fa-align-' + a + '"></i></button>'; }).join('') + '</div></div></div>';
+    // Card controls, only for sections that actually contain cards.
+    var secEl = sel(key);
+    if (secEl && secEl.querySelector('.ok-card')) {
+      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Cards</div>';
+      h += colorRow('Card background', 'style_cardbg', c.style_cardbg, '#ffffff');
+      h += colorRow('Card border', 'style_cardborder', c.style_cardborder, '#ececec');
+      h += colorRow('Card heading', 'style_cardhead', c.style_cardhead, '#141414');
+      h += colorRow('Card text', 'style_cardtext', c.style_cardtext, '#6b6b6b');
+      h += '<div><span class="text-xs text-slate">Card corner radius</span><input type="range" min="0" max="40" step="2" data-ctl="style_cardradius" value="' + (c.style_cardradius != null && c.style_cardradius !== '' ? c.style_cardradius : 20) + '" class="w-full accent-okyellow"></div>';
+      h += '<p class="ok-hint">Applies to every card in this section.</p></div>';
+    }
+    // Element controls (button / image) — only if the section has them.
+    var hasBtn = secEl && secEl.querySelector('[data-el="btn"]');
+    var hasImg = secEl && secEl.querySelector('[data-el="img"]');
+    if (hasBtn || hasImg) {
+      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Elements</div>';
+      if (hasBtn) {
+        h += seg('Button align', 'btn_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);
+        h += seg('Button size', 'btn_size', [['sm', 'S'], ['', 'M'], ['lg', 'L']]);
+      }
+      if (hasImg) {
+        h += seg('Image align', 'img_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);
+        h += '<div><span class="text-xs text-slate">Image width</span><input type="range" min="20" max="100" step="5" data-ctl="img_w" value="' + (c.img_w || 100) + '" class="w-full accent-okyellow"></div>';
+      }
+      h += '</div>';
+    }
+    if (s.fields && s.fields.length) {
+      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Content</div>';
+      s.fields.forEach(function (f) {
+        h += '<div><label class="text-xs text-slate">' + esc(f.label) + '</label><input data-content="' + esc(f.key) + '" data-default="' + esc(f.default) + '" value="' + esc(c[f.key] != null ? c[f.key] : f.default) + '" placeholder="' + esc(f.default) + '" class="ok-input py-1.5 text-sm"></div>';
+      });
+      h += '<p class="ok-hint">Text changes appear after Save.</p></div>';
+    }
+    if (s.custom) h += '<div class="pt-2 border-t border-[var(--ok-line)]"><button type="button" data-del2 class="btn btn-sm w-full !bg-okred/10 !text-okred"><i class="fa-solid fa-trash"></i> Delete section</button></div>';
+    h += '</div>';
+    panel.innerHTML = h;
+  }
+
+  /* ---- inspector events ---- */
+  panel.addEventListener('input', function (e) {
+    if (!selKey) return;
+    var c = byKey[selKey].config, ctl = e.target.dataset.ctl, content = e.target.dataset.content;
+    if (ctl) { c[ctl] = e.target.value; applyStyle(selKey); applyEls(selKey); markDirty(); }
+    else if (content != null) { var v = e.target.value.trim(), d = e.target.dataset.default || ''; if (v && v !== d) c[content] = v; else delete c[content]; markDirty(); }
+  });
+  panel.addEventListener('click', function (e) {
+    if (!selKey) return;
+    var c = byKey[selKey].config;
+    var reset = e.target.closest('[data-reset]'), align = e.target.closest('[data-align]'), en = e.target.closest('[data-enable]'), del = e.target.closest('[data-del2]'), setg = e.target.closest('[data-set]');
+    if (reset) { delete c[reset.dataset.reset]; applyStyle(selKey); renderPanel(selKey); markDirty(); }
+    else if (align) { c.style_align = align.dataset.align; applyStyle(selKey); renderPanel(selKey); markDirty(); }
+    else if (setg) { var k = setg.dataset.set, v = setg.dataset.val; if (c[k] === v || !v) delete c[k]; else c[k] = v; applyStyle(selKey); applyEls(selKey); renderPanel(selKey); markDirty(); }
+    else if (en) { toggleEnabled(selKey); }
+    else if (del) { if (confirm('Delete this section?')) serverAction('/admin/page-builder/' + byKey[selKey].sid + '/delete'); }
+  });
+
+  /* ---- layers: drag / click / eye / delete ---- */
+  layers.addEventListener('dragstart', function (e) { dragCard = e.target.closest('.cv-layer'); if (dragCard) { e.dataTransfer.effectAllowed = 'move'; setTimeout(function () { dragCard.classList.add('cv-drag'); }, 0); } });
+  layers.addEventListener('dragend', function () { if (dragCard) { dragCard.classList.remove('cv-drag'); dragCard = null; syncOrder(); markDirty(); } });
+  layers.addEventListener('dragover', function (e) {
+    if (!dragCard) return; e.preventDefault();
+    var over = e.target.closest('.cv-layer'); if (!over || over === dragCard) return;
+    var r = over.getBoundingClientRect();
+    layers.insertBefore(dragCard, (e.clientY - r.top) > r.height / 2 ? over.nextSibling : over);
+  });
+  layers.addEventListener('click', function (e) {
+    var c = e.target.closest('.cv-layer'); if (!c) return;
+    var k = c.dataset.key;
+    if (e.target.closest('.cv-eye')) { toggleEnabled(k); return; }
+    if (e.target.closest('.cv-del')) { if (confirm('Delete this custom section?')) serverAction('/admin/page-builder/' + c.dataset.sid + '/delete'); return; }
+    select(k);
+  });
+
+  /* ---- add menu ---- */
+  var addBtn = document.getElementById('cvAddBtn'), addMenu = document.getElementById('cvAddMenu');
+  addBtn.addEventListener('click', function (e) { e.stopPropagation(); addMenu.classList.toggle('hidden'); });
+  document.addEventListener('click', function () { addMenu.classList.add('hidden'); });
+  addMenu.addEventListener('click', function (e) { var b = e.target.closest('[data-add]'); if (b) serverAction('/admin/page-builder/add', { type: b.dataset.add }); });
+
+  /* ---- save + server actions ---- */
+  function saveState() {
+    var sections = layerKeys().map(function (k) { return { key: k, enabled: byKey[k].enabled, config: byKey[k].config }; });
+    status('Saving…');
+    return fetch('/admin/canvas/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF }, body: JSON.stringify({ sections: sections }) }).then(function (r) { return r.json(); });
+  }
+  document.getElementById('cvSave').addEventListener('click', function () {
+    if (!doc) return;
+    saveState().then(function (d) { if (d && d.ok) { status('Saved'); frame.contentWindow.location.reload(); } else status('Save failed', true); }).catch(function () { status('Save failed', true); });
+  });
+  function serverAction(url, extra) {
+    saveState().then(function () {
+      var f = new FormData(); f.append('_csrf', CSRF);
+      if (extra) Object.keys(extra).forEach(function (k) { f.append(k, extra[k]); });
+      fetch(url, { method: 'POST', body: f }).then(function () { location.reload(); }).catch(function () { location.reload(); });
+    });
+  }
+})();
+</script>
+{% endblock %}

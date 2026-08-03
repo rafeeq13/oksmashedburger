@@ -1,0 +1,136 @@
+{% extends "layouts/base.html" %}
+{% block title %}Track Your Order, {{ brand_name }}{% endblock %}
+{% block main_class %}bg-softyellow/20{% endblock %}
+
+{% block content %}
+{% if not order %}
+<div class="ok-container ok-py-20 text-center">
+  <div class="ok-w-16 ok-h-16 mx-auto ok-mb-3 rounded-pill bg-cream ok-grid ok-place-center text-gold ok-fs-2xl"><i class="fa-solid fa-location-arrow icon-xl"></i></div>
+  <p class="text-muted-warm ok-fs-lg ok-mb-5">No order to track yet.</p>
+  <a href="/menu" class="btn btn-primary">Start an order</a>
+</div>
+{% else %}
+<div id="trk" data-number="{{ order.number }}" data-status="{{ order.status }}">
+  <!-- Order header -->
+  <section class="bg-ink text-white">
+    <div class="ok-container ok-py-5 ok-paddin-15rem-md d-flex flex-column flex-md-row align-items-md-center ok-gap-3 justify-content-between">
+      <div class="d-flex align-items-center ok-gap-3">
+        <div class="ok-w-12 ok-h-12 rounded-pill bg-yellow text-ink ok-grid ok-place-center flex-shrink-0"><i class="fa-solid fa-location-arrow icon-lg"></i></div>
+        <div>
+          <div class="text-w-60 ok-fs-xs text-uppercase fw-semibold tracking-wide">Order {{ order.number }}</div>
+          <div class="font-display fw-bold ok-lh-tight">{{ brand_name }}, {{ order.store.name }}</div>
+          <div class="text-w-60 ok-fs-sm d-flex align-items-center gap-1 text-capitalize"><i class="fa-solid fa-{{ 'car' if order.order_type == 'delivery' else 'bag-shopping' }}"></i> {{ order.order_type }}{% if order.address %} · {{ order.address }}{% endif %}</div>
+        </div>
+      </div>
+      {% if order.status not in ['completed', 'cancelled'] %}
+      <div class="ok-card !bg-okyellow !border-okyellow text-ink ok-px-5 ok-py-3 text-center flex-shrink-0">
+        <div class="ok-fs-xs text-uppercase fw-bold tracking-wide">{{ 'Scheduled' if scheduled else ('Arriving' if order.order_type == 'delivery' else 'Ready') }}</div>
+        <div class="font-display ok-fw-800 ok-fs-2xl ok-lh-none mt-1">{{ eta_time }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="ok-section !py-8 ok-py-25rem-md">
+    <div class="ok-container">
+      {% if order.status == 'cancelled' %}
+      <div class="ok-card ok-p-8 text-center border-ok-red">
+        <div class="ok-w-16 ok-h-16 mx-auto ok-mb-3 rounded-pill bg-ok-red-10 text-ok-red ok-grid ok-place-center ok-fs-3xl"><i class="fa-solid fa-circle-xmark icon-xl"></i></div>
+        <h1 class="ok-h1 mb-1">Order cancelled</h1>
+        <p class="text-muted-warm">This order was cancelled. Contact the store if this is unexpected.</p>
+      </div>
+      {% else %}
+      <div class="ok-card ok-p-3 ok-paddin-2rem-md">
+        <div class="text-center ok-mb-8 max-w-xl mx-auto">
+          <h1 class="ok-h1 mt-1" id="trk-headline">{{ headline }}</h1>
+          <p class="text-muted-warm mt-2" id="trk-desc">{{ desc }}</p>
+          {% if order.status not in ['completed', 'cancelled'] %}
+          <div id="trk-eta" class="d-inline-flex align-items-center gap-2 ok-mt-3 bg-cream text-ink rounded-pill ok-px-3 py-2 fw-semibold">
+            <i class="fa-solid fa-clock text-gold"></i> {{ 'Scheduled for' if scheduled else ready_verb }} <b>{{ eta_time }}</b>{% if not scheduled %} <span class="text-muted-warm fw-normal">· about {{ eta_minutes }} min</span>{% endif %}
+          </div>
+          {% endif %}
+          <div id="trk-handler" class="ok-fs-sm text-muted-warm ok-mt-3 d-flex align-items-center justify-content-center gap-2">{% if handler %}<i class="fa-solid fa-{{ handler.icon }} text-gold"></i> Handled by {{ handler.text }}{% endif %}</div>
+        </div>
+        <!-- stepper -->
+        <div class="tracker" id="trk-steps">
+          {% for st in stages %}
+          <div class="tracker-step {% if st.state == 'done' %}is-done{% elif st.state == 'active' %}is-active{% endif %}" data-stage="{{ st.key }}">
+            <div class="dot"><i class="fa-solid fa-{{ st.icon }} icon-lg"></i></div>
+            <div class="tracker-label">{{ st.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="ok-grid ok-grid-lg-3 ok-gap-3 ok-mt-3">
+        {% if order.order_type == 'delivery' %}
+        <div class="ok-gridco-span2span2-lg ok-card overflow-hidden">
+          <div class="position-relative ok-ar-169"><img data-ph="Live driver location" data-ph-type="map" data-ph-ratio="16/9" class="ph-img" alt=""></div>
+          <div class="ok-p-3">
+            {% if order.delivery %}
+              {% if order.delivery.method == 'own' and order.delivery.driver %}
+              <div class="d-flex align-items-center ok-gap-3">
+                <div class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center text-gold flex-shrink-0"><i class="fa-solid fa-user"></i></div>
+                <div class="flex-grow-1 ok-min-w-0"><div class="fw-bold">{{ order.delivery.driver.name }}</div><div class="ok-fs-xs text-muted-warm">{{ order.delivery.driver.vehicle }} · {{ order.delivery.status.replace('_',' ')|title }}</div></div>
+                {% if order.delivery.driver.phone %}<a href="tel:{{ order.delivery.driver.phone }}" class="btn btn-secondary btn-sm flex-shrink-0"><i class="fa-solid fa-phone"></i> Call</a>{% endif %}
+              </div>
+              {% elif order.delivery.method == 'uber_direct' %}
+              <div class="d-flex align-items-center justify-content-between ok-gap-3">
+                <div class="ok-fs-sm"><b>Delivery via Uber Direct</b> · {{ order.delivery.status.replace('_',' ')|title }}</div>
+                {% if order.delivery.tracking_url %}<a href="{{ order.delivery.tracking_url }}" target="_blank" class="btn btn-secondary btn-sm">Live tracking</a>{% endif %}
+              </div>
+              {% endif %}
+            {% else %}
+            <p class="ok-fs-sm text-muted-warm">Your driver's live location appears here once your order is out for delivery.</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="ok-card ok-p-5 {% if order.order_type != 'delivery' %}lg:col-span-3{% endif %}">
+          <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Your order</h2>
+          <ul class="ok-stack-2 ok-fs-sm">
+            {% for it in order.items %}
+            <li class="d-flex justify-content-between"><span><b>{{ it.qty }}×</b> {{ it.name }}</span><span class="fw-semibold">${{ '%.2f'|format(it.line_total) }}</span></li>
+            {% endfor %}
+          </ul>
+          <div class="divider ok-my-3"></div>
+          <div class="d-flex justify-content-between font-display fw-bold"><span>Total</span><span>${{ '%.2f'|format(order.total) }}</span></div>
+          <div class="ok-mt-3"><a href="/contact" class="link-underline ok-fs-sm">Need help with this order?</a></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  var trk = document.getElementById('trk');
+  if (trk) {
+    var num = trk.dataset.number, cur = trk.dataset.status;
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+    function apply(d) {
+      if (!d || !d.status || d.status === cur) return;
+      if (d.reload) { location.reload(); return; }          // driver/map or terminal card → full refresh
+      cur = d.status; trk.dataset.status = cur;
+      var h = document.getElementById('trk-headline'); if (h) h.textContent = d.headline || '';
+      var p = document.getElementById('trk-desc'); if (p) p.textContent = d.desc || '';
+      var eta = document.getElementById('trk-eta');
+      if (eta) eta.innerHTML = '<i class="fa-solid fa-clock text-gold"></i> ' + (d.scheduled ? 'Scheduled for' : esc(d.ready_verb)) +
+        ' <b>' + esc(d.eta_time) + '</b>' + (d.scheduled ? '' : ' <span class="text-muted-warm fw-normal">· about ' + esc(String(d.eta_minutes)) + ' min</span>');
+      var ha = document.getElementById('trk-handler');
+      if (ha) ha.innerHTML = d.handler ? ('<i class="fa-solid fa-' + esc(d.handler.icon) ' text-gold"></i> Handled by ' + esc(d.handler.text)) : '';
+      (d.stages || []).forEach(function (st) {
+        var el = trk.querySelector('.tracker-step[data-stage="' + st.key + '"]');
+        if (el) { el.classList.toggle('is-done', st.state === 'done'); el.classList.toggle('is-active', st.state === 'active'); }
+      });
+      if (window.OK && OK.toast) OK.toast(d.headline);       // little "your order is …" nudge
+    }
+    setInterval(function () {
+      fetch('/api/orders/' + num + '/status').then(function (r) { return r.ok ? r.json() : null; }).then(apply).catch(function () {});
+    }, 3000);
+  }
+</script>
+{% endblock %}

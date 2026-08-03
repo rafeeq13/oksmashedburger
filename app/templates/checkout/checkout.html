@@ -1,0 +1,226 @@
+{% extends "layouts/base.html" %}
+{% block title %}Checkout, {{ brand_name }}{% endblock %}
+{% block main_class %}bg-[#f6f6f4]{% endblock %}
+
+{% block content %}
+<form method="post" action="/checkout">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="ok-container ok-py-8 ok-paddin-25rem-md ok-grid ok-gc-1fr400px-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
+
+    <!-- ============ LEFT: steps ============ -->
+    <div class="ok-stack-5 ok-min-w-0">
+
+      <!-- 1 · Fulfillment -->
+      <section class="ok-card ok-p-5 ok-paddin-15rem-md">
+        <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">1</span><h2 class="font-display fw-bold ok-fs-lg">How &amp; when</h2></div>
+
+        <!-- order type -->
+        <div class="ok-grid ok-grid-2 gap-2 ok-mb-5">
+          {% for ot, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
+          <label class="d-flex flex-column align-items-center ok-gap-15 ok-rounded-xl border-2 ok-py-3 ok-pointer transition ok-bc-varokline ok-checkable">
+            <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if order_type == ot %}checked{% endif %}>
+            <i class="fa-solid fa-{{ icon }} ok-fs-xl text-gold"></i>
+            <span class="ok-fs-sm fw-semibold">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <!-- address (delivery) -->
+        <div class="ok-mb-5">
+          <label class="ok-label" for="address">Delivery address <span class="text-muted-warm fw-normal">(for delivery orders)</span></label>
+          <div class="d-flex align-items-center gap-2 ok-input">
+            <span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span>
+            <input id="address" name="address" class="w-100 bg-transparent ok-nofocus" placeholder="1520 Chestnut St, Apt 4B, Philadelphia 19102" value="{{ default_address.one_line if default_address else '' }}">
+          </div>
+        </div>
+
+        <!-- timing -->
+        {% if not store or not store.can_order %}
+        <div class="ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-exclamation"></i> {{ store.name if store else 'This store' }} is currently closed and not accepting orders. Please try again later.</div>
+        {% else %}
+        <div class="ok-grid ok-grid-sm-2 gap-2">
+          <label class="d-flex align-items-center ok-gap-3 ok-rounded-xl border-2 ok-p-3 ok-pointer transition ok-checkable ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
+            <input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if store.open_now %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}>
+            <span><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span><span class="d-block ok-fs-xs text-muted-warm">{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span></span>
+          </label>
+          {% if store.scheduling_open %}
+          <label class="ok-rounded-xl border-2 ok-p-3 ok-pointer transition ok-checkable ok-bc-varokline">
+            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if not store.open_now %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
+            <input type="datetime-local" name="scheduled_for" class="ok-input ok-mt-3 py-2 ok-fs-sm" min="{{ min_schedule }}" value="{{ default_schedule }}">
+          </label>
+          {% endif %}
+        </div>
+        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 !text-okamber"><i class="fa-solid fa-circle-info"></i> Closed for immediate orders, schedule one within opening hours (today: {{ store.today_hours }}).</p>{% endif %}
+        {% endif %}
+      </section>
+
+      <!-- 2 · Contact -->
+      <section class="ok-card ok-p-5 ok-paddin-15rem-md">
+        <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">2</span><h2 class="font-display fw-bold ok-fs-lg">Contact details</h2></div>
+        <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+          <div><label class="ok-label" for="name">Name</label><input id="name" name="name" required class="ok-input" value="{{ user.full_name if user else '' }}" placeholder="Jordan Miller"></div>
+          <div><label class="ok-label" for="phone">Phone</label><input id="phone" name="phone" class="ok-input" value="{{ user.phone if user else '' }}" placeholder="(215) 555-0100"></div>
+          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="email">Email</label><input id="email" name="email" type="email" class="ok-input" value="{{ user.email if user else '' }}" placeholder="you@email.com"></div>
+          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="notes">Order notes <span class="text-muted-warm fw-normal">(optional)</span></label><textarea id="notes" name="notes" rows="2" class="ok-textarea" placeholder="Gate code, allergies, no onions…"></textarea></div>
+        </div>
+      </section>
+
+      {% set tip_presets = (store.tip_presets if store and store.tip_presets else [15, 18, 20]) %}
+      {% if store and store.tips_enabled %}
+      <!-- 3 · Tip (percentages configured per store in admin → Settings) -->
+      <section class="ok-card ok-p-5 ok-paddin-15rem-md">
+        <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">3</span><h2 class="font-display fw-bold ok-fs-lg">Add a tip</h2><span class="ok-fs-xs text-muted-warm ml-auto">100% goes to the crew</span></div>
+        <div class="d-flex flex-wrap ok-gap-15 ok-gap-05rem-sm">
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="0" class="visually-hidden" checked><span class="fw-bold ok-fs-sm">None</span><span class="ok-fs-65rem text-muted-warm">$0</span></label>
+          {% for pct in tip_presets %}
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="{{ '%.2f'|format(summary.subtotal * pct / 100) }}" class="visually-hidden"><span class="fw-bold ok-fs-sm">{{ pct }}%</span><span class="ok-fs-65rem text-muted-warm">${{ '%.2f'|format(summary.subtotal * pct / 100) }}</span></label>
+          {% endfor %}
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center justify-content-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="0" class="visually-hidden" data-tip-custom-radio><span class="fw-bold ok-fs-sm">Custom</span><span class="ok-fs-65rem text-muted-warm"><i class="fa-solid fa-pen"></i></span></label>
+        </div>
+
+        <!-- custom tip amount (shown when Custom is selected) -->
+        <div data-tip-custom-wrap class="ok-mt-3" hidden>
+          <label class="ok-label !text-xs" for="tipCustom">Custom tip amount</label>
+          <div class="d-flex align-items-center gap-2 ok-input"><span class="text-muted-warm fw-semibold">$</span><input id="tipCustom" type="number" min="0" step="0.50" inputmode="decimal" data-tip-custom-input class="w-100 bg-transparent ok-nofocus" placeholder="0.00"></div>
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- Payment -->
+      <section class="ok-card ok-p-5 ok-paddin-15rem-md">
+        <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">{{ '4' if (store and store.tips_enabled) else '3' }}</span><h2 class="font-display fw-bold ok-fs-lg">Payment</h2></div>
+        <input type="hidden" name="payment_method" value="card">
+
+        <!-- card details -->
+        <div data-card-fields class="ok-grid ok-gap-3">
+          <div>
+            <label class="ok-label" for="card_number">Card number</label>
+            <div class="d-flex align-items-center gap-2 ok-input">
+              <span class="text-muted-warm"><i class="fa-solid fa-credit-card"></i></span>
+              <input id="card_number" name="card_number" inputmode="numeric" autocomplete="cc-number" maxlength="19" class="w-100 bg-transparent ok-nofocus tracking-widest" placeholder="4242 4242 4242 4242">
+              <span class="d-flex gap-1 text-muted-warm-70"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i><i class="fa-brands fa-cc-amex"></i></span>
+            </div>
+          </div>
+          <div class="ok-grid ok-grid-2 ok-gap-3">
+            <div><label class="ok-label" for="card_exp">Expiry</label><input id="card_exp" name="card_exp" inputmode="numeric" autocomplete="cc-exp" maxlength="7" class="ok-input" placeholder="MM / YY"></div>
+            <div><label class="ok-label" for="card_cvc">CVC</label><input id="card_cvc" name="card_cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="4" class="ok-input" placeholder="123"></div>
+          </div>
+          <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}"></div>
+        </div>
+
+        <p class="ok-hint ok-mt-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-lock text-ok-green"></i>
+          {% if store %}Processed on <b class="text-ink">{{ store.name }}</b>'s own Stripe account{% if not stripe_connected %} <span class="text-gold">(demo mode)</span>{% endif %}.{% else %}Secure, PCI-DSS compliant.{% endif %}
+        </p>
+      </section>
+    </div>
+
+    <!-- ============ RIGHT: summary ============ -->
+    <aside class="ok-positi-sticky-lg ok-top-6rem-lg ok-stack-4">
+      <div class="ok-card overflow-hidden">
+        <div class="d-flex align-items-center justify-content-between ok-px-5 ok-py-3 border-bottom ok-bc-varokline">
+          <h2 class="font-display fw-bold ok-fs-lg">Your order</h2>
+          <a href="/cart" class="link-underline ok-fs-xs">Edit</a>
+        </div>
+
+        <!-- items -->
+        <div class="ok-px-5 ok-py-3 ok-stack-3 max-h-72 overflow-y-auto">
+          {% for line in summary.lines %}
+          <div class="d-flex ok-gap-3">
+            <div class="position-relative ok-w-12 ok-h-12 ok-rounded-lg overflow-hidden flex-shrink-0 bg-cream">
+              <img src="{{ line.image or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-100 h-100 ok-cover">
+              <span class="position-absolute -top-1.5 -right-1.5 ok-w-5 ok-h-5 rounded-pill bg-ink text-white ok-fs-65rem fw-bold ok-grid ok-place-center">{{ line.qty }}</span>
+            </div>
+            <div class="flex-grow-1 ok-min-w-0">
+              <div class="d-flex justify-content-between gap-2">
+                <div class="fw-semibold ok-fs-sm">{{ line.name }}</div>
+                <div class="fw-bold ok-fs-sm text-nowrap">${{ '%.2f'|format(line.line_total) }}</div>
+              </div>
+              {% if line.options %}
+              <div class="ok-mt-05 ok-stack-05">
+                {% if line.options.variant %}
+                <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm"><span>{{ line.options.variant }}</span>{% if line.options.variant_delta %}<span class="text-nowrap">{{ '+' if line.options.variant_delta > 0 else '−' }}${{ '%.2f'|format(line.options.variant_delta|abs) }}</span>{% endif %}</div>
+                {% endif %}
+                {% for a in line.options.addons %}
+                <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm"><span>+ {{ a.name }}</span><span class="text-nowrap">+${{ '%.2f'|format(a.price) }}</span></div>
+                {% endfor %}
+                {% if line.options.notes %}<div class="ok-fs-xs text-muted-warm fst-italic">“{{ line.options.notes }}”</div>{% endif %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- breakdown -->
+        <div class="ok-px-5 ok-py-3 border-top ok-bc-varokline ok-stack-2 ok-fs-sm">
+          <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
+          {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount{% if summary.promo.code %} ({{ summary.promo.code }}){% endif %}</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
+          <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
+          <div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>
+          <div class="d-flex justify-content-between" data-tip-line{% if not summary.tip %} hidden{% endif %}><span class="text-muted-warm">Tip</span><span class="fw-semibold" data-tip-amount>${{ '%.2f'|format(summary.tip) }}</span></div>
+          {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
+        </div>
+
+        <!-- total + CTA -->
+        <div class="ok-px-5 ok-py-3 bg-ink text-white">
+          <div class="d-flex justify-content-between align-items-center ok-mb-3">
+            <div><div class="text-white ok-fs-xs text-uppercase tracking-wide fw-semibold">Total</div>{% if user %}<div class="ok-fs-7rem text-yellow">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
+            <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}">${{ '%.2f'|format(summary.total) }}</span>
+          </div>
+          {% if store and store.can_order %}
+          <button type="submit" class="btn btn-primary btn-block btn-lg ok-btn-invert"><span data-total-btn>Place order · ${{ '%.2f'|format(summary.total) }}</span></button>
+          {% else %}
+          <button type="button" disabled class="btn btn-block btn-lg !bg-white/15 !text-white/60 cursor-not-allowed"><i class="fa-solid fa-lock"></i> Store closed</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- trust -->
+      <div class="ok-card ok-p-3 ok-grid ok-grid-3 gap-2 text-center">
+        <div class="ok-fs-xs"><i class="fa-solid fa-lock text-ok-green ok-fs-lg d-block mb-1"></i>Secure<br>payment</div>
+        <div class="ok-fs-xs"><i class="fa-solid fa-location-dot text-gold ok-fs-lg d-block mb-1"></i>Live<br>tracking</div>
+        <div class="ok-fs-xs"><i class="fa-solid fa-arrow-rotate-left text-ink ok-fs-lg d-block mb-1"></i>Easy<br>reorder</div>
+      </div>
+      <p class="text-center ok-fs-xs text-muted-warm">Promo codes, points &amp; gift cards are applied in your <a href="/cart" class="link-underline">cart</a>.</p>
+    </aside>
+  </div>
+</form>
+
+<script>
+(function () {
+  var form = document.querySelector('form[action="/checkout"]');
+  if (!form) return;
+
+  // ----- Tip: reflect selection in the summary total, live -----
+  var totalEl = form.querySelector("[data-total-display]");
+  var btnEl = form.querySelector("[data-total-btn]");
+  var tipLine = form.querySelector("[data-tip-line]");
+  var tipAmt = form.querySelector("[data-tip-amount]");
+  var base = totalEl ? parseFloat(totalEl.getAttribute("data-base-total")) || 0 : 0;
+  var customRadio = form.querySelector("[data-tip-custom-radio]");
+  var customWrap = form.querySelector("[data-tip-custom-wrap]");
+  var customInput = form.querySelector("[data-tip-custom-input]");
+  function money(n) { return "$" + n.toFixed(2); }
+  function applyTip() {
+    // when Custom is chosen, its value tracks the typed amount
+    if (customRadio && customRadio.checked && customInput) {
+      customRadio.value = String(Math.max(0, parseFloat(customInput.value) || 0));
+    }
+    if (customWrap) customWrap.hidden = !(customRadio && customRadio.checked);
+    var sel = form.querySelector('input[name="tip"]:checked');
+    var tip = sel ? (parseFloat(sel.value) || 0) : 0;
+    if (tipAmt) tipAmt.textContent = money(tip);
+    if (tipLine) tipLine.hidden = tip <= 0;
+    var total = base + tip;
+    if (totalEl) totalEl.textContent = money(total);
+    if (btnEl) btnEl.textContent = "Place order · " + money(total);
+  }
+  form.querySelectorAll('input[name="tip"]').forEach(function (r) {
+    r.addEventListener("change", function () { applyTip(); if (r === customRadio && customInput) setTimeout(function () { customInput.focus(); }, 40); });
+  });
+  if (customInput) customInput.addEventListener("input", function () { if (customRadio) customRadio.checked = true; applyTip(); });
+
+  applyTip();
+})();
+</script>
+{% endblock %}

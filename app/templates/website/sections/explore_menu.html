@@ -1,0 +1,48 @@
+<!-- Explore the menu (categories from this store's menu) -->
+{% if categories %}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    {# Heading left, section CTA right, on one baseline. #}
+    <div class="ok-sechead-row d-flex flex-column flex-md-row align-items-md-end justify-content-between ok-gap-5" data-reveal="up">
+      <h3 class="ok-title">{{ cfg.get('heading') or 'Explore the Menu' }}</h3>
+      <a href="{{ cfg.get('cta_href') or '/menu' }}" class="ok-btn-outline flex-shrink-0">{{ cfg.get('cta_text') or 'See full menu' }} <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <hr class="ok-hr">
+
+    {# Four cards in the grid, the last category runs full width as a landscape feature. #}
+    {% set feature = categories[-1] if categories|length > 4 else none %}
+    {% set grid_cats = (categories[:3] if feature else categories[:3]) %}
+    <div class="ok-cardgrid ok-cardgrid--3" data-reveal-stagger>
+      {% for c in grid_cats %}
+      <a href="/menu#{{ c.slug }}" class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
+        <div class="ok-media ok-ratio bg-ink !rounded-none">
+          {% if c.image_url %}<img src="{{ c.image_url }}" alt="{{ c.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          {% else %}<div class="w-100 h-100 ok-grid ok-place-center ok-fs-4xl text-gold"><i class="fa-solid fa-{{ c.icon or 'utensils' }}"></i></div>{% endif %}
+        </div>
+        <div class="ok-card-body">
+          <h3 class="ok-card-title">{{ c.name }}</h3>
+          {% if c.description %}<p class="ok-card-text">{{ c.description }}</p>{% endif %}
+          <span class="ok-more ok-arrow ok-card-foot">See more <i class="fa-solid fa-arrow-right"></i></span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% if feature %}
+    <a href="/menu#{{ feature.slug }}" class="ok-card ok-card-hover overflow-hidden ok-grid ok-grid-md-2 ok-mt-clamp115rem17vw15r ok-hovergroup" data-reveal="up">
+      <div class="ok-media ok-ratio-wide bg-ink !rounded-none">
+        {% if feature.image_url %}<img src="{{ feature.image_url }}" alt="{{ feature.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+        {% else %}<div class="w-100 h-100 ok-grid ok-place-center ok-fs-5xl text-gold ok-minh-16rem"><i class="fa-solid fa-{{ feature.icon or 'utensils' }}"></i></div>{% endif %}
+      </div>
+      <div class="ok-card-body justify-content-center !p-8 ok-p-3rem-md">
+<h3 class="ok-card-title">{{ feature.name }}</h3>
+        {% if feature.description %}<p class="ok-card-text !text-base !mt-3 max-w-md">{{ feature.description }}</p>{% endif %}
+        <span class="ok-more ok-arrow">See more <i class="fa-solid fa-arrow-right"></i></span>
+      </div>
+    </a>
+    {% endif %}
+
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OK Rewards — OK Smashed Burger</title>
+  <meta name="description" content="Join OK Rewards free: earn 10 points per $1, redeem free burgers, fries and shakes, unlock member tiers and refer friends for $5 each.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO + POINTS CARD ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-15">
+        <img data-ph="OK Rewards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-20 grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <span class="badge badge-yellow mb-4"><i class="fa-solid fa-star fill-current"></i> OK Rewards</span>
+          <h1 class="ok-display mb-4">
+            Every bite earns you <span class="text-okyellow">free food.</span>
+          </h1>
+          <p class="text-white/80 text-lg mb-6 max-w-md">Rack up points on every order and cash them in for burgers, sides and shakes. Plus birthday treats, referral bonuses and members-only deals.</p>
+          <div class="flex flex-wrap gap-3">
+            <a href="menu.html" class="btn btn-primary btn-lg">Order &amp; Earn</a>
+            <a href="#redeem" class="btn btn-secondary btn-lg !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet">Browse Rewards</a>
+          </div>
+          <p class="text-sm text-white/60 mt-5">Not a member yet? <a href="register.html" class="text-okyellow font-semibold link-underline !text-okyellow">Join free <i class="fa-solid fa-arrow-right"></i></a></p>
+        </div>
+
+        <!-- Points card -->
+        <div class="ok-card bg-white text-jet p-6 md:p-7 shadow-2xl">
+          <div class="flex items-start justify-between mb-5">
+            <div class="flex items-center gap-3">
+              <img data-ph="Jordan" data-ph-type="avatar" data-ph-ratio="1/1" class="w-12 h-12 rounded-full" alt="">
+              <div>
+                <div class="text-xs text-slate">Welcome back</div>
+                <div class="font-display font-bold text-lg leading-tight">Jordan M.</div>
+              </div>
+            </div>
+            <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Silver member</span>
+          </div>
+
+          <div class="flex items-end gap-2 mb-1">
+            <span class="font-display font-extrabold text-5xl leading-none">1,240</span>
+            <span class="text-slate font-semibold mb-1">points</span>
+          </div>
+          <p class="text-sm text-slate mb-4">You have <b class="text-jet">1,240 points</b> ready to spend.</p>
+
+          <!-- progress bar -->
+          <div class="mb-2 flex items-center justify-between text-xs font-semibold">
+            <span>Next reward</span><span class="text-okamber">1,240 / 1,500</span>
+          </div>
+          <div class="h-3 w-full rounded-full bg-softyellow overflow-hidden mb-2">
+            <div class="h-full rounded-full bg-okyellow" style="width:82%"></div>
+          </div>
+          <p class="text-sm text-slate mb-5"><i class="fa-solid fa-burger"></i> <b class="text-jet">260 points</b> to a free Classic Smash.</p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <a href="#redeem" class="btn btn-primary btn-block">Redeem points</a>
+            <a href="#history" class="btn btn-secondary btn-block">View history</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TABS: EARN / REDEEM / HISTORY ============ -->
+    <section class="ok-section">
+      <div class="ok-container" data-tab-group>
+        <div class="flex items-end justify-between flex-wrap gap-4 mb-6">
+          <div><h2 class="ok-h2">Earn &amp; redeem</h2></div>
+          <!-- tab buttons -->
+          <div class="flex gap-2 p-1 rounded-full bg-softyellow/70">
+            <button data-tab="earn" class="chip is-active border-0 bg-transparent">Earn</button>
+            <button data-tab="redeem" class="chip border-0 bg-transparent">Redeem</button>
+            <button data-tab="history" class="chip border-0 bg-transparent">History</button>
+          </div>
+        </div>
+
+        <!-- ---- EARN panel ---- -->
+        <div data-panel="earn">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <article class="ok-card ok-card-hover p-6">
+              <div class="w-14 h-14 rounded-2xl bg-softyellow grid place-items-center text-3xl mb-4"><i class="fa-solid fa-burger icon-xl"></i></div>
+              <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">Order anything</h3><span class="badge badge-yellow">10 pts / $1</span></div>
+              <p class="text-sm text-slate">Earn 10 points for every dollar you spend on delivery, pickup or dine-in.</p>
+            </article>
+            <article class="ok-card ok-card-hover p-6">
+              <div class="w-14 h-14 rounded-2xl bg-softyellow grid place-items-center text-3xl mb-4"><i class="fa-solid fa-users icon-xl"></i></div>
+              <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">Refer a friend</h3><span class="badge badge-green">+$5 both</span></div>
+              <p class="text-sm text-slate">Share your code — you both get $5 off when they place their first order.</p>
+            </article>
+            <article class="ok-card ok-card-hover p-6">
+              <div class="w-14 h-14 rounded-2xl bg-softyellow grid place-items-center text-3xl mb-4"><i class="fa-solid fa-cake-candles icon-xl"></i></div>
+              <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">Birthday reward</h3><span class="badge badge-soft">Yearly</span></div>
+              <p class="text-sm text-slate">A free treat lands in your account every year during your birthday month.</p>
+            </article>
+            <article class="ok-card ok-card-hover p-6">
+              <div class="w-14 h-14 rounded-2xl bg-softyellow grid place-items-center text-3xl mb-4"><i class="fa-solid fa-pencil icon-xl"></i></div>
+              <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">Write a review</h3><span class="badge badge-yellow">+50 pts</span></div>
+              <p class="text-sm text-slate">Rate your order and leave a review to earn 50 bonus points, up to once a day.</p>
+            </article>
+            <article class="ok-card ok-card-hover p-6">
+              <div class="w-14 h-14 rounded-2xl bg-softyellow grid place-items-center text-3xl mb-4"><i class="fa-solid fa-mobile-screen-button icon-xl"></i></div>
+              <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">Install the app</h3><span class="badge badge-yellow">+100 pts</span></div>
+              <p class="text-sm text-slate">Add OK to your home screen and get a one-time 100-point welcome bonus.</p>
+            </article>
+            <article class="ok-card ok-card-hover p-6 bg-jet text-white flex flex-col justify-center">
+              <h3 class="font-display font-bold text-lg mb-1">Ready to stack points?</h3>
+              <p class="text-sm text-white/70 mb-4">Start an order now and watch your balance grow.</p>
+              <a href="menu.html" class="btn btn-primary btn-sm self-start">Start Your Order</a>
+            </article>
+          </div>
+        </div>
+
+        <!-- ---- REDEEM panel ---- -->
+        <div data-panel="redeem" class="hidden" id="redeem">
+          <div class="ok-card bg-softyellow/50 border-okyellow/40 p-4 mb-6 flex items-center gap-3">
+            <span class="text-2xl"><i class="fa-solid fa-star fill-current icon-lg"></i></span>
+            <p class="text-sm font-semibold">You have <b>1,240 points</b> to spend. Rewards you can't afford yet are greyed out.</p>
+          </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- affordable -->
+            <article class="ok-card ok-card-hover overflow-hidden group">
+              <div class="relative aspect-[16/10] overflow-hidden">
+                <img data-ph="Free Fries" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">200 pts</span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-display font-bold text-lg">Free Fries</h3>
+                <p class="text-sm text-slate mb-3">A regular order of our crispy OK fries.</p>
+                <button data-add-cart="Free Fries reward" class="btn btn-primary btn-block">Redeem · 200</button>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group">
+              <div class="relative aspect-[16/10] overflow-hidden">
+                <img data-ph="Free Milkshake" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">350 pts</span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-display font-bold text-lg">Free Milkshake</h3>
+                <p class="text-sm text-slate mb-3">Hand-spun vanilla, chocolate or strawberry.</p>
+                <button data-add-cart="Free Milkshake reward" class="btn btn-primary btn-block">Redeem · 350</button>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group">
+              <div class="relative aspect-[16/10] overflow-hidden">
+                <img data-ph="Free Classic Smash" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-deal absolute top-3 left-3">Popular</span>
+                <span class="badge badge-yellow absolute top-3 right-3">500 pts</span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-display font-bold text-lg">Free Classic Smash</h3>
+                <p class="text-sm text-slate mb-3">Single smash, American cheese, OK sauce.</p>
+                <button data-add-cart="Free Classic Smash reward" class="btn btn-primary btn-block">Redeem · 500</button>
+              </div>
+            </article>
+            <article class="ok-card ok-card-hover overflow-hidden group">
+              <div class="relative aspect-[16/10] overflow-hidden">
+                <img data-ph="Free Combo" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+                <span class="badge badge-yellow absolute top-3 left-3">900 pts</span>
+              </div>
+              <div class="p-4">
+                <h3 class="font-display font-bold text-lg">Free Combo</h3>
+                <p class="text-sm text-slate mb-3">Any smash burger + fries + a drink.</p>
+                <button data-add-cart="Free Combo reward" class="btn btn-primary btn-block">Redeem · 900</button>
+              </div>
+            </article>
+            <!-- locked / above balance -->
+            <article class="ok-card overflow-hidden opacity-60">
+              <div class="relative aspect-[16/10] overflow-hidden">
+                <img data-ph="$10 Off" data-ph-ratio="16/10" class="ph-img grayscale" alt="">
+                <span class="badge badge-soft absolute top-3 left-3">1,000 pts</span>
+              </div>
+              <div class="p-4">
+                <div class="flex items-center gap-2 mb-1"><h3 class="font-display font-bold text-lg">$10 Off Your Order</h3></div>
+                <p class="text-sm text-slate mb-3"><i class="fa-solid fa-lock"></i> Earn 1,000 points to unlock this reward.</p>
+                <button class="btn btn-secondary btn-block" disabled style="opacity:.7;cursor:not-allowed">Need 1,000 pts</button>
+              </div>
+            </article>
+            <article class="ok-card overflow-hidden bg-jet text-white flex flex-col justify-center p-6">
+              <h3 class="font-display font-bold text-lg mb-1">Keep going!</h3>
+              <p class="text-sm text-white/70 mb-4">You're just <b class="text-okyellow">260 points</b> away from a free Classic Smash.</p>
+              <a href="menu.html" class="btn btn-primary btn-sm self-start">Earn more points</a>
+            </article>
+          </div>
+        </div>
+
+        <!-- ---- HISTORY panel ---- -->
+        <div data-panel="history" class="hidden" id="history">
+          <div class="ok-card overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm min-w-[640px]">
+                <thead>
+                  <tr class="bg-softyellow/60 text-left text-jet">
+                    <th class="px-4 py-3 font-display font-bold">Date</th>
+                    <th class="px-4 py-3 font-display font-bold">Activity</th>
+                    <th class="px-4 py-3 font-display font-bold">Order #</th>
+                    <th class="px-4 py-3 font-display font-bold text-right">Points</th>
+                    <th class="px-4 py-3 font-display font-bold text-right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--ok-line)]">
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jul 16, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-green mr-2">Earned</span> Double Bacon Smash combo</td>
+                    <td class="px-4 py-3 text-slate">#4021</td>
+                    <td class="px-4 py-3 text-right font-bold text-okgreen">+180</td>
+                    <td class="px-4 py-3 text-right font-semibold">1,240</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jul 11, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-red mr-2">Redeemed</span> Free Fries reward</td>
+                    <td class="px-4 py-3 text-slate">#3987</td>
+                    <td class="px-4 py-3 text-right font-bold text-okred">−200</td>
+                    <td class="px-4 py-3 text-right font-semibold">1,060</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jul 09, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-yellow mr-2">Bonus</span> Wrote a review</td>
+                    <td class="px-4 py-3 text-slate">—</td>
+                    <td class="px-4 py-3 text-right font-bold text-okgreen">+50</td>
+                    <td class="px-4 py-3 text-right font-semibold">1,260</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jul 04, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-green mr-2">Earned</span> Family Feast Box</td>
+                    <td class="px-4 py-3 text-slate">#3921</td>
+                    <td class="px-4 py-3 text-right font-bold text-okgreen">+400</td>
+                    <td class="px-4 py-3 text-right font-semibold">1,210</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jun 28, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-yellow mr-2">Bonus</span> Referral — Priya S. joined</td>
+                    <td class="px-4 py-3 text-slate">—</td>
+                    <td class="px-4 py-3 text-right font-bold text-okgreen">+250</td>
+                    <td class="px-4 py-3 text-right font-semibold">810</td>
+                  </tr>
+                  <tr>
+                    <td class="px-4 py-3 text-slate whitespace-nowrap">Jun 21, 2026</td>
+                    <td class="px-4 py-3"><span class="badge badge-red mr-2">Redeemed</span> Free Classic Smash</td>
+                    <td class="px-4 py-3 text-slate">#3844</td>
+                    <td class="px-4 py-3 text-right font-bold text-okred">−500</td>
+                    <td class="px-4 py-3 text-right font-semibold">560</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-4 flex items-center justify-between border-t border-[var(--ok-line)]">
+              <span class="text-sm text-slate">Showing your 6 most recent activities</span>
+              <a href="account.html" class="link-underline text-sm">View all in account <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MEMBERSHIP TIERS ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container">
+        <div class="text-center mb-10"><h2 class="ok-h2">Membership tiers</h2>
+          <p class="text-slate mt-2 max-w-xl mx-auto">The more you order, the more you unlock. Tiers are based on points earned in a calendar year.</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-5 items-stretch">
+          <!-- Bronze -->
+          <article class="ok-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Bronze</span>
+              <span class="text-sm text-slate font-semibold">0 – 2,499 pts</span>
+            </div>
+            <h3 class="font-display font-bold text-xl mb-3">Getting started</h3>
+            <ul class="space-y-2 text-sm text-slate flex-1">
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> 10 points per $1 spent</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Birthday reward</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Members-only weekly deals</li>
+            </ul>
+          </article>
+          <!-- Silver (current) -->
+          <article class="ok-card ok-card-hover p-6 flex flex-col relative border-2 border-okyellow shadow-xl md:-translate-y-2">
+            <span class="badge badge-yellow absolute -top-3 left-1/2 -translate-x-1/2">Your tier</span>
+            <div class="flex items-center justify-between mb-4">
+              <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Silver</span>
+              <span class="text-sm text-slate font-semibold">2,500 – 5,999 pts</span>
+            </div>
+            <h3 class="font-display font-bold text-xl mb-3">More perks</h3>
+            <ul class="space-y-2 text-sm text-slate flex-1">
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Everything in Bronze</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> 12 points per $1 spent</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Free delivery once a week</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Early access to new drops</li>
+            </ul>
+            <div class="divider my-4"></div>
+            <p class="text-xs text-slate">You've earned <b class="text-jet">3,180 pts</b> this year.</p>
+          </article>
+          <!-- Gold -->
+          <article class="ok-card p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <span class="badge badge-yellow"><i class="fa-solid fa-medal"></i> Gold</span>
+              <span class="text-sm text-slate font-semibold">6,000+ pts</span>
+            </div>
+            <h3 class="font-display font-bold text-xl mb-3">Top tier</h3>
+            <ul class="space-y-2 text-sm text-slate flex-1">
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Everything in Silver</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> 15 points per $1 spent</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Free delivery, always</li>
+              <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Surprise gifts &amp; VIP events</li>
+            </ul>
+            <div class="divider my-4"></div>
+            <p class="text-xs text-slate"><i class="fa-solid fa-lock"></i> <b class="text-jet">2,820 pts</b> to reach Gold this year.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REFERRAL ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-12 grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 class="ok-h2 mb-3">Give $5, get $5</h2>
+              <p class="text-white/70 mb-5 max-w-md">Share your personal code. When a friend places their first order, they get $5 off — and you get $5 too. No limit on how many friends you invite.</p>
+
+              <label class="ok-label !text-white/80">Your referral code</label>
+              <div class="flex gap-2 mb-4">
+                <div class="flex-1 flex items-center justify-between ok-input !bg-white/10 !border-white/20 !text-white font-display font-bold tracking-widest text-lg">
+                  <span>JORDAN-OK</span>
+                  <span class="text-white/40 text-xs font-body font-normal tracking-normal">Tap to copy</span>
+                </div>
+                <button data-add-cart="Referral code copied" class="btn btn-primary shrink-0">Copy</button>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40 hover:!bg-white hover:!text-jet"><i class="fa-solid fa-envelope"></i> Email</a>
+                <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40 hover:!bg-white hover:!text-jet"><i class="fa-solid fa-comment"></i> Text</a>
+                <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40 hover:!bg-white hover:!text-jet"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40 hover:!bg-white hover:!text-jet"><i class="fa-solid fa-link"></i> Copy link</a>
+              </div>
+            </div>
+            <div class="justify-self-center md:justify-self-end w-full max-w-xs">
+              <div class="ok-card overflow-hidden rotate-2 shadow-2xl">
+                <img data-ph="Refer a Friend" data-ph-ratio="4/3" class="ph-img" alt="">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLOSING FAQ MINI ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container max-w-3xl">
+        <div class="text-center mb-8"><h2 class="ok-h2">Rewards FAQ</h2></div>
+        <div class="ok-card px-6">
+          <div class="acc-item">
+            <button class="acc-q">How do I earn points? <span class="acc-icon">+</span></button>
+            <div class="acc-a"><p>You earn 10 points for every $1 spent — automatically applied when you're signed in. Bonus points come from reviews, referrals, birthdays and installing the app.</p></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-q">Do my points expire? <span class="acc-icon">+</span></button>
+            <div class="acc-a"><p>Points stay active as long as you place at least one order every 12 months. After 12 months of inactivity, unused points expire.</p></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-q">How do I redeem a reward? <span class="acc-icon">+</span></button>
+            <div class="acc-a"><p>Open the Redeem tab, choose a reward you can afford, and add it to your cart. The points are deducted at checkout.</p></div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-q">Can I combine rewards with deals? <span class="acc-icon">+</span></button>
+            <div class="acc-a"><p>Most reward redemptions can be combined with everyday menu pricing, but not with other promo codes on the same item. See full terms for details.</p></div>
+          </div>
+        </div>
+        <div class="text-center mt-6"><a href="faq.html" class="btn btn-secondary">Visit the full Help Center <i class="fa-solid fa-arrow-right"></i></a></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

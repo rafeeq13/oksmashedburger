@@ -1,0 +1,114 @@
+{% extends "admin/base.html" %}
+{% block title %}Website Content, {{ brand_name }}{% endblock %}
+
+{% macro field(f, value) %}
+  {% set key, label, type = f[0], f[1], f[2] %}
+  <label class="block">
+    <span class="block text-xs font-semibold text-slate mb-1">{{ label }}</span>
+    {% if type == 'textarea' %}
+      <textarea name="{{ key }}" rows="3" class="ok-input w-full text-sm">{{ value or '' }}</textarea>
+    {% else %}
+      <input name="{{ key }}" type="{{ 'number' if type == 'number' else 'text' }}"
+             value="{{ value or '' }}" class="ok-input w-full text-sm"
+             {% if type == 'url' %}placeholder="https://…"{% endif %}>
+    {% endif %}
+  </label>
+{% endmacro %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Website content</h2>
+<p class="text-slate text-sm mb-5">
+  The repeating lists on the public site. Page Content covers the headings; this covers the items underneath them.
+</p>
+
+<!-- list picker -->
+<div class="flex flex-wrap gap-2 mb-6">
+  {% for c in lists %}
+  <a href="/admin/content?kind={{ c.kind }}"
+     class="px-3 py-2 rounded-lg text-sm font-semibold border
+            {{ 'bg-jet text-white border-jet' if c.kind == kind else 'bg-white text-jet border-black/10 hover:border-jet/40' }}">
+    {{ c.label }}
+    <span class="ml-1 text-xs {{ 'text-white/60' if c.kind == kind else 'text-slate' }}">
+      {{ counts[c.kind] if counts[c.kind] else 'default' }}
+    </span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="ok-card p-5 mb-5">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h3 class="font-display font-bold text-lg">{{ spec.label }}</h3>
+      <p class="text-sm text-slate mt-1">Shows on: {{ spec.where }}</p>
+    </div>
+    {% if not rows %}
+    <form method="post" action="/admin/content/{{ kind }}/import">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="btn btn-primary btn-sm">Import the {{ defaults|length }} items now on the site</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if not rows %}
+  <div class="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm">
+    <b>This list is still using the built-in content.</b>
+    The website shows the {{ defaults|length }} items below. Import them once and they become
+    editable rows here — nothing on the site changes at the moment you import.
+  </div>
+  <ul class="mt-4 text-sm text-slate list-disc pl-5 space-y-1">
+    {% for d in defaults %}
+    <li>{{ d[spec.fields[0][0]] }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+{% if rows %}
+<div class="space-y-4">
+  {% for r in rows %}
+  <article class="ok-card p-5 {{ '' if r.is_active else 'opacity-60' }}">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <div class="flex items-center gap-2">
+        <span class="badge badge-soft">#{{ loop.index }}</span>
+        <b class="font-display">{{ r.data.get(spec.fields[0][0]) or 'Untitled' }}</b>
+        {% if not r.is_active %}<span class="badge badge-red">Hidden</span>{% endif %}
+      </div>
+      <div class="flex items-center gap-1">
+        {% if not loop.first %}
+        <form method="post" action="/admin/content/{{ r.id }}/move"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="dir" value="up">
+          <button class="w-8 h-8 grid place-items-center rounded-lg hover:bg-black/5" title="Move up"><i class="fa-solid fa-arrow-up"></i></button></form>
+        {% endif %}
+        {% if not loop.last %}
+        <form method="post" action="/admin/content/{{ r.id }}/move"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="dir" value="down">
+          <button class="w-8 h-8 grid place-items-center rounded-lg hover:bg-black/5" title="Move down"><i class="fa-solid fa-arrow-down"></i></button></form>
+        {% endif %}
+        <form method="post" action="/admin/content/{{ r.id }}/toggle"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="btn btn-secondary btn-sm">{{ 'Hide' if r.is_active else 'Show' }}</button></form>
+        <form method="post" action="/admin/content/{{ r.id }}/delete" onsubmit="return confirm('Delete this item?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="w-8 h-8 grid place-items-center rounded-lg text-ok-red hover:bg-ok-red/10" title="Delete"><i class="fa-solid fa-trash"></i></button></form>
+      </div>
+    </div>
+
+    <form method="post" action="/admin/content/{{ r.id }}/edit" class="grid sm:grid-cols-2 gap-3">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      {% for f in spec.fields %}
+      <div class="{{ 'sm:col-span-2' if f[2] == 'textarea' else '' }}">{{ field(f, r.data.get(f[0])) }}</div>
+      {% endfor %}
+      <div class="sm:col-span-2"><button class="btn btn-primary btn-sm">Save</button></div>
+    </form>
+  </article>
+  {% endfor %}
+</div>
+
+<div class="ok-card p-5 mt-5">
+  <h3 class="font-display font-bold mb-3">Add a new {{ spec.label.lower().rstrip('s') }}</h3>
+  <form method="post" action="/admin/content/{{ kind }}/add" class="grid sm:grid-cols-2 gap-3">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% for f in spec.fields %}
+    <div class="{{ 'sm:col-span-2' if f[2] == 'textarea' else '' }}">{{ field(f, '') }}</div>
+    {% endfor %}
+    <div class="sm:col-span-2"><button class="btn btn-primary btn-sm">Add to the website</button></div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

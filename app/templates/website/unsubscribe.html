@@ -1,0 +1,31 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ 'Unsubscribed' if ok else 'Link not valid' }}, {{ brand_name }}{% endblock %}
+{% block content %}
+<section class="ok-section ok-minh-70vh ok-grid ok-place-center">
+  <div class="ok-container">
+    <div class="ok-card ok-p-8 ok-paddin-3rem-md max-w-xl mx-auto text-center">
+      {% if ok %}
+      <div class="ok-w-16 ok-h-16 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-5"><i class="fa-solid fa-circle-check"></i></div>
+      <h1 class="ok-h2 ok-mb-3">You're unsubscribed</h1>
+      <p class="text-muted-warm ok-mb-8">
+        We've taken <b class="text-ink">{{ email }}</b> off the marketing list. You won't get deals or
+        newsletters from us again. Order receipts and account emails still come through, because those
+        are about orders you placed.
+      </p>
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+        <a href="/" class="btn btn-primary">Back to the site</a>
+        <a href="/menu" class="ok-btn-outline">See the menu</a>
+      </div>
+      {% else %}
+      <div class="ok-w-16 ok-h-16 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-5"><i class="fa-solid fa-link-slash"></i></div>
+      <h1 class="ok-h2 ok-mb-3">That link isn't valid</h1>
+      <p class="text-muted-warm ok-mb-8">
+        The unsubscribe link looks incomplete or was changed on the way. Reply to any email from us and
+        we'll take you off the list by hand.
+      </p>
+      <a href="/contact" class="btn btn-primary">Contact us</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

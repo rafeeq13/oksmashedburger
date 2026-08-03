@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart — OK Smashed Burger</title>
+  <meta name="description" content="Review your OK Smashed Burger order — adjust quantities, apply promo codes, gift cards and loyalty points, then head to a fast, secure checkout.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ BREADCRUMB + HEADING ============ -->
+    <section class="bg-softyellow/40 border-b border-[var(--ok-line)]">
+      <div class="ok-container py-6 md:py-8">
+        <nav class="text-sm text-slate mb-3 hidden" aria-label="Breadcrumb">
+          <ol class="flex items-center gap-2">
+            <li><a href="index.html" class="hover:text-okamber">Home</a></li>
+            <li aria-hidden="true" class="text-slate/60">/</li>
+            <li class="font-semibold text-jet" aria-current="page">Cart</li>
+          </ol>
+        </nav>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 class="ok-h1">Your Cart <span class="text-slate font-body font-semibold text-lg align-middle">· 3 items</span></h1>
+          </div>
+          <a href="menu.html" class="link-underline hidden sm:inline-flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> Continue shopping</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CART LAYOUT ============ -->
+    <section class="ok-section pt-8 md:pt-10">
+      <div class="ok-container grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+
+        <!-- ==================== LEFT: LINE ITEMS ==================== -->
+        <div>
+          <!-- Free delivery progress -->
+          <div class="ok-card p-4 md:p-5 mb-5 bg-softyellow/50 border-okyellow/60">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xl"><i class="fa-solid fa-truck"></i></span>
+              <p class="text-sm font-semibold">You're <span class="text-okamber">$2.00</span> away from <b>FREE delivery</b>!</p>
+            </div>
+            <div class="h-2.5 rounded-full bg-white overflow-hidden border border-okyellow/40">
+              <div class="h-full rounded-full bg-okyellow" style="width:86%"></div>
+            </div>
+          </div>
+
+          <!-- Line items -->
+          <div class="ok-card divide-y divide-[var(--ok-line)]">
+            <!-- item 1 -->
+            <article class="p-4 md:p-5 flex gap-4">
+              <a href="item.html" class="block w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </a>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Double Bacon Smash</h3></a>
+                    <p class="text-xs text-slate mt-1 leading-relaxed">
+                      Add bacon · Extra cheddar · OK sauce<br>
+                      No pickles · Combo: OK Fries + Cola
+                    </p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="font-bold text-lg">$15.98</div>
+                    <div class="text-xs text-slate">$7.99 ea</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between gap-3 mt-3">
+                  <div class="qty"><button data-step="-">&minus;</button><span>2</span><button data-step="+">+</button></div>
+                  <button class="link-underline text-sm text-slate hover:text-okred">Remove</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- item 2 -->
+            <article class="p-4 md:p-5 flex gap-4">
+              <a href="item.html" class="block w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </a>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">The OK Classic</h3></a>
+                    <p class="text-xs text-slate mt-1 leading-relaxed">
+                      American cheese · OK sauce · Extra pickles<br>
+                      Bun: Brioche
+                    </p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="font-bold text-lg">$8.49</div>
+                    <div class="text-xs text-slate">$8.49 ea</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between gap-3 mt-3">
+                  <div class="qty"><button data-step="-">&minus;</button><span>1</span><button data-step="+">+</button></div>
+                  <button class="link-underline text-sm text-slate hover:text-okred">Remove</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- item 3 -->
+            <article class="p-4 md:p-5 flex gap-4">
+              <a href="item.html" class="block w-24 h-24 md:w-28 md:h-28 rounded-xl overflow-hidden shrink-0">
+                <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+              </a>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <a href="item.html"><h3 class="font-display font-bold text-lg leading-tight">Loaded OK Fries</h3></a>
+                    <p class="text-xs text-slate mt-1 leading-relaxed">
+                      Cheese sauce · Crispy onions · OK drizzle<br>
+                      Size: Large
+                    </p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="font-bold text-lg">$6.99</div>
+                    <div class="text-xs text-slate">$6.99 ea</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between gap-3 mt-3">
+                  <div class="qty"><button data-step="-">&minus;</button><span>1</span><button data-step="+">+</button></div>
+                  <button class="link-underline text-sm text-slate hover:text-okred">Remove</button>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Upsell strip -->
+          <div class="mt-6">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl"><i class="fa-solid fa-cake-candles"></i></span>
+              <h2 class="font-display font-bold text-lg">Add something sweet?</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <article class="ok-card ok-card-hover overflow-hidden flex sm:block">
+                <div class="w-24 sm:w-full aspect-square shrink-0 overflow-hidden">
+                  <img data-ph="Vanilla Shake" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-display font-bold text-sm">Classic Vanilla Shake</h3>
+                    <p class="text-xs text-slate">Hand-spun, real milk.</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="font-bold text-sm">$4.99</span>
+                    <button data-add-cart="Classic Vanilla Shake" class="btn btn-primary btn-sm">Add +</button>
+                  </div>
+                </div>
+              </article>
+              <article class="ok-card ok-card-hover overflow-hidden flex sm:block">
+                <div class="w-24 sm:w-full aspect-square shrink-0 overflow-hidden">
+                  <img data-ph="Chocolate Shake" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-display font-bold text-sm">Double Choc Shake</h3>
+                    <p class="text-xs text-slate">Rich cocoa, whipped top.</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="font-bold text-sm">$5.49</span>
+                    <button data-add-cart="Double Choc Shake" class="btn btn-primary btn-sm">Add +</button>
+                  </div>
+                </div>
+              </article>
+              <article class="ok-card ok-card-hover overflow-hidden flex sm:block">
+                <div class="w-24 sm:w-full aspect-square shrink-0 overflow-hidden">
+                  <img data-ph="Warm Cookie" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 class="font-display font-bold text-sm">Warm Choc-Chip Cookie</h3>
+                    <p class="text-xs text-slate">Baked fresh, gooey center.</p>
+                  </div>
+                  <div class="flex items-center justify-between mt-2">
+                    <span class="font-bold text-sm">$2.49</span>
+                    <button data-add-cart="Warm Choc-Chip Cookie" class="btn btn-primary btn-sm">Add +</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Promo / coupon -->
+          <div class="ok-card p-4 md:p-5 mt-6">
+            <label class="ok-label" for="promo">Promo or coupon code</label>
+            <div class="flex gap-2">
+              <input id="promo" class="ok-input" placeholder="e.g. OKFIRST" value="SMASH4">
+              <button class="btn btn-dark shrink-0">Apply</button>
+            </div>
+            <p class="ok-hint mt-2 flex items-center gap-1">
+              <span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Gift cards &amp; OK Rewards loyalty points can also be applied at checkout.
+            </p>
+          </div>
+        </div>
+
+        <!-- ==================== RIGHT: ORDER SUMMARY ==================== -->
+        <aside class="lg:sticky lg:top-28">
+          <div class="ok-card p-5 md:p-6">
+            <h2 class="font-display font-bold text-xl mb-4">Order Summary</h2>
+
+            <!-- order type -->
+            <span class="ok-label">Order type</span>
+            <div class="flex gap-2 mb-4" data-chip-group>
+              <button class="chip is-active flex-1 justify-center"><i class="fa-solid fa-car"></i> Delivery</button>
+              <button class="chip flex-1 justify-center"><i class="fa-solid fa-bag-shopping"></i> Pickup</button>
+            </div>
+
+            <!-- loyalty toggle -->
+            <label class="flex items-center justify-between gap-3 rounded-xl bg-softyellow/60 border border-okyellow/50 p-3 mb-4 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <span class="text-xl"><i class="fa-solid fa-star"></i></span>
+                <span class="text-sm leading-tight">Apply <b>1,240</b> loyalty points<br><span class="ok-hint">Worth $4.00 off this order</span></span>
+              </span>
+              <input type="checkbox" class="w-5 h-5 accent-okyellow shrink-0" checked>
+            </label>
+
+            <div class="divider mb-4"></div>
+
+            <!-- itemized totals -->
+            <dl class="space-y-2.5 text-sm">
+              <div class="flex justify-between"><dt class="text-slate">Subtotal</dt><dd class="font-semibold">$31.46</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Promo (SMASH4)</dt><dd class="font-semibold text-okgreen">−$4.00</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Delivery fee</dt><dd class="font-semibold">$1.99</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Taxes</dt><dd class="font-semibold">$2.52</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Tip</dt><dd class="font-semibold">$4.72</dd></div>
+            </dl>
+
+            <!-- tip selector -->
+            <div class="mt-4">
+              <span class="ok-label">Add a tip</span>
+              <div class="grid grid-cols-4 gap-2" data-chip-group>
+                <button class="chip justify-center">10%</button>
+                <button class="chip is-active justify-center">15%</button>
+                <button class="chip justify-center">20%</button>
+                <button class="chip justify-center">Custom</button>
+              </div>
+            </div>
+
+            <div class="divider my-4"></div>
+
+            <div class="flex items-end justify-between mb-4">
+              <span class="font-display font-bold text-lg">Grand Total</span>
+              <span class="font-display font-extrabold text-2xl">$36.69</span>
+            </div>
+
+            <a href="checkout.html" class="btn btn-primary btn-block btn-lg">Proceed to Checkout <i class="fa-solid fa-arrow-right"></i></a>
+            <p class="ok-hint mt-3 flex items-center justify-center gap-1"><i class="fa-solid fa-lock"></i> Secure checkout · encrypted &amp; protected</p>
+            <a href="menu.html" class="link-underline text-sm block text-center mt-3">Continue shopping</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+.git
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+node_modules/
+*.pdf
+*.docx
+OK_Smashed_Burger_SRS.docx
+dev.db
+*.sqlite3
+*.log
+instance/

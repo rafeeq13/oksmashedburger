@@ -1,0 +1,412 @@
+/* =========================================================
+   OK Smashed Burger — UTILITY LAYER
+   Load last: bootstrap → style → premium → theme → utils
+
+   Everything Bootstrap does not ship that the markup needs.
+   Values are pinned to the exact numbers the design was signed
+   off with, so converting a template away from Tailwind can
+   never shift spacing or type by a fraction.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. SPACING  (steps Bootstrap has no equivalent for)
+   Bootstrap covers .25 / .5 / 1 / 1.5 / 3rem as 1..5.
+   These fill the gaps, same numbers the old scale used.
+   --------------------------------------------------------- */
+.ok-mt-05{margin-top:.125rem}   .ok-mb-05{margin-bottom:.125rem}
+.ok-mt-15{margin-top:.375rem}   .ok-mb-15{margin-bottom:.375rem}
+.ok-mt-25{margin-top:.625rem}   .ok-mb-25{margin-bottom:.625rem}
+.ok-mt-3{margin-top:.75rem}     .ok-mb-3{margin-bottom:.75rem}
+.ok-mt-35{margin-top:.875rem}   .ok-mb-35{margin-bottom:.875rem}
+.ok-mt-5{margin-top:1.25rem}    .ok-mb-5{margin-bottom:1.25rem}
+.ok-mt-7{margin-top:1.75rem}    .ok-mb-7{margin-bottom:1.75rem}
+.ok-mt-8{margin-top:2rem}       .ok-mb-8{margin-bottom:2rem}
+.ok-mt-9{margin-top:2.25rem}    .ok-mb-9{margin-bottom:2.25rem}
+.ok-mt-10{margin-top:2.5rem}    .ok-mb-10{margin-bottom:2.5rem}
+.ok-mt-11{margin-top:2.75rem}   .ok-mb-11{margin-bottom:2.75rem}
+.ok-mt-14{margin-top:3.5rem}    .ok-mb-14{margin-bottom:3.5rem}
+.ok-mt-16{margin-top:4rem}      .ok-mb-16{margin-bottom:4rem}
+.ok-mt-20{margin-top:5rem}      .ok-mb-20{margin-bottom:5rem}
+.ok-ms-auto{margin-left:auto}   .ok-me-auto{margin-right:auto}
+
+.ok-p-3{padding:.75rem}   .ok-p-5{padding:1.25rem}   .ok-p-7{padding:1.75rem}
+.ok-p-8{padding:2rem}     .ok-p-10{padding:2.5rem}
+.ok-px-3{padding-left:.75rem;padding-right:.75rem}
+.ok-px-5{padding-left:1.25rem;padding-right:1.25rem}
+.ok-px-7{padding-left:1.75rem;padding-right:1.75rem}
+.ok-px-8{padding-left:2rem;padding-right:2rem}
+.ok-py-25{padding-top:.625rem;padding-bottom:.625rem}
+.ok-py-3{padding-top:.75rem;padding-bottom:.75rem}
+.ok-py-5{padding-top:1.25rem;padding-bottom:1.25rem}
+.ok-py-7{padding-top:1.75rem;padding-bottom:1.75rem}
+.ok-py-8{padding-top:2rem;padding-bottom:2rem}
+.ok-py-10{padding-top:2.5rem;padding-bottom:2.5rem}
+.ok-py-12{padding-top:3rem;padding-bottom:3rem}
+.ok-py-14{padding-top:3.5rem;padding-bottom:3.5rem}
+.ok-py-16{padding-top:4rem;padding-bottom:4rem}
+.ok-py-20{padding-top:5rem;padding-bottom:5rem}
+
+/* Gaps beyond Bootstrap's 0-5 scale */
+.ok-gap-05{gap:.125rem} .ok-gap-15{gap:.375rem} .ok-gap-25{gap:.625rem}
+.ok-gap-3{gap:.75rem}   .ok-gap-35{gap:.875rem} .ok-gap-5{gap:1.25rem}
+.ok-gap-7{gap:1.75rem}  .ok-gap-8{gap:2rem}     .ok-gap-10{gap:2.5rem}
+.ok-gap-12{gap:3rem}
+
+/* Vertical rhythm, replaces the old space-y-* helper */
+.ok-stack-05 > * + *{margin-top:.125rem}
+.ok-stack-1  > * + *{margin-top:.25rem}
+.ok-stack-15 > * + *{margin-top:.375rem}
+.ok-stack-2  > * + *{margin-top:.5rem}
+.ok-stack-25 > * + *{margin-top:.625rem}
+.ok-stack-3  > * + *{margin-top:.75rem}
+.ok-stack-4  > * + *{margin-top:1rem}
+.ok-stack-5  > * + *{margin-top:1.25rem}
+.ok-stack-6  > * + *{margin-top:1.5rem}
+.ok-stack-8  > * + *{margin-top:2rem}
+.ok-stack-12 > * + *{margin-top:3rem}
+
+/* ---------------------------------------------------------
+   2. TYPE SCALE
+   --------------------------------------------------------- */
+.ok-fs-xs{font-size:.75rem;line-height:1rem}
+.ok-fs-sm{font-size:.875rem;line-height:1.25rem}
+.ok-fs-base{font-size:1rem;line-height:1.5rem}
+.ok-fs-lg{font-size:1.125rem;line-height:1.75rem}
+.ok-fs-xl{font-size:1.25rem;line-height:1.75rem}
+.ok-fs-2xl{font-size:1.5rem;line-height:2rem}
+.ok-fs-3xl{font-size:1.875rem;line-height:2.25rem}
+.ok-fs-4xl{font-size:2.25rem;line-height:2.5rem}
+.ok-fs-5xl{font-size:3rem;line-height:1}
+.ok-fs-6xl{font-size:3.75rem;line-height:1}
+@media (min-width:768px){
+  .ok-fs-md-lg{font-size:1.125rem;line-height:1.75rem}
+  .ok-fs-md-xl{font-size:1.25rem;line-height:1.75rem}
+  .ok-fs-md-2xl{font-size:1.5rem;line-height:2rem}
+  .ok-fs-md-3xl{font-size:1.50rem;line-height:2.25rem}
+  .ok-fs-md-4xl{font-size:2.25rem;line-height:2.5rem}
+  .ok-fs-md-5xl{font-size:3rem;line-height:1}
+  .ok-fs-md-6xl{font-size:3.75rem;line-height:1}
+}
+.ok-fw-800{font-weight:800}
+.ok-fw-900{font-weight:500}
+.ok-lh-none{line-height:1}
+.ok-lh-tight{line-height:1.25}
+.ok-lh-snug{line-height:1.375}
+.ok-lh-relaxed{line-height:1.625}
+
+/* ---------------------------------------------------------
+   3. BRAND COLOURS
+   Semantic names, no framework prefix. The old palette maps
+   one-to-one so nothing changes visually.
+   --------------------------------------------------------- */
+.text-ink{color:var(--ok-jet)!important}
+.text-ink-70{color:rgba(20,20,20,.7)!important}
+.text-ink-75{color:rgba(20,20,20,.75)!important}
+.text-ink-80{color:rgba(20,20,20,.8)!important}
+.text-muted-warm{color:var(--ok-slate)!important}
+.text-muted-warm-40{color:rgba(99,96,92,.4)!important}
+.text-muted-warm-50{color:rgba(99,96,92,.5)!important}
+.text-muted-warm-60{color:rgba(99,96,92,.6)!important}
+.text-muted-warm-70{color:rgba(99,96,92,.7)!important}
+.text-gold{color:var(--ok-amber)!important}
+.text-yellow{color:var(--ok-yellow)!important}
+.text-yellow-30{color:rgba(255,199,44,.3)!important}
+.text-yellow-70{color:rgba(255,199,44,.7)!important}
+.text-brandred{color:var(--ok-brand-red)!important}
+.text-ok-green{color:var(--ok-green)!important}
+.text-ok-red{color:var(--ok-red)!important}
+.text-w-40{color:rgba(255,255,255,.4)!important}
+.text-w-45{color:rgba(255,255,255,.45)!important}
+.text-w-50{color:rgba(255,255,255,.5)!important}
+.text-w-55{color:rgba(255,255,255,.55)!important}
+.text-w-60{color:rgba(255,255,255,.6)!important}
+.text-w-70{color:rgba(255,255,255,.7)!important}
+.text-w-75{color:rgba(255,255,255,.75)!important}
+.text-w-80{color:rgba(255,255,255,.8)!important}
+.text-w-85{color:rgba(255,255,255,.85)!important}
+
+.bg-ink{background-color:var(--ok-jet)!important}
+.bg-yellow{background-color:var(--ok-yellow)!important}
+.bg-yellow-10{background-color:rgba(255,199,44,.1)!important}
+.bg-yellow-15{background-color:rgba(255,199,44,.15)!important}
+.bg-yellow-20{background-color:rgba(255,199,44,.2)!important}
+.bg-yellow-25{background-color:rgba(255,199,44,.25)!important}
+.bg-cream{background-color:var(--ok-soft)!important}
+.bg-cream-20{background-color:rgba(255,243,204,.2)!important}
+.bg-cream-30{background-color:rgba(255,243,204,.3)!important}
+.bg-cream-40{background-color:rgba(255,243,204,.4)!important}
+.bg-cream-50{background-color:rgba(255,243,204,.5)!important}
+.bg-cream-60{background-color:rgba(255,243,204,.6)!important}
+.bg-cream-70{background-color:rgba(255,243,204,.7)!important}
+.bg-ok-green{background-color:var(--ok-green)!important}
+.bg-ok-green-05{background-color:rgba(46,125,50,.05)!important}
+.bg-ok-green-10{background-color:rgba(46,125,50,.1)!important}
+.bg-ok-red{background-color:var(--ok-red)!important}
+.bg-ok-red-10{background-color:rgba(198,40,40,.1)!important}
+.bg-w-10{background-color:rgba(255,255,255,.1)!important}
+.bg-w-80{background-color:rgba(255,255,255,.8)!important}
+.bg-w-95{background-color:rgba(255,255,255,.95)!important}
+.bg-black-40{background-color:rgba(0,0,0,.4)!important}
+
+.border-ink{border-color:var(--ok-jet)!important}
+.border-ink-80{border-color:rgba(20,20,20,.8)!important}
+.border-yellow{border-color:var(--ok-yellow)!important}
+.border-yellow-30{border-color:rgba(255,199,44,.3)!important}
+.border-yellow-40{border-color:rgba(255,199,44,.4)!important}
+.border-ok-green-30{border-color:rgba(46,125,50,.3)!important}
+.border-ok-red{border-color:var(--ok-red)!important}
+.border-w-10{border-color:rgba(255,255,255,.1)!important}
+.border-w-20{border-color:rgba(255,255,255,.2)!important}
+.border-hairline{border-color:var(--ok-line)!important}
+
+/* ---------------------------------------------------------
+   4. LAYOUT HELPERS
+   CSS Grid stays CSS Grid. Rewriting every grid into
+   Bootstrap's row/col markup would be a structural change,
+   not a class rename, and that is where regressions hide.
+   --------------------------------------------------------- */
+.ok-grid{display:grid}
+.ok-grid-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.ok-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ok-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.ok-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.ok-grid-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.ok-grid-6{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (min-width:640px){
+  .ok-grid-sm-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ok-grid-sm-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ok-grid-sm-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (min-width:768px){
+  .ok-grid-md-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ok-grid-md-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ok-grid-md-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ok-grid-md-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media (min-width:1024px){
+  .ok-grid-lg-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ok-grid-lg-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ok-grid-lg-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+.ok-place-center{place-items:center}
+.ok-col-span-2{grid-column:span 2/span 2}
+@media (min-width:768px){ .ok-col-span-md-1{grid-column:span 1/span 1} }
+
+/* Radii on Tailwind's old numbers so nothing rounds differently */
+.ok-rounded{border-radius:.25rem}
+.ok-rounded-md{border-radius:.375rem}
+.ok-rounded-lg{border-radius:.5rem}
+.ok-rounded-xl{border-radius:.75rem}
+.ok-rounded-2xl{border-radius:1rem}
+.ok-rounded-3xl{border-radius:1.5rem}
+
+/* Responsive display helpers Bootstrap words differently */
+.ok-hide{display:none!important}
+@media (min-width:640px){ .ok-sm-show{display:block!important} .ok-sm-flex{display:flex!important} }
+@media (min-width:768px){ .ok-md-show{display:block!important} .ok-md-flex{display:flex!important} }
+@media (min-width:1024px){ .ok-lg-show{display:block!important} .ok-lg-flex{display:flex!important} }
+
+.ok-pointer{cursor:pointer}
+.ok-nodrag{user-select:none}
+.ok-transition{transition:all .2s var(--e-out,ease)}
+
+/* complete w/h scale, generated so no size can be missing */
+.ok-w-05{width:0.125rem}   .ok-h-05{height:0.125rem}
+.ok-w-1{width:0.25rem}   .ok-h-1{height:0.25rem}
+.ok-w-15{width:0.375rem}   .ok-h-15{height:0.375rem}
+.ok-w-2{width:0.5rem}   .ok-h-2{height:0.5rem}
+.ok-w-25{width:0.625rem}   .ok-h-25{height:0.625rem}
+.ok-w-3{width:0.75rem}   .ok-h-3{height:0.75rem}
+.ok-w-35{width:0.875rem}   .ok-h-35{height:0.875rem}
+.ok-w-4{width:1rem}   .ok-h-4{height:1rem}
+.ok-w-5{width:1.25rem}   .ok-h-5{height:1.25rem}
+.ok-w-6{width:1.5rem}   .ok-h-6{height:1.5rem}
+.ok-w-7{width:1.75rem}   .ok-h-7{height:1.75rem}
+.ok-w-8{width:2rem}   .ok-h-8{height:2rem}
+.ok-w-9{width:2.25rem}   .ok-h-9{height:2.25rem}
+.ok-w-10{width:2.5rem}   .ok-h-10{height:2.5rem}
+.ok-w-11{width:2.75rem}   .ok-h-11{height:2.75rem}
+.ok-w-12{width:3rem}   .ok-h-12{height:3rem}
+.ok-w-14{width:3.5rem}   .ok-h-14{height:3.5rem}
+.ok-w-16{width:4rem}   .ok-h-16{height:4rem}
+.ok-w-20{width:5rem}   .ok-h-20{height:5rem}
+.ok-w-24{width:6rem}   .ok-h-24{height:6rem}
+.ok-w-28{width:7rem}   .ok-h-28{height:7rem}
+.ok-w-32{width:8rem}   .ok-h-32{height:8rem}
+.ok-w-36{width:9rem}   .ok-h-36{height:9rem}
+.ok-w-40{width:10rem}   .ok-h-40{height:10rem}
+.ok-w-44{width:11rem}   .ok-h-44{height:11rem}
+.ok-w-48{width:12rem}   .ok-h-48{height:12rem}
+.ok-w-56{width:14rem}   .ok-h-56{height:14rem}
+.ok-w-64{width:16rem}   .ok-h-64{height:16rem}
+.ok-w-72{width:18rem}   .ok-h-72{height:18rem}
+.ok-w-80{width:20rem}   .ok-h-80{height:20rem}
+.ok-w-96{width:24rem}   .ok-h-96{height:24rem}
+
+/* ---------------------------------------------------------
+   5. ELEVATION, LAYERS
+   Pinned to the old numbers (Tailwind's 0.25rem step).
+   --------------------------------------------------------- */
+
+.ok-aspect-square{aspect-ratio:1/1}
+.ok-aspect-16-10{aspect-ratio:16/10}
+.ok-aspect-16-9{aspect-ratio:16/9}
+.ok-aspect-4-5{aspect-ratio:4/5}
+
+.ok-shadow-sm{box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.ok-shadow-md{box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)}
+.ok-shadow-lg{box-shadow:0 10px 15px -3px rgba(.1,.1,.1,.1),0 4px 6px -4px rgba(.1,.1,.1,.1)}
+.ok-shadow-xl{box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1)}
+.ok-shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+
+.ok-opacity-0{opacity:0} .ok-opacity-25{opacity:.25} .ok-opacity-30{opacity:.3}
+.ok-opacity-35{opacity:.35} .ok-opacity-60{opacity:.6}
+
+.ok-z-10{z-index:10} .ok-z-20{z-index:20} .ok-z-30{z-index:30}
+.ok-z-40{z-index:40} .ok-z-50{z-index:50}
+.ok-z-80{z-index:80} .ok-z-82{z-index:82} .ok-z-85{z-index:85} .ok-z-90{z-index:90}
+
+.ok-ring-2{box-shadow:0 0 0 2px currentColor}
+.ok-ring-4{box-shadow:0 0 0 4px currentColor}
+
+/* complete ok-* spacing scale, generated (never hand-list these) */
+.ok-m-05{margin:.125rem}.ok-p-05{padding:.125rem}
+.ok-mt-05{margin-top:.125rem}.ok-pt-05{padding-top:.125rem}
+.ok-mb-05{margin-bottom:.125rem}.ok-pb-05{padding-bottom:.125rem}
+.ok-ml-05{margin-left:.125rem}.ok-pl-05{padding-left:.125rem}
+.ok-mr-05{margin-right:.125rem}.ok-pr-05{padding-right:.125rem}
+.ok-mx-05{margin-inline:.125rem}.ok-my-05{margin-block:.125rem}.ok-px-05{padding-inline:.125rem}.ok-py-05{padding-block:.125rem}
+.ok-gap-05{gap:.125rem}
+.ok-m-1{margin:.25rem}.ok-p-1{padding:.25rem}
+.ok-mt-1{margin-top:.25rem}.ok-pt-1{padding-top:.25rem}
+.ok-mb-1{margin-bottom:.25rem}.ok-pb-1{padding-bottom:.25rem}
+.ok-ml-1{margin-left:.25rem}.ok-pl-1{padding-left:.25rem}
+.ok-mr-1{margin-right:.25rem}.ok-pr-1{padding-right:.25rem}
+.ok-mx-1{margin-inline:.25rem}.ok-my-1{margin-block:.25rem}.ok-px-1{padding-inline:.25rem}.ok-py-1{padding-block:.25rem}
+.ok-gap-1{gap:.25rem}
+.ok-m-15{margin:.375rem}.ok-p-15{padding:.375rem}
+.ok-mt-15{margin-top:.375rem}.ok-pt-15{padding-top:.375rem}
+.ok-mb-15{margin-bottom:.375rem}.ok-pb-15{padding-bottom:.375rem}
+.ok-ml-15{margin-left:.375rem}.ok-pl-15{padding-left:.375rem}
+.ok-mr-15{margin-right:.375rem}.ok-pr-15{padding-right:.375rem}
+.ok-mx-15{margin-inline:.375rem}.ok-my-15{margin-block:.375rem}.ok-px-15{padding-inline:.375rem}.ok-py-15{padding-block:.375rem}
+.ok-gap-15{gap:.375rem}
+.ok-m-2{margin:.5rem}.ok-p-2{padding:.5rem}
+.ok-mt-2{margin-top:.5rem}.ok-pt-2{padding-top:.5rem}
+.ok-mb-2{margin-bottom:.5rem}.ok-pb-2{padding-bottom:.5rem}
+.ok-ml-2{margin-left:.5rem}.ok-pl-2{padding-left:.5rem}
+.ok-mr-2{margin-right:.5rem}.ok-pr-2{padding-right:.5rem}
+.ok-mx-2{margin-inline:.5rem}.ok-my-2{margin-block:.5rem}.ok-px-2{padding-inline:.5rem}.ok-py-2{padding-block:.5rem}
+.ok-gap-2{gap:.5rem}
+.ok-m-25{margin:.625rem}.ok-p-25{padding:.625rem}
+.ok-mt-25{margin-top:.625rem}.ok-pt-25{padding-top:.625rem}
+.ok-mb-25{margin-bottom:.625rem}.ok-pb-25{padding-bottom:.625rem}
+.ok-ml-25{margin-left:.625rem}.ok-pl-25{padding-left:.625rem}
+.ok-mr-25{margin-right:.625rem}.ok-pr-25{padding-right:.625rem}
+.ok-mx-25{margin-inline:.625rem}.ok-my-25{margin-block:.625rem}.ok-px-25{padding-inline:.625rem}.ok-py-25{padding-block:.625rem}
+.ok-gap-25{gap:.625rem}
+.ok-m-3{margin:.75rem}.ok-p-3{padding:.75rem}
+.ok-mt-3{margin-top:.75rem}.ok-pt-3{padding-top:.75rem}
+.ok-mb-3{margin-bottom:.75rem}.ok-pb-3{padding-bottom:.75rem}
+.ok-ml-3{margin-left:.75rem}.ok-pl-3{padding-left:.75rem}
+.ok-mr-3{margin-right:.75rem}.ok-pr-3{padding-right:.75rem}
+.ok-mx-3{margin-inline:.75rem}.ok-my-3{margin-block:.75rem}.ok-px-3{padding-inline:.75rem}.ok-py-3{padding-block:.75rem}
+.ok-gap-3{gap:.75rem}
+.ok-m-35{margin:.875rem}.ok-p-35{padding:.875rem}
+.ok-mt-35{margin-top:.875rem}.ok-pt-35{padding-top:.875rem}
+.ok-mb-35{margin-bottom:.875rem}.ok-pb-35{padding-bottom:.875rem}
+.ok-ml-35{margin-left:.875rem}.ok-pl-35{padding-left:.875rem}
+.ok-mr-35{margin-right:.875rem}.ok-pr-35{padding-right:.875rem}
+.ok-mx-35{margin-inline:.875rem}.ok-my-35{margin-block:.875rem}.ok-px-35{padding-inline:.875rem}.ok-py-35{padding-block:.875rem}
+.ok-gap-35{gap:.875rem}
+.ok-m-4{margin:1rem}.ok-p-4{padding:1rem}
+.ok-mt-4{margin-top:1rem}.ok-pt-4{padding-top:1rem}
+.ok-mb-4{margin-bottom:1rem}.ok-pb-4{padding-bottom:1rem}
+.ok-ml-4{margin-left:1rem}.ok-pl-4{padding-left:1rem}
+.ok-mr-4{margin-right:1rem}.ok-pr-4{padding-right:1rem}
+.ok-mx-4{margin-inline:1rem}.ok-my-4{margin-block:1rem}.ok-px-4{padding-inline:1rem}.ok-py-4{padding-block:1rem}
+.ok-gap-4{gap:1rem}
+.ok-m-5{margin:1.25rem}.ok-p-5{padding:1.25rem}
+.ok-mt-5{margin-top:1.25rem}.ok-pt-5{padding-top:1.25rem}
+.ok-mb-5{margin-bottom:1.25rem}.ok-pb-5{padding-bottom:1.25rem}
+.ok-ml-5{margin-left:1.25rem}.ok-pl-5{padding-left:1.25rem}
+.ok-mr-5{margin-right:1.25rem}.ok-pr-5{padding-right:1.25rem}
+.ok-mx-5{margin-inline:1.25rem}.ok-my-5{margin-block:1.25rem}.ok-px-5{padding-inline:1.25rem}.ok-py-5{padding-block:1.25rem}
+.ok-gap-5{gap:1.25rem}
+.ok-m-6{margin:1.5rem}.ok-p-6{padding:1.5rem}
+.ok-mt-6{margin-top:1.5rem}.ok-pt-6{padding-top:1.5rem}
+.ok-mb-6{margin-bottom:1.5rem}.ok-pb-6{padding-bottom:1.5rem}
+.ok-ml-6{margin-left:1.5rem}.ok-pl-6{padding-left:1.5rem}
+.ok-mr-6{margin-right:1.5rem}.ok-pr-6{padding-right:1.5rem}
+.ok-mx-6{margin-inline:1.5rem}.ok-my-6{margin-block:1.5rem}.ok-px-6{padding-inline:1.5rem}.ok-py-6{padding-block:1.5rem}
+.ok-gap-6{gap:1.5rem}
+.ok-m-7{margin:1.75rem}.ok-p-7{padding:1.75rem}
+.ok-mt-7{margin-top:1.75rem}.ok-pt-7{padding-top:1.75rem}
+.ok-mb-7{margin-bottom:1.75rem}.ok-pb-7{padding-bottom:1.75rem}
+.ok-ml-7{margin-left:1.75rem}.ok-pl-7{padding-left:1.75rem}
+.ok-mr-7{margin-right:1.75rem}.ok-pr-7{padding-right:1.75rem}
+.ok-mx-7{margin-inline:1.75rem}.ok-my-7{margin-block:1.75rem}.ok-px-7{padding-inline:1.75rem}.ok-py-7{padding-block:1.75rem}
+.ok-gap-7{gap:1.75rem}
+.ok-m-8{margin:2rem}.ok-p-8{padding:2rem}
+.ok-mt-8{margin-top:2rem}.ok-pt-8{padding-top:2rem}
+.ok-mb-8{margin-bottom:2rem}.ok-pb-8{padding-bottom:2rem}
+.ok-ml-8{margin-left:2rem}.ok-pl-8{padding-left:2rem}
+.ok-mr-8{margin-right:2rem}.ok-pr-8{padding-right:2rem}
+.ok-mx-8{margin-inline:2rem}.ok-my-8{margin-block:2rem}.ok-px-8{padding-inline:2rem}.ok-py-8{padding-block:2rem}
+.ok-gap-8{gap:2rem}
+.ok-m-9{margin:2.25rem}.ok-p-9{padding:2.25rem}
+.ok-mt-9{margin-top:2.25rem}.ok-pt-9{padding-top:2.25rem}
+.ok-mb-9{margin-bottom:2.25rem}.ok-pb-9{padding-bottom:2.25rem}
+.ok-ml-9{margin-left:2.25rem}.ok-pl-9{padding-left:2.25rem}
+.ok-mr-9{margin-right:2.25rem}.ok-pr-9{padding-right:2.25rem}
+.ok-mx-9{margin-inline:2.25rem}.ok-my-9{margin-block:2.25rem}.ok-px-9{padding-inline:2.25rem}.ok-py-9{padding-block:2.25rem}
+.ok-gap-9{gap:2.25rem}
+.ok-m-10{margin:2.5rem}.ok-p-10{padding:2.5rem}
+.ok-mt-10{margin-top:2.5rem}.ok-pt-10{padding-top:2.5rem}
+.ok-mb-10{margin-bottom:2.5rem}.ok-pb-10{padding-bottom:2.5rem}
+.ok-ml-10{margin-left:2.5rem}.ok-pl-10{padding-left:2.5rem}
+.ok-mr-10{margin-right:2.5rem}.ok-pr-10{padding-right:2.5rem}
+.ok-mx-10{margin-inline:2.5rem}.ok-my-10{margin-block:2.5rem}.ok-px-10{padding-inline:2.5rem}.ok-py-10{padding-block:2.5rem}
+.ok-gap-10{gap:2.5rem}
+.ok-m-11{margin:2.75rem}.ok-p-11{padding:2.75rem}
+.ok-mt-11{margin-top:2.75rem}.ok-pt-11{padding-top:2.75rem}
+.ok-mb-11{margin-bottom:2.75rem}.ok-pb-11{padding-bottom:2.75rem}
+.ok-ml-11{margin-left:2.75rem}.ok-pl-11{padding-left:2.75rem}
+.ok-mr-11{margin-right:2.75rem}.ok-pr-11{padding-right:2.75rem}
+.ok-mx-11{margin-inline:2.75rem}.ok-my-11{margin-block:2.75rem}.ok-px-11{padding-inline:2.75rem}.ok-py-11{padding-block:2.75rem}
+.ok-gap-11{gap:2.75rem}
+.ok-m-12{margin:3rem}.ok-p-12{padding:3rem}
+.ok-mt-12{margin-top:3rem}.ok-pt-12{padding-top:3rem}
+.ok-mb-12{margin-bottom:3rem}.ok-pb-12{padding-bottom:3rem}
+.ok-ml-12{margin-left:3rem}.ok-pl-12{padding-left:3rem}
+.ok-mr-12{margin-right:3rem}.ok-pr-12{padding-right:3rem}
+.ok-mx-12{margin-inline:3rem}.ok-my-12{margin-block:3rem}.ok-px-12{padding-inline:3rem}.ok-py-12{padding-block:3rem}
+.ok-gap-12{gap:3rem}
+.ok-m-14{margin:3.5rem}.ok-p-14{padding:3.5rem}
+.ok-mt-14{margin-top:3.5rem}.ok-pt-14{padding-top:3.5rem}
+.ok-mb-14{margin-bottom:3.5rem}.ok-pb-14{padding-bottom:3.5rem}
+.ok-ml-14{margin-left:3.5rem}.ok-pl-14{padding-left:3.5rem}
+.ok-mr-14{margin-right:3.5rem}.ok-pr-14{padding-right:3.5rem}
+.ok-mx-14{margin-inline:3.5rem}.ok-my-14{margin-block:3.5rem}.ok-px-14{padding-inline:3.5rem}.ok-py-14{padding-block:3.5rem}
+.ok-gap-14{gap:3.5rem}
+.ok-m-16{margin:4rem}.ok-p-16{padding:4rem}
+.ok-mt-16{margin-top:4rem}.ok-pt-16{padding-top:4rem}
+.ok-mb-16{margin-bottom:4rem}.ok-pb-16{padding-bottom:4rem}
+.ok-ml-16{margin-left:4rem}.ok-pl-16{padding-left:4rem}
+.ok-mr-16{margin-right:4rem}.ok-pr-16{padding-right:4rem}
+.ok-mx-16{margin-inline:4rem}.ok-my-16{margin-block:4rem}.ok-px-16{padding-inline:4rem}.ok-py-16{padding-block:4rem}
+.ok-gap-16{gap:4rem}
+.ok-m-20{margin:5rem}.ok-p-20{padding:5rem}
+.ok-mt-20{margin-top:5rem}.ok-pt-20{padding-top:5rem}
+.ok-mb-20{margin-bottom:5rem}.ok-pb-20{padding-bottom:5rem}
+.ok-ml-20{margin-left:5rem}.ok-pl-20{padding-left:5rem}
+.ok-mr-20{margin-right:5rem}.ok-pr-20{padding-right:5rem}
+.ok-mx-20{margin-inline:5rem}.ok-my-20{margin-block:5rem}.ok-px-20{padding-inline:5rem}.ok-py-20{padding-block:5rem}
+.ok-gap-20{gap:5rem}
+.ok-m-24{margin:6rem}.ok-p-24{padding:6rem}
+.ok-mt-24{margin-top:6rem}.ok-pt-24{padding-top:6rem}
+.ok-mb-24{margin-bottom:6rem}.ok-pb-24{padding-bottom:6rem}
+.ok-ml-24{margin-left:6rem}.ok-pl-24{padding-left:6rem}
+.ok-mr-24{margin-right:6rem}.ok-pr-24{padding-right:6rem}
+.ok-mx-24{margin-inline:6rem}.ok-my-24{margin-block:6rem}.ok-px-24{padding-inline:6rem}.ok-py-24{padding-block:6rem}
+.ok-gap-24{gap:6rem}

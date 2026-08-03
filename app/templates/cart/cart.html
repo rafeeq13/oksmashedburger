@@ -1,0 +1,121 @@
+{% extends "layouts/base.html" %}
+{% block title %}Your Cart, {{ brand_name }}{% endblock %}
+
+{% block content %}
+{% if not summary.lines %}
+<div class="ok-container ok-py-20 text-center">
+  <div class="ok-w-16 ok-h-16 mx-auto ok-mb-3 rounded-pill bg-cream ok-grid ok-place-center text-gold ok-fs-2xl"><i class="fa-solid fa-bag-shopping icon-xl"></i></div>
+  <p class="text-muted-warm ok-fs-lg ok-mb-5">Your cart is empty.</p>
+  <a href="/menu" class="btn btn-primary">Browse the menu</a>
+</div>
+{% else %}
+<section class="ok-section ok-pt-8 ok-paddin-25rem-md">
+  <div class="ok-container ok-grid ok-gc-1fr380px-lg ok-gap-8 align-items-start">
+
+    <!-- LINE ITEMS -->
+    <div class="ok-card divide-y ok-divide-y">
+      {% for line in summary.lines %}
+      <article class="ok-p-3 ok-paddin-125rem-md d-flex ok-gap-3">
+        <a href="/item/{{ line.slug }}" class="d-block ok-w-24 ok-h-24 ok-width-7rem-md ok-height-7rem-md ok-rounded-xl overflow-hidden flex-shrink-0">
+          <img src="{{ line.image }}" alt="{{ line.name }}" class="w-100 h-100 ok-cover">
+        </a>
+        <div class="flex-grow-1 ok-min-w-0">
+          <div class="d-flex align-items-start justify-content-between ok-gap-3">
+            <div class="ok-min-w-0">
+              <a href="/item/{{ line.slug }}"><h3 class="font-display fw-bold ok-fs-lg ok-lh-tight">{{ line.name }}</h3></a>
+              {% if line.options and (line.options.variant or line.options.addons or line.options.notes) %}
+              <div class="ok-fs-sm text-muted-warm ok-mt-15 ok-stack-05">
+                {% if line.options.variant %}<div class="d-flex flex-wrap gap-x-1"><span>{{ line.options.variant }}</span>{% if line.options.variant_delta %}<span class="text-muted-warm-70">({{ '+' if line.options.variant_delta > 0 else '−' }}${{ '%.2f'|format(line.options.variant_delta|abs) }})</span>{% endif %}</div>{% endif %}
+                {% for a in line.options.addons %}<div class="d-flex flex-wrap gap-x-1"><span>+ {{ a.name }}</span><span class="text-muted-warm-70">(+${{ '%.2f'|format(a.price) }})</span></div>{% endfor %}
+                {% if line.options.notes %}<div class="fst-italic ok-fs-xs">“{{ line.options.notes }}”</div>{% endif %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="text-end flex-shrink-0">
+              <div class="fw-bold ok-fs-lg">${{ '%.2f'|format(line.line_total) }}</div>
+              <div class="ok-fs-xs text-muted-warm">${{ '%.2f'|format(line.unit_price) }} ea</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mt-3">
+            <div class="d-inline-flex align-items-center ok-bw-15 ok-bc-varokline rounded-pill overflow-hidden">
+              <form method="post" action="/cart/update">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="index" value="{{ line.index }}"><input type="hidden" name="qty" value="{{ line.qty - 1 }}">
+                <button class="ok-w-9 ok-h-9 ok-fs-lg fw-bold" aria-label="Decrease">&minus;</button>
+              </form>
+              <span class="ok-minw-2rem text-center fw-bold">{{ line.qty }}</span>
+              <form method="post" action="/cart/update">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="index" value="{{ line.index }}"><input type="hidden" name="qty" value="{{ line.qty + 1 }}">
+                <button class="ok-w-9 ok-h-9 ok-fs-lg fw-bold" aria-label="Increase">+</button>
+              </form>
+            </div>
+            <form method="post" action="/cart/remove">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="index" value="{{ line.index }}">
+              <button class="link-underline ok-fs-sm text-muted-warm">Remove</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- SUMMARY -->
+    <aside class="ok-card ok-p-5 ok-positi-sticky-lg ok-top-7rem-lg">
+      <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Order summary</h2>
+      {% if store %}<p class="ok-fs-sm text-muted-warm ok-mb-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-location-dot text-gold"></i> {{ store.name }}</p>{% endif %}
+
+      <!-- Promo code -->
+      {% if summary.promo.code and not summary.promo.error and (summary.promo.discount or summary.promo.delivery_discount) %}
+      <div class="d-flex align-items-center justify-content-between bg-ok-green-10 border border-ok-green-30 ok-rounded-lg ok-px-3 py-2 ok-mb-3 ok-fs-sm">
+        <span class="fw-semibold text-ok-green"><i class="fa-solid fa-tag"></i> {{ summary.promo.code }} applied</span>
+        <form method="post" action="/cart/promo/remove"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="text-muted-warm ok-fs-xs">Remove</button></form>
+      </div>
+      {% else %}
+      <form method="post" action="/cart/promo" class="d-flex gap-2 mb-2">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input name="promo" class="ok-input py-2 ok-fs-sm" placeholder="Promo code" value="{{ summary.promo.code or '' }}">
+        <button class="btn btn-dark btn-sm">Apply</button>
+      </form>
+      {% if summary.promo.error %}<p class="ok-fs-xs text-ok-red ok-mb-3">{{ summary.promo.error }}</p>{% else %}<div class="ok-mb-3"></div>{% endif %}
+      {% endif %}
+
+      <!-- Loyalty points -->
+      {% if current_user and summary.points.available > 0 %}
+      <form method="post" action="/cart/points" class="d-flex align-items-center justify-content-between ok-fs-sm ok-mb-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <span>Redeem {{ summary.points.available }} pts{% if summary.points.redeemed %} <span class="text-ok-green fw-semibold">(−${{ '%.2f'|format(summary.points.dollars) }})</span>{% endif %}</span>
+        <button class="btn btn-sm {{ 'btn-primary' if summary.points.redeemed else 'btn-secondary' }}">{{ 'On' if summary.points.redeemed else 'Use' }}</button>
+      </form>
+      {% endif %}
+
+      <!-- Gift card -->
+      {% if summary.giftcard.code and not summary.giftcard.error and summary.giftcard.applied %}
+      <div class="d-flex align-items-center justify-content-between bg-ok-green-10 border border-ok-green-30 ok-rounded-lg ok-px-3 py-2 ok-mb-3 ok-fs-sm">
+        <span class="fw-semibold text-ok-green"><i class="fa-solid fa-gift"></i> Gift card −${{ '%.2f'|format(summary.giftcard.applied) }}</span>
+        <form method="post" action="/cart/giftcard/remove"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="text-muted-warm ok-fs-xs">Remove</button></form>
+      </div>
+      {% else %}
+      <form method="post" action="/cart/giftcard" class="d-flex gap-2 mb-2">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input name="giftcard" class="ok-input py-2 ok-fs-sm" placeholder="Gift card code">
+        <button class="btn btn-dark btn-sm">Apply</button>
+      </form>
+      {% if summary.giftcard.error %}<p class="ok-fs-xs text-ok-red ok-mb-3">{{ summary.giftcard.error }}</p>{% else %}<div class="ok-mb-3"></div>{% endif %}
+      {% endif %}
+
+      <div class="divider ok-my-3"></div>
+      <div class="ok-stack-2 ok-fs-sm">
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
+        {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery fee</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>
+        {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
+      </div>
+      <div class="divider ok-my-3"></div>
+      <div class="d-flex justify-content-between align-items-center ok-mb-5"><span class="font-display fw-bold ok-fs-lg">Total</span><span class="font-display ok-fw-800 ok-fs-2xl">${{ '%.2f'|format(summary.total) }}</span></div>
+      <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
+      <p class="ok-fs-xs text-muted-warm text-center ok-mt-3 d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-lock"></i> Secure checkout</p>
+    </aside>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

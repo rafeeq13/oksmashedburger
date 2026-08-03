@@ -1,0 +1,74 @@
+{% extends "layouts/base.html" %}
+{% block title %}Help & FAQ, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ HERO (jet) with search ============ -->
+    <section class="ok-pagehero">
+      <div class="position-absolute ok-fill ok-opacity-30">
+        {% if site.get('faq_hero_img') %}<img src="{{ site.get('faq_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Help center" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+      </div>
+      <div class="ok-pagehero-veil"></div>
+      <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
+      <div class="ok-container text-center">
+<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ site.get('faq_hero_heading') or 'How can we help?' }}</h1>
+        <p class="text-w-80 ok-fs-lg max-w-xl mx-auto ok-mb-8 ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('faq_hero_text') or 'Search our help center or browse the topics below. Most answers are just a tap away.' }}</p>
+        <form onsubmit="return false" class="max-w-xl mx-auto">
+          <div class="d-flex align-items-center gap-2 ok-input bg-white text-ink !py-3">
+            <span class="text-gold ok-fs-lg"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input class="w-100 bg-transparent ok-nofocus ok-fs-base" placeholder="Search for answers, e.g. 'track my order'" aria-label="Search the help center">
+            <button class="btn btn-primary btn-sm flex-shrink-0">Search</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ FAQ: filters + accordion ============ -->
+    <section class="ok-section">
+      <div class="ok-container max-w-4xl">
+        <div class="text-center ok-mb-3">
+          <h2 class="ok-h2">{{ site.get('faq_list_heading') or 'Frequently asked' }}</h2>
+        </div>
+
+        <!-- Category filter chips -->
+        {% set faq_groups = content_list('faq') | map(attribute='group') | select | unique | list %}
+        <div class="d-flex flex-wrap justify-content-center gap-2 ok-mb-8" data-chip-group>
+          <button class="chip is-active" data-faq-filter="">All</button>
+          {% for g in faq_groups %}<button class="chip" data-faq-filter="{{ g }}">{{ g }}</button>{% endfor %}
+        </div>
+
+        <!-- Accordion — items live in Admin > Website Content > FAQ questions -->
+        {% set faqs = content_list('faq') %}
+        <div class="ok-card p-2 ok-paddin-15rem-sm">
+          {% for f in faqs %}
+          <div class="acc-item{{ ' is-open' if loop.first }}" data-faq-group="{{ f.group }}">
+            <button class="acc-q">{{ f.q }} <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>{{ f.a|safe }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STILL NEED HELP? CTA ============ -->
+    <section class="ok-section bg-cream-40 border-top ok-bc-varokline">
+      <div class="ok-container">
+        <div class="ok-card bg-ink text-white overflow-hidden position-relative">
+          <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
+          <div class="position-relative ok-p-8 ok-paddin-3rem-md ok-grid ok-grid-md-2 ok-gap-3 align-items-center">
+            <div>
+              <h2 class="ok-h2 ok-mb-3">{{ site.get('faq_help_heading') or 'Still need help?' }}</h2>
+              <p class="text-w-70 ok-mb-5">Can't find what you're looking for? Our Philly-based support team is quick, friendly and ready to sort it out.</p>
+              <div class="d-flex flex-wrap ok-gap-3">
+                <a href="/contact" class="btn btn-primary">Contact support</a>
+                <a href="/tracking" class="btn btn-secondary !bg-transparent !text-white !border-white">Track an order</a>
+              </div>
+            </div>
+            <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
+              <img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img ok-rounded-2xl" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+{% endblock %}

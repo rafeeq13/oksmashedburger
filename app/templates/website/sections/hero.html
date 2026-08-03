@@ -1,0 +1,58 @@
+<!-- HERO CAROUSEL -->
+{% set hero_slides = content_list('hero_slides') %}{# Hero slides: editable in Admin > Website Content #}
+<section class="bg-ink text-white" data-hero>
+  <div id="heroCarousel" class="ok-hero-stage position-relative overflow-hidden">
+    <div data-track class="ok-hero-track d-flex h-100">
+    {% for s in hero_slides %}
+      <div class="position-relative flex-shrink-0 w-100 h-100 overflow-hidden">
+        <img src="{{ site.get('hero_' ~ loop.index ~ '_img') or s.img }}" alt="" class="ok-fill ok-cover" {% if not loop.first %}loading="lazy"{% endif %}>
+        {# .pb-overlay stays so the admin can still dial overlay darkness from the CMS. #}
+        <div class="pb-overlay ok-fill" style="background:rgba(0,0,0,.18)"></div>
+        <div class="ok-hero-veil"></div>
+        <div class="ok-hero-grain"></div>
+
+        <div class="ok-hero-inner position-relative h-100 ok-container d-flex flex-column align-items-center justify-content-center text-center">
+          <div class="ok-hero-eyebrow d-inline-block ok-px-3 py-2 d-none" data-hero-eyebrow>
+            <span class="ok-hero-kicker">{{ cfg.get('eyebrow') or 'Craft Smashed Burgers' }}</span>
+          </div>
+
+          <h1 class="ok-hero-title font-display ok-mw-xl" data-hero-title>{{ (cfg.get('slide' ~ loop.index ~ '_title') or s.title)|safe }}</h1>
+
+          <h4 class="ok-hero-sub" data-hero-text>{{ cfg.get('slide' ~ loop.index ~ '_text') or s.text }}</h4>
+
+          <svg viewBox="0 0 80 10" class="ok-hero-rule d-none" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-hero-rule><path d="M3 7 L11 3 L19 7 L27 3 L35 7 L43 3 L51 7 L59 3 L67 7 L75 3"/></svg>
+
+          <div class="ok-hero-cta" data-elw="btn" data-hero-cta{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+            <button data-open="location" data-el="btn" class="btn btn-primary btn-lg btn-rect">
+              <i class="fa-solid fa-bag-shopping"></i> {{ cfg.get('cta_text') or 'Start Your Order' }}
+            </button>
+          </div>
+
+          <div class="ok-hero-ratings d-none d-sm-flex align-items-center justify-content-center gap-2" data-hero-rating>
+            <span class="ok-rating-pill">Google
+              <span class="ok-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></span>
+              <span class="ok-rating-score">4.4</span>
+            </span>
+            <span class="ok-rating-pill">Yelp
+              <span class="ok-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+              <span class="ok-rating-score">4.5</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+
+    <!-- slide indicators -->
+    <div class="ok-dots" data-hero-dots aria-hidden="true">
+      {% for s in hero_slides %}<span class="ok-dot{% if loop.first %} is-active{% endif %}"></span>{% endfor %}
+    </div>
+
+    <!-- scroll cue -->
+    <button type="button" class="ok-scrollcue d-none" data-hero-cue aria-label="Scroll to next section">
+      <span>Scroll</span>
+      <span class="ok-scrollcue-rail"></span>
+      <i class="fa-solid fa-chevron-down"></i>
+    </button>
+  </div>
+</section>

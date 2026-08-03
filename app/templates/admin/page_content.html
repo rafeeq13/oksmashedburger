@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% block title %}Page Content, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Page content</h2>
+<p class="text-slate text-sm mb-5">Edit the headline copy of each storefront page. Fields are pre-filled with the current text, clear a field to fall back to the built-in default. The home page is managed in the <a href="/admin/page-builder{{ qs }}" class="link-underline font-semibold">Page Builder</a>; pictures in <a href="/admin/site-images{{ qs }}" class="link-underline font-semibold">Site Images</a>.</p>
+
+<form method="post" action="/admin/page-content{{ qs }}" class="space-y-5">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+  {% for p in pages %}
+  <section class="ok-card p-5">
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <h3 class="font-display font-bold text-lg">{{ p.label }}</h3>
+      <a href="{{ p.url }}" target="_blank" rel="noopener" class="link-underline text-xs shrink-0">View page <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    </div>
+    <div class="grid gap-3">
+      {% for key, label, default in p.fields %}
+      {% set _def = defaults.get(key, default) %}
+      <div>
+        <label class="ok-label !text-xs">{{ label }}</label>
+        <input name="{{ key }}" value="{{ current.get(key) or _def }}" placeholder="{{ _def }}" class="ok-input py-2 text-sm">
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <div class="sticky bottom-0 bg-[#f4f5f7] py-3 -mx-4 px-4 border-t border-[var(--ok-line)]">
+    <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save page content</button>
+  </div>
+</form>
+{% endblock %}

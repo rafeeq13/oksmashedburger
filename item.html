@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The OK Classic Double — OK Smashed Burger</title>
+  <meta name="description" content="Build your OK Classic Double smashed burger — pick your patty size, cheese and add-ons, make it a combo, and add to cart. Fresh-smashed to order.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="pb-28">
+    <!-- ============ BREADCRUMB ============ -->
+    <nav class="ok-container pt-5 text-sm text-slate" aria-label="Breadcrumb">
+      <ol class="flex items-center gap-2 flex-wrap">
+        <li><a href="index.html" class="hover:text-okamber">Home</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="menu.html" class="hover:text-okamber">Menu</a></li>
+        <li aria-hidden="true">/</li>
+        <li class="font-semibold text-jet" aria-current="page">The OK Classic Double</li>
+      </ol>
+    </nav>
+
+    <!-- ============ ITEM ============ -->
+    <div class="ok-container pt-5 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+
+      <!-- ---- GALLERY (sticky on desktop) ---- -->
+      <div class="lg:sticky lg:top-28">
+        <div class="ok-card overflow-hidden relative">
+          <img data-ph="The OK Classic Double" data-ph-ratio="1/1" class="ph-img" alt="">
+          <span class="badge badge-new absolute top-4 left-4"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+          <span class="badge badge-deal absolute top-4 right-4"><i class="fa-solid fa-fire"></i> Fan favorite</span>
+        </div>
+        <div class="grid grid-cols-4 gap-3 mt-3">
+          <button class="ok-card overflow-hidden aspect-square ring-2 ring-okyellow" aria-label="View image 1">
+            <img data-ph="Classic Double front" data-ph-ratio="1/1" class="ph-img" alt=""></button>
+          <button class="ok-card overflow-hidden aspect-square hover:ring-2 hover:ring-okamber transition" aria-label="View image 2">
+            <img data-ph="Classic Double stacked" data-ph-ratio="1/1" class="ph-img" alt=""></button>
+          <button class="ok-card overflow-hidden aspect-square hover:ring-2 hover:ring-okamber transition" aria-label="View image 3">
+            <img data-ph="Classic Double cross section" data-ph-ratio="1/1" class="ph-img" alt=""></button>
+          <button class="ok-card overflow-hidden aspect-square hover:ring-2 hover:ring-okamber transition" aria-label="View image 4">
+            <img data-ph="Classic Double with fries" data-ph-ratio="1/1" class="ph-img" alt=""></button>
+        </div>
+      </div>
+
+      <!-- ---- DETAILS + CUSTOMIZER ---- -->
+      <div class="min-w-0">
+        <h1 class="ok-h1">The OK Classic Double</h1>
+
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
+          <div class="flex items-center gap-1.5">
+            <span class="text-okyellow text-lg flex gap-0.5" aria-hidden="true"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></span>
+            <span class="font-semibold">4.9</span>
+            <span class="text-slate text-sm">· 320 ratings</span>
+          </div>
+          <span class="w-px h-4 bg-[var(--ok-line)]"></span>
+          <span class="text-slate text-sm inline-flex items-center gap-1"><i class="fa-solid fa-fire"></i> 720 cal · <i class="fa-solid fa-clock"></i> ~25 min</span>
+        </div>
+
+        <div class="text-3xl font-display font-extrabold mt-4">$11.49</div>
+
+        <p class="text-slate mt-3 leading-relaxed">Two fresh-smashed beef patties griddled to crispy-edged perfection, layered with melty American cheese, dill pickles, diced onion and our signature OK sauce on a toasted brioche bun. The one that started it all.</p>
+
+        <p class="ok-hint mt-3">Contains: Gluten, Dairy, Egg, Soy. May contain traces of sesame. Cooked to a safe internal temperature.</p>
+
+        <div class="divider my-6"></div>
+
+        <!-- ===== PATTY SIZE ===== -->
+        <div class="mb-6">
+          <div class="flex items-baseline justify-between mb-2">
+            <p class="ok-label !mb-0">Choose your size <span class="text-okred">*</span></p>
+            <span class="ok-hint">Required</span>
+          </div>
+          <div class="flex flex-wrap gap-2" data-chip-group>
+            <button class="chip">Single <span class="text-slate font-normal">−$2.00</span></button>
+            <button class="chip is-active">Double</button>
+            <button class="chip">Triple <span class="text-slate font-normal">+$3.00</span></button>
+          </div>
+        </div>
+
+        <!-- ===== CHEESE ===== -->
+        <div class="mb-6">
+          <p class="ok-label">Cheese</p>
+          <div class="flex flex-wrap gap-2" data-chip-group>
+            <button class="chip is-active">American</button>
+            <button class="chip">Aged Cheddar</button>
+            <button class="chip">Pepper Jack</button>
+            <button class="chip">Swiss</button>
+            <button class="chip">No cheese</button>
+          </div>
+        </div>
+
+        <div class="divider my-6"></div>
+
+        <!-- ===== ADD-ONS ===== -->
+        <div class="mb-6">
+          <p class="ok-label">Add-ons <span class="text-slate font-normal">· pick any</span></p>
+          <div class="space-y-2.5">
+            <label class="ok-card ok-card-hover flex items-center gap-3 p-3.5 cursor-pointer">
+              <input type="checkbox" class="w-5 h-5 accent-okamber rounded shrink-0">
+              <span class="text-xl" aria-hidden="true"><i class="fa-solid fa-bacon"></i></span>
+              <span class="flex-1 font-semibold">Smoked Bacon</span>
+              <span class="font-bold text-sm">+$1.50</span>
+            </label>
+            <label class="ok-card ok-card-hover flex items-center gap-3 p-3.5 cursor-pointer">
+              <input type="checkbox" class="w-5 h-5 accent-okamber rounded shrink-0">
+              <span class="text-xl" aria-hidden="true"><i class="fa-solid fa-burger"></i></span>
+              <span class="flex-1 font-semibold">Extra Smash Patty</span>
+              <span class="font-bold text-sm">+$2.50</span>
+            </label>
+            <label class="ok-card ok-card-hover flex items-center gap-3 p-3.5 cursor-pointer">
+              <input type="checkbox" class="w-5 h-5 accent-okamber rounded shrink-0">
+              <span class="text-xl" aria-hidden="true"><i class="fa-solid fa-leaf"></i></span>
+              <span class="flex-1 font-semibold">Smashed Avocado</span>
+              <span class="font-bold text-sm">+$1.50</span>
+            </label>
+            <label class="ok-card ok-card-hover flex items-center gap-3 p-3.5 cursor-pointer">
+              <input type="checkbox" class="w-5 h-5 accent-okamber rounded shrink-0">
+              <span class="text-xl" aria-hidden="true"><i class="fa-solid fa-egg"></i></span>
+              <span class="flex-1 font-semibold">Fried Egg</span>
+              <span class="font-bold text-sm">+$1.00</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ===== MAKE IT A COMBO ===== -->
+        <label class="mb-6 flex items-center gap-4 p-4 rounded-2xl border-2 border-okyellow bg-softyellow/50 cursor-pointer">
+          <input type="checkbox" class="w-5 h-5 accent-okamber rounded shrink-0">
+          <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0"><img data-ph="Fries and Drink Combo" data-ph-ratio="1/1" class="ph-img" alt=""></div>
+          <div class="flex-1">
+            <div class="font-display font-bold flex items-center gap-2">Make it a combo <span class="badge badge-deal">Save $2</span></div>
+            <p class="text-sm text-slate">Add regular fries + a fountain drink.</p>
+          </div>
+          <span class="font-bold whitespace-nowrap">+$3.99</span>
+        </label>
+
+        <!-- ===== EXTRAS ===== -->
+        <div class="mb-6">
+          <p class="ok-label">Extras <span class="text-slate font-normal">· free</span></p>
+          <div class="flex flex-wrap gap-2" data-chip-group>
+            <button class="chip" data-multi><i class="fa-solid fa-fire"></i> Jalapeños</button>
+            <button class="chip" data-multi><i class="fa-solid fa-utensils"></i> Grilled Onions</button>
+            <button class="chip" data-multi><i class="fa-solid fa-leaf"></i> Extra Lettuce</button>
+            <button class="chip" data-multi><i class="fa-solid fa-utensils"></i> Extra Pickles</button>
+            <button class="chip" data-multi><i class="fa-solid fa-utensils"></i> Tomato</button>
+          </div>
+        </div>
+
+        <!-- ===== SPECIAL INSTRUCTIONS ===== -->
+        <div class="mb-6">
+          <label class="ok-label" for="notes">Special instructions</label>
+          <textarea id="notes" rows="3" maxlength="200" class="ok-textarea" placeholder="e.g. no onions, sauce on the side, well done…"></textarea>
+          <p class="ok-hint mt-1">Allergies? Let us know here and we'll do our best.</p>
+        </div>
+
+        <!-- ===== QUANTITY ===== -->
+        <div class="flex items-center gap-4 mb-2">
+          <span class="ok-label !mb-0">Quantity</span>
+          <div class="qty">
+            <button data-step="-" aria-label="Decrease quantity">&minus;</button>
+            <span>1</span>
+            <button data-step="+" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <div class="divider my-6"></div>
+
+        <!-- ===== NUTRITION & ALLERGENS ACCORDION ===== -->
+        <div>
+          <div class="acc-item is-open">
+            <button class="acc-q" aria-expanded="true">Nutrition &amp; ingredients <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="ok-card p-3 text-center"><div class="font-display font-extrabold text-lg">720</div><div class="ok-hint">Calories</div></div>
+                <div class="ok-card p-3 text-center"><div class="font-display font-extrabold text-lg">42g</div><div class="ok-hint">Protein</div></div>
+                <div class="ok-card p-3 text-center"><div class="font-display font-extrabold text-lg">38g</div><div class="ok-hint">Carbs</div></div>
+                <div class="ok-card p-3 text-center"><div class="font-display font-extrabold text-lg">44g</div><div class="ok-hint">Fat</div></div>
+              </div>
+              <p class="text-sm">Ingredients: 100% Angus beef, brioche bun (wheat, egg, milk), American cheese (milk), OK sauce (egg, soy), dill pickles, onion. Values shown for the Double with American cheese; customizations change totals.</p>
+            </div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-q" aria-expanded="false">Allergens <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p class="text-sm">Contains Gluten (Wheat), Dairy, Egg and Soy. Prepared in a kitchen that also handles sesame, peanuts and shellfish, so cross-contact is possible. Gluten-friendly bun available on request.</p>
+            </div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-q" aria-expanded="false">How it's made <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p class="text-sm">We ball fresh beef and smash it hard on a screaming-hot griddle for that lacy, crispy crust, then stack, sauce and toast the bun to order. Nothing sits under a heat lamp.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ YOU MIGHT ALSO LIKE ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="flex items-end justify-between mb-6">
+          <div><h2 class="ok-h2">You might also like</h2></div>
+          <a href="menu.html" class="link-underline hidden sm:inline-flex items-center gap-1">See full menu <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Loaded OK Fries" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-new absolute top-3 left-3"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Loaded OK Fries</h3></a>
+              <p class="text-xs text-slate mb-2">Cheese sauce, crispy onions, OK drizzle.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$6.99</span>
+                <button data-add-cart="Loaded OK Fries" aria-label="Add Loaded OK Fries to cart" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Salted Caramel Shake" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Salted Caramel Shake</h3></a>
+              <p class="text-xs text-slate mb-2">Buttery caramel swirl &amp; sea salt.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$5.99</span>
+                <button data-add-cart="Salted Caramel Shake" aria-label="Add Salted Caramel Shake to cart" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Crispy Onion Rings" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Crispy Onion Rings</h3></a>
+              <p class="text-xs text-slate mb-2">Beer-battered with smoky dip.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$4.99</span>
+                <button data-add-cart="Crispy Onion Rings" aria-label="Add Crispy Onion Rings to cart" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Double Bacon Smash" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Hot</span>
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Double Bacon Smash</h3></a>
+              <p class="text-xs text-slate mb-2">Bacon, cheddar &amp; crispy onions.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$12.99</span>
+                <button data-add-cart="Double Bacon Smash" aria-label="Add Double Bacon Smash to cart" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ STICKY ADD-TO-CART BAR ============ -->
+  <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-[var(--ok-line)] shadow-[0_-8px_24px_rgba(0,0,0,.08)]">
+    <div class="ok-container py-3 flex items-center gap-3">
+      <div class="hidden sm:block">
+        <div class="ok-hint leading-none">Total</div>
+        <div class="font-display font-extrabold text-2xl leading-tight">$11.49</div>
+      </div>
+      <button data-add-cart="The OK Classic Double" class="btn btn-primary btn-lg flex-1 !justify-between">
+        <span>Add to cart</span>
+        <span class="sm:hidden font-extrabold">$11.49</span>
+        <span class="hidden sm:inline"><i class="fa-solid fa-arrow-right"></i></span>
+      </button>
+      <a href="cart.html" class="btn btn-secondary btn-lg shrink-0" aria-label="Go to cart">
+        <span class="sm:hidden"><i class="fa-solid fa-bag-shopping"></i></span><span class="hidden sm:inline">Go to cart</span>
+      </a>
+    </div>
+  </div>
+
+  <div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — OK Smashed Burger</title>
+  <meta name="description" content="Fast single-screen checkout — choose delivery, pickup or dine-in, pick a time, add contact details and pay securely with card, wallet or gift card.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ BREADCRUMB + HEADING ============ -->
+    <section class="bg-softyellow/40 border-b border-[var(--ok-line)]">
+      <div class="ok-container py-6 md:py-8">
+        <nav class="text-sm text-slate mb-3" aria-label="Breadcrumb">
+          <ol class="flex items-center gap-2">
+            <li><a href="index.html" class="hover:text-okamber">Home</a></li>
+            <li aria-hidden="true" class="text-slate/60">/</li>
+            <li><a href="cart.html" class="hover:text-okamber">Cart</a></li>
+            <li aria-hidden="true" class="text-slate/60">/</li>
+            <li class="font-semibold text-jet" aria-current="page">Checkout</li>
+          </ol>
+        </nav>
+        <h1 class="ok-h1">Checkout</h1>
+        <p class="text-sm text-slate mt-2">Checking out as guest — <a href="login.html" class="link-underline">Sign in</a> for express checkout.</p>
+      </div>
+    </section>
+
+    <!-- ============ CHECKOUT LAYOUT ============ -->
+    <section class="ok-section pt-8 md:pt-10">
+      <div class="ok-container grid lg:grid-cols-[1fr_380px] gap-8 items-start">
+
+        <!-- ==================== LEFT: STEPS ==================== -->
+        <div class="space-y-5">
+
+          <!-- STEP 1 · Order type & address -->
+          <section class="ok-card p-5 md:p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-8 h-8 rounded-full bg-jet text-okyellow grid place-items-center font-display font-bold shrink-0">1</span>
+              <h2 class="font-display font-bold text-lg">Order type &amp; address</h2>
+            </div>
+
+            <div data-tab-group>
+              <!-- tabs -->
+              <div class="flex gap-2 mb-5">
+                <button data-tab="delivery" class="chip is-active flex-1 justify-center"><i class="fa-solid fa-car"></i> Delivery</button>
+                <button data-tab="pickup" class="chip flex-1 justify-center"><i class="fa-solid fa-bag-shopping"></i> Pickup</button>
+                <button data-tab="dinein" class="chip flex-1 justify-center"><i class="fa-solid fa-utensils"></i> Dine-in</button>
+              </div>
+
+              <!-- Delivery panel -->
+              <div data-panel="delivery">
+                <div class="grid gap-4">
+                  <div>
+                    <label class="ok-label" for="street">Street address</label>
+                    <input id="street" class="ok-input" placeholder="1520 Chestnut St" value="1520 Chestnut St">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="ok-label" for="apt">Apt / Suite <span class="text-slate font-normal">(optional)</span></label>
+                      <input id="apt" class="ok-input" placeholder="Apt 4B">
+                    </div>
+                    <div>
+                      <label class="ok-label" for="city">City</label>
+                      <input id="city" class="ok-input" placeholder="Philadelphia" value="Philadelphia">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="ok-label" for="zip">ZIP code</label>
+                      <input id="zip" class="ok-input" placeholder="19102" value="19102">
+                    </div>
+                    <div class="flex items-end">
+                      <p class="badge badge-green w-full justify-center py-2.5"><i class="fa-solid fa-circle-check"></i> Delivery zone OK</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="ok-label" for="instructions">Delivery instructions <span class="text-slate font-normal">(optional)</span></label>
+                    <textarea id="instructions" rows="2" class="ok-textarea" placeholder="Gate code, drop-off spot, etc."></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pickup panel -->
+              <div data-panel="pickup" class="hidden">
+                <div class="grid gap-4">
+                  <div>
+                    <label class="ok-label" for="store">Choose a store</label>
+                    <select id="store" class="ok-select">
+                      <option>OK Smashed Burger — Center City · 1520 Chestnut St</option>
+                      <option>OK Smashed Burger — Fishtown · 1201 Frankford Ave</option>
+                      <option>OK Smashed Burger — University City · 3720 Spruce St</option>
+                      <option>OK Smashed Burger — South Philly · 1801 S Broad St</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="ok-label" for="readytime">Ready time</label>
+                    <select id="readytime" class="ok-select">
+                      <option>ASAP · ~15 min</option>
+                      <option>In 30 minutes</option>
+                      <option>In 1 hour</option>
+                      <option>Schedule for later…</option>
+                    </select>
+                  </div>
+                  <p class="ok-hint flex items-center gap-1"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Center City is open now · picks up at the counter.</p>
+                </div>
+              </div>
+
+              <!-- Dine-in panel -->
+              <div data-panel="dinein" class="hidden">
+                <div class="rounded-xl bg-softyellow/50 border border-okyellow/50 p-4 flex gap-3">
+                  <span class="text-2xl"><i class="fa-solid fa-mobile-screen-button"></i></span>
+                  <div>
+                    <p class="font-semibold text-sm mb-1">Dining in with us?</p>
+                    <p class="ok-hint">Enter your table number below or scan the QR code on your table to link this order to your seat.</p>
+                  </div>
+                </div>
+                <div class="mt-4 max-w-[10rem]">
+                  <label class="ok-label" for="table">Table number</label>
+                  <input id="table" class="ok-input" placeholder="e.g. 12">
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- STEP 2 · When -->
+          <section class="ok-card p-5 md:p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-8 h-8 rounded-full bg-jet text-okyellow grid place-items-center font-display font-bold shrink-0">2</span>
+              <h2 class="font-display font-bold text-lg">When</h2>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4" data-chip-group>
+              <button class="chip is-active"><i class="fa-solid fa-bolt"></i> ASAP · ~25 min</button>
+              <button class="chip"><i class="fa-solid fa-calendar-days"></i> Schedule for later</button>
+            </div>
+            <div>
+              <label class="ok-label" for="schedule">Pick a date &amp; time</label>
+              <input id="schedule" type="datetime-local" class="ok-input md:max-w-xs">
+            </div>
+          </section>
+
+          <!-- STEP 3 · Contact -->
+          <section class="ok-card p-5 md:p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-8 h-8 rounded-full bg-jet text-okyellow grid place-items-center font-display font-bold shrink-0">3</span>
+              <h2 class="font-display font-bold text-lg">Contact</h2>
+            </div>
+            <div class="grid gap-4">
+              <div>
+                <label class="ok-label" for="name">Full name</label>
+                <input id="name" class="ok-input" placeholder="Jordan Miller">
+              </div>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="ok-label" for="phone">Phone</label>
+                  <input id="phone" type="tel" class="ok-input" placeholder="(215) 555-0142">
+                </div>
+                <div>
+                  <label class="ok-label" for="email">Email</label>
+                  <input id="email" type="email" class="ok-input" placeholder="you@email.com">
+                </div>
+              </div>
+              <p class="ok-hint">We'll text order updates &amp; live tracking to your phone.</p>
+            </div>
+          </section>
+
+          <!-- STEP 4 · Payment -->
+          <section class="ok-card p-5 md:p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-8 h-8 rounded-full bg-jet text-okyellow grid place-items-center font-display font-bold shrink-0">4</span>
+              <h2 class="font-display font-bold text-lg">Payment</h2>
+            </div>
+
+            <!-- payment method selectable cards -->
+            <div class="grid sm:grid-cols-2 gap-3" data-chip-group>
+              <label class="chip is-active !rounded-xl !py-3 !px-4 !justify-start w-full cursor-pointer">
+                <input type="radio" name="pay" class="accent-okyellow" checked>
+                <span class="ml-1 inline-flex items-center gap-1"><i class="fa-solid fa-credit-card"></i> Credit / Debit card</span>
+              </label>
+              <label class="chip !rounded-xl !py-3 !px-4 !justify-start w-full cursor-pointer">
+                <input type="radio" name="pay" class="accent-okyellow">
+                <span class="ml-1"> Apple Pay</span>
+              </label>
+              <label class="chip !rounded-xl !py-3 !px-4 !justify-start w-full cursor-pointer">
+                <input type="radio" name="pay" class="accent-okyellow">
+                <span class="ml-1 inline-flex items-center gap-1"><i class="fa-solid fa-wallet"></i> Google Pay</span>
+              </label>
+              <label class="chip !rounded-xl !py-3 !px-4 !justify-start w-full cursor-pointer">
+                <input type="radio" name="pay" class="accent-okyellow">
+                <span class="ml-1 inline-flex items-center gap-1"><i class="fa-solid fa-gift"></i> Gift card</span>
+              </label>
+              <label class="chip !rounded-xl !py-3 !px-4 !justify-start w-full cursor-pointer sm:col-span-2">
+                <input type="radio" name="pay" class="accent-okyellow">
+                <span class="ml-1 inline-flex items-center gap-1"><i class="fa-solid fa-dollar-sign"></i> Cash on delivery</span>
+              </label>
+            </div>
+
+            <!-- card fields (revealed for Card) -->
+            <div class="mt-4 grid gap-4 rounded-xl bg-softyellow/30 border border-[var(--ok-line)] p-4">
+              <div>
+                <label class="ok-label" for="cardnum">Card number</label>
+                <input id="cardnum" class="ok-input" placeholder="1234 5678 9012 3456" inputmode="numeric">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="ok-label" for="expiry">Expiry</label>
+                  <input id="expiry" class="ok-input" placeholder="MM / YY" inputmode="numeric">
+                </div>
+                <div>
+                  <label class="ok-label" for="cvc">CVC</label>
+                  <input id="cvc" class="ok-input" placeholder="123" inputmode="numeric">
+                </div>
+              </div>
+              <div>
+                <label class="ok-label" for="cardname">Name on card</label>
+                <input id="cardname" class="ok-input" placeholder="Jordan Miller">
+              </div>
+              <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 accent-okyellow"> Save this card for faster checkout
+              </label>
+            </div>
+
+            <!-- tip -->
+            <div class="mt-5">
+              <span class="ok-label">Add a tip</span>
+              <div class="grid grid-cols-4 gap-2" data-chip-group>
+                <button class="chip justify-center">10%</button>
+                <button class="chip is-active justify-center">15%</button>
+                <button class="chip justify-center">20%</button>
+                <button class="chip justify-center">Custom</button>
+              </div>
+            </div>
+
+            <p class="ok-hint mt-4 flex items-center gap-1.5"><i class="fa-solid fa-lock"></i> PCI-DSS compliant · Powered by Stripe · card data tokenized.</p>
+          </section>
+        </div>
+
+        <!-- ==================== RIGHT: ORDER SUMMARY ==================== -->
+        <aside class="lg:sticky lg:top-28">
+          <div class="ok-card p-5 md:p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-display font-bold text-xl">Order Summary</h2>
+              <a href="cart.html" class="link-underline text-sm">Edit cart</a>
+            </div>
+
+            <!-- items -->
+            <ul class="space-y-3 mb-4">
+              <li class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                  <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-sm leading-tight truncate">Double Bacon Smash</p>
+                  <p class="ok-hint">Qty 2 · add bacon, extra cheddar</p>
+                </div>
+                <span class="font-semibold text-sm shrink-0">$15.98</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                  <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-sm leading-tight truncate">The OK Classic</p>
+                  <p class="ok-hint">Qty 1 · extra pickles</p>
+                </div>
+                <span class="font-semibold text-sm shrink-0">$8.49</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-lg overflow-hidden shrink-0">
+                  <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-sm leading-tight truncate">Loaded OK Fries</p>
+                  <p class="ok-hint">Qty 1 · large</p>
+                </div>
+                <span class="font-semibold text-sm shrink-0">$6.99</span>
+              </li>
+            </ul>
+
+            <div class="divider mb-4"></div>
+
+            <!-- itemized totals -->
+            <dl class="space-y-2.5 text-sm">
+              <div class="flex justify-between"><dt class="text-slate">Subtotal</dt><dd class="font-semibold">$31.46</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Promo (SMASH4)</dt><dd class="font-semibold text-okgreen">−$4.00</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Delivery fee</dt><dd class="font-semibold">$1.99</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Taxes</dt><dd class="font-semibold">$2.52</dd></div>
+              <div class="flex justify-between"><dt class="text-slate">Tip (15%)</dt><dd class="font-semibold">$4.72</dd></div>
+            </dl>
+
+            <div class="divider my-4"></div>
+
+            <div class="flex items-end justify-between mb-4">
+              <span class="font-display font-bold text-lg">Grand Total</span>
+              <span class="font-display font-extrabold text-2xl">$36.69</span>
+            </div>
+
+            <a href="order-confirmed.html" class="btn btn-primary btn-block btn-lg">Place Order</a>
+            <p class="ok-hint mt-3 flex items-center justify-center gap-1"><i class="fa-solid fa-lock"></i> Secure checkout · you won't be charged until confirmed.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

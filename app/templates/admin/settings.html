@@ -1,0 +1,240 @@
+{% extends "admin/base.html" %}
+{% block title %}Settings, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Delivery &amp; store settings{{ ', ' ~ s.name if s else '' }}</h2>
+<p class="text-slate text-sm mb-5">Delivery zones with radius pricing, general operations and opening hours for this location.</p>
+
+<div data-tab-group>
+  <!-- ===== Tab bar ===== -->
+  <div class="seg-tabs mb-6">
+    <button type="button" data-tab="zones"   class="seg-tab is-active">Delivery Zones</button>
+    <button type="button" data-tab="general" class="seg-tab">General Settings</button>
+    <button type="button" data-tab="hours"   class="seg-tab">Delivery Hours</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Delivery Zones                                                -->
+  <!-- ============================================================ -->
+  <div data-panel="zones">
+    {% set active_zones = zones|selectattr('is_active')|list %}
+    {% set maxr = (active_zones|map(attribute='radius_miles')|max) if active_zones else 5 %}
+    {% set scale = 150.0 / (maxr if (maxr and maxr > 0) else 5) %}
+
+    <!-- Radius map -->
+    <div class="relative rounded-2xl bg-[#0b0f16] border border-white/10 overflow-hidden mb-5" style="min-height:300px">
+      <div class="absolute inset-0 zmap-grid opacity-90"></div>
+
+      <!-- Legend -->
+      <div class="absolute top-4 left-4 z-20 bg-black/45 backdrop-blur rounded-xl px-3.5 py-2.5 space-y-1.5">
+        {% for z in active_zones|sort(attribute='radius_miles') %}
+        <div class="flex items-center gap-2 text-[.78rem] text-white/85 whitespace-nowrap">
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:{{ z.color }}"></span>
+          {{ z.name }} <span class="text-white/55">{{ '%g'|format(z.radius_miles) }} mi</span>
+        </div>
+        {% else %}
+        <div class="text-[.78rem] text-white/60">No active zones</div>
+        {% endfor %}
+      </div>
+
+      <!-- Concentric radius circles -->
+      <svg viewBox="0 0 900 360" class="w-full block relative z-0" style="max-height:360px" preserveAspectRatio="xMidYMid meet">
+        {% for z in active_zones|sort(attribute='radius_miles', reverse=true) %}
+        <circle cx="450" cy="180" r="{{ (z.radius_miles * scale)|round(1) }}"
+                fill="{{ z.color }}" fill-opacity="0.055" stroke="{{ z.color }}" stroke-width="2"></circle>
+        {% endfor %}
+      </svg>
+
+      <!-- Store pin + label (centred over the circles) -->
+      <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+        <span class="relative flex h-4 w-4">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60"></span>
+          <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 ring-2 ring-white"></span>
+        </span>
+        {% if s %}
+        <div class="mt-2 bg-black/70 backdrop-blur rounded-lg px-3 py-1.5 text-center">
+          <div class="text-white text-sm font-semibold leading-tight">{{ s.name }}</div>
+          <div class="text-white/60 text-[.7rem] leading-tight">{{ s.address_line or s.full_address }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Live-map hint -->
+      <div class="absolute bottom-4 right-4 z-20 bg-black/55 backdrop-blur rounded-xl px-3.5 py-2 max-w-[16rem]">
+        <div class="text-white text-[.72rem] font-semibold leading-tight">Google Maps integration</div>
+        <a href="/admin/integrations{{ qs }}" class="text-okyellow text-[.72rem] leading-tight hover:underline">Add API key in Integrations to enable live map</a>
+      </div>
+    </div>
+
+    <!-- Count + create -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div class="text-sm text-slate">
+        <b class="text-jet">{{ active_zones|length }} active zone{{ '' if active_zones|length == 1 else 's' }}</b>
+        · {{ zones|length }} total
+      </div>
+      <button type="button" onclick="document.getElementById('createZone').classList.toggle('hidden')"
+              class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create Zone</button>
+    </div>
+
+    <!-- Create form (hidden until +Create) -->
+    <form id="createZone" method="post" action="/admin/settings/zones{{ qs }}"
+          class="hidden rounded-2xl bg-panel border border-paneledge p-5 mb-4">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="text-white font-display font-bold mb-4">New delivery zone</div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div><label class="zlabel">Zone name</label><input name="name" placeholder="Downtown Zone" class="zinput"></div>
+        <div><label class="zlabel">Radius (miles)</label><input name="radius_miles" type="number" step="0.1" min="0" value="3" class="zinput"></div>
+        <div><label class="zlabel">Colour</label><input name="color" type="color" value="#E0A200" class="zinput h-[38px] p-1"></div>
+        <div><label class="zlabel">Delivery fee ($)</label><input name="delivery_fee" type="number" step="0.01" min="0" value="3.99" class="zinput"></div>
+        <div><label class="zlabel">Min order ($)</label><input name="min_order" type="number" step="0.01" min="0" value="20" class="zinput"></div>
+        <div><label class="zlabel">Est. time (mins)</label><input name="est_minutes" type="number" min="1" value="30" class="zinput"></div>
+        <div class="sm:col-span-2 lg:col-span-3"><label class="zlabel">Covered ZIP codes <span class="text-white/40 normal-case font-normal">(optional, comma-separated)</span></label><input name="zip_codes" placeholder="19104, 19146" class="zinput"></div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button class="btn btn-primary btn-sm">Save zone</button>
+        <button type="button" onclick="document.getElementById('createZone').classList.add('hidden')" class="px-4 py-2 rounded-lg text-white/70 text-sm hover:bg-white/10">Cancel</button>
+      </div>
+    </form>
+
+    <!-- Zone cards -->
+    <div class="space-y-3">
+      {% for z in zones|sort(attribute='radius_miles') %}
+      <div data-zone class="rounded-2xl bg-panel border border-paneledge overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center gap-4 p-5">
+          <div class="flex items-start gap-3 min-w-0 flex-1">
+            <span class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:{{ z.color }}"></span>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 mb-3">
+                <h4 class="font-display font-bold text-white truncate">{{ z.name }}</h4>
+                {% if z.is_active %}
+                <span class="inline-flex items-center rounded-full bg-okgreen/20 text-green-400 text-[.66rem] font-semibold px-2 py-0.5">Active</span>
+                {% else %}
+                <span class="inline-flex items-center rounded-full bg-white/10 text-white/55 text-[.66rem] font-semibold px-2 py-0.5">Inactive</span>
+                {% endif %}
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
+                <div><div class="zstat-l">Radius</div><div class="zstat-v">{{ '%g'|format(z.radius_miles) }} miles</div></div>
+                <div><div class="zstat-l">Delivery Fee</div><div class="zstat-v">${{ '%.2f'|format(z.delivery_fee) }}</div></div>
+                <div><div class="zstat-l">Min Order</div><div class="zstat-v">${{ '%.2f'|format(z.min_order) }}</div></div>
+                <div><div class="zstat-l">Est. Time</div><div class="zstat-v">{{ z.est_minutes }} mins</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 md:pl-4 md:border-l md:border-paneledge">
+            <!-- Active toggle -->
+            <form method="post" action="/admin/settings/zones/{{ z.id }}/toggle{{ qs }}">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <button type="submit" title="{{ 'Deactivate zone' if z.is_active else 'Activate zone' }}"
+                      class="relative w-12 h-6 rounded-full transition-colors {{ 'bg-okyellow' if z.is_active else 'bg-white/20' }}">
+                <span class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all {{ 'left-[1.55rem]' if z.is_active else 'left-0.5' }}"></span>
+              </button>
+            </form>
+            <button type="button" onclick="this.closest('[data-zone]').querySelector('[data-zone-edit]').classList.toggle('hidden')"
+                    class="px-3.5 py-1.5 rounded-lg border border-white/20 text-white/85 text-sm font-medium hover:bg-white/10 transition">Edit</button>
+            <form method="post" action="/admin/settings/zones/{{ z.id }}/delete{{ qs }}"
+                  onsubmit="return confirm('Remove the “{{ z.name }}” zone?')">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <button class="px-3.5 py-1.5 rounded-lg text-red-400 text-sm font-medium hover:bg-red-500/10 transition">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Inline edit form -->
+        <form data-zone-edit method="post" action="/admin/settings/zones/{{ z.id }}/edit{{ qs }}"
+              class="hidden border-t border-paneledge bg-black/20 p-5">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div><label class="zlabel">Zone name</label><input name="name" value="{{ z.name }}" class="zinput"></div>
+            <div><label class="zlabel">Radius (miles)</label><input name="radius_miles" type="number" step="0.1" min="0" value="{{ '%g'|format(z.radius_miles) }}" class="zinput"></div>
+            <div><label class="zlabel">Colour</label><input name="color" type="color" value="{{ z.color or '#E0A200' }}" class="zinput h-[38px] p-1"></div>
+            <div><label class="zlabel">Delivery fee ($)</label><input name="delivery_fee" type="number" step="0.01" min="0" value="{{ '%.2f'|format(z.delivery_fee) }}" class="zinput"></div>
+            <div><label class="zlabel">Min order ($)</label><input name="min_order" type="number" step="0.01" min="0" value="{{ '%.2f'|format(z.min_order) }}" class="zinput"></div>
+            <div><label class="zlabel">Est. time (mins)</label><input name="est_minutes" type="number" min="1" value="{{ z.est_minutes }}" class="zinput"></div>
+            <div class="sm:col-span-2 lg:col-span-3"><label class="zlabel">Covered ZIP codes <span class="text-white/40 normal-case font-normal">(optional)</span></label><input name="zip_codes" value="{{ (z.zip_codes or [])|join(', ') }}" placeholder="19104, 19146" class="zinput"></div>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button class="btn btn-primary btn-sm">Save changes</button>
+            <button type="button" onclick="this.closest('[data-zone-edit]').classList.add('hidden')" class="px-4 py-2 rounded-lg text-white/70 text-sm hover:bg-white/10">Cancel</button>
+          </div>
+        </form>
+      </div>
+      {% else %}
+      <div class="ok-card p-8 text-center text-slate">No delivery zones yet. Click <b>Create Zone</b> to add one.</div>
+      {% endfor %}
+    </div>
+
+    <p class="text-xs text-slate mt-4"><i class="fa-solid fa-circle-info"></i> The closest active zone's fee is used as this store's delivery fee at checkout.</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- General Settings                                             -->
+  <!-- ============================================================ -->
+  <div data-panel="general" class="hidden">
+    <form method="post" action="/admin/settings{{ qs }}" class="ok-card p-5 space-y-4 max-w-2xl">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <h3 class="font-display font-bold text-lg">General</h3>
+
+      <div>
+        <label class="ok-label !text-xs mb-2">Order types accepted</label>
+        <div class="flex flex-wrap gap-4">
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accepts_delivery" {% if s.accepts_delivery %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Delivery</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accepts_pickup" {% if s.accepts_pickup %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Pickup</label>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div><label class="ok-label !text-xs">Minimum order ($)</label><input name="min_order_amount" type="number" step="0.01" min="0" value="{{ '%.2f'|format(s.min_order_amount) }}" class="ok-input py-2 text-sm"></div>
+        <div><label class="ok-label !text-xs">Delivery radius (mi)</label><input name="delivery_radius_miles" type="number" step="0.1" min="0" value="{{ s.delivery_radius_miles }}" class="ok-input py-2 text-sm"></div>
+        <div><label class="ok-label !text-xs">Avg prep (min)</label><input name="avg_prep_minutes" type="number" min="1" value="{{ s.avg_prep_minutes }}" class="ok-input py-2 text-sm"></div>
+        <div><label class="ok-label !text-xs">Tax rate</label><input name="tax_rate" type="number" step="0.0001" min="0" value="{{ s.tax_rate }}" class="ok-input py-2 text-sm"></div>
+        <div><label class="ok-label !text-xs">Currency</label><input name="currency" value="{{ s.currency }}" maxlength="3" class="ok-input py-2 text-sm uppercase"></div>
+      </div>
+
+      <div class="border-t border-[var(--ok-line)] pt-4">
+        <label class="flex items-center gap-2 text-sm mb-3"><input type="checkbox" name="tips_enabled" {% if s.tips_enabled %}checked{% endif %} class="w-4 h-4 accent-okyellow"> <span class="font-semibold">Offer tipping at checkout</span></label>
+        <label class="ok-label !text-xs">Quick-tip percentages <span class="text-slate font-normal">(comma-separated, up to 4)</span></label>
+        <input name="tip_presets" value="{{ (s.tip_presets or [15, 18, 20])|join(', ') }}" class="ok-input py-2 text-sm" placeholder="15, 18, 20">
+        <p class="ok-hint mt-1">Customers can still enter a custom amount. Leave tipping off to hide the tip step entirely.</p>
+      </div>
+
+      <button class="btn btn-primary btn-sm">Save settings</button>
+    </form>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Delivery Hours                                               -->
+  <!-- ============================================================ -->
+  <div data-panel="hours" class="hidden">
+    <form method="post" action="/admin/hours{{ qs }}" class="ok-card p-5 max-w-2xl">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="next" value="/admin/settings">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg">Opening &amp; delivery hours</h3>
+      </div>
+      <div class="space-y-2">
+        {% for r in hour_rows %}
+        <div class="flex flex-wrap items-center gap-3 py-1.5">
+          <div class="w-24 font-semibold text-sm">{{ r.label }}</div>
+          <label class="flex items-center gap-2 text-sm w-24"><input type="checkbox" name="closed_{{ r.day }}" {% if r.closed %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Closed</label>
+          <input name="open_{{ r.day }}" type="time" value="{{ r.open }}" class="ok-input py-1.5 text-sm w-32">
+          <span class="text-slate text-sm">to</span>
+          <input name="close_{{ r.day }}" type="time" value="{{ r.close }}" class="ok-input py-1.5 text-sm w-32">
+        </div>
+        {% endfor %}
+      </div>
+      <button class="btn btn-primary btn-sm mt-4">Save hours</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Open the tab matching the URL hash (#zones / #general / #hours) after a save-redirect.
+  (function () {
+    var h = (location.hash || '').replace('#', '');
+    if (!h) return;
+    var btn = document.querySelector('[data-tab-group] [data-tab="' + h + '"]');
+    if (btn) btn.click();
+  })();
+</script>
+{% endblock %}

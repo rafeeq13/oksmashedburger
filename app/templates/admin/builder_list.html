@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+{% block title %}Web Pages, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+  <div>
+    <h2 class="ok-h2 mb-1">Web pages</h2>
+    <p class="text-slate text-sm">Build standalone pages by dragging in text, buttons, forms, images and columns. Each page goes live at <code class="text-xs">/p/&lt;slug&gt;</code>.</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <form method="post" action="/admin/builder/new-home{{ qs }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="btn btn-secondary btn-sm shrink-0"><i class="fa-solid fa-house"></i> Edit home page</button>
+    </form>
+    <form method="post" action="/admin/builder/new{{ qs }}" class="flex items-center gap-2">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input name="title" placeholder="New page title" class="ok-input py-2 text-sm w-40">
+      <select name="template" class="ok-input py-2 text-sm w-36" title="Start from a template">
+        <option value="blank">Blank</option>
+        <option value="landing">Landing page</option>
+        <option value="about">About page</option>
+        <option value="contact">Contact page</option>
+        <option value="pricing">Pricing page</option>
+      </select>
+      <button class="btn btn-primary btn-sm shrink-0"><i class="fa-solid fa-plus"></i> New page</button>
+    </form>
+  </div>
+</div>
+
+{% if overridable %}
+<div class="ok-card p-4 mb-5 bg-softyellow/20">
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="text-sm"><i class="fa-solid fa-pen-to-square text-okamber"></i> <b>Rebuild an existing website page</b> in the drag-drop builder (loads its real design, then replaces that page live):</div>
+    <form method="post" action="/admin/builder/new{{ qs }}" class="flex items-center gap-2">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <select name="override" class="ok-input py-2 text-sm w-40">
+        {% for path, label, tpl in overridable %}<option value="{{ path }}">{{ label }} ({{ path }})</option>{% endfor %}
+      </select>
+      <button class="btn btn-secondary btn-sm shrink-0"><i class="fa-solid fa-wand-magic-sparkles"></i> Rebuild page</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+<p class="text-slate text-sm mb-5 -mt-3"><i class="fa-solid fa-circle-info"></i> <b>Edit home page</b> builds your site's <code class="text-xs">/</code> home in the drag-drop builder, pre-loaded with your current sections (menu, best-sellers, locations, …) as live blocks you can reorder, restyle and add buttons/forms around.</p>
+
+{% if pages %}
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for p in pages %}
+  <div class="ok-card p-5 flex flex-col">
+    <div class="flex items-start justify-between gap-2 mb-2">
+      <h3 class="font-display font-bold text-lg leading-tight">{{ p.title }}</h3>
+      <div class="flex gap-1 shrink-0">
+        {% if p.is_home %}<span class="badge badge-yellow">Home</span>{% elif p.override_path %}<span class="badge badge-yellow">Replaces {{ p.override_path }}</span>{% endif %}
+        {% if p.published %}<span class="badge badge-green">Live</span>{% else %}<span class="badge badge-yellow">Draft</span>{% endif %}
+      </div>
+    </div>
+    {% set _url = '/' if p.is_home else (p.override_path or '/p/' ~ p.slug) %}
+    <a href="{{ _url }}" target="_blank" rel="noopener" class="text-xs text-slate link-underline mb-4">{{ _url }} <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <div class="mt-auto flex items-center gap-2">
+      <a href="/admin/builder/{{ p.id }}{{ qs }}" class="btn btn-primary btn-sm flex-1"><i class="fa-solid fa-pen-ruler"></i> Edit</a>
+      <a href="/admin/builder/{{ p.id }}/code{{ qs }}" class="btn btn-secondary btn-sm" title="Edit code"><i class="fa-solid fa-code"></i></a>
+      <form method="post" action="/admin/builder/{{ p.id }}/duplicate{{ qs }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <button class="btn btn-secondary btn-sm" title="Duplicate"><i class="fa-solid fa-clone"></i></button>
+      </form>
+      <form method="post" action="/admin/builder/{{ p.id }}/delete{{ qs }}" onsubmit="return confirm('Delete this page?')">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <button class="btn btn-secondary btn-sm !text-okred" title="Delete"><i class="fa-solid fa-trash"></i></button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="ok-card p-10 text-center text-slate">
+  <i class="fa-solid fa-wand-magic-sparkles text-3xl mb-3 block text-slate/40"></i>
+  No pages yet. Give one a title above and hit <b>New page</b> to start dragging in content.
+</div>
+{% endif %}
+{% endblock %}

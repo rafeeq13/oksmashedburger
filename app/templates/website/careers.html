@@ -1,0 +1,175 @@
+{% extends "layouts/base.html" %}
+{% block title %}Join Our Team, {{ brand_name }}{% endblock %}
+{% block content %}
+
+{% set roles = content_list('jobs') %}{# Job openings: editable in Admin > Website Content #}
+
+<!-- ============ HERO ============ -->
+<section class="ok-pagehero">
+  <img src="{{ site.get('careers_hero_img') or site_defaults.get('careers_hero_img') }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1600&h=760&fit=crop&q=72'" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover">
+  <div class="ok-pagehero-veil"></div>
+  <div class="ok-container">
+    <div class="max-w-2xl mx-auto text-center">
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('careers_hero_heading') or 'Join our team.' }}</h1>
+      <p class="text-w-85 ok-fs-lg ok-mb-8 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('careers_hero_text') or 'Grill cooks, shift leads, drivers and managers. If you love good food and moving fast, we want to meet you. No restaurant experience required.' }}</p>
+      <div class="d-flex flex-nowrap gap-2 ok-gap-075rem-sm justify-content-center" data-reveal="up" data-reveal-delay="0.2">
+        <a href="#open-roles" class="btn btn-primary btn-lg">See open roles</a>
+        <a href="#apply" class="ok-btn-outline ok-btn-outline--light">Apply now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY WORK HERE ============ -->
+<section class="ok-section">
+  <div class="ok-container">
+    <div class="text-center ok-mb-10">
+      <h2 class="ok-h2">{{ site.get('careers_why_heading') or ('Why work at ' ~ brand_name) }}</h2>
+      <p class="text-muted-warm mt-2 max-w-xl mx-auto">We are a small, growing crew. That means real training, real hours and a real path to running your own kitchen.</p>
+    </div>
+    <div class="ok-grid ok-grid-sm-2 ok-grid-lg-4 ok-gap-5">
+      <article class="ok-card ok-card-hover ok-p-3 text-center">
+        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-sack-dollar icon-lg"></i></div>
+        <h3 class="font-display fw-bold ok-fs-lg mb-1">Fair pay, paid weekly</h3>
+        <p class="ok-fs-sm text-muted-warm">Above-minimum starting rates, tips shared across the whole crew.</p>
+      </article>
+      <article class="ok-card ok-card-hover ok-p-3 text-center">
+        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-calendar-check icon-lg"></i></div>
+        <h3 class="font-display fw-bold ok-fs-lg mb-1">Flexible shifts</h3>
+        <p class="ok-fs-sm text-muted-warm">Schedules posted two weeks ahead, built around school and family.</p>
+      </article>
+      <article class="ok-card ok-card-hover ok-p-3 text-center">
+        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-graduation-cap icon-lg"></i></div>
+        <h3 class="font-display fw-bold ok-fs-lg mb-1">Train and grow</h3>
+        <p class="ok-fs-sm text-muted-warm">Most of our shift leads started on the griddle with zero experience.</p>
+      </article>
+      <article class="ok-card ok-card-hover ok-p-3 text-center">
+        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-burger icon-lg"></i></div>
+        <h3 class="font-display fw-bold ok-fs-lg mb-1">Free shift meal</h3>
+        <p class="ok-fs-sm text-muted-warm">A burger on us every shift, plus a discount on your days off.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OPEN ROLES ============ -->
+<section id="open-roles" class="ok-section bg-cream-40 border-y ok-bc-varokline scroll-mt-24">
+  <div class="ok-container">
+    <div class="text-center ok-mb-10">
+      <h2 class="ok-h2">{{ site.get('careers_roles_heading') or 'Open roles' }}</h2>
+      <p class="text-muted-warm mt-2">{{ roles|length }} positions open right now.</p>
+    </div>
+    <div class="max-w-3xl mx-auto ok-card divide-y ok-divide-y">
+      {% for r in roles %}
+      <div class="ok-p-5 d-flex flex-wrap align-items-center gap-x-5 gap-y-3">
+        <div class="flex-grow-1 ok-minw-14rem">
+          <h3 class="font-display fw-bold ok-fs-lg ok-lh-tight">{{ r.title }}</h3>
+          <p class="ok-fs-sm text-muted-warm mt-1">{{ r.desc }}</p>
+          <div class="d-flex flex-wrap gap-2 ok-mt-3">
+            <span class="badge badge-soft"><i class="fa-solid fa-clock"></i> {{ r.type }}</span>
+            <span class="badge badge-soft"><i class="fa-solid fa-location-dot"></i> {{ r.where }}</span>
+          </div>
+        </div>
+        <a href="#apply" class="btn btn-secondary btn-sm flex-shrink-0">Apply</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ APPLICATION FORM ============ -->
+<section id="apply" class="ok-section scroll-mt-24">
+  <div class="ok-container">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center ok-mb-8">
+        <h2 class="ok-h2">{{ site.get('careers_apply_heading') or 'Apply now' }}</h2>
+        <p class="text-muted-warm mt-2">Send us a note. No CV required for kitchen and counter roles, just tell us about yourself.</p>
+      </div>
+      <form method="post" action="/contact" class="ok-card ok-p-3 ok-paddin-2rem-md ok-grid ok-grid-sm-2 ok-gap-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="subject" value="Job application">
+        {# come back here after submitting rather than landing on /contact #}
+        <input type="hidden" name="next" value="/careers">
+
+        <div>
+          <label class="ok-label" for="ap-name">Your name</label>
+          <input id="ap-name" name="name" required class="ok-input" placeholder="Jordan Miller">
+        </div>
+        <div>
+          <label class="ok-label" for="ap-email">Email</label>
+          <input id="ap-email" name="email" type="email" required class="ok-input" placeholder="jordan@example.com">
+        </div>
+
+        <div>
+          <label class="ok-label" for="ap-phone">Phone</label>
+          <input id="ap-phone" name="phone" type="tel" class="ok-input" placeholder="(215) 555 0134">
+        </div>
+        <div>
+          <label class="ok-label" for="ap-role">Role you're applying for</label>
+          <select id="ap-role" name="role" class="ok-input ok-select">
+            <option value="">Not sure yet, help me pick</option>
+            {% for r in roles %}<option value="{{ r.title }}">{{ r.title }}</option>{% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="ok-label" for="ap-store">Preferred location</label>
+          <select id="ap-store" name="preferred_store" class="ok-input ok-select">
+            <option value="Any location">Any location</option>
+            {% for s in all_stores %}<option value="{{ s.name }}">{{ s.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="ok-label" for="ap-avail">Availability</label>
+          <select id="ap-avail" name="availability" class="ok-input ok-select">
+            <option value="">Select availability</option>
+            <option>Full time</option>
+            <option>Part time</option>
+            <option>Weekends only</option>
+            <option>Evenings only</option>
+            <option>Flexible</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="ok-label" for="ap-start">Earliest start date</label>
+          <input id="ap-start" name="start_date" type="date" class="ok-input">
+        </div>
+        <div>
+          <label class="ok-label" for="ap-exp">Experience</label>
+          <select id="ap-exp" name="experience" class="ok-input ok-select">
+            <option value="">Select experience</option>
+            <option>None, happy to be trained</option>
+            <option>Under 1 year</option>
+            <option>1 to 3 years</option>
+            <option>3 to 5 years</option>
+            <option>5+ years</option>
+          </select>
+        </div>
+
+        <div class="ok-gridco-span2span2-sm">
+          <label class="ok-label" for="ap-link">CV or profile link <span class="text-muted-warm fw-normal">(optional)</span></label>
+          <input id="ap-link" name="portfolio" type="url" class="ok-input" placeholder="https://linkedin.com/in/yourname">
+        </div>
+
+        <div class="ok-gridco-span2span2-sm">
+          <label class="ok-label" for="ap-msg">Why you?</label>
+          <textarea id="ap-msg" name="message" rows="5" required class="ok-input" placeholder="Tell us a bit about yourself and what shifts suit you. Any experience is a bonus, not a requirement."></textarea>
+        </div>
+
+        <div class="ok-gridco-span2span2-sm">
+          <label class="ok-checkable d-flex align-items-start ok-gap-25 ok-p-3">
+            <input type="checkbox" name="eligible" value="Yes" class="mt-1">
+            <span class="ok-fs-sm">I am legally allowed to work in the United States and am at least 16 years old.</span>
+          </label>
+        </div>
+
+        <div class="ok-gridco-span2span2-sm d-flex flex-wrap align-items-center ok-gap-3">
+          <button class="btn btn-primary btn-lg">Send application</button>
+          <span class="ok-fs-sm text-muted-warm">Questions first? <a href="/contact" class="link-underline">Contact us</a></span>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

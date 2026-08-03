@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% block title %}Integrations, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Integrations, {{ admin_store.name if admin_store else '' }}</h2>
+<p class="text-slate text-sm mb-5">Each location connects its <b>own</b> payment, POS, delivery and messaging accounts. These keys are used only for this store's orders.</p>
+
+<div data-tab-group>
+  <!-- Provider pills -->
+  <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-6 pb-1">
+    {% for prov in providers %}
+    <button type="button" data-tab="{{ prov.key }}" class="chip shrink-0 {% if loop.first %}is-active{% endif %}">
+      <i class="fa-solid fa-{{ prov.icon }}"></i> {{ prov.name }}
+      <span class="w-2 h-2 rounded-full inline-block ml-1 {% if prov.enabled %}bg-okgreen{% else %}bg-slate/40{% endif %}"></span>
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Provider panels -->
+  {% for prov in providers %}
+  <div data-panel="{{ prov.key }}" class="{% if not loop.first %}hidden{% endif %}">
+    <form method="post" action="/admin/integrations/{{ prov.key }}{{ qs }}" class="ok-card p-6">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="flex items-center justify-between gap-3 mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-softyellow grid place-items-center text-okamber text-lg"><i class="fa-solid fa-{{ prov.icon }}"></i></div>
+          <div><div class="font-display font-bold text-lg">{{ prov.name }}</div><div class="text-xs text-slate">{{ prov.desc }}</div></div>
+        </div>
+        {% if prov.enabled %}<span class="badge badge-green">Connected</span>{% else %}<span class="badge badge-soft">Off</span>{% endif %}
+      </div>
+
+      <label class="flex items-center gap-2.5 text-sm font-semibold cursor-pointer mb-5 select-none rounded-lg bg-softyellow/40 px-4 py-3">
+        <input type="checkbox" name="enabled" value="1" {% if prov.enabled %}checked{% endif %} class="w-4 h-4 accent-okyellow">
+        Enable {{ prov.name }} for <b>{{ admin_store.name if admin_store else 'this store' }}</b>
+      </label>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% for field in prov.fields %}
+        <div>
+          <label class="ok-label !text-xs !mb-1">{{ field.label }}</label>
+          <input name="cfg_{{ field.key }}" value="{{ prov.config.get(field.key, '') }}" {% if field.secret %}type="password"{% else %}type="text"{% endif %} autocomplete="off" class="ok-input py-2 text-sm" placeholder="{{ field.label }}">
+          {% if field.secret %}<p class="text-[.62rem] text-slate mt-1"><i class="fa-solid fa-lock"></i> Stored securely</p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-5 flex items-center gap-3">
+        <button class="btn btn-primary btn-sm">Save {{ prov.name }}</button>
+        <span class="text-xs text-slate">Applies to {{ admin_store.name if admin_store else 'this location' }} only.</span>
+      </div>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+<p class="ok-hint mt-4"><i class="fa-solid fa-lock"></i> In production these secrets are stored encrypted / in a vault (SRS NFR-2.2).</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Re-open the tab named in the URL hash (e.g. after saving a provider).
+  (function () {
+    function activate() {
+      var h = (location.hash || '').replace('#', '');
+      if (!h) return;
+      var group = document.querySelector('[data-tab-group]');
+      if (!group || !group.querySelector('[data-tab="' + h + '"]')) return;
+      group.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.tab === h); });
+      group.querySelectorAll('[data-panel]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.panel !== h); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', activate);
+    else activate();
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300" role="img" aria-label="OK Smashed Burger">
+  <defs>
+    <linearGradient id="patty" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a4a24"/>
+      <stop offset="1" stop-color="#4a2c14"/>
+    </linearGradient>
+    <style>
+      .hd{font-family:Poppins,Arial,sans-serif;font-weight:900;}
+    </style>
+  </defs>
+
+  <!-- Red badge blob -->
+  <g>
+    <rect x="10" y="10" width="240" height="230" rx="46" fill="#E11B22"/>
+    <rect x="10" y="10" width="240" height="230" rx="46" fill="none" stroke="#141414" stroke-width="7"/>
+  </g>
+
+  <!-- Burger under the OK -->
+  <g transform="translate(130 150)">
+    <ellipse cx="0" cy="34" rx="86" ry="20" fill="#3a2411"/>
+    <rect x="-86" y="14" width="172" height="24" rx="12" fill="url(#patty)"/>
+    <path d="M-88 10 q10 -16 26 -8 q10 -14 24 -6 q12 -14 26 -6 q12 -12 26 -4 q14 -8 24 4 q10 12 -4 18 h-138 q-14 -6 -10 -18z" fill="#3fa845"/>
+    <ellipse cx="0" cy="-14" rx="90" ry="30" fill="#F4B23E"/>
+    <ellipse cx="0" cy="-20" rx="90" ry="26" fill="#FFC72C"/>
+    <circle cx="-40" cy="-26" r="3.2" fill="#fff8e6"/>
+    <circle cx="-8" cy="-32" r="3.2" fill="#fff8e6"/>
+    <circle cx="26" cy="-28" r="3.2" fill="#fff8e6"/>
+    <circle cx="54" cy="-22" r="3.2" fill="#fff8e6"/>
+  </g>
+
+  <!-- OK wordmark -->
+  <text x="130" y="118" text-anchor="middle" class="hd" font-size="104" fill="#FFC72C" stroke="#141414" stroke-width="6" paint-order="stroke">OK</text>
+
+  <!-- Pointing hand / thumb -->
+  <g transform="translate(178 78) rotate(12)">
+    <path d="M0 0 q-4 -22 8 -24 q10 -1 9 14 l-1 10 q9 -3 12 4 q9 -1 10 7 q8 1 6 10 q-2 16 -18 20 q-20 5 -30 -8 q-8 -10 -6 -22 q1 -8 6 -11z"
+          fill="#FFD9A0" stroke="#141414" stroke-width="4" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Bottom banner -->
+  <g>
+    <path d="M18 248 h224 a10 10 0 0 1 10 10 v22 a10 10 0 0 1 -10 10 h-224 a10 10 0 0 1 -10 -10 v-22 a10 10 0 0 1 10 -10z" fill="#141414"/>
+    <text x="130" y="266" text-anchor="middle" class="hd" font-size="22" fill="#ffffff" letter-spacing="1">SMASHED</text>
+    <text x="130" y="286" text-anchor="middle" class="hd" font-size="18" fill="#FFC72C" letter-spacing="4">BURGER</text>
+  </g>
+</svg>

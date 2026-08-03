@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help & FAQ — OK Smashed Burger</title>
+  <meta name="description" content="Help center for OK Smashed Burger. Answers on ordering, delivery, payments, OK Rewards, accounts and allergens — plus a way to reach our support team.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO (jet) with search ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-20">
+        <img data-ph="Help center" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-20 text-center">
+        <span class="badge badge-yellow mb-4"><i class="fa-solid fa-life-ring"></i> Help center</span>
+        <h1 class="ok-display mb-4">How can we <span class="text-okyellow">help?</span></h1>
+        <p class="text-white/80 text-lg max-w-xl mx-auto mb-7">Search our help center or browse the topics below. Most answers are just a tap away.</p>
+        <form onsubmit="return false" class="max-w-xl mx-auto">
+          <div class="flex items-center gap-2 ok-input bg-white text-jet !py-3">
+            <span class="text-okamber text-lg"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input class="w-full bg-transparent focus:outline-none text-base" placeholder="Search for answers — e.g. 'track my order'" aria-label="Search the help center">
+            <button class="btn btn-primary btn-sm shrink-0">Search</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ FAQ: filters + accordion ============ -->
+    <section class="ok-section">
+      <div class="ok-container max-w-4xl">
+        <div class="text-center mb-6">
+          <h2 class="ok-h2">Frequently asked</h2>
+        </div>
+
+        <!-- Category filter chips -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8" data-chip-group>
+          <button class="chip is-active">All</button>
+          <button class="chip">Ordering</button>
+          <button class="chip">Delivery</button>
+          <button class="chip">Payments</button>
+          <button class="chip">Rewards</button>
+          <button class="chip">Account</button>
+          <button class="chip">Allergens</button>
+        </div>
+
+        <!-- Accordion -->
+        <div class="ok-card p-2 sm:p-6">
+
+          <!-- 1 · Delivery (open) -->
+          <div class="acc-item is-open">
+            <button class="acc-q">How do I track my order? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Once your order is confirmed, open the live tracker from your order confirmation email or the <a href="tracking.html" class="link-underline">Track Order</a> page. You'll see each stage from kitchen to doorstep, plus your driver's live location for delivery.</p>
+            </div>
+          </div>
+
+          <!-- 2 · Delivery -->
+          <div class="acc-item">
+            <button class="acc-q">What areas do you deliver to? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>We deliver within roughly 4 miles of each of our four Philadelphia stores. Enter your address or ZIP at checkout — or on the <a href="locations.html" class="link-underline">Locations</a> page — and we'll confirm whether you're in a delivery zone and the estimated time.</p>
+            </div>
+          </div>
+
+          <!-- 3 · Payments -->
+          <div class="acc-item">
+            <button class="acc-q">What payment methods do you accept? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>We accept Visa, Mastercard and American Express, plus Apple Pay and Google Pay. You can also pay with OK gift cards and redeem OK Rewards points at checkout. Cash is accepted for in-store dine-in and pickup orders.</p>
+            </div>
+          </div>
+
+          <!-- 4 · Rewards -->
+          <div class="acc-item">
+            <button class="acc-q">How do OK Rewards points work? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>You earn 10 points for every $1 spent on qualifying orders. Points add up automatically when you're signed in, and you can redeem a free Classic Smash at 500 points. Members also get birthday treats, referral bonuses and members-only deals. <a href="rewards.html" class="link-underline">See how rewards work</a>.</p>
+            </div>
+          </div>
+
+          <!-- 5 · Account -->
+          <div class="acc-item">
+            <button class="acc-q">How do I reset my password? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>On the sign-in screen, tap "Forgot password?" and enter your email. We'll send a secure reset link that's valid for 30 minutes. If it doesn't arrive, check your spam folder or contact us and we'll help you back in.</p>
+            </div>
+          </div>
+
+          <!-- 6 · Allergens -->
+          <div class="acc-item">
+            <button class="acc-q">Do you have vegan and allergen info? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Yes. Every menu item lists its ingredients and common allergens, and vegan options are clearly labeled. Because our kitchens handle shared equipment, we can't guarantee an allergen-free environment — if you have a severe allergy, please let the store know before ordering.</p>
+            </div>
+          </div>
+
+          <!-- 7 · Payments -->
+          <div class="acc-item">
+            <button class="acc-q">How do I use a promo code? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Add your items to the cart, then enter your code in the "Promo code" field at checkout and tap Apply. The discount updates your total instantly. Only one promo code can be used per order, and some codes have minimum spend or first-order conditions.</p>
+            </div>
+          </div>
+
+          <!-- 8 · Ordering -->
+          <div class="acc-item">
+            <button class="acc-q">Can I schedule an order for later? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Absolutely. At checkout, choose "Schedule for later" and pick a date and time slot that works for you — up to 7 days ahead. We'll start smashing so it's fresh and ready right at your selected time.</p>
+            </div>
+          </div>
+
+          <!-- 9 · Ordering -->
+          <div class="acc-item">
+            <button class="acc-q">How do refunds work? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>If something's wrong with your order, contact us within 48 hours and we'll make it right — usually a refund or a re-make. Approved refunds go back to your original payment method within 3–5 business days, or instantly as OK credit if you prefer.</p>
+            </div>
+          </div>
+
+          <!-- 10 · Rewards -->
+          <div class="acc-item">
+            <button class="acc-q">How do I redeem a gift card? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Enter your gift card number and PIN in the "Gift card" field at checkout, or add it to your account balance under Payment methods. The card value is applied to your order total, and any remaining balance stays on the card for next time.</p>
+            </div>
+          </div>
+
+          <!-- 11 · Ordering -->
+          <div class="acc-item">
+            <button class="acc-q">Can I order for a group or catering? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Yes — our Family Feast boxes and catering trays are built for groups. For large events, use the Catering option on our <a href="contact.html" class="link-underline">Contact</a> page and our team will help you plan quantities, timing and delivery.</p>
+            </div>
+          </div>
+
+          <!-- 12 · Account -->
+          <div class="acc-item">
+            <button class="acc-q">How do I update my delivery address? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>Sign in, open Account &rarr; Addresses, and add, edit or set a default address. You can also enter a new address at checkout for a one-off delivery without changing your saved defaults.</p>
+            </div>
+          </div>
+
+          <!-- 13 · Delivery -->
+          <div class="acc-item">
+            <button class="acc-q">Can I change or cancel my order after placing it? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>You can edit or cancel within a short window before the kitchen starts your order — head to the live tracker and tap "Modify order." Once we start smashing, we can't change it, but our support team is always happy to help sort out any issue.</p>
+            </div>
+          </div>
+
+          <!-- 14 · Account -->
+          <div class="acc-item">
+            <button class="acc-q">How do I delete my account or data? <span class="acc-icon">+</span></button>
+            <div class="acc-a">
+              <p>You can request account deletion from Account &rarr; Privacy, or by contacting us. We'll remove your personal data in line with our privacy policy, keeping only what's legally required for completed transactions.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STILL NEED HELP? CTA ============ -->
+    <section class="ok-section bg-softyellow/40 border-t border-[var(--ok-line)]">
+      <div class="ok-container">
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-12 grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h2 class="ok-h2 mb-3">Still need help?</h2>
+              <p class="text-white/70 mb-5">Can't find what you're looking for? Our Philly-based support team is quick, friendly and ready to sort it out.</p>
+              <div class="flex flex-wrap gap-3">
+                <a href="contact.html" class="btn btn-primary">Contact support</a>
+                <a href="tracking.html" class="btn btn-secondary !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet">Track an order</a>
+              </div>
+            </div>
+            <div class="justify-self-center md:justify-self-end w-full max-w-xs">
+              <img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img rounded-2xl" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

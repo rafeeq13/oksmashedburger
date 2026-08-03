@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OK Smashed Burger — Real Smashed Burgers, Fast · Philadelphia</title>
+  <meta name="description" content="Order OK Smashed Burger for delivery, pickup or dine-in. Deal-forward smashed burgers, loyalty rewards and live order tracking.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-20">
+        <img data-ph="Hero Smash Burger" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-24 grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h1 class="ok-display mb-4">
+            Real smashed<br>burgers, <span class="text-okyellow">served fast.</span>
+          </h1>
+          <p class="text-white/80 text-lg mb-6 max-w-md">Fresh-smashed, deal-forward, and tracked to your door. Delivery, pickup or dine-in — you decide.</p>
+          <div class="flex flex-wrap gap-3">
+            <a href="menu.html" class="btn btn-primary btn-lg">Start Your Order</a>
+            <button data-open="location" class="btn btn-secondary btn-lg !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet"><i class="fa-solid fa-location-dot"></i> Find a Store</button>
+          </div>
+          <div class="flex items-center gap-5 mt-8 text-sm text-white/70">
+            <div><span class="text-okyellow text-xl font-bold">~25</span> min avg delivery</div>
+            <div class="w-px h-8 bg-white/20"></div>
+            <div><span class="text-okyellow text-xl font-bold">3</span> order types</div>
+            <div class="w-px h-8 bg-white/20"></div>
+            <div><span class="text-okyellow text-xl font-bold">4</span> Philly locations</div>
+          </div>
+        </div>
+        <div class="relative hidden md:block">
+          <div class="ok-card overflow-hidden rotate-2 shadow-2xl hidden">
+            <img data-ph="The OK Classic Double" data-ph-ratio="4/3" class="ph-img" alt="">
+          </div>
+          <div class="ok-card absolute -bottom-5 -left-5 p-3 flex items-center gap-3 shadow-xl">
+            <div class="w-11 h-11 rounded-full bg-okgreen text-white grid place-items-center"><i class="fa-solid fa-check icon-lg"></i></div>
+            <div><div class="text-xs text-slate">Order #4021</div><div class="font-bold text-sm">Out for delivery</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ORDER-TYPE / LOCATION BAR ============ -->
+    <section class="bg-okyellow">
+      <div class="ok-container py-4 flex flex-col md:flex-row items-center gap-3 justify-between">
+        <div class="flex items-center gap-2 font-semibold text-jet"><span class="text-okamber inline-flex"><i class="fa-solid fa-location-dot icon-lg"></i></span> Delivering to <b>Philadelphia · 19107</b>
+          <button data-open="location" class="link-underline ml-1">Change</button></div>
+        <div class="flex gap-2" data-chip-group>
+          <button class="chip is-active bg-white"><i class="fa-solid fa-car"></i> Delivery</button>
+          <button class="chip bg-white"><i class="fa-solid fa-bag-shopping"></i> Pickup</button>
+          <button class="chip bg-white"><i class="fa-solid fa-utensils"></i> Dine-in</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEALS (deal-forward, SRS FR-2.5) ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="flex items-end justify-between mb-6">
+          <div><h2 class="ok-h2">Today's Best Deals</h2></div>
+          <a href="deals.html" class="link-underline hidden sm:inline-flex items-center gap-1">View all deals <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- deal card -->
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="2 Smash Combos" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3">Save $6</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-display font-bold text-lg">Double Date Bundle</h3>
+              <p class="text-sm text-slate mb-3">2 Classic Smash combos + 2 shakes.</p>
+              <div class="flex items-center justify-between">
+                <div><span class="font-bold text-lg">$21.99</span> <span class="text-slate line-through text-sm">$27.99</span></div>
+                <button data-add-cart="Double Date Bundle" class="btn btn-primary btn-sm">Add +</button>
+              </div>
+            </div>
+          </article>
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Free Fries Friday" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3">BOGO</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-display font-bold text-lg">Buy 1 Get 1 Smash</h3>
+              <p class="text-sm text-slate mb-3">Every Tuesday, all day long.</p>
+              <div class="flex items-center justify-between">
+                <div><span class="font-bold text-lg">from $9.49</span></div>
+                <button data-add-cart="BOGO Smash" class="btn btn-primary btn-sm">Add +</button>
+              </div>
+            </div>
+          </article>
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <div class="relative aspect-[16/10] overflow-hidden">
+              <img data-ph="Family Feast" data-ph-ratio="16/10" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-yellow absolute top-3 left-3">Family</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-display font-bold text-lg">Family Feast Box</h3>
+              <p class="text-sm text-slate mb-3">4 burgers, 2 large fries, 4 drinks.</p>
+              <div class="flex items-center justify-between">
+                <div><span class="font-bold text-lg">$39.99</span></div>
+                <button data-add-cart="Family Feast Box" class="btn btn-primary btn-sm">Add +</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CATEGORIES ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container">
+        <div class="text-center mb-8"><h2 class="ok-h2">Order by Category</h2></div>
+        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Smash Burgers" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Burgers</span>
+          </a>
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Loaded Fries" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Sides</span>
+          </a>
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Crispy Chicken" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Chicken</span>
+          </a>
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Milkshakes" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Shakes</span>
+          </a>
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Combos" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Combos</span>
+          </a>
+          <a href="menu.html" class="ok-card ok-card-hover p-3 text-center group">
+            <div class="aspect-square rounded-xl overflow-hidden mb-2"><img data-ph="Vegan Options" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt=""></div>
+            <span class="font-semibold text-sm">Vegan</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BEST SELLERS ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="flex items-end justify-between mb-6">
+          <div><h2 class="ok-h2">Best Sellers</h2></div>
+          <a href="menu.html" class="link-underline hidden sm:inline-flex items-center gap-1">See full menu <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- item card template -->
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="The OK Classic" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-new absolute top-3 left-3"><i class="fa-solid fa-star fill-current"></i> Popular</span>
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">The OK Classic</h3></a>
+              <p class="text-xs text-slate mb-2">Single smash, American cheese, OK sauce.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$8.49</span>
+                <button data-add-cart="The OK Classic" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Double Bacon Smash" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-deal absolute top-3 left-3"><i class="fa-solid fa-fire"></i> Hot</span>
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Double Bacon Smash</h3></a>
+              <p class="text-xs text-slate mb-2">Two patties, bacon, cheddar, pickles.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$12.99</span>
+                <button data-add-cart="Double Bacon Smash" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Spicy Buffalo Chicken" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Buffalo Crisp Chicken</h3></a>
+              <p class="text-xs text-slate mb-2">Crispy thigh, buffalo, ranch slaw.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$10.99</span>
+                <button data-add-cart="Buffalo Crisp Chicken" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+          <article class="ok-card ok-card-hover overflow-hidden group">
+            <a href="item.html" class="block relative aspect-square overflow-hidden">
+              <img data-ph="Loaded Cheese Fries" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+              <span class="badge badge-green absolute top-3 left-3">Veggie</span>
+            </a>
+            <div class="p-4">
+              <a href="item.html"><h3 class="font-display font-bold">Loaded OK Fries</h3></a>
+              <p class="text-xs text-slate mb-2">Cheese sauce, crispy onions, OK drizzle.</p>
+              <div class="flex items-center justify-between">
+                <span class="font-bold">$6.99</span>
+                <button data-add-cart="Loaded OK Fries" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg">+</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="ok-section bg-jet text-white">
+      <div class="ok-container">
+        <div class="text-center mb-10"><h2 class="ok-h2">From tap to table in 4 steps</h2></div>
+        <div class="grid md:grid-cols-4 gap-6">
+          <div class="text-center"><div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center mx-auto mb-3"><i class="fa-solid fa-location-dot icon-xl"></i></div><h3 class="font-bold mb-1">1 · Pick a store</h3><p class="text-white/60 text-sm">Set delivery, pickup or dine-in.</p></div>
+          <div class="text-center"><div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center mx-auto mb-3"><i class="fa-solid fa-burger icon-xl"></i></div><h3 class="font-bold mb-1">2 · Build your order</h3><p class="text-white/60 text-sm">Customize burgers & combos.</p></div>
+          <div class="text-center"><div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center mx-auto mb-3"><i class="fa-solid fa-credit-card icon-xl"></i></div><h3 class="font-bold mb-1">3 · Fast checkout</h3><p class="text-white/60 text-sm">Cards, wallets, gift cards & points.</p></div>
+          <div class="text-center"><div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center mx-auto mb-3"><i class="fa-solid fa-location-arrow icon-xl"></i></div><h3 class="font-bold mb-1">4 · Track live</h3><p class="text-white/60 text-sm">Kitchen-to-doorstep tracking.</p></div>
+        </div>
+        <div class="text-center mt-10"><a href="menu.html" class="btn btn-primary btn-lg">Order Now</a></div>
+      </div>
+    </section>
+
+    <!-- ============ REWARDS PROMO ============ -->
+    <section class="ok-section">
+      <div class="ok-container grid md:grid-cols-2 gap-8 items-center">
+        <div class="ok-card overflow-hidden order-2 md:order-1"><img data-ph="OK Rewards App" data-ph-ratio="4/3" class="ph-img" alt=""></div>
+        <div class="order-1 md:order-2">
+          <h2 class="ok-h2 mb-3">Earn points on every bite</h2>
+          <p class="text-slate mb-5">Collect points on every order and redeem them for free burgers, sides and shakes. Plus birthday treats, referral bonuses and members-only deals.</p>
+          <ul class="space-y-2 mb-6 text-sm">
+            <li class="flex gap-2 items-center"><span class="text-okgreen inline-flex"><i class="fa-solid fa-circle-check"></i></span> 10 points per $1 spent</li>
+            <li class="flex gap-2 items-center"><span class="text-okgreen inline-flex"><i class="fa-solid fa-circle-check"></i></span> Free Classic Smash at 500 points</li>
+            <li class="flex gap-2 items-center"><span class="text-okgreen inline-flex"><i class="fa-solid fa-circle-check"></i></span> Refer a friend, you both get $5</li>
+          </ul>
+          <div class="flex gap-3"><a href="register.html" class="btn btn-primary">Join Free</a><a href="rewards.html" class="btn btn-secondary">How it works</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REVIEWS ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container">
+        <div class="text-center mb-8"><h2 class="ok-h2">What our customers say</h2></div>
+        <div class="grid md:grid-cols-3 gap-5">
+          <blockquote class="ok-card p-5"><div class="text-okyellow mb-2 flex gap-0.5"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></div><p class="mb-4">"The smash is cooked just right and the OK sauce is unreal — and it arrived hot in 20 minutes."</p><footer class="flex items-center gap-2"><img data-ph="Jordan" data-ph-type="avatar" data-ph-ratio="1/1" class="w-9 h-9 rounded-full" alt=""><span class="font-semibold text-sm">Jordan M.</span></footer></blockquote>
+          <blockquote class="ok-card p-5"><div class="text-okyellow mb-2 flex gap-0.5"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></div><p class="mb-4">"Live tracking is a game changer — watched my driver the whole way. Rewards points add up fast too."</p><footer class="flex items-center gap-2"><img data-ph="Priya" data-ph-type="avatar" data-ph-ratio="1/1" class="w-9 h-9 rounded-full" alt=""><span class="font-semibold text-sm">Priya S.</span></footer></blockquote>
+          <blockquote class="ok-card p-5"><div class="text-okyellow mb-2 flex gap-0.5"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></div><p class="mb-4">"Ordering for the whole family is so easy. The Family Feast Box is our Friday tradition now."</p><footer class="flex items-center gap-2"><img data-ph="Marcus" data-ph-type="avatar" data-ph-ratio="1/1" class="w-9 h-9 rounded-full" alt=""><span class="font-semibold text-sm">Marcus T.</span></footer></blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ APP / CTA ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-12 grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h2 class="ok-h2 mb-3">Get the OK app experience</h2>
+              <p class="text-white/70 mb-5">Install our web app for one-tap reorders, offline menu browsing and instant order alerts. No download required.</p>
+              <div class="flex flex-wrap gap-3">
+                <a href="#" class="btn btn-primary"><i class="fa-solid fa-mobile-screen-button"></i> Add to Home Screen</a>
+                <a href="menu.html" class="btn btn-secondary !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet">Browse Menu</a>
+              </div>
+            </div>
+            <div class="justify-self-center md:justify-self-end w-48"><img data-ph="OK PWA" data-ph-ratio="3/4" class="ph-img rounded-2xl" alt=""></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

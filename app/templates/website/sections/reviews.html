@@ -1,0 +1,36 @@
+<!-- Reviews / ratings -->
+{% set reviews = [
+  {'key':'google','stars':4.5,'score':'4.4'},
+  {'key':'yelp','stars':4.5,'score':'4.5'},
+  {'key':'ubereats','stars':5,'score':'4.8'},
+  {'key':'toast','stars':4.5,'score':'4.5'}
+] %}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'What the people think' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+    </div>
+
+    <div class="ok-cardgrid ok-cardgrid--4" data-reveal-stagger>
+      {% for r in reviews %}
+      <div class="ok-card ok-card-hover d-flex flex-column">
+        <div class="ok-card-body align-items-center text-center ok-gap-35">
+          <div class="ok-h-7 d-flex align-items-center">
+            {% if r.key == 'google' %}<span class="fw-bold ok-fs-xl" style="font-family:Arial,Helvetica,sans-serif"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span>
+            {% elif r.key == 'yelp' %}<span class="ok-fw-800 ok-fs-xl" style="color:#D32323">Yelp</span> <i class="fa-solid fa-burst ok-fs-sm" style="color:#D32323"></i>
+            {% elif r.key == 'ubereats' %}<span class="ok-fw-800 ok-fs-lg text-ink">Uber<span style="color:#06C167">Eats</span></span>
+            {% elif r.key == 'toast' %}<span class="ok-fw-800 ok-fs-lg" style="color:#FF4C00">toast</span>{% endif %}
+          </div>
+          <div class="d-flex ok-gap-05 text-yellow ok-fs-sm">
+            {% for i in range(5) %}{% if r.stars >= i+1 %}<i class="fa-solid fa-star"></i>{% elif r.stars >= i+0.5 %}<i class="fa-solid fa-star-half-stroke"></i>{% else %}<i class="fa-regular fa-star text-muted-warm-40"></i>{% endif %}{% endfor %}
+          </div>
+          <div class="font-display ok-fw-900 ok-fs-3xl ok-lh-none ok-stat" data-countup="{{ r.score }}" data-countup-decimals="1">{{ r.score }}</div>
+          <div class="ok-fs-66rem fw-bold text-uppercase ok-ls-16em text-muted-warm">out of 5</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

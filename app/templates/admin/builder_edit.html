@@ -1,0 +1,346 @@
+{% extends "layouts/admin_base.html" %}
+{% block title %}Editing {{ page.title }}, {{ brand_name }}{% endblock %}
+{% block page_title %}Web page builder{% endblock %}
+
+{% block head_extra %}
+<link href="{{ url_for('static', filename='vendor/grapesjs/grapes.min.css') }}" rel="stylesheet">
+<style>
+  #bWrap{ height:calc(100vh - 3.5rem - 3.25rem); }
+  #bBlocks .gjs-block{ width:auto; min-height:auto; padding:10px 6px; font-size:11px; }
+  #bBlocks .gjs-block-label{ font-size:11px; }
+  .b-tab{ flex:1; padding:.5rem; font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:#6b6b6b; border-bottom:2px solid transparent; }
+  .b-tab.on{ color:#141414; border-bottom-color:#FFC72C; }
+  .gjs-one-bg{ background:#fff; }
+  .cvbtn{ width:30px; height:28px; border-radius:7px; color:#6b6b6b; display:inline-grid; place-items:center; font-size:12px; }
+  .cvbtn:hover{ background:rgba(0,0,0,.05); color:#141414; }
+  .cvbtn.active{ background:#FFC72C; color:#141414; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-3 px-4 h-13 py-2 border-b border-[var(--ok-line)] bg-white">
+  <a href="/admin/builder{{ qs }}" class="text-sm text-slate hover:text-jet shrink-0"><i class="fa-solid fa-arrow-left"></i> Pages</a>
+  <div class="min-w-0">
+    <div class="font-display font-bold text-sm truncate">{{ page.title }}{% if page.is_home %} <span class="badge badge-yellow align-middle">Home</span>{% endif %}</div>
+    <a href="{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}" target="_blank" rel="noopener" class="text-[.7rem] text-slate link-underline">{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}</a>
+  </div>
+  <div class="mx-auto flex items-center gap-1 shrink-0">
+    <select id="devSel" class="ok-input py-1 text-xs w-24" title="Screen size"><option value="Desktop">Desktop</option><option value="Tablet">Tablet</option><option value="Mobile">Mobile</option></select>
+    <button type="button" data-cmd="core:undo" class="cvbtn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+    <button type="button" data-cmd="core:redo" class="cvbtn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+    <button type="button" data-cmd="core:component-outline" class="cvbtn" title="Toggle borders"><i class="fa-solid fa-border-all"></i></button>
+    <button type="button" data-cmd="preview" data-toggle="1" class="cvbtn" title="Preview"><i class="fa-solid fa-eye"></i></button>
+    <button type="button" data-cmd="fullscreen" data-toggle="1" class="cvbtn" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <button type="button" id="codeBtn" class="btn btn-secondary btn-sm" title="View / edit code"><i class="fa-solid fa-code"></i></button>
+    <button type="button" id="pgSettingsBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-gear"></i> Settings</button>
+    <a href="{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <button type="button" id="gjsSave" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> <span id="saveLbl">Save</span></button>
+  </div>
+</div>
+
+<!-- Code editor modal -->
+<div id="codeModal" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ok-line)]">
+      <span class="font-display font-bold">Edit code</span>
+      <button type="button" id="codeClose" class="text-slate hover:text-jet"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div class="p-4 space-y-3 overflow-y-auto">
+      <div><label class="ok-label !text-xs">HTML</label><textarea id="codeHtml" rows="10" class="ok-input text-xs font-mono" spellcheck="false"></textarea></div>
+      <div><label class="ok-label !text-xs">CSS</label><textarea id="codeCss" rows="6" class="ok-input text-xs font-mono" spellcheck="false"></textarea></div>
+    </div>
+    <div class="px-4 py-3 border-t border-[var(--ok-line)] flex items-center justify-between gap-2">
+      <a href="/admin/builder/{{ page.id }}/code{{ qs }}" class="link-underline text-sm"><i class="fa-solid fa-up-right-from-square"></i> Full code editor</a>
+      <div class="flex gap-2">
+        <button type="button" id="codeCancel" class="btn btn-secondary btn-sm">Cancel</button>
+        <button type="button" id="codeApply" class="btn btn-primary btn-sm">Apply to canvas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Embed / custom-code widget modal -->
+<div id="embedModal" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ok-line)]">
+      <span class="font-display font-bold">Custom code / embed</span>
+      <button type="button" id="embedClose" class="text-slate hover:text-jet"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div class="p-4">
+      <p class="ok-hint mb-2">Paste any HTML, embed snippet (YouTube, maps, widgets) or &lt;script&gt;. It renders live on the published page.</p>
+      <textarea id="embedCode" rows="12" class="ok-input text-xs font-mono" spellcheck="false" placeholder="&lt;iframe src=…&gt;&lt;/iframe&gt;  or  &lt;div&gt;…&lt;/div&gt;  or  &lt;script&gt;…&lt;/script&gt;"></textarea>
+    </div>
+    <div class="px-4 py-3 border-t border-[var(--ok-line)] flex justify-end gap-2">
+      <button type="button" id="embedCancel" class="btn btn-secondary btn-sm">Cancel</button>
+      <button type="button" id="embedApply" class="btn btn-primary btn-sm">Apply</button>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/admin/builder/{{ page.id }}/meta{{ qs }}" id="pgSettings" class="hidden border-b border-[var(--ok-line)] bg-[#fafafa] px-4 py-3">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="flex flex-wrap items-end gap-3">
+    <div><label class="ok-label !text-xs">Title</label><input name="title" value="{{ page.title }}" class="ok-input py-1.5 text-sm w-56"></div>
+    <div><label class="ok-label !text-xs">URL slug (/p/…)</label><input name="slug" value="{{ page.slug }}" class="ok-input py-1.5 text-sm w-48"></div>
+    <label class="flex items-center gap-2 text-sm mb-1.5"><input type="checkbox" name="published" {% if page.published %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Published</label>
+    <label class="flex items-center gap-2 text-sm mb-1.5"><input type="checkbox" name="show_in_nav" {% if page.show_in_nav %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Show in site menu</label>
+    <label class="flex items-center gap-2 text-sm mb-1.5" title="Serve at /"><input type="checkbox" name="is_home" {% if page.is_home %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Use as home page (/)</label>
+    {% if page.override_path %}<label class="flex items-center gap-2 text-sm mb-1.5 text-okred" title="Restore the original built-in page"><input type="checkbox" name="detach_override" class="w-4 h-4 accent-okred"> Stop replacing {{ page.override_path }} (restore original)</label>{% endif %}
+  </div>
+  <div class="grid sm:grid-cols-2 gap-3 mt-3">
+    <div><label class="ok-label !text-xs">SEO title</label><input name="meta_title" value="{{ page.meta_title or '' }}" placeholder="{{ page.title }}" class="ok-input py-1.5 text-sm"></div>
+    <div><label class="ok-label !text-xs">SEO description</label><input name="meta_description" value="{{ page.meta_description or '' }}" placeholder="Short summary for search engines" class="ok-input py-1.5 text-sm"></div>
+    <div class="sm:col-span-2"><label class="ok-label !text-xs">Custom head code <span class="text-slate font-normal">(meta / CSS / JS)</span></label><textarea name="head_code" rows="2" placeholder="&lt;style&gt;…&lt;/style&gt; or &lt;script&gt;…&lt;/script&gt;" class="ok-input py-1.5 text-xs font-mono">{{ page.head_code or '' }}</textarea></div>
+  </div>
+  <div class="mt-3"><button class="btn btn-primary btn-sm">Save settings</button></div>
+</form>
+
+<div id="bWrap" class="flex">
+  <!-- Blocks -->
+  <div class="w-56 shrink-0 border-r border-[var(--ok-line)] bg-white overflow-y-auto">
+    <div class="px-3 py-2 text-[.65rem] font-bold uppercase tracking-wide text-slate border-b border-[var(--ok-line)]">Drag blocks in</div>
+    <div id="bBlocks"></div>
+  </div>
+  <!-- Canvas -->
+  <div id="gjs" class="flex-1 min-w-0"></div>
+  <!-- Right: style / traits / layers -->
+  <div class="w-72 shrink-0 border-l border-[var(--ok-line)] bg-white flex flex-col">
+    <div class="flex border-b border-[var(--ok-line)]">
+      <button type="button" class="b-tab on" data-tab="style">Style</button>
+      <button type="button" class="b-tab" data-tab="traits">Settings</button>
+      <button type="button" class="b-tab" data-tab="layers">Layers</button>
+    </div>
+    <div class="flex-1 overflow-y-auto">
+      <div data-pane="style"><div id="bSelectors" class="px-2 pt-2"></div><div id="bStyles"></div></div>
+      <div data-pane="traits" class="hidden"><div id="bTraits" class="p-2"></div></div>
+      <div data-pane="layers" class="hidden"><div id="bLayers"></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/grapesjs/grapes.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/grapesjs/blocks-basic.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/grapesjs/plugin-forms.min.js') }}"></script>
+<script>
+(function () {
+  document.getElementById('pgSettingsBtn').addEventListener('click', function () { document.getElementById('pgSettings').classList.toggle('hidden'); });
+  if (typeof grapesjs === 'undefined') { document.getElementById('gjs').innerHTML = '<div style="padding:2rem;color:#C62828">Builder failed to load.</div>'; return; }
+  // Vendored plugin globals (blocks-basic registers itself as "gjs-blocks-basic").
+  var pBasic = window['gjs-blocks-basic'];
+  var pForms = window['grapesjs-plugin-forms'];
+
+  var FONTS = [
+    { value: 'Poppins, sans-serif', name: 'Poppins' }, { value: 'Quicksand, sans-serif', name: 'Quicksand' },
+    { value: 'Inter, sans-serif', name: 'Inter' }, { value: 'Arial, Helvetica, sans-serif', name: 'Arial' },
+    { value: 'Georgia, serif', name: 'Georgia' }, { value: "'Courier New', monospace", name: 'Courier' },
+    { value: "'Arial Black', Impact, sans-serif", name: 'Arial Black' }
+  ];
+
+  var editor = grapesjs.init({
+    container: '#gjs',
+    height: '100%',
+    fromElement: false,
+    storageManager: false,
+    plugins: [pBasic, pForms].filter(Boolean),
+    blockManager: { appendTo: '#bBlocks' },
+    layerManager: { appendTo: '#bLayers' },
+    traitManager: { appendTo: '#bTraits' },
+    selectorManager: { appendTo: '#bSelectors', componentFirst: true },
+    panels: { defaults: [] },
+    deviceManager: { devices: [
+      { name: 'Desktop', width: '' },
+      { name: 'Tablet', width: '820px', widthMedia: '992px' },
+      { name: 'Mobile', width: '390px', widthMedia: '575px' }
+    ] },
+    assetManager: {
+      upload: '/admin/builder/upload',
+      uploadName: 'files',
+      headers: { 'X-CSRF-Token': '{{ csrf_token }}' },
+      assets: {{ assets|tojson }},
+      autoAdd: true
+    },
+    canvas: {
+      // Exactly the stylesheets the public site loads, in the same order. The
+      // canvas used to load a pre-compiled Tailwind build left over from before
+      // the Bootstrap migration, so what you arranged here did not match what
+      // visitors saw. (Static files either way — the Tailwind Play CDN's live
+      // MutationObserver re-ran on every drag and broke block drag-and-drop.)
+      styles: [
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css',
+        '{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}',
+        '{{ url_for('static', filename='css/style.css') }}',
+        '{{ url_for('static', filename='css/premium.css') }}',
+        '{{ url_for('static', filename='css/theme.css') }}',
+        '{{ url_for('static', filename='css/utils.css') }}',
+        '{{ url_for('static', filename='css/generated.css') }}',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&family=Quicksand:wght@500;700&display=swap'
+      ]
+    },
+    styleManager: {
+      appendTo: '#bStyles',
+      sectors: [
+        { name: 'Size & spacing', open: true, buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding'] },
+        { name: 'Typography', open: true, buildProps: ['font-size', 'font-weight', 'letter-spacing', 'color', 'line-height', 'text-align', 'text-decoration'],
+          properties: [{ property: 'font-family', type: 'select', options: FONTS }] },
+        { name: 'Background & border', open: false, buildProps: ['background-color', 'background-image', 'border-radius', 'border', 'box-shadow'] },
+        { name: 'Layout', open: false, buildProps: ['display', 'float', 'position', 'opacity'] }
+      ]
+    }
+  });
+
+  // Right-panel tabs
+  document.querySelectorAll('.b-tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.b-tab').forEach(function (x) { x.classList.toggle('on', x === t); });
+      document.querySelectorAll('[data-pane]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.pane !== t.dataset.tab); });
+    });
+  });
+
+  // Extra content blocks
+  var bm = editor.BlockManager;
+  bm.add('b-heading', { label: 'Heading', category: 'Basic', content: '<h2 style="font-family:Poppins,sans-serif;font-weight:800;font-size:32px;margin:0 0 12px">Your heading</h2>' });
+  bm.add('b-paragraph', { label: 'Paragraph', category: 'Basic', content: '<p style="font-size:16px;line-height:1.6;margin:0 0 12px">Write something great about your offer here.</p>' });
+  bm.add('b-button', { label: 'Button', category: 'Basic', content: '<a href="#" style="display:inline-block;background:#FFC72C;color:#141414;font-weight:700;padding:12px 26px;border-radius:10px;text-decoration:none">Click me</a>' });
+  bm.add('b-divider', { label: 'Divider', category: 'Basic', content: '<hr style="border:none;border-top:1px solid #e5e5e5;margin:24px 0">' });
+  bm.add('b-spacer', { label: 'Spacer', category: 'Basic', content: '<div style="height:48px"></div>' });
+  bm.add('b-section', { label: 'Section', category: 'Basic', content: '<section style="padding:56px 20px"><div style="max-width:1100px;margin:0 auto"></div></section>' });
+
+  // Ready-made section templates
+  var wrap = function (inner, bg, pad) { return '<section style="background:' + (bg || '#fff') + ';padding:' + (pad || '64px 20px') + '"><div style="max-width:1100px;margin:0 auto">' + inner + '</div></section>'; };
+  var SECTIONS = [
+    ['s-hero', 'Hero', wrap('<div style="text-align:center;max-width:640px;margin:0 auto"><h1 style="font-family:Poppins,sans-serif;font-weight:800;font-size:48px;margin:0 0 16px;text-transform:uppercase">Your big headline here</h1><p style="font-size:18px;color:#555;margin:0 0 24px">A punchy sub-headline that tells visitors what you offer and why it matters.</p><a href="#" style="display:inline-block;background:#FFC72C;color:#141414;font-weight:700;padding:14px 30px;border-radius:10px;text-decoration:none">Get started</a></div>', '#141414', '96px 20px').replace('color:#555', 'color:#ddd').replace('#141414;padding', '#141414;color:#fff;padding')],
+    ['s-features', 'Features (3)', wrap('<div style="text-align:center;margin:0 0 40px"><h2 style="font-family:Poppins,sans-serif;font-weight:800;font-size:34px;margin:0">Why choose us</h2></div><div style="display:flex;gap:24px;flex-wrap:wrap">' + [1, 2, 3].map(function () { return '<div style="flex:1;min-width:220px;text-align:center;padding:24px"><div style="width:56px;height:56px;border-radius:50%;background:#FFC72C;margin:0 auto 16px;display:grid;place-items:center;font-size:22px">★</div><h3 style="font-weight:700;font-size:18px;margin:0 0 8px">Feature title</h3><p style="color:#666;font-size:15px;margin:0">Short description of this benefit and why customers love it.</p></div>'; }).join('') + '</div>')],
+    ['s-cta', 'CTA banner', wrap('<div style="text-align:center"><h2 style="font-family:Poppins,sans-serif;font-weight:800;font-size:32px;margin:0 0 8px;color:#141414">Ready to order?</h2><p style="margin:0 0 20px;color:#333">Fresh, fast and delivered to your door.</p><a href="/menu" style="display:inline-block;background:#141414;color:#fff;font-weight:700;padding:13px 30px;border-radius:10px;text-decoration:none">Order now</a></div>', '#FFC72C', '56px 20px')],
+    ['s-imgtext', 'Image + text', wrap('<div style="display:flex;gap:40px;align-items:center;flex-wrap:wrap"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&h=500&fit=crop" style="flex:1;min-width:280px;border-radius:16px;width:100%;max-width:520px"><div style="flex:1;min-width:280px"><h2 style="font-family:Poppins,sans-serif;font-weight:800;font-size:30px;margin:0 0 14px">A headline about this</h2><p style="color:#666;font-size:16px;line-height:1.6;margin:0 0 18px">Describe your product or story here. Keep it warm and clear. Tell people what makes it special.</p><a href="#" style="display:inline-block;background:#FFC72C;color:#141414;font-weight:700;padding:12px 26px;border-radius:10px;text-decoration:none">Learn more</a></div></div>')],
+    ['s-pricing', 'Pricing (3)', wrap('<div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center">' + ['Basic|9|Small', 'Popular|19|Medium', 'Pro|29|Large'].map(function (p) { var a = p.split('|'); return '<div style="flex:1;min-width:220px;max-width:300px;border:1px solid #eee;border-radius:16px;padding:28px;text-align:center"><h3 style="font-weight:700;font-size:20px;margin:0 0 8px">' + a[0] + '</h3><div style="font-family:Poppins,sans-serif;font-weight:800;font-size:40px;margin:0 0 12px">$' + a[1] + '</div><p style="color:#888;font-size:14px;margin:0 0 18px">' + a[2] + ' package</p><a href="#" style="display:inline-block;background:#141414;color:#fff;font-weight:700;padding:11px 24px;border-radius:8px;text-decoration:none">Choose</a></div>'; }).join('') + '</div>')],
+    ['s-testimonial', 'Testimonial', wrap('<div style="max-width:680px;margin:0 auto;text-align:center"><p style="font-size:22px;font-style:italic;color:#333;margin:0 0 18px">"Absolutely the best in town. Fresh, fast and the sauce is unreal. Ordering again for sure."</p><div style="font-weight:700">Jordan T.</div><div style="color:#888;font-size:14px">Happy customer</div></div>', '#f8f8f8')],
+    ['s-footer', 'Footer', wrap('<div style="display:flex;gap:40px;flex-wrap:wrap;justify-content:space-between"><div style="flex:1;min-width:200px"><div style="font-family:Poppins,sans-serif;font-weight:800;font-size:20px;margin:0 0 10px">Brand</div><p style="color:#aaa;font-size:14px;margin:0">Real food, made fresh.</p></div><div style="min-width:140px"><div style="font-weight:700;margin:0 0 10px">Company</div><div style="color:#aaa;font-size:14px;line-height:2"><a href="/about" style="color:#aaa;text-decoration:none;display:block">About</a><a href="/careers" style="color:#aaa;text-decoration:none;display:block">Careers</a><a href="/contact" style="color:#aaa;text-decoration:none;display:block">Contact</a></div></div></div>', '#141414', '48px 20px').replace(/margin:0 auto">/, 'margin:0 auto;color:#fff">')]
+  ];
+  SECTIONS.forEach(function (s) { bm.add(s[0], { label: s[1], category: 'Sections', content: s[2] }); });
+
+  // More elements
+  bm.add('b-navbar', { label: 'Navbar', category: 'Layout', content: '<nav style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:#141414;color:#fff"><div style="font-family:Poppins,sans-serif;font-weight:800;font-size:20px">Brand</div><div style="display:flex;gap:24px"><a href="/menu" style="color:#fff;text-decoration:none">Menu</a><a href="/about" style="color:#fff;text-decoration:none">About</a><a href="/contact" style="color:#fff;text-decoration:none">Contact</a></div></nav>' });
+  bm.add('b-icon', { label: 'Icon', category: 'Basic', content: '<i class="fa-solid fa-star" style="font-size:32px;color:#FFC72C"></i>' });
+  bm.add('b-social', { label: 'Social icons', category: 'Basic', content: '<div style="display:flex;gap:14px;font-size:22px"><a href="#" style="color:#141414"><i class="fa-brands fa-facebook"></i></a><a href="#" style="color:#141414"><i class="fa-brands fa-instagram"></i></a><a href="#" style="color:#141414"><i class="fa-brands fa-x-twitter"></i></a></div>' });
+  bm.add('b-quote', { label: 'Quote', category: 'Basic', content: '<blockquote style="border-left:4px solid #FFC72C;padding:8px 20px;margin:0;font-style:italic;color:#444;font-size:18px">A memorable quote goes here.</blockquote>' });
+  bm.add('b-list', { label: 'List', category: 'Basic', content: '<ul style="line-height:2;padding-left:20px"><li>First point</li><li>Second point</li><li>Third point</li></ul>' });
+  bm.add('b-video', { label: 'Video', category: 'Layout', content: '<div style="position:relative;padding-bottom:56.25%;height:0"><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="position:absolute;width:100%;height:100%;border:0" allowfullscreen></iframe></div>' });
+  bm.add('b-map', { label: 'Map', category: 'Layout', content: '<iframe src="https://maps.google.com/maps?q=Philadelphia&z=12&output=embed" style="width:100%;height:320px;border:0"></iframe>' });
+  bm.add('b-accordion', { label: 'Accordion', category: 'Layout', content: '<details style="border:1px solid #eee;border-radius:8px;padding:14px 16px;margin:0 0 8px"><summary style="font-weight:700;cursor:pointer">Question one?</summary><p style="color:#666;margin:10px 0 0">Answer to the question goes here.</p></details><details style="border:1px solid #eee;border-radius:8px;padding:14px 16px"><summary style="font-weight:700;cursor:pointer">Question two?</summary><p style="color:#666;margin:10px 0 0">Another answer here.</p></details>' });
+
+  // Custom Code / Embed widget — drop it in, paste any HTML/embed/script.
+  var embedModal = document.getElementById('embedModal');
+  var embedTA = document.getElementById('embedCode');
+  var embedTarget = null;
+  function openEmbed(model) { embedTarget = model; embedTA.value = model.get('code') || ''; embedModal.classList.remove('hidden'); embedTA.focus(); }
+  function closeEmbed() { embedModal.classList.add('hidden'); embedTarget = null; }
+  editor.DomComponents.addType('embed', {
+    isComponent: function (el) { if (el.getAttribute && el.getAttribute('data-embed') != null) return { type: 'embed' }; },
+    model: {
+      defaults: { name: 'Embed / Code', droppable: false, code: '', attributes: { 'data-embed': '' } },
+      toHTML: function () { return this.get('code') || ''; }
+    },
+    view: {
+      events: { dblclick: 'edit' },
+      init: function () { this.listenTo(this.model, 'change:code', this.render); },
+      onRender: function () {
+        var code = this.model.get('code');
+        this.el.innerHTML = code ? code : '<div style="padding:26px;text-align:center;background:#f3f4f6;border:2px dashed #cbd5e1;color:#64748b;font-family:system-ui;font-weight:600">&lt;/&gt; Embed / custom code<br><span style="font-weight:400;font-size:12px">double-click to paste code</span></div>';
+      },
+      edit: function () { openEmbed(this.model); }
+    }
+  });
+  bm.add('b-embed', { label: '<div style="padding:4px 0;text-align:center"><i class="fa-solid fa-code" style="font-size:18px"></i><div style="font-size:11px;margin-top:4px">Embed / Code</div></div>', category: 'Basic', content: { type: 'embed' } });
+  document.getElementById('embedClose').addEventListener('click', closeEmbed);
+  document.getElementById('embedCancel').addEventListener('click', closeEmbed);
+  document.getElementById('embedApply').addEventListener('click', function () { if (embedTarget) embedTarget.set('code', embedTA.value); closeEmbed(); });
+  editor.on('component:add', function (m) { if (m && m.get && m.get('type') === 'embed' && !m.get('code')) setTimeout(function () { openEmbed(m); }, 60); });
+
+  // Live dynamic-section blocks (render real store data when published)
+  var DYN = { hero: ['Hero carousel', '🎠'], explore_menu: ['Menu grid', '🍔'], best_sellers: ['Best sellers', '⭐'], how_it_works: ['How it works', '🧭'], catering: ['Catering', '🚚'], about: ['About brand', 'ℹ️'], reviews: ['Reviews', '👍'], locations: ['Locations', '📍'], franchise: ['Franchise', '🤝'], testimonials: ['Testimonials', '💬'], instagram: ['Instagram', '#️⃣'] };
+  function dynPreview(k) {
+    var d = DYN[k] || [k, '📄'];
+    return '<div style="padding:14px 18px;background:#fff8e1;border:1px dashed #E0A200;border-radius:8px;color:#7a5c00;font-family:system-ui,sans-serif;display:flex;align-items:center;gap:10px">'
+      + '<span style="font-size:18px">' + d[1] + '</span>'
+      + '<span style="flex:1"><b style="font-size:13px">' + d[0] + '</b><span style="display:block;font-size:11px;opacity:.7">Live section, real content shows on your published site</span></span>'
+      + '<span style="font-size:10px;background:#E0A200;color:#fff;padding:2px 7px;border-radius:20px;font-weight:700">LIVE</span></div>';
+  }
+  editor.DomComponents.addType('dyn-section', {
+    isComponent: function (el) { if (el.getAttribute && el.getAttribute('data-dyn')) return { type: 'dyn-section' }; },
+    model: { defaults: { name: 'Live section', droppable: false, editable: false, copyable: true, resizable: false } },
+    view: {
+      onRender: function () {
+        var k = this.el.getAttribute('data-dyn');
+        if (!this.el.querySelector('[data-dynph]')) this.el.innerHTML = '<div data-dynph>' + dynPreview(k) + '</div>';
+      }
+    }
+  });
+  Object.keys(DYN).forEach(function (k) {
+    bm.add('dyn-' + k, {
+      label: DYN[k][1] + ' ' + DYN[k][0],
+      category: 'Live sections',
+      content: '<section data-dyn="' + k + '" data-gjs-droppable="false" style="padding:6px 14px"><div data-dynph>' + dynPreview(k) + '</div></section>'
+    });
+  });
+
+  // Load existing content. When there's no GrapesJS project data (e.g. the page
+  // was written in the raw code editor) we import the HTML AND its CSS, otherwise
+  // getCss() returns empty and the next Save would wipe the hand-written styles.
+  var GJS = {{ page.gjs|tojson }};
+  var HTML = {{ (page.html or '')|tojson }};
+  var CSS = {{ (page.css or '')|tojson }};
+  function loadFromHtml() { if (HTML) editor.setComponents(HTML); if (CSS) { try { editor.setStyle(CSS); } catch (e) {} } }
+  try {
+    if (GJS && Object.keys(GJS).length) editor.loadProjectData(GJS);
+    else loadFromHtml();
+  } catch (e) { loadFromHtml(); }
+
+  // Device switcher + toolbar commands
+  var devSel = document.getElementById('devSel');
+  if (devSel) devSel.addEventListener('change', function () { editor.setDevice(devSel.value); });
+  document.querySelectorAll('[data-cmd]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var cmd = b.dataset.cmd;
+      if (b.dataset.toggle) { if (b.classList.toggle('active')) editor.runCommand(cmd); else editor.stopCommand(cmd); }
+      else editor.runCommand(cmd);
+    });
+  });
+
+  // Code editor modal
+  var codeModal = document.getElementById('codeModal');
+  function closeCode() { codeModal.classList.add('hidden'); }
+  document.getElementById('codeBtn').addEventListener('click', function () {
+    document.getElementById('codeHtml').value = editor.getHtml();
+    document.getElementById('codeCss').value = editor.getCss();
+    codeModal.classList.remove('hidden');
+  });
+  document.getElementById('codeClose').addEventListener('click', closeCode);
+  document.getElementById('codeCancel').addEventListener('click', closeCode);
+  document.getElementById('codeApply').addEventListener('click', function () {
+    editor.setComponents(document.getElementById('codeHtml').value);
+    try { editor.setStyle(document.getElementById('codeCss').value); } catch (e) {}
+    closeCode();
+  });
+
+  // Unsaved-changes warning
+  var dirty = false;
+  editor.on('update', function () { dirty = true; });
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  // Save
+  var lbl = document.getElementById('saveLbl');
+  document.getElementById('gjsSave').addEventListener('click', function () {
+    lbl.textContent = 'Saving…';
+    var body = JSON.stringify({ html: editor.getHtml(), css: editor.getCss(), gjs: editor.getProjectData() });
+    fetch('/admin/builder/{{ page.id }}/store', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '{{ csrf_token }}' }, body: body })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d && d.ok) { dirty = false; lbl.textContent = 'Saved ✓'; } else lbl.textContent = 'Error'; setTimeout(function () { lbl.textContent = 'Save'; }, 1600); })
+      .catch(function () { lbl.textContent = 'Error'; setTimeout(function () { lbl.textContent = 'Save'; }, 1600); });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}Menu Management, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Menu, {{ admin_store.name if admin_store else '' }}</h2>
+<p class="text-slate text-sm mb-5">Create catalog items (shared across all locations) and control this location's own listing, availability (86), and price. Leave the price at base to inherit it.</p>
+
+<!-- Add item + Categories -->
+<div class="grid lg:grid-cols-2 gap-4 mb-6">
+  <details class="ok-card p-5">
+    <summary class="cursor-pointer font-semibold flex items-center gap-2"><i class="fa-solid fa-plus"></i> Add a menu item</summary>
+    <form method="post" action="/admin/catalog/products{{ qs }}" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-3 mt-4">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="sm:col-span-2"><label class="ok-label !text-xs">Name</label><input name="name" required class="ok-input py-2 text-sm" placeholder="Smoky BBQ Smash"></div>
+      <div><label class="ok-label !text-xs">Category</label>
+        <select name="category_id" class="ok-select py-2 text-sm">{% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div><label class="ok-label !text-xs">Base price ($)</label><input name="base_price" type="number" step="0.01" min="0" class="ok-input py-2 text-sm" placeholder="11.49"></div>
+      <div class="sm:col-span-2"><label class="ok-label !text-xs">Description</label><input name="description" class="ok-input py-2 text-sm" placeholder="Smash patty, BBQ, onions, cheddar"></div>
+      <div><label class="ok-label !text-xs">Image URL</label><input name="image_url" class="ok-input py-2 text-sm" placeholder="https://…"></div>
+      <div><label class="ok-label !text-xs">…or upload photo</label><input name="image_file" type="file" accept="image/*" class="ok-input py-1.5 text-sm"></div>
+      <div><label class="ok-label !text-xs">Calories</label><input name="calories" type="number" class="ok-input py-2 text-sm" placeholder="720"></div>
+      <div><label class="ok-label !text-xs">Allergens (comma)</label><input name="allergens" class="ok-input py-2 text-sm" placeholder="gluten, dairy"></div>
+      <div><label class="ok-label !text-xs">Tags (comma)</label><input name="tags" class="ok-input py-2 text-sm" placeholder="popular, spicy"></div>
+      <label class="flex items-center gap-2 text-sm mt-6"><input type="checkbox" name="is_vegan" class="w-4 h-4 accent-okyellow"> Vegan</label>
+      <div class="sm:col-span-2"><button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create item</button></div>
+    </form>
+  </details>
+
+  <details class="ok-card p-5">
+    <summary class="cursor-pointer font-semibold flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Categories <span class="text-slate text-xs font-normal">({{ categories|length }})</span></summary>
+    <div class="mt-4 space-y-2">
+      {% for c in categories %}
+      <form method="post" action="/admin/catalog/categories/{{ c.id }}/edit{{ qs }}" class="flex flex-wrap items-center gap-2">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if c.image_url %}<img src="{{ c.image_url }}" class="w-6 h-6 rounded object-cover shrink-0" alt="">{% else %}<i class="fa-solid fa-{{ c.icon or 'utensils' }} w-6 text-center text-slate shrink-0"></i>{% endif %}
+        <input name="name" value="{{ c.name }}" class="ok-input py-1.5 text-sm flex-1 min-w-0">
+        <input name="icon" value="{{ c.icon }}" class="ok-input py-1.5 text-sm w-20" placeholder="icon">
+        <input name="image_url" value="{{ c.image_url or '' }}" class="ok-input py-1.5 text-sm w-28" placeholder="image URL">
+        <input name="sort_order" type="number" value="{{ c.sort_order }}" class="ok-input py-1.5 text-sm w-14" title="Sort order">
+        <input name="description" value="{{ c.description or '' }}" class="ok-input py-1.5 text-sm w-full" placeholder="Short description (shown on the home page)">
+        <button class="btn btn-secondary btn-sm shrink-0">Save</button>
+        <button formaction="/admin/catalog/categories/{{ c.id }}/delete{{ qs }}" onclick="return confirm('Delete {{ c.name }}? (Only if it has no items.)')" class="link-underline text-xs !text-okred shrink-0">Del</button>
+      </form>
+      {% endfor %}
+      <form method="post" action="/admin/catalog/categories{{ qs }}" class="flex flex-wrap items-center gap-2 pt-3 border-t border-[var(--ok-line)]">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input name="name" placeholder="New category" required class="ok-input py-1.5 text-sm flex-1 min-w-0">
+        <input name="icon" placeholder="icon" class="ok-input py-1.5 text-sm w-24">
+        <input name="image_url" placeholder="image URL (optional)" class="ok-input py-1.5 text-sm w-40">
+        <input name="description" placeholder="Short description (optional)" class="ok-input py-1.5 text-sm w-full">
+        <button class="btn btn-primary btn-sm shrink-0">Add</button>
+      </form>
+    </div>
+  </details>
+</div>
+
+<h3 class="font-display font-bold text-lg mb-3">Items <span class="text-slate text-sm font-normal">({{ rows|length }})</span></h3>
+<div class="ok-card divide-y divide-[var(--ok-line)]">
+  {% for row in rows %}
+  <form method="post" action="/admin/menu/{{ row.product.id }}{{ qs }}" class="p-4 flex flex-wrap items-center gap-x-5 gap-y-3 {% if not row.product.is_active %}opacity-60{% endif %}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <img src="{{ row.product.image_url or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-14 h-14 rounded-lg object-cover shrink-0 bg-softyellow">
+    <div class="flex-1 min-w-[10rem]">
+      <div class="font-bold leading-tight">{{ row.product.name }}{% if not row.product.is_active %} <span class="badge badge-soft ml-1">Archived</span>{% endif %}</div>
+      <div class="text-xs text-slate">{{ row.product.category.name }} · base ${{ '%.2f'|format(row.product.base_price) }}</div>
+    </div>
+    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" name="listed" value="1" {% if row.listed %}checked{% endif %} class="w-4 h-4 accent-okyellow"> On menu</label>
+    <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" name="available" value="1" {% if row.available %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Available</label>
+    <div class="flex items-center gap-1"><span class="text-slate">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(row.price) }}" class="ok-input w-24 py-1.5 text-sm"></div>
+    <button class="btn btn-primary btn-sm">Save</button>
+    <a href="/admin/menu/{{ row.product.id }}/edit{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+    <a href="/admin/menu/{{ row.product.id }}/modifiers{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-sliders"></i> Modifiers{% set nmod = (row.product.variants|length) + (row.product.addons|length) %}{% if nmod %} ({{ nmod }}){% endif %}</a>
+  </form>
+  {% endfor %}
+</div>
+{% endblock %}

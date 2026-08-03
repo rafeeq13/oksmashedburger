@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — OK Smashed Burger</title>
+  <meta name="description" content="Sign in to your OK Smashed Burger account to track orders live, earn rewards and one-tap reorder your favorites.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <section class="ok-section bg-softyellow/40 min-h-[80vh] grid place-items-center">
+      <div class="ok-container">
+        <!-- Back to site -->
+        <div class="max-w-5xl mx-auto mb-4">
+          <a href="index.html" class="link-underline text-sm inline-flex items-center gap-1"><i class="fa-solid fa-arrow-left"></i> Back to site</a>
+        </div>
+
+        <div class="ok-card overflow-hidden max-w-5xl mx-auto grid md:grid-cols-2">
+          <!-- LEFT: branded panel -->
+          <div class="relative hidden md:flex flex-col bg-jet text-white p-10 overflow-hidden">
+            <img data-ph="Smash Burger" data-ph-type="hero" data-ph-ratio="4/5" class="ph-img absolute inset-0 w-full h-full opacity-15" alt="">
+            <div class="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-okyellow/20 blur-3xl"></div>
+            <div class="relative flex flex-col h-full">
+              <img src="assets/img/logo.svg" class="h-20 w-auto mb-8" alt="OK Smashed Burger">
+              <h2 class="font-display font-extrabold text-3xl leading-tight mb-3">Hungry again?<br><span class="text-okyellow">Pick up where you left off.</span></h2>
+              <p class="text-white/70 mb-8 max-w-sm">Sign in for a faster, more rewarding smash-burger run.</p>
+              <ul class="space-y-4 mt-auto">
+                <li class="flex items-start gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-okgreen text-white grid place-items-center text-sm"><i class="fa-solid fa-circle-check"></i></span><span class="font-semibold">Track orders live</span></li>
+                <li class="flex items-start gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-okgreen text-white grid place-items-center text-sm"><i class="fa-solid fa-circle-check"></i></span><span class="font-semibold">Earn rewards on every bite</span></li>
+                <li class="flex items-start gap-3"><span class="w-7 h-7 shrink-0 rounded-full bg-okgreen text-white grid place-items-center text-sm"><i class="fa-solid fa-circle-check"></i></span><span class="font-semibold">One-tap reorder your favorites</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- RIGHT: form column -->
+          <div class="p-6 sm:p-10">
+            <div class="max-w-sm mx-auto">
+              <h1 class="ok-h1 mb-1 inline-flex items-center gap-2">Welcome back <i class="fa-solid fa-hand"></i></h1>
+              <p class="text-slate mb-7">Sign in to your OK account to continue.</p>
+
+              <form onsubmit="return false" class="space-y-5">
+                <div>
+                  <label for="email" class="ok-label">Email address</label>
+                  <input id="email" type="email" autocomplete="email" placeholder="you@email.com" class="ok-input">
+                </div>
+
+                <div>
+                  <label for="password" class="ok-label">Password</label>
+                  <div class="relative">
+                    <input id="password" type="password" autocomplete="current-password" placeholder="Your password" class="ok-input pr-16">
+                    <button type="button" data-toggle-pw="password" class="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-okamber px-2 py-1 rounded-md hover:bg-softyellow">Show</button>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-3 text-sm">
+                  <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <input type="checkbox" class="w-4 h-4 accent-okyellow rounded"> <span class="text-slate">Remember me</span>
+                  </label>
+                  <a href="forgot-password.html" class="link-underline">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" onclick="location.href='account.html'">Sign In</button>
+              </form>
+
+              <div class="flex items-center gap-3 my-6">
+                <div class="divider flex-1"></div>
+                <span class="text-xs font-semibold uppercase tracking-wide text-slate">or continue with</span>
+                <div class="divider flex-1"></div>
+              </div>
+
+              <div class="space-y-3">
+                <button type="button" class="btn btn-secondary btn-block"><span class="font-display font-extrabold text-okbrandred">G</span> Continue with Google</button>
+                <button type="button" class="btn btn-secondary btn-block"><i class="fa-brands fa-apple"></i> Continue with Apple</button>
+              </div>
+
+              <p class="text-center text-sm text-slate mt-7">New to OK? <a href="register.html" class="link-underline">Create an account</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script>
+    // Lightweight show/hide password toggle for the template (no backend).
+    document.addEventListener("click", function (e) {
+      var t = e.target.closest("[data-toggle-pw]");
+      if (!t) return;
+      var input = document.getElementById(t.getAttribute("data-toggle-pw"));
+      if (!input) return;
+      var showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      t.textContent = showing ? "Show" : "Hide";
+    });
+  </script>
+</body>
+</html>

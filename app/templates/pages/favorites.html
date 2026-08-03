@@ -1,0 +1,131 @@
+{% extends "layouts/base.html" %}
+{% block main_class %}bg-softyellow/20{% endblock %}
+{% block title %}Your Favorites, OK Smashed Burger{% endblock %}
+{% block content %}
+    <!-- ============ PAGE HEADER STRIP ============ -->
+    <section class="bg-ink text-white">
+      <div class="ok-container ok-py-3 ok-paddin-2rem-md">
+        <nav class="text-w-50 ok-fs-xs mb-2" aria-label="Breadcrumb">
+          <a href="/" class="">Home</a> <span class="mx-1">/</span> <a href="/account" class="">Account</a> <span class="mx-1">/</span> <span class="text-w-80">Favorites</span>
+        </nav>
+        <h1 class="ok-h1">Your Favorites</h1>
+      </div>
+    </section>
+
+    <div class="ok-container ok-py-8 ok-paddin-25rem-md">
+      <div class="ok-grid ok-gc-260px1fr-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
+          <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
+            <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+            <div class="ok-min-w-0">
+              <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
+              <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.loyalty_points }} pts</div>
+            </div>
+          </div>
+          <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="/orders" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+            <a href="/favorites" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+          </nav>
+          <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
+            <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red text-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+          </div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <div class="ok-min-w-0 ok-stack-10">
+
+          <!-- Favorite items -->
+          <section>
+            <div class="d-flex align-items-end justify-content-between ok-mb-5">
+              <div>
+                <h2 class="ok-h2 ok-fs-xl">Favorite items</h2>
+              </div>
+              <a href="/menu" class="link-underline ok-fs-sm d-none d-sm-block">Browse menu <i class="fa-solid fa-arrow-right d-inline-block align-middle"></i></a>
+            </div>
+            {% if products %}
+            <div class="ok-grid ok-grid-2 ok-grid-lg-3 ok-gap-5">
+              {% for p in products %}
+              <article class="position-relative ok-card ok-card-hover overflow-hidden ok-hovergroup">
+                <a href="/item/{{ p.slug }}" class="d-block position-relative ok-aspect-square overflow-hidden">
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-100 h-100 ok-cover transition">
+                </a>
+                <form method="post" action="/favorites/toggle" class="position-absolute top-3 right-3 ok-z-10">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                  <input type="hidden" name="product_id" value="{{ p.id }}">
+                  <input type="hidden" name="next" value="/favorites">
+                  <button type="submit" class="ok-w-9 ok-h-9 rounded-pill bg-w-95 ok-shadow-md ok-grid ok-place-center ok-fs-lg text-brandred transition" aria-label="Remove {{ p.name }} from favorites"><i class="fa-solid fa-heart"></i></button>
+                </form>
+                <div class="ok-p-3">
+                  <a href="/item/{{ p.slug }}"><h3 class="font-display fw-bold">{{ p.name }}</h3></a>
+                  <p class="ok-fs-xs text-muted-warm mb-2">{{ p.description or (p.allergens|join(' · ')|title if p.allergens else '') }}</p>
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-bold">${{ '%.2f'|format(p.base_price) }}</span>
+                    <form method="post" action="/cart/add">
+                      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                      <input type="hidden" name="product_id" value="{{ p.id }}">
+                      <input type="hidden" name="qty" value="1">
+                      <input type="hidden" name="next" value="/favorites">
+                      <button class="ok-w-9 ok-h-9 rounded-pill btn-primary btn ok-grid ok-place-center !p-0 ok-fs-lg" aria-label="Add {{ p.name }} to cart">+</button>
+                    </form>
+                  </div>
+                </div>
+              </article>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="ok-card border-dashed ok-p-10 text-center bg-cream-30">
+              <div class="ok-fs-4xl mb-2"><i class="fa-regular fa-heart icon-xl"></i></div>
+              <h3 class="font-display fw-bold ok-fs-lg mb-1">No favorites yet</h3>
+              <p class="ok-fs-sm text-muted-warm max-w-md mx-auto ok-mb-3">Tap the <i class="fa-solid fa-heart d-inline-block align-middle text-brandred"></i> on any menu item to save it here for faster ordering next time.</p>
+              <a href="/menu" class="btn btn-primary btn-sm">Browse the menu</a>
+            </div>
+            {% endif %}
+          </section>
+
+          <!-- Recent orders (quick reorder) -->
+          <section>
+            <div class="d-flex align-items-end justify-content-between ok-mb-5">
+              <div>
+                <h2 class="ok-h2 ok-fs-xl">Order again</h2>
+              </div>
+              <a href="/orders" class="link-underline ok-fs-sm d-none d-sm-block">All orders <i class="fa-solid fa-arrow-right d-inline-block align-middle"></i></a>
+            </div>
+            {% if recent_orders %}
+            <div class="ok-grid ok-grid-md-2 ok-gap-5">
+              {% for o in recent_orders %}
+              <article class="ok-card ok-p-5 d-flex flex-column">
+                <div class="d-flex align-items-start justify-content-between ok-gap-3 ok-mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-burger ok-fs-xl"></i>
+                    <h3 class="font-display fw-bold ok-fs-lg">{{ o.number }}</h3>
+                  </div>
+                  <span class="badge badge-soft">{{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</span>
+                </div>
+                <ul class="ok-fs-sm text-muted-warm ok-stack-1 ok-mb-3">
+                  {% for it in o.items %}<li class="d-flex justify-content-between"><span>{{ it.qty }} × {{ it.name }}</span><span class="text-ink fw-semibold">${{ '%.2f'|format(it.line_total) }}</span></li>{% endfor %}
+                </ul>
+                <div class="divider ok-mb-3"></div>
+                <div class="d-flex align-items-center justify-content-between mt-auto">
+                  <div><span class="ok-fs-xs text-muted-warm">Total</span> <span class="font-display fw-bold ok-fs-lg ms-1">${{ '%.2f'|format(o.total) }}</span></div>
+                  <form method="post" action="/orders/{{ o.number }}/reorder">
+                    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                    <button class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Reorder</button>
+                  </form>
+                </div>
+              </article>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="ok-card ok-p-8 text-center text-muted-warm">No orders yet, <a href="/menu" class="link-underline">start one</a>.</div>
+            {% endif %}
+          </section>
+
+        </div>
+      </div>
+    </div>
+{% endblock %}

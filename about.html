@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — OK Smashed Burger</title>
+  <meta name="description" content="The OK Smashed Burger story — Philadelphia-born, fresh never frozen and smashed to order. Meet the team, our values, and franchise or careers opportunities.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO (jet) ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-20">
+        <img data-ph="Griddle Smash" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-24 grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <span class="badge badge-yellow mb-4"><i class="fa-solid fa-burger"></i> Our story</span>
+          <h1 class="ok-display mb-4">
+            Smashed<br>the <span class="text-okyellow">right way.</span>
+          </h1>
+          <p class="text-white/80 text-lg mb-6 max-w-md">We started with one griddle, one sauce recipe and one belief: a great smash burger should be fresh, fast and fair. That belief still fires up every OK kitchen across Philadelphia.</p>
+          <div class="flex flex-wrap gap-3">
+            <a href="menu.html" class="btn btn-primary btn-lg">See the Menu</a>
+            <a href="#our-story" class="btn btn-secondary btn-lg !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet">Read our story</a>
+          </div>
+        </div>
+        <div class="relative hidden md:block">
+          <div class="ok-card overflow-hidden -rotate-2 shadow-2xl">
+            <img data-ph="The first OK griddle" data-ph-type="hero" data-ph-ratio="4/3" class="ph-img" alt="">
+          </div>
+          <div class="ok-card absolute -bottom-5 -left-5 p-3 flex items-center gap-3 shadow-xl">
+            <div class="w-11 h-11 rounded-full bg-okyellow text-jet grid place-items-center text-xl font-bold">'21</div>
+            <div><div class="text-xs text-slate">Founded in</div><div class="font-bold text-sm">Philadelphia, PA</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ OUR STORY (2-col) ============ -->
+    <section id="our-story" class="ok-section">
+      <div class="ok-container grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div class="ok-card overflow-hidden order-2 md:order-1">
+          <img data-ph="Behind the counter" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
+        </div>
+        <div class="order-1 md:order-2">
+          <h2 class="ok-h2 mb-4">From a corner griddle to four neighborhood kitchens</h2>
+          <p class="text-slate mb-4">In 2021, two friends set up a single flat-top in a Fishtown pop-up with a simple idea — press a ball of fresh beef hard onto a screaming-hot griddle, let the edges lace and caramelize, and serve it before it ever had a chance to cool down. The line went around the block by week two.</p>
+          <p class="text-slate mb-6">Four neighborhood locations later, nothing about the craft has changed. We still hand-form every patty, still smash to order, and still make our OK sauce in-house. What's new is the tech that gets it to you faster: live tracking, easy reorders and rewards on every bite.</p>
+          <ul class="space-y-2 mb-6 text-sm">
+            <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Never-frozen beef, delivered daily</li>
+            <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> Griddle-smashed to order, every time</li>
+            <li class="flex gap-2"><span class="text-okgreen"><i class="fa-solid fa-circle-check"></i></span> OK sauce made fresh in every kitchen</li>
+          </ul>
+          <a href="menu.html" class="btn btn-primary">Taste the difference</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STATS BAND ============ -->
+    <section class="bg-okyellow">
+      <div class="ok-container py-12 md:py-16">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-jet">
+          <div>
+            <div class="font-display font-extrabold text-4xl md:text-5xl">4</div>
+            <div class="font-semibold mt-1">Philly locations</div>
+          </div>
+          <div>
+            <div class="font-display font-extrabold text-4xl md:text-5xl">1M+</div>
+            <div class="font-semibold mt-1">Burgers served</div>
+          </div>
+          <div>
+            <div class="font-display font-extrabold text-4xl md:text-5xl">4.9<i class="fa-solid fa-star fill-current"></i></div>
+            <div class="font-semibold mt-1">Average rating</div>
+          </div>
+          <div>
+            <div class="font-display font-extrabold text-4xl md:text-5xl">2021</div>
+            <div class="font-semibold mt-1">Established</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT WE STAND FOR ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="text-center mb-10">
+          <h2 class="ok-h2">What we stand for</h2>
+          <p class="text-slate mt-2 max-w-xl mx-auto">Four things we refuse to compromise on — in every kitchen, on every order.</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <article class="ok-card ok-card-hover p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow grid place-items-center text-2xl mx-auto mb-4"><i class="fa-solid fa-leaf icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">Fresh, never frozen</h3>
+            <p class="text-sm text-slate">Beef delivered daily and hand-formed in-store. Never a freezer in sight.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow grid place-items-center text-2xl mx-auto mb-4"><i class="fa-solid fa-fire icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">Smashed to order</h3>
+            <p class="text-sm text-slate">Pressed hard on a hot griddle the moment you order — for crispy, laced edges.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow grid place-items-center text-2xl mx-auto mb-4"><i class="fa-solid fa-location-dot icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">Local & Philly-proud</h3>
+            <p class="text-sm text-slate">Born in Fishtown, sourced from local partners, and part of the neighborhood.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-6 text-center">
+            <div class="w-14 h-14 rounded-full bg-softyellow grid place-items-center text-2xl mx-auto mb-4"><i class="fa-solid fa-bolt icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">Fast & fair</h3>
+            <p class="text-sm text-slate">Honest prices, deal-forward menus and a burger in your hands in ~25 minutes.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MEET THE TEAM ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container">
+        <div class="text-center mb-10">
+          <h2 class="ok-h2">Meet the team</h2>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <article class="ok-card ok-card-hover p-5 text-center">
+            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+              <img data-ph="Marcus Rivera" data-ph-type="avatar" data-ph-ratio="1/1" class="ph-img" alt="">
+            </div>
+            <h3 class="font-display font-bold">Marcus Rivera</h3>
+            <p class="text-sm text-okamber font-semibold">Co-Founder & CEO</p>
+            <p class="text-xs text-slate mt-2">Lit the first griddle in Fishtown and still tastes every new recipe.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-5 text-center">
+            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+              <img data-ph="Dana Okoye" data-ph-type="avatar" data-ph-ratio="1/1" class="ph-img" alt="">
+            </div>
+            <h3 class="font-display font-bold">Dana Okoye</h3>
+            <p class="text-sm text-okamber font-semibold">Co-Founder & Head Chef</p>
+            <p class="text-xs text-slate mt-2">Guardian of the OK sauce recipe and the perfect smash technique.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-5 text-center">
+            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+              <img data-ph="Priya Shah" data-ph-type="avatar" data-ph-ratio="1/1" class="ph-img" alt="">
+            </div>
+            <h3 class="font-display font-bold">Priya Shah</h3>
+            <p class="text-sm text-okamber font-semibold">Head of Operations</p>
+            <p class="text-xs text-slate mt-2">Keeps four kitchens running fast, fair and consistent, all day.</p>
+          </article>
+          <article class="ok-card ok-card-hover p-5 text-center">
+            <div class="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+              <img data-ph="Jordan Bell" data-ph-type="avatar" data-ph-ratio="1/1" class="ph-img" alt="">
+            </div>
+            <h3 class="font-display font-bold">Jordan Bell</h3>
+            <p class="text-sm text-okamber font-semibold">Head of Experience</p>
+            <p class="text-xs text-slate mt-2">Builds the tracking, rewards and app experience you order through.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FRANCHISE + CAREERS CTA BANDS ============ -->
+    <section class="ok-section">
+      <div class="ok-container grid md:grid-cols-2 gap-6">
+        <!-- Franchise -->
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-10">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl mb-3">Franchise with us</h2>
+            <p class="text-white/70 mb-6 max-w-sm">Bring the OK smash to your city. We'll back you with recipes, tech, training and a brand Philly already loves.</p>
+            <a href="contact.html" class="btn btn-primary">Request franchise info</a>
+          </div>
+        </div>
+        <!-- Careers -->
+        <div class="ok-card overflow-hidden relative border-2 border-okyellow">
+          <div class="p-8 md:p-10">
+            <h2 class="font-display font-extrabold text-2xl md:text-3xl mb-3">Join the team</h2>
+            <p class="text-slate mb-6 max-w-sm">Grill cooks, shift leads, drivers and HQ roles. If you love burgers and moving fast, we want to meet you.</p>
+            <a href="contact.html" class="btn btn-dark">See open roles</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLOSING CTA ============ -->
+    <section class="ok-section bg-softyellow/40 d-none">
+      <div class="ok-container text-center">
+        <h2 class="ok-h2 mb-3">Hungry yet?</h2>
+        <p class="text-slate mb-6 max-w-lg mx-auto">Fresh-smashed, deal-forward and tracked to your door. Build your order and taste why Philly keeps coming back.</p>
+        <a href="menu.html" class="btn btn-primary btn-lg">Start Your Order</a>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ brand_name }}, Real Smashed Burgers, Fast · Philadelphia{% endblock %}
+
+{% block content %}
+{# Sections, order and visibility are managed from the admin Page Builder. #}
+{% for sec in home_sections %}
+  {% set cfg = sec.config or {} %}
+  <div class="pb-sec" data-section="{{ sec.key }}" data-sid="{{ sec.id }}" data-label="{{ sec.label }}" data-enabled="{{ 1 if sec.enabled else 0 }}"{% if pb_edit and not sec.enabled %} data-hidden="1"{% endif %}{% set _s = pb_section_style(cfg) %}{% if _s %} style="{{ _s }}"{% endif %}>
+  {% if sec.key.startswith('custom_') %}
+    {% include 'website/sections/custom.html' %}
+  {% else %}
+    {% include 'website/sections/' ~ sec.key ~ '.html' ignore missing %}
+  {% endif %}
+  </div>
+{% endfor %}
+{% include "partials/mobile_order_cta.html" %}
+{% endblock %}
+
+{% block scripts %}
+{% if needs_location %}
+<script>window.addEventListener("load", function () { if (window.OK && OK.openLocation) OK.openLocation(); });</script>
+{% endif %}
+{# Hero carousel is initialised in app.js (works on this page and builder pages,
+   and is robust against tab-backgrounding). #}
+{% endblock %}

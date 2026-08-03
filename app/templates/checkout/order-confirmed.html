@@ -1,0 +1,69 @@
+{% extends "layouts/base.html" %}
+{% block title %}Order Confirmed, {{ brand_name }}{% endblock %}
+{% block main_class %}bg-softyellow/20{% endblock %}
+
+{% block content %}
+<section class="ok-section">
+  <div class="ok-container max-w-2xl">
+    <div class="text-center ok-mb-8">
+      <div class="ok-w-20 ok-h-20 mx-auto ok-mb-5 rounded-pill bg-ok-green text-white ok-grid ok-place-center ok-fs-4xl"><i class="fa-solid fa-circle-check icon-xl"></i></div>
+      <h1 class="ok-display mb-2">Order confirmed!</h1>
+      <p class="text-muted-warm">Thanks{% if order.customer_name %} {{ order.customer_name.split(' ')[0] }}{% endif %}, we've received your order.</p>
+    </div>
+
+    <!-- facts -->
+    <div class="ok-card ok-p-5 ok-grid ok-grid-2 ok-grid-sm-4 ok-gap-3 text-center ok-mb-3">
+      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Order</div><div class="font-display fw-bold">{{ order.number }}</div></div>
+      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">{% if order.scheduled_for %}Scheduled{% else %}ETA{% endif %}</div><div class="font-display fw-bold">{% if order.scheduled_for %}{{ order.scheduled_for.strftime('%b %d, %I:%M %p') }}{% else %}~{{ order.store.avg_prep_minutes }} min{% endif %}</div></div>
+      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Store</div><div class="font-display fw-bold">{{ order.store.name }}</div></div>
+      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Type</div><div class="font-display fw-bold text-capitalize">{{ order.order_type }}</div></div>
+    </div>
+
+    <!-- payment status -->
+    <div class="ok-mb-3 d-flex align-items-center gap-2 justify-content-center ok-fs-sm">
+      {% if order.payment_status == 'paid' %}
+      <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> Paid</span>
+      <span class="text-muted-warm">Charged on {{ order.store.name }}'s Stripe account{% if order.payment and order.payment.raw and order.payment.raw.demo %} (demo){% endif %}.</span>
+      {% else %}
+      <span class="badge badge-soft">Pay at store</span>
+      <span class="text-muted-warm">Payment on {{ order.order_type }}.</span>
+      {% endif %}
+    </div>
+
+    <!-- items + totals -->
+    <div class="ok-card ok-p-5 ok-mb-3">
+      <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Order summary</h2>
+      <div class="ok-stack-3">
+        {% for it in order.items %}
+        <div class="d-flex justify-content-between ok-fs-sm"><span><b>{{ it.qty }}×</b> {{ it.name }}{% if it.options.variant %} <span class="text-muted-warm">({{ it.options.variant }})</span>{% endif %}</span><span class="fw-semibold">${{ '%.2f'|format(it.line_total) }}</span></div>
+        {% endfor %}
+      </div>
+      <div class="divider ok-my-3"></div>
+      <div class="ok-stack-15 ok-fs-sm">
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span>${{ '%.2f'|format(order.subtotal) }}</span></div>
+        {% if order.discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}</span><span>−${{ '%.2f'|format(order.discount) }}</span></div>{% endif %}
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax</span><span>${{ '%.2f'|format(order.tax) }}</span></div>
+        {% if order.delivery_fee %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery</span><span>${{ '%.2f'|format(order.delivery_fee) }}</span></div>{% endif %}
+        {% if order.tip %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Tip</span><span>${{ '%.2f'|format(order.tip) }}</span></div>{% endif %}
+        {% if order.gift_card_applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span>−${{ '%.2f'|format(order.gift_card_applied) }}</span></div>{% endif %}
+        <div class="d-flex justify-content-between font-display fw-bold ok-fs-base pt-1"><span>Total</span><span>${{ '%.2f'|format(order.total) }}</span></div>
+      </div>
+    </div>
+
+    {% if order.user %}
+    <div class="ok-card ok-p-3 ok-mb-3 bg-cream-50 border-yellow-40 d-flex align-items-center ok-gap-3">
+      <i class="fa-solid fa-gift text-gold ok-fs-xl"></i>
+      <p class="ok-fs-sm">You earned <b>{{ (order.total | float | round(0, 'floor') | int) }} OK Rewards points</b> on this order.</p>
+    </div>
+    {% endif %}
+
+    <div class="d-flex flex-column flex-sm-row ok-gap-3">
+      <a href="/tracking/{{ order.number }}" class="btn btn-primary btn-lg flex-grow-1"><i class="fa-solid fa-location-arrow"></i> Track your order</a>
+      <a href="/orders" class="btn btn-secondary btn-lg flex-grow-1">View my orders</a>
+    </div>
+    <div class="text-center ok-mt-3">
+      <a href="/orders/{{ order.number }}/receipt.pdf" target="_blank" rel="noopener" class="link-underline ok-fs-sm"><i class="fa-solid fa-file-pdf"></i> Download PDF receipt</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "layouts/base.html" %}
+{% block main_class %}pb-24 lg:pb-0{% endblock %}
+{% block title %}Menu{% if store %} · {{ store.name }}{% endif %}, {{ brand_name }}{% endblock %}
+
+{% block content %}
+<!-- Store + order-type bar (one cohesive card) -->
+<section class="ok-container ok-pt-3 ok-paddin-2rem-md">
+  {% if store %}
+  <div class="ok-card ok-p-5 ok-paddin-15rem-md d-flex flex-column flex-lg-row align-items-lg-center ok-gap-5 justify-content-between">
+    <!-- which store you're ordering from -->
+    <div class="d-flex align-items-center ok-gap-3 ok-min-w-0">
+      <span class="ok-w-325rem ok-h-325rem ok-rounded-2xl ok-grid ok-place-center text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-location-dot ok-fs-lg"></i></span>
+      <div class="ok-min-w-0">
+        <div class="d-flex align-items-center gap-2 flex-wrap ok-mb-05">
+          <span class="ok-fs-62rem text-muted-warm text-uppercase fw-bold ok-ls-12em">Ordering from</span>
+          {% if store.open_now %}<span class="badge badge-green">Open now</span>
+          {% elif store.scheduling_open %}<span class="badge badge-yellow">Schedule ahead</span>
+          {% else %}<span class="badge badge-red">Closed</span>{% endif %}
+        </div>
+        <div class="font-display fw-bold ok-fs-lg text-ink ok-lh-tight" data-store-name>{{ store.name }}</div>
+        <div class="ok-fs-sm text-muted-warm text-truncate">{{ store.full_address }} <button data-open="location" class="link-underline text-nowrap ms-1">Change</button></div>
+      </div>
+    </div>
+
+    <!-- delivery / pickup segmented toggle -->
+    <div class="d-flex align-items-center gap-1 bg-cream-60 rounded-pill p-1 ok-aligns-auto-lg" data-ordertype-group>
+      {% for val, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
+      <button type="button" data-ordertype="{{ val }}" class="ok-px-35 ok-paddin-1rem-md py-2 rounded-pill ok-fs-sm fw-semibold d-inline-flex align-items-center gap-2 transition {% if order_type == val %}bg-ink text-white ok-shadow-md{% else %}text-ink{% endif %}"><i class="fa-solid fa-{{ icon }}"></i> <span>{{ label }}</span></button>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="ok-card ok-p-5 ok-mt-5 d-flex flex-wrap align-items-center justify-content-between ok-gap-3">
+    <span class="fw-semibold text-ink"><i class="fa-solid fa-location-dot text-gold"></i> No store selected</span>
+    <button data-open="location" class="btn btn-primary btn-sm">Choose a store</button>
+  </div>
+  {% endif %}
+</section>
+
+{% if not menu %}
+<div class="ok-container ok-py-16 text-center">
+  <p class="text-muted-warm ok-fs-lg ok-mb-3">No menu is available for this location yet.</p>
+  <button data-open="location" class="btn btn-primary">Choose a store</button>
+</div>
+{% else %}
+<!-- Sticky category nav + inline collapsible search -->
+<div class="position-sticky ok-menu-stick ok-z-30 bg-w-95 backdrop-blur border-bottom ok-bc-varokline ok-mt-3">
+  <div class="ok-container">
+    <div class="menu-catbar position-relative d-flex align-items-center gap-2 ok-py-3" id="menuCatbar">
+      <div class="d-flex gap-2 overflow-x-auto hide-scrollbar ok-min-w-0 flex-grow-1" data-chip-group>
+        {% for grp in menu %}
+        <a href="#{{ grp.category.slug }}" class="chip chip-cat flex-shrink-0{% if loop.first %} is-active{% endif %}">{% if grp.category.image_url %}<img src="{{ grp.category.image_url }}" alt="" class="chip-thumb" loading="lazy" decoding="async">{% else %}<i class="fa-solid fa-{{ grp.category.icon }}"></i>{% endif %} {{ grp.category.name }}</a>
+        {% endfor %}
+      </div>
+      <button type="button" data-msearch-open class="chip flex-shrink-0 !px-3" aria-label="Search the menu" title="Search the menu"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <div class="menu-search-panel position-absolute inset-y-0 start-0 end-0 d-flex align-items-center py-2">
+        <div class="d-flex align-items-center gap-2 w-100 bg-white rounded-pill border-2 border-ink ok-shadow-md ps-3 ok-pr-15 ok-h-11">
+          <span class="text-muted-warm"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input data-msearch-input type="search" placeholder="Search burgers, sides, shakes…" class="bg-transparent ok-fs-sm w-100 ok-nofocus">
+          <button type="button" data-msearch-close class="ok-w-8 ok-h-8 ok-grid ok-place-center rounded-pill text-muted-warm flex-shrink-0" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Menu grid -->
+<div class="ok-container ok-py-10 ok-paddin-35rem-md ok-stack-14 ok-stack-20-md">
+  <div id="menuNoResults" class="ok-card ok-p-8 text-center d-none">
+    <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-xl mx-auto ok-mb-3"><i class="fa-solid fa-magnifying-glass"></i></div>
+    <h3 class="font-display fw-bold ok-fs-lg ok-mb-15">Nothing matches <span data-msearch-echo class="text-gold"></span></h3>
+    <p class="text-muted-warm ok-fs-sm ok-mb-5">Try a different word, or browse the full menu.</p>
+    <button type="button" data-msearch-clear class="btn btn-primary btn-sm">Show the whole menu</button>
+  </div>
+  {% for grp in menu %}
+  <section id="{{ grp.category.slug }}" data-menu-section class="scroll-mt-40">
+    <div class="ok-mb-7 d-flex align-items-end justify-content-between ok-gap-3 ok-pb-3 border-bottom ok-bc-varokhairline">
+      <div>
+<h2 class="font-display ok-fw-900 ok-fs-2xl ok-fs-md-3xl text-uppercase ok-ls-02em ok-lh-none">{{ grp.category.name }}</h2>
+      </div>
+      {% if grp.category.icon %}<i class="fa-solid fa-{{ grp.category.icon }} ok-fs-2xl text-yellow-70 mb-1"></i>{% endif %}
+    </div>
+    <div class="ok-grid ok-grid-md-2 ok-gap-3 ok-gap-125rem-md">
+      {% for it in grp['items'] %}
+      {# data-search powers the live filter; keep it lowercase so the JS can do a
+         plain substring test instead of normalising on every keystroke #}
+      <article data-menu-item
+               data-search="{{ (it.product.name ~ ' ' ~ (it.product.description or '') ~ ' ' ~ grp.category.name ~ ' ' ~ (it.product.tags | join(' ') if it.product.tags else ''))|lower }}"
+               class="position-relative ok-card ok-card-hover overflow-hidden d-flex align-items-stretch{% if not it.available %} ok-opacity-60{% endif %}">
+        <!-- LEFT: text (tap to customize) -->
+        <button type="button" data-item="{{ it.product.slug }}" class="flex-grow-1 ok-min-w-0 text-start ok-p-3 ok-paddin-125rem-md d-flex flex-column">
+          <h3 class="font-display fw-bold ok-fs-sm text-uppercase tracking-tight ok-lh-snug">{{ it.product.name }}</h3>
+          {% if it.product.description %}
+          <p class="ok-fs-xs text-muted-warm ok-mt-15 ok-lh-snug d-flex align-items-baseline" data-rm>
+            <span class="text-truncate ok-min-w-0" data-rm-text>{{ it.product.description }}</span><span class="fw-semibold text-muted-warm text-decoration-underline flex-shrink-0 ms-1 ok-pointer text-nowrap" data-rm-toggle data-more="Read more" data-less="Read less">Read more</span>
+          </p>
+          {% endif %}
+          <div class="d-flex flex-wrap align-items-center gap-2 mt-auto ok-pt-3">
+            <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none">${{ '%.2f'|format(it.price) }}</span>
+            {% if it.product.is_vegan %}<span class="badge badge-green !ok-fs-68rem">Vegan</span>{% endif %}
+          </div>
+        </button>
+        <!-- RIGHT: image + vertical divider -->
+        <div class="ok-media position-relative ok-w-28 ok-width-10rem-sm flex-shrink-0 align-self-stretch border-start ok-bc-varokhairline bg-white !rounded-none">
+          <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          {% if not it.available %}<span class="badge badge-red position-absolute top-2 left-2">Sold out</span>
+          {% elif it.featured %}<span class="badge badge-new position-absolute top-2 left-2"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
+          <form method="post" action="/favorites/toggle" class="position-absolute top-2 right-2 ok-z-10">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <input type="hidden" name="product_id" value="{{ it.product.id }}">
+            <input type="hidden" name="next" value="/menu">
+            <button type="submit" class="ok-w-8 ok-h-8 rounded-pill bg-w-95 ok-shadow-md ok-grid ok-place-center ok-fs-sm {% if it.product.id in favorite_ids %}text-brandred{% else %}text-muted-warm{% endif %}" aria-label="Toggle favorite for {{ it.product.name }}">
+              <i class="{% if it.product.id in favorite_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+            </button>
+          </form>
+        </div>
+        <!-- add / customize -->
+        <button type="button" data-item="{{ it.product.slug }}" aria-label="Add {{ it.product.name }}" class="position-absolute bottom-2 right-2 ok-z-20 ok-w-9 ok-h-9 rounded-pill bg-white border ok-bc-varokline ok-shadow-md ok-grid ok-place-center text-ink"><i class="fa-solid fa-plus ok-fs-sm"></i></button>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if store and not store.open_now and store.scheduling_open and not schedule_at %}
+<!-- Schedule-first modal: store is closed for ASAP, pick a time before ordering -->
+<div class="drawer-backdrop" data-sched-close id="schedBackdrop"></div>
+<div id="schedModal" class="position-fixed ok-fill ok-z-82 ok-grid ok-place-center ok-p-3 ok-modal">
+  <div class="ok-card w-100 max-w-md ok-p-3 pointer-events-auto position-relative">
+    <button type="button" data-sched-close class="position-absolute top-3.5 right-3.5 ok-w-9 ok-h-9 rounded-pill ok-grid ok-place-center" aria-label="Close"><i class="fa-solid fa-xmark icon-lg"></i></button>
+    <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center text-gold ok-fs-xl ok-mb-3"><i class="fa-solid fa-clock"></i></div>
+    <h3 class="ok-h2 ok-fs-xl mb-1">Schedule your order</h3>
+    <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ store.name }} is closed for immediate orders. Pick a time to have your order ready{% if store.today_hours %} · today's hours {{ store.today_hours }}{% endif %}.</p>
+    <label class="ok-label" for="schedInput">Date &amp; time</label>
+    <input type="datetime-local" id="schedInput" class="ok-input ok-mb-3">
+    <button type="button" id="schedConfirm" class="btn btn-primary btn-block"><i class="fa-solid fa-calendar-check"></i> Continue</button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Scrollspy: highlight the category pill for whichever section is in view.
+(function () {
+  var bar = document.getElementById("menuCatbar");
+  if (!bar) return;
+  var scroller = bar.querySelector("[data-chip-group]");
+  var chips = Array.prototype.slice.call(bar.querySelectorAll('a[href^="#"]'));
+  var map = chips.map(function (c) {
+    return { chip: c, sec: document.getElementById(decodeURIComponent(c.getAttribute("href").slice(1))) };
+  }).filter(function (m) { return m.sec; });
+  if (!map.length) return;
+
+  function centerChip(chip) {
+    if (!scroller) return;
+    var left = chip.offsetLeft - scroller.clientWidth / 2 + chip.offsetWidth / 2;
+    scroller.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }
+
+  var active = null;
+  function spy() {
+    var refLine = bar.getBoundingClientRect().bottom + 12; // just under the sticky bar
+    var current = map[0];
+    map.forEach(function (m) { if (m.sec.getBoundingClientRect().top <= refLine) current = m; });
+    if (current.chip === active) return;
+    active = current.chip;
+    map.forEach(function (m) { m.chip.classList.toggle("is-active", m === current); });
+    centerChip(current.chip);
+  }
+
+  var ticking = false;
+  window.addEventListener("scroll", function () {
+    if (!ticking) { requestAnimationFrame(function () { spy(); ticking = false; }); ticking = true; }
+  }, { passive: true });
+  window.addEventListener("resize", spy);
+  spy();
+})();
+</script>
+
+{% if store and not store.open_now and store.scheduling_open and not schedule_at %}
+<script>
+// Schedule-first: store is closed for ASAP and no time picked yet. Clicking any
+// item opens the schedule modal first, then the item modal.
+(function () {
+  var modal = document.getElementById("schedModal");
+  if (!modal) return;
+  var backdrop = document.getElementById("schedBackdrop");
+  var input = document.getElementById("schedInput");
+  var confirmBtn = document.getElementById("schedConfirm");
+  var scheduled = false, pendingSlug = null;
+
+  function two(n) { return String(n).padStart(2, "0"); }
+  function fmt(d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + "T" + two(d.getHours()) + ":" + two(d.getMinutes()); }
+  var soon = new Date();
+  soon.setMinutes(soon.getMinutes() + (15 - (soon.getMinutes() % 15 || 15)) + 15);
+  if (input) { input.min = fmt(new Date()); input.value = fmt(soon); }
+
+  function open(o) {
+    modal.style.visibility = o ? "visible" : "hidden";
+    modal.style.opacity = o ? "1" : "0";
+    modal.style.pointerEvents = o ? "auto" : "none";
+    if (backdrop) backdrop.classList.toggle("is-open", o);
+    if (o && input) setTimeout(function () { input.focus(); }, 60);
+  }
+
+  // Capture phase → runs before app.js's item handler, so we can open the
+  // schedule modal instead of the item modal until a time is chosen.
+  document.addEventListener("click", function (e) {
+    if (scheduled) return;
+    var it = e.target.closest("[data-item]");
+    if (!it) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    pendingSlug = it.getAttribute("data-item");
+    open(true);
+  }, true);
+
+  document.querySelectorAll("[data-sched-close]").forEach(function (b) { b.addEventListener("click", function () { open(false); }); });
+
+  confirmBtn.addEventListener("click", function () {
+    var val = input && input.value;
+    if (!val) { if (input) input.focus(); return; }
+    confirmBtn.disabled = true;
+    fetch("/api/schedule?schedule_at=" + encodeURIComponent(val), { credentials: "same-origin" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) {
+          scheduled = true;
+          open(false);
+          if (window.OK && OK.toast) OK.toast("Scheduled, now build your order");
+          if (window.OK && OK.openItemModal && pendingSlug) OK.openItemModal(pendingSlug);
+        }
+      })
+      .catch(function () {})
+      .finally(function () { confirmBtn.disabled = false; });
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

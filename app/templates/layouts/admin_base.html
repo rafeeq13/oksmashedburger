@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Management · {{ brand_name }}{% endblock %}</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22', panel:'#16181d', paneledge:'#23262e' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>try{ if(localStorage.getItem('adm-collapsed')==='1') document.documentElement.classList.add('admin-collapsed'); }catch(e){}</script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="admin-ui font-body bg-[#f4f5f7] text-jet antialiased">
+  {% set rn = current_user.role.name if (current_user and current_user.role) else '' %}
+  {% set is_admin = rn in ['super_admin', 'franchise_owner', 'store_manager'] %}
+
+  <input type="checkbox" id="okNavToggle" class="peer sr-only">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="adm-sidebar fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-[#16181f] to-[#101216] text-white flex flex-col border-r border-white/[0.06] -translate-x-full peer-checked:translate-x-0 lg:translate-x-0">
+    <div class="sb-header flex items-center gap-3 h-16 px-4 border-b border-white/[0.07] shrink-0">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ brand_name }}" class="h-10 w-10 object-contain shrink-0">
+      <div class="leading-tight min-w-0 sb-text">
+        <div class="font-display font-extrabold text-[.95rem] truncate">{{ brand_name }}</div>
+        <div class="text-[.55rem] text-okyellow font-bold uppercase tracking-[.2em] mt-0.5">Management</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 min-h-0 overflow-y-auto py-5 px-3 space-y-7 admin-scroll">
+      {% macro navlink(href, label, icon) %}
+      {% set on = request.path == href or (href != '/admin' and request.path.startswith(href + '/')) %}
+      {# active = yellow pill, so the label and icon go black; white on yellow
+         is unreadable and was failing contrast badly #}
+      <a href="{{ href }}{{ qs }}" title="{{ label }}" class="sb-navlink relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[.9rem] font-medium transition-colors duration-150 {% if on %}bg-okyellow text-jet font-semibold shadow-sm{% else %}text-white hover:bg-white/10{% endif %}">
+        <i class="fa-solid fa-{{ icon }} w-5 text-center text-[.95rem] shrink-0 {% if on %}text-jet{% else %}text-white{% endif %}"></i>
+        <span class="sb-text truncate">{{ label }}</span>
+      </a>
+      {% endmacro %}
+
+      {% macro grouphead(label) %}
+      <button type="button" data-group-toggle class="sb-section w-full flex items-center justify-between px-4 mb-2 text-[.62rem] font-bold uppercase tracking-[.2em] text-white cursor-pointer select-none">
+        <span>{{ label }}</span>
+        <i class="fa-solid fa-chevron-up sb-chevron text-white text-[.7rem]"></i>
+      </button>
+      {% endmacro %}
+
+      {% if is_admin %}
+      <div class="sb-group" data-group="management">
+        {{ grouphead('Management') }}
+        <div class="sb-group-body"><div class="space-y-0.5">
+          {{ navlink('/admin', 'Dashboard', 'gauge-high') }}
+          {{ navlink('/admin/orders', 'Orders', 'receipt') }}
+          {{ navlink('/admin/customers', 'Customers', 'users') }}
+          {{ navlink('/admin/menu', 'Menu', 'burger') }}
+          {{ navlink('/admin/coupons', 'Coupons', 'tag') }}
+          {{ navlink('/admin/gift-cards', 'Gift Cards', 'gift') }}
+          {{ navlink('/admin/drivers', 'Drivers', 'car-side') }}
+          {{ navlink('/admin/staff', 'Staff', 'user-gear') }}
+          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/locations', 'Locations', 'store') }}{% endif %}
+        </div></div>
+      </div>
+      <div class="sb-group" data-group="setup">
+        {{ grouphead('Setup') }}
+        <div class="sb-group-body"><div class="space-y-0.5">
+          {{ navlink('/admin/settings', 'Settings', 'gear') }}
+          {{ navlink('/admin/canvas', 'Visual Editor', 'wand-magic-sparkles') }}
+          {{ navlink('/admin/builder', 'Web Pages', 'pen-ruler') }}
+          {{ navlink('/admin/page-builder', 'Page Builder', 'table-cells-large') }}
+          {{ navlink('/admin/page-content', 'Page Content', 'file-lines') }}
+          {{ navlink('/admin/content', 'Website Content', 'list-ul') }}
+          {{ navlink('/admin/site-images', 'Site Images', 'image') }}
+          {{ navlink('/admin/hours', 'Hours', 'clock') }}
+          {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
+          {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
+          {{ navlink('/admin/messages', 'Messages', 'envelope') }}
+          {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
+        </div></div>
+      </div>
+      {% endif %}
+
+      {% if rn == 'driver' %}
+      <div class="sb-group" data-group="operations">
+        {{ grouphead('Operations') }}
+        <div class="sb-group-body"><div class="space-y-0.5">
+          {% if rn == 'driver' %}{{ navlink('/driver', 'Driver', 'car') }}{% endif %}
+        </div></div>
+      </div>
+      {% endif %}
+    </nav>
+
+    <div class="border-t border-white/[0.07] p-3 shrink-0">
+      {% if current_user %}
+      <div class="sb-footer flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-white/[0.04]">
+        <span class="w-9 h-9 rounded-full bg-okyellow text-jet grid place-items-center font-bold shrink-0">{{ (current_user.first_name or current_user.email)[0]|upper }}</span>
+        <div class="min-w-0 flex-1 sb-text">
+          <div class="text-sm font-semibold truncate">{{ current_user.full_name }}</div>
+          <div class="text-[.6rem] text-white/40 uppercase tracking-[.12em]">{{ rn|replace('_',' ') or 'staff' }}</div>
+        </div>
+        <a href="/logout" class="sb-logout text-white/45 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></a>
+      </div>
+      {% else %}
+      <a href="/login" class="btn btn-primary btn-block btn-sm">Sign in</a>
+      {% endif %}
+    </div>
+  </aside>
+  <script>
+    // Restore each section's collapsed state before first paint (no flicker).
+    (function () {
+      try {
+        document.querySelectorAll('[data-group]').forEach(function (g) {
+          if (localStorage.getItem('adm-group-' + g.dataset.group) === '1') g.classList.add('collapsed');
+        });
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Mobile backdrop -->
+  <label for="okNavToggle" class="fixed inset-0 z-40 bg-black/40 hidden peer-checked:block lg:hidden" aria-hidden="true"></label>
+
+  <!-- ===== Content column ===== -->
+  <div class="adm-content lg:pl-64 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-[var(--ok-line)]">
+      <div class="flex items-center gap-3 px-4 lg:px-6 h-14">
+        <label for="okNavToggle" class="lg:hidden w-9 h-9 grid place-items-center rounded-lg  cursor-pointer shrink-0"><i class="fa-solid fa-bars"></i></label>
+        <button id="admCollapseBtn" type="button" class="hidden lg:grid place-items-center w-9 h-9 rounded-lg text-slate hover:bg-black/5 cursor-pointer shrink-0" title="Collapse / expand sidebar" aria-label="Toggle sidebar"><i class="fa-solid fa-angles-left adm-collapse-icon"></i></button>
+        <div class="min-w-0 font-display font-bold truncate">{% block page_title %}Management{% endblock %}</div>
+        <div class="ml-auto flex items-center gap-2 md:gap-3">
+          {% block topbar_actions %}{% endblock %}
+          <a href="/" target="_blank" rel="noopener" class="hidden sm:inline-flex items-center gap-1.5 text-sm text-slate  transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> View site</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 {% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
+  </div>
+
+  {% include "partials/flash.html" %}
+
+  <!-- Sidebar collapse / expand (desktop) -->
+  <script>
+    (function () {
+      var btn = document.getElementById('admCollapseBtn');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var collapsed = document.documentElement.classList.toggle('admin-collapsed');
+        try { localStorage.setItem('adm-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+      });
+    })();
+
+    // Expand / collapse a sidebar section group (smooth) + remember it.
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-group-toggle]');
+      if (!t) return;
+      var g = t.closest('[data-group]');
+      if (!g) return;
+      var collapsed = g.classList.toggle('collapsed');
+      try { localStorage.setItem('adm-group-' + g.dataset.group, collapsed ? '1' : '0'); } catch (e2) {}
+    });
+  </script>
+
+  <!-- DataTables: sortable, searchable, paginated admin tables -->
+  <script src="{{ url_for('static', filename='vendor/jquery-3.7.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.js') }}"></script>
+  <script>
+    (function () {
+      if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return;
+      jQuery(function ($) {
+        document.querySelectorAll('table[data-table]').forEach(function (t) {
+          var tbody = t.tBodies[0];
+          if (!tbody) return;
+          // Skip an "empty state" table (single colspan cell) so its message stays intact.
+          var real = Array.prototype.filter.call(tbody.rows, function (r) {
+            return !(r.cells.length === 1 && r.cells[0].hasAttribute('colspan'));
+          });
+          if (!real.length) return;
+          // Disable sorting on action columns (those with an empty header cell).
+          var noSort = [];
+          t.querySelectorAll('thead th').forEach(function (th, i) { if (!th.textContent.trim()) noSort.push(i); });
+          try {
+            $(t).DataTable({
+              pageLength: parseInt(t.dataset.pageSize, 10) || 10,
+              lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+              order: [],
+              columnDefs: [{ orderable: false, targets: noSort }],
+              // Wrap controls in flex rows (.dt-top/.dt-bottom) and give the table
+              // its own horizontal scroll (.dt-scroll) so controls stay responsive.
+              dom: "<'dt-top'lf>r<'dt-scroll't><'dt-bottom'ip>",
+              language: { search: '', searchPlaceholder: 'Filter…', lengthMenu: 'Show _MENU_', info: 'Showing _START_ to _END_ of _TOTAL_', infoEmpty: 'No records', infoFiltered: '(of _MAX_)', zeroRecords: 'No matches', paginate: { previous: '‹', next: '›' } }
+            });
+          } catch (e) { /* leave the plain table if init fails */ }
+        });
+      });
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block title %}Opening hours, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Opening hours, {{ admin_store.name if admin_store else '' }}</h2>
+<p class="text-slate text-sm mb-5">When this location takes orders. Pickup, delivery and scheduled (order-ahead) times are only accepted within these hours.</p>
+
+<form method="post" action="/admin/hours{{ qs }}" class="ok-card p-5 max-w-2xl">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div>
+    {% for r in rows %}
+    <div class="flex flex-wrap items-center gap-3 py-2.5 border-b border-[var(--ok-line)] last:border-0">
+      <div class="font-semibold w-24 shrink-0">{{ r.label }}</div>
+      <input type="time" name="open_{{ r.day }}" value="{{ r.open }}" class="ok-input py-1.5 text-sm w-32">
+      <span class="text-slate text-sm">to</span>
+      <input type="time" name="close_{{ r.day }}" value="{{ r.close }}" class="ok-input py-1.5 text-sm w-32">
+      <label class="flex items-center gap-2 text-sm text-slate ml-auto cursor-pointer"><input type="checkbox" name="closed_{{ r.day }}" {% if r.closed %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Closed all day</label>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="mt-5"><button class="btn btn-primary">Save hours</button></div>
+</form>
+<p class="ok-hint mt-3"><i class="fa-solid fa-circle-info"></i> A closing time of <b>00:00</b> means midnight (end of day).</p>
+{% endblock %}

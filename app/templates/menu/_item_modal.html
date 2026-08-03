@@ -1,0 +1,65 @@
+<!-- hero image: flush to the top and both sides, content below stays padded -->
+<div class="ok-modal-hero">
+  <img src="{{ product.image_url or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ product.name }}" class="w-100 ok-ar-1610 ok-cover bg-cream">
+</div>
+
+<h3 class="font-display fw-bold ok-fs-sm text-uppercase tracking-tight ok-lh-snug ok-pr-8">{{ product.name }}</h3>
+{% if product.description %}
+<p class="ok-fs-xs text-muted-warm ok-mt-15 ok-lh-snug d-flex align-items-baseline" data-rm>
+  <span class="text-truncate ok-min-w-0" data-rm-text>{{ product.description }}</span><span class="fw-semibold text-muted-warm text-decoration-underline flex-shrink-0 ms-1 ok-pointer text-nowrap" data-rm-toggle data-more="Read more" data-less="Read less">Read more</span>
+</p>
+{% endif %}
+
+{% if product.is_vegan %}
+<div class="d-flex flex-wrap ok-gap-15 ok-mt-3 mb-2">
+  <span class="badge badge-green !ok-fs-68rem">Vegan</span>
+</div>
+{% endif %}
+
+<div class="d-flex align-items-baseline gap-2">
+  <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none">${{ '%.2f'|format(price) }}</span>
+  {% if store %}<span class="ok-fs-xs text-muted-warm">at {{ store.name }}</span>{% endif %}
+</div>
+
+{% if available %}
+<form method="post" action="/cart/add" data-item-form class="ok-mt-5">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="product_id" value="{{ product.id }}">
+  <input type="hidden" name="qty" value="1">
+  <input type="hidden" name="next" value="/">
+
+  {% if product.variants %}
+  <div class="ok-mb-3">
+    <label class="ok-label">Choose a size</label>
+    <div class="d-flex flex-wrap gap-2" data-chip-group>
+      {% for v in product.variants %}
+      <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if product.addons %}
+  <div class="ok-mb-3">
+    <label class="ok-label">Add-ons</label>
+    <div class="ok-stack-2">
+      {% for a in product.addons %}
+      <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer"><span class="fw-medium">{{ a.name }}</span><span class="d-flex align-items-center ok-gap-3"><span class="text-muted-warm ok-fs-sm">+${{ '%.2f'|format(a.price) }}</span><input type="checkbox" name="addon_ids" value="{{ a.id }}" class="ok-w-5 ok-h-5 accent-okyellow"></span></label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="ok-mb-3">
+    <label class="ok-label">Special instructions</label>
+    <textarea name="notes" rows="2" class="ok-textarea" placeholder="No pickles, extra sauce…"></textarea>
+  </div>
+
+  <div class="d-flex align-items-center ok-gap-3">
+    <div class="qty"><button type="button" data-step="-">&minus;</button><span>1</span><button type="button" data-step="+">+</button></div>
+    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Add to cart · ${{ '%.2f'|format(price) }}</button>
+  </div>
+</form>
+{% else %}
+<div class="ok-mt-5 ok-card ok-p-3 text-center text-muted-warm">Sold out at {{ store.name if store else 'this store' }} right now.</div>
+{% endif %}

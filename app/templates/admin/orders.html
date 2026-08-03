@@ -1,0 +1,110 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+{# param fragments so status + date range survive across every control #}
+{% set sp = ('store=' + admin_store.slug + '&') if qs else '' %}
+{% set statusp = ('status=' + status + '&') if status else '' %}
+{% set rangep = ('range=' + rng + '&') if rng else '' %}
+{% set datep = ((('from=' + date_from + '&') if date_from else '') ~ (('to=' + date_to + '&') if date_to else '')) %}
+
+<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+  <h2 class="ok-h2">Orders, {{ admin_store.name if admin_store else '' }}</h2>
+  <a href="/admin/orders/export.csv?{{ sp }}{{ statusp }}{{ rangep }}{{ datep }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</a>
+</div>
+
+{# One filter bar, one form, one Apply. Two rows of pills meant nine status
+   links plus four range links all competing for attention, and every one of
+   them was a page navigation that rebuilt the query string by hand. #}
+<form method="get" class="ok-card p-4 mb-4">
+  {% if qs %}<input type="hidden" name="store" value="{{ admin_store.slug }}">{% endif %}
+  <div class="flex flex-wrap items-end gap-3">
+
+    <label class="block">
+      <span class="block text-xs font-semibold text-slate mb-1">Status</span>
+      <select name="status" class="ok-input ok-select py-2 text-sm min-w-[10rem]">
+        <option value="" {{ 'selected' if not status }}>All statuses</option>
+        <option value="active" {{ 'selected' if status == 'active' }}>Active (not finished)</option>
+        {% for st in stages %}
+        <option value="{{ st }}" {{ 'selected' if status == st }} class="capitalize">{{ st.replace('_',' ')|title }}</option>
+        {% endfor %}
+        <option value="cancelled" {{ 'selected' if status == 'cancelled' }}>Cancelled</option>
+      </select>
+    </label>
+
+    <label class="block">
+      <span class="block text-xs font-semibold text-slate mb-1">Period</span>
+      <select name="range" data-range class="ok-input ok-select py-2 text-sm min-w-[9rem]">
+        <option value="all" {{ 'selected' if not rng and not date_from and not date_to }}>All time</option>
+        <option value="today" {{ 'selected' if rng == 'today' }}>Today</option>
+        <option value="7d" {{ 'selected' if rng == '7d' }}>Last 7 days</option>
+        <option value="30d" {{ 'selected' if rng == '30d' }}>Last 30 days</option>
+        <option value="custom" {{ 'selected' if date_from or date_to }}>Custom range…</option>
+      </select>
+    </label>
+
+    <div data-custom-range class="flex items-end gap-2 {{ '' if (date_from or date_to) else 'hidden' }}">
+      <label class="block">
+        <span class="block text-xs font-semibold text-slate mb-1">From</span>
+        <input type="date" name="from" value="{{ date_from }}" class="ok-input py-2 text-sm">
+      </label>
+      <label class="block">
+        <span class="block text-xs font-semibold text-slate mb-1">To</span>
+        <input type="date" name="to" value="{{ date_to }}" class="ok-input py-2 text-sm">
+      </label>
+    </div>
+
+    <button class="btn btn-dark btn-sm">Apply</button>
+    {% if status or rng or date_from or date_to %}
+    <a href="/admin/orders{{ qs }}" class="btn btn-secondary btn-sm">Clear</a>
+    {% endif %}
+
+    <span class="ml-auto text-sm text-slate">
+      {{ orders|length }} order{{ '' if orders|length == 1 else 's' }}
+    </span>
+  </div>
+</form>
+
+<script>
+  // "Custom range…" is the only option that needs the two date fields, so they
+  // stay out of the way until it is chosen.
+  (function () {
+    var sel = document.querySelector("[data-range]");
+    var box = document.querySelector("[data-custom-range]");
+    if (!sel || !box) return;
+    sel.addEventListener("change", function () {
+      var custom = sel.value === "custom";
+      box.classList.toggle("hidden", !custom);
+      // switching to a preset must drop any dates still sitting in the inputs
+      if (!custom) box.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+    });
+  })();
+</script>
+
+{% if orders %}
+<div class="ok-card overflow-x-auto">
+  <table data-table data-page-size="10" class="w-full text-sm">
+    <thead><tr class="text-left text-slate border-b border-[var(--ok-line)]">
+      <th class="p-3 font-semibold">Order</th><th class="p-3 font-semibold">Time</th><th class="p-3 font-semibold">Customer</th><th class="p-3 font-semibold">Type</th><th class="p-3 font-semibold">Items</th><th class="p-3 font-semibold">Status</th><th class="p-3 font-semibold">Payment</th><th class="p-3 font-semibold text-right">Total</th><th class="p-3"></th>
+    </tr></thead>
+    <tbody>
+      {% for o in orders %}
+      <tr class="border-b border-[var(--ok-line)] last:border-0  transition">
+        <td class="p-3 font-bold"><a href="/admin/orders/{{ o.number }}{{ qs }}" class="">{{ o.number }}</a></td>
+        <td class="p-3 text-slate whitespace-nowrap">{{ o.created_at.strftime('%b %d, %I:%M %p') }}</td>
+        <td class="p-3">{{ o.customer_name or '-' }}</td>
+        <td class="p-3 capitalize">{{ o.order_type }}{% if o.delivery %} <span class="text-xs text-slate normal-case">({{ 'Uber' if o.delivery.method == 'uber_direct' else 'Own' }})</span>{% endif %}</td>
+        <td class="p-3">{{ o.item_count }}</td>
+        <td class="p-3">{% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}</td>
+        <td class="p-3">{% if o.payment_status == 'paid' %}<span class="text-okgreen font-semibold">Paid</span>{% else %}<span class="text-slate">{{ o.payment_status }}</span>{% endif %}</td>
+        <td class="p-3 text-right font-bold">${{ '%.2f'|format(o.total) }}</td>
+        <td class="p-3 text-right"><a href="/admin/orders/{{ o.number }}{{ qs }}" class="link-underline">Manage</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="ok-card p-12 text-center text-slate">No orders match these filters.</div>
+{% endif %}
+{% endblock %}

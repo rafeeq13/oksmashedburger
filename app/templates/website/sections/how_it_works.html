@@ -1,0 +1,34 @@
+<!-- How it works -->
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
+{% set steps = [
+  ('fa-location-dot', cfg.get('step1_title') or '1 · Pick a store', cfg.get('step1_desc') or 'Set delivery or pickup.'),
+  ('fa-burger',       cfg.get('step2_title') or '2 · Build your order', cfg.get('step2_desc') or 'Customize burgers & combos.'),
+  ('fa-credit-card',  cfg.get('step3_title') or '3 · Fast checkout', cfg.get('step3_desc') or 'Cards, wallets, gift cards & points.'),
+  ('fa-location-arrow', cfg.get('step4_title') or '4 · Track live', cfg.get('step4_desc') or 'Kitchen-to-doorstep tracking.')
+] %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'From tap to table in 4 steps' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+    </div>
+
+    <div class="position-relative ok-cardgrid ok-cardgrid--4" data-reveal-stagger>
+      <!-- connecting rail, desktop only -->
+      <div class="d-none d-lg-block position-absolute top-10 ok-left-125 ok-right-125 h-px bg-gradient-to-r from-transparent via-okamber/40 to-transparent pe-none" aria-hidden="true"></div>
+      {% for icon, title, desc in steps %}
+      <div class="position-relative text-center">
+        <div class="ok-w-20 ok-h-20 rounded-pill ok-grid ok-place-center mx-auto ok-mb-3 text-ink" style="background:var(--grad-gold); box-shadow:var(--sh-gold);">
+          <i class="fa-solid {{ icon }} icon-xl"></i>
+        </div>
+        <h3 class="ok-card-title mb-2">{{ title }}</h3>
+        <p class="ok-card-text ok-maxw-16rem mx-auto !mt-0">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="ok-secfoot" data-elw="btn" data-reveal="up"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+      <a href="{{ cfg.get('cta_href') or '/menu' }}" data-el="btn" class="btn btn-primary btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'Order Now' }}</a>
+    </div>
+  </div>
+</section>

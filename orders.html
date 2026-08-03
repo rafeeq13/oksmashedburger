@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — OK Smashed Burger</title>
+  <meta name="description" content="View your OK Smashed Burger order history — active, past and scheduled orders. Track, reorder, view receipts and rate your meals.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="bg-softyellow/20">
+    <!-- ============ PAGE HEADER STRIP ============ -->
+    <section class="bg-jet text-white">
+      <div class="ok-container py-6 md:py-8">
+        <nav class="text-white/50 text-xs mb-2" aria-label="Breadcrumb">
+          <a href="index.html" class="hover:text-okyellow">Home</a> <span class="mx-1">/</span> <a href="account.html" class="hover:text-okyellow">Account</a> <span class="mx-1">/</span> <span class="text-white/80">My Orders</span>
+        </nav>
+        <h1 class="ok-h1">My Orders</h1>
+      </div>
+    </section>
+
+    <div class="ok-container py-8 md:py-10">
+      <div class="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8 items-start">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="ok-card p-4 lg:sticky lg:top-24">
+          <div class="flex items-center gap-3 pb-4 mb-3 border-b border-[var(--ok-line)]">
+            <img data-ph="Jordan Miller" data-ph-type="avatar" data-ph-ratio="1/1" class="w-11 h-11 rounded-full shrink-0" alt="">
+            <div class="min-w-0">
+              <div class="font-display font-bold leading-tight truncate">Jordan Miller</div>
+              <div class="text-xs text-slate truncate">Gold member · 1,240 pts</div>
+            </div>
+          </div>
+          <nav class="flex lg:flex-col gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="orders.html" aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm bg-jet text-white whitespace-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+            <a href="favorites.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
+            <a href="rewards.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
+          </nav>
+          <div class="mt-3 pt-3 border-t border-[var(--ok-line)]">
+            <a href="login.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-okred hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+          </div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <div class="min-w-0">
+          <h2 class="ok-h2 mb-5">My Orders</h2>
+
+          <!-- Search / filter row -->
+          <div class="ok-card p-4 mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="flex items-center gap-2 ok-input flex-1">
+                <i class="fa-solid fa-magnifying-glass text-slate"></i>
+                <input class="w-full bg-transparent focus:outline-none text-sm" placeholder="Search by order #, item or store">
+              </div>
+              <input type="date" class="ok-input sm:w-44 text-sm" aria-label="Filter by date">
+              <select class="ok-select sm:w-52 text-sm" aria-label="Filter by store">
+                <option>All stores</option>
+                <option>Center City</option>
+                <option>Fishtown</option>
+                <option>University City</option>
+                <option>South Philly</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div data-tab-group>
+            <div class="flex gap-2 mb-6 overflow-x-auto hide-scrollbar" role="tablist">
+              <button data-tab="active" class="chip is-active">Active <span class="badge badge-yellow ml-1">1</span></button>
+              <button data-tab="past" class="chip">Past <span class="badge badge-soft ml-1">4</span></button>
+              <button data-tab="scheduled" class="chip">Scheduled <span class="badge badge-soft ml-1">1</span></button>
+            </div>
+
+            <!-- ===== ACTIVE PANEL ===== -->
+            <div data-panel="active" class="space-y-5">
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-4021</span>
+                      <span class="badge badge-yellow">Active</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Today · 6:12 PM · Center City · Delivery</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$29.47</div>
+                    <div class="text-xs text-slate">3 items</div>
+                  </div>
+                </div>
+
+                <!-- Slim inline progress -->
+                <div class="mb-5">
+                  <div class="flex items-center justify-between text-xs font-semibold mb-2">
+                    <span class="text-okgreen">Confirmed</span>
+                    <span class="text-okamber">Preparing</span>
+                    <span class="text-slate">On the way</span>
+                    <span class="text-slate">Delivered</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="h-2 flex-1 rounded-full bg-okyellow"></span>
+                    <span class="h-2 flex-1 rounded-full bg-okyellow"></span>
+                    <span class="h-2 flex-1 rounded-full bg-softyellow"></span>
+                    <span class="h-2 flex-1 rounded-full bg-softyellow"></span>
+                  </div>
+                  <p class="text-xs text-slate mt-2 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-okamber inline-block animate-pulse"></span> Your order is being smashed — ETA <b class="text-jet">~25 min</b></p>
+                </div>
+
+                <div class="flex items-center gap-3 mb-5">
+                  <div class="flex -space-x-3">
+                    <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">The OK Classic, Double Bacon Smash, Loaded OK Fries</p>
+                </div>
+
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap gap-2">
+                  <a href="tracking.html" class="btn btn-dark btn-sm">Track order</a>
+                  <button data-add-cart="Order #OK-4021" class="btn btn-primary btn-sm">Reorder</button>
+                  <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-phone"></i> Contact store</button>
+                </div>
+              </article>
+            </div>
+
+            <!-- ===== PAST PANEL ===== -->
+            <div data-panel="past" class="hidden space-y-5">
+
+              <!-- Past order 1 (delivered) -->
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-3987</span>
+                      <span class="badge badge-green">Delivered</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Jul 11, 2026 · 7:40 PM · Fishtown · Delivery</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$24.18</div>
+                    <div class="text-xs text-slate">2 items</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="flex -space-x-3">
+                    <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="OK Milkshake" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">Double Bacon Smash, Vanilla Shake</p>
+                </div>
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <div class="flex items-center gap-1 text-okyellow text-lg" aria-label="Rate this order">
+                    <span class="text-sm text-slate mr-1 font-medium">Rate:</span>
+                    <button class="hover:scale-110 transition" aria-label="1 star"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition" aria-label="2 stars"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition" aria-label="3 stars"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition" aria-label="4 stars"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition text-[var(--ok-line)]" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+                  </div>
+                  <div class="flex gap-2 ml-auto">
+                    <button class="btn btn-secondary btn-sm">View receipt</button>
+                    <button data-add-cart="Order #OK-3987" class="btn btn-primary btn-sm">Reorder</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Past order 2 (delivered) -->
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-3902</span>
+                      <span class="badge badge-green">Delivered</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Jul 4, 2026 · 1:05 PM · Center City · Pickup</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$39.99</div>
+                    <div class="text-xs text-slate">4 items</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="flex -space-x-3">
+                    <img data-ph="Family Feast Box" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="OK Cola" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">Family Feast Box, Loaded OK Fries +2</p>
+                </div>
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <div class="flex items-center gap-1 text-okyellow text-lg" aria-label="Your rating: 5 stars">
+                    <span class="text-sm text-slate mr-1 font-medium">Rated:</span>
+                    <span class="flex gap-0.5"><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i><i class="fa-solid fa-star fill-current"></i></span>
+                  </div>
+                  <div class="flex gap-2 ml-auto">
+                    <button class="btn btn-secondary btn-sm">View receipt</button>
+                    <button data-add-cart="Order #OK-3902" class="btn btn-primary btn-sm">Reorder</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Past order 3 (cancelled) -->
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-3860</span>
+                      <span class="badge badge-red">Cancelled</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Jun 28, 2026 · 8:20 PM · University City · Delivery</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$16.48</div>
+                    <div class="text-xs text-slate">1 item</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="flex -space-x-3">
+                    <img data-ph="Buffalo Crisp Chicken" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">Buffalo Crisp Chicken · Refunded to Visa •••• 4242</p>
+                </div>
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="text-xs text-slate">Cancelled — store was closing.</span>
+                  <div class="flex gap-2 ml-auto">
+                    <button class="btn btn-secondary btn-sm">View receipt</button>
+                    <button data-add-cart="Order #OK-3860" class="btn btn-primary btn-sm">Reorder</button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Past order 4 (delivered) -->
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-3781</span>
+                      <span class="badge badge-green">Delivered</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Jun 20, 2026 · 12:35 PM · South Philly · Dine-in</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$18.97</div>
+                    <div class="text-xs text-slate">2 items</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="flex -space-x-3">
+                    <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">The OK Classic, Loaded OK Fries</p>
+                </div>
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap items-center gap-3">
+                  <div class="flex items-center gap-1 text-okyellow text-lg" aria-label="Rate this order">
+                    <span class="text-sm text-slate mr-1 font-medium">Rate:</span>
+                    <button class="hover:scale-110 transition" aria-label="1 star"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition" aria-label="2 stars"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition" aria-label="3 stars"><i class="fa-solid fa-star fill-current"></i></button>
+                    <button class="hover:scale-110 transition text-[var(--ok-line)]" aria-label="4 stars"><i class="fa-solid fa-star"></i></button>
+                    <button class="hover:scale-110 transition text-[var(--ok-line)]" aria-label="5 stars"><i class="fa-solid fa-star"></i></button>
+                  </div>
+                  <div class="flex gap-2 ml-auto">
+                    <button class="btn btn-secondary btn-sm">View receipt</button>
+                    <button data-add-cart="Order #OK-3781" class="btn btn-primary btn-sm">Reorder</button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- ===== SCHEDULED PANEL ===== -->
+            <div data-panel="scheduled" class="hidden space-y-5">
+              <article class="ok-card p-5">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-bold text-lg">Order #OK-4055</span>
+                      <span class="badge badge-soft">Scheduled</span>
+                    </div>
+                    <p class="text-sm text-slate mt-1">Center City · Pickup</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-display font-bold text-lg">$21.99</div>
+                    <div class="text-xs text-slate">2 items</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 mb-4">
+                  <span class="badge badge-yellow"><i class="fa-solid fa-calendar-days"></i> Fri, Jul 24 · 12:30 PM</span>
+                </div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="flex -space-x-3">
+                    <img data-ph="Double Date Bundle" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                    <img data-ph="OK Milkshake" data-ph-type="food" data-ph-ratio="1/1" class="w-14 h-14 rounded-xl ring-2 ring-white object-cover" alt="">
+                  </div>
+                  <p class="text-sm text-slate">Double Date Bundle</p>
+                </div>
+                <div class="divider mb-4"></div>
+                <div class="flex flex-wrap gap-2">
+                  <button class="btn btn-secondary btn-sm">Edit</button>
+                  <button class="btn btn-danger btn-sm">Cancel</button>
+                </div>
+              </article>
+
+              <!-- Empty-state hint -->
+              <div class="ok-card border-dashed p-8 text-center bg-softyellow/30">
+                <div class="text-4xl mb-2">⏰</div>
+                <h3 class="font-display font-bold text-lg mb-1">Plan ahead & skip the wait</h3>
+                <p class="text-sm text-slate max-w-md mx-auto mb-4">Schedule an order for lunch, a party or your weekly treat — we'll have it fresh and ready at your chosen time.</p>
+                <a href="menu.html" class="btn btn-primary btn-sm">Schedule an order</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

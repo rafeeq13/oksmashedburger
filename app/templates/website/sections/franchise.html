@@ -1,0 +1,20 @@
+<!-- Franchise opportunities (full-bleed statement band) -->
+<section class="ok-franchise position-relative overflow-hidden">
+  <div class="ok-grid ok-grid-md-2 align-items-stretch h-100">
+    <div class="ok-px-3 ok-paddin-25rem-sm ok-paddin-5rem-lg ok-band d-flex flex-column justify-content-center position-relative">
+      <div class="max-w-md" data-reveal="left">
+<h1 class="ok-title ok-mt-3">{{ (cfg.get('heading') or 'Franchise<br>Opportunities')|safe }}</h1>
+        <span class="ok-squiggle ok-squiggle--left" aria-hidden="true" style="filter:brightness(0)"></span>
+        <p class="ok-subtitle">{{ cfg.get('subheading') or 'As a franchise partner, you gain proven recipes, operational support, streamlined systems, and a beloved concept built for all-day demand.' }}</p>
+        <div class="ok-mt-9" data-elw="btn"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+          <a href="{{ cfg.get('cta_href') or '/contact' }}" data-el="btn" class="btn btn-dark btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'Learn more' }} <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="position-relative ok-minh-300px ok-minh-0-md overflow-hidden">
+      <div class="position-absolute ok-fill scale-110">
+        <img src="{{ site.get('franchise_img') or site_defaults.get('franchise_img') }}" alt="Franchise food spread" class="w-100 h-100 ok-cover" data-parallax="0.1" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>

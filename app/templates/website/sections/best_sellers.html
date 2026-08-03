@@ -1,0 +1,36 @@
+<!-- Best sellers (from this store's menu) -->
+{% if best_sellers %}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--white') %}
+<section class="ok-band {{ _bg }} d-none">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'Best Sellers' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+      {% if current_store %}<p class="ok-subtitle">Smashed fresh at {{ current_store.name }}.</p>{% endif %}
+    </div>
+
+    <div class="ok-cardgrid ok-cardgrid--4" data-reveal-stagger>
+      {% for it in best_sellers %}
+      <article class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
+        <a href="/item/{{ it.product.slug }}" data-item="{{ it.product.slug }}" class="ok-media ok-ratio d-block !rounded-none">
+          <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          {% if it.featured %}<span class="badge badge-new position-absolute top-3 left-3 ok-z-10"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
+        </a>
+        <div class="ok-card-body">
+          <a href="/item/{{ it.product.slug }}" data-item="{{ it.product.slug }}"><h3 class="ok-card-title line-clamp-1 ok-hover-gold transition-colors duration-200">{{ it.product.name }}</h3></a>
+          <p class="ok-card-text line-clamp-2">{{ it.product.description or '' }}</p>
+          <div class="ok-card-foot d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
+            <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none pt-1">${{ '%.2f'|format(it.price) }}</span>
+            <button type="button" data-item="{{ it.product.slug }}" class="ok-w-10 ok-h-10 rounded-pill btn btn-primary ok-grid ok-place-center !p-0" aria-label="Customize {{ it.product.name }}"><i class="fa-solid fa-plus ok-fs-sm"></i></button>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="ok-secfoot" data-reveal="up">
+      <a href="{{ cfg.get('cta_href') or '/menu' }}" class="ok-btn-outline">{{ cfg.get('cta_text') or 'See full menu' }} <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+{% endif %}

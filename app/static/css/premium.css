@@ -1,0 +1,2841 @@
+/* =========================================================
+   OK Smashed Burger — PREMIUM LAYER
+   Loaded AFTER style.css on the storefront (layouts/base.html)
+   and inside the GrapesJS canvas so the builder previews match.
+
+   This file only refines presentation: tokens, rhythm, type,
+   elevation, motion primitives and micro-interactions.
+   No layout logic, no markup contracts, no business rules.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. TOKENS
+   --------------------------------------------------------- */
+:root {
+  /* Brand (unchanged, SRS §9.2) */
+  --ok-yellow: #FFC72C;
+  --ok-amber: #E0A200;
+
+  /* Luxury extensions */
+  --ok-gold: #D9A521;
+  /* deeper gold for text-safe accents */
+  --ok-gold-lite: #FFE9A8;
+  --ok-ink: #0E0E0E;
+  /* rich black, deeper than jet */
+  --ok-ink-soft: #1C1A18;
+  --ok-cocoa: #2A1B12;
+  /* deep brown */
+  --ok-warm-white: #FCFAF6;
+  /* warm white canvas */
+  --ok-beige: #F3ECE1;
+  /* elegant beige */
+  --ok-lux-gray: #8A8480;
+  /* warm luxury gray for secondary text */
+  --ok-hairline: rgba(20, 20, 20, .09);
+  --ok-hairline-strong: rgba(20, 20, 20, .16);
+
+  /* Gradients */
+  --grad-gold: linear-gradient(135deg, #FFDA6B 0%, #FFC72C 42%, #E8A800 100%);
+  --grad-gold-soft: linear-gradient(135deg, rgba(255, 199, 44, .16), rgba(255, 199, 44, .04));
+  --grad-ink: linear-gradient(160deg, #1A1A1A 0%, #0C0C0C 100%);
+  --grad-sheen: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .42) 48%, transparent 66%);
+
+  /* Elevation, warm-tinted rather than pure black */
+  --sh-1: 0 1px 2px rgba(28, 22, 16, .05), 0 2px 6px rgba(28, 22, 16, .05);
+  --sh-2: 0 2px 6px rgba(28, 22, 16, .05), 0 10px 24px -6px rgba(28, 22, 16, .10);
+  --sh-3: 0 4px 10px rgba(28, 22, 16, .06), 0 20px 44px -12px rgba(28, 22, 16, .16);
+  --sh-4: 0 8px 18px rgba(28, 22, 16, .08), 0 36px 72px -20px rgba(28, 22, 16, .24);
+  --sh-gold: 0 10px 30px -8px rgba(224, 162, 0, .55);
+  --sh-gold-lg: 0 16px 44px -10px rgba(224, 162, 0, .62);
+
+  /* Radii */
+  --r-sm: .6rem;
+  --r-md: .9rem;
+  --r-lg: 1.25rem;
+  --r-xl: 1.75rem;
+  --r-pill: 9999px;
+
+  /* Motion */
+  --e-out: cubic-bezier(.22, .61, .36, 1);
+  --e-lux: cubic-bezier(.16, 1, .3, 1);
+  --e-in-out: cubic-bezier(.65, 0, .35, 1);
+  --t-fast: .18s;
+  --t-mid: .32s;
+  --t-slow: .6s;
+
+  /* Rhythm */
+  --gutter: clamp(1rem, 4vw, 2rem);
+}
+
+/* ---------------------------------------------------------
+   2. BASE & RHYTHM
+   --------------------------------------------------------- */
+html {
+  scroll-padding-top: 7rem;
+}
+
+body {
+  background: var(--ok-warm-white);
+  letter-spacing: .002em;
+}
+
+/* Wider, calmer container and generous vertical rhythm, nothing crowded. */
+.ok-container {
+  max-width: 1240px;
+  padding-inline: var(--gutter);
+}
+
+.ok-section {
+  padding-block: clamp(3.25rem, 7vw, 6.5rem);
+}
+
+@media (min-width:768px) {
+  .ok-section {
+    padding-block: clamp(4rem, 7vw, 7rem);
+  }
+}
+
+.ok-section-tight {
+  padding-block: clamp(2.25rem, 4vw, 3.5rem);
+}
+
+/* Warm, refined page scrollbar */
+@media (min-width:1024px) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(20, 20, 20, .22) transparent;
+  }
+
+  body::-webkit-scrollbar {
+    width: 11px;
+  }
+
+  body::-webkit-scrollbar-track {
+    background: var(--ok-beige);
+  }
+
+  body::-webkit-scrollbar-thumb {
+    background: rgba(20, 20, 20, .22);
+    border-radius: 999px;
+    border: 3px solid var(--ok-beige);
+  }
+}
+
+::selection {
+  background: var(--ok-yellow);
+  color: var(--ok-ink);
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* ---------------------------------------------------------
+   3. TYPOGRAPHY
+   --------------------------------------------------------- */
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.ok-display {
+  font-size: clamp(2.4rem, 5.6vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -.028em;
+  font-weight: 600;
+}
+
+.ok-h1 {
+  font-size: clamp(1.85rem, 3.4vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -.022em;
+}
+
+.ok-h2 {
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  line-height: 1.14;
+  letter-spacing: -.018em;
+}
+
+.ok-h3 {
+  font-size: clamp(1.1rem, 1.5vw, 1.28rem);
+  line-height: 1.32;
+  letter-spacing: -.008em;
+}
+
+.ok-lead {
+  font-size: clamp(1.02rem, 1.35vw, 1.175rem);
+  line-height: 1.72;
+  color: var(--ok-lux-gray);
+}
+
+/* Section eyebrow, gold rule + tracked caps */
+.ok-eyebrow {
+  color: var(--ok-gold);
+  letter-spacing: .22em;
+  font-size: .7rem;
+}
+
+.ok-eyebrow--rule {
+  display: inline-flex;
+  align-items: center;
+  gap: .7rem;
+}
+
+.ok-eyebrow--rule::before {
+  content: "";
+  width: 2.25rem;
+  height: 1px;
+  background: currentColor;
+  opacity: .55;
+}
+
+/* A calm, premium section header block */
+.ok-sechead {
+  max-width: 44rem;
+}
+
+.ok-sechead--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.ok-sechead p {
+  color: var(--ok-lux-gray);
+  margin-top: .85rem;
+}
+
+/* Gold-underlined word, used sparingly in headlines */
+.ok-accent {
+  position: relative;
+  white-space: nowrap;
+}
+
+.ok-accent::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: .07em;
+  height: .34em;
+  background: var(--grad-gold);
+  opacity: .34;
+  border-radius: .2em;
+  z-index: -1;
+}
+
+/* Numerals in prices/stats align cleanly */
+.font-display,
+.ok-display,
+.ok-h1,
+.ok-h2 {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ---------------------------------------------------------
+   4. BUTTONS — one primary style, premium feedback
+   --------------------------------------------------------- */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: .5rem;
+  border-width: 1px;
+  font-weight: 700;
+  letter-spacing: .005em;
+  padding: .82rem 1.6rem;
+  transition: transform var(--t-fast) var(--e-out), box-shadow var(--t-mid) var(--e-out),
+    background-color var(--t-mid) var(--e-out), color var(--t-mid) var(--e-out),
+    border-color var(--t-mid) var(--e-out);
+  will-change: transform;
+}
+
+.btn-lg {
+  padding: 1.02rem 2.15rem;
+  font-size: 1.02rem;
+}
+
+.btn-sm {
+  padding: .5rem 1.05rem;
+  font-size: .84rem;
+}
+
+/* Rectangular variant (hero order CTA). Swap --r-btn-rect to 0 for hard corners. */
+/* .btn-rect kept for markup that still references it; .btn is rectangular now */
+.btn-rect {
+  border-radius: .5rem;
+}
+
+/* Sheen sweep on hover, one pass, never loops */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--grad-sheen);
+  transform: translateX(-130%);
+  opacity: 0;
+  transition: transform .72s var(--e-lux), opacity .2s ease;
+}
+
+.btn:hover::before {
+  transform: translateX(130%);
+  opacity: .9;
+}
+
+.btn-primary {
+  background: var(--grad-gold);
+  color: var(--ok-ink);
+  box-shadow: var(--sh-gold);
+}
+
+.btn-primary:hover {
+  background-color: black;
+  color: white;
+  border: #000;
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(.985);
+  box-shadow: var(--sh-gold);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--ok-ink);
+  border-color: var(--ok-ink);
+  box-shadow: var(--sh-1);
+}
+
+.btn-secondary:hover {
+  background: var(--ok-ink);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+
+.btn-dark {
+  background: var(--grad-ink);
+  color: #fff;
+  box-shadow: var(--sh-2);
+}
+
+.btn-dark:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+  color: var(--ok-yellow);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ok-ink);
+}
+
+.btn-ghost:hover {
+  background: rgba(20, 20, 20, .05);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -10px rgba(198, 40, 40, .6);
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn:disabled::before,
+.btn[disabled]::before {
+  display: none;
+}
+
+/* Outline / uppercase link-button used across the marketing sections */
+.ok-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--ok-ink);
+  color: var(--ok-ink);
+  background: transparent;
+  padding: .85rem 1.6rem;
+  border-radius: .0rem;
+  font-size: .72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  transition: color var(--t-mid) var(--e-out), transform var(--t-fast) var(--e-out), box-shadow var(--t-mid) var(--e-out);
+}
+
+.ok-btn-outline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ok-ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .42s var(--e-lux);
+}
+
+.ok-btn-outline:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+
+.ok-btn-outline:hover::before {
+  transform: scaleX(1);
+}
+
+.ok-btn-outline--light {
+  border-color: rgba(255, 255, 255, .7);
+  color: #fff;
+}
+
+.ok-btn-outline--light::before {
+  background: #fff;
+}
+
+.ok-btn-outline--light:hover {
+  color: var(--ok-ink);
+}
+
+/* Ripple, injected by motion.js on click */
+.ok-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, 0) 70%);
+  animation: okRipple .62s var(--e-out) forwards;
+}
+
+.btn-secondary .ok-ripple,
+.ok-btn-outline .ok-ripple {
+  background: radial-gradient(circle, rgba(20, 20, 20, .22) 0%, rgba(20, 20, 20, 0) 70%);
+}
+
+@keyframes okRipple {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Icon-only circular controls (cart, account, search, carousel arrows) */
+.ok-iconbtn {
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out),
+    transform var(--t-fast) var(--e-out), box-shadow var(--t-mid) var(--e-out);
+}
+
+.ok-iconbtn:hover {
+  background: rgba(20, 20, 20, .055);
+  transform: translateY(-1px);
+}
+
+.ok-iconbtn:active {
+  transform: translateY(0) scale(.95);
+}
+
+/* ---------------------------------------------------------
+   5. CARDS & SURFACES
+   --------------------------------------------------------- */
+.ok-card {
+  background: #fff;
+  border: 1px solid var(--ok-hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-2);
+  transition: transform var(--t-mid) var(--e-out), box-shadow var(--t-mid) var(--e-out), border-color var(--t-mid) var(--e-out);
+}
+
+.ok-card-hover {
+  cursor: pointer;
+}
+
+.ok-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--sh-4);
+  border-color: rgba(224, 162, 0, .35);
+}
+
+.ok-card-hover:active {
+  transform: translateY(-2px);
+}
+
+/* Image zoom inside any hoverable card, no markup needed */
+.ok-card img,
+.ok-tile img {
+  transition: transform .72s var(--e-lux), filter .5s var(--e-out);
+}
+
+.ok-card-hover:hover img,
+.ok-tile:hover img {
+  transform: scale(1.06);
+}
+
+/* Media frame: clips the zoom and adds a soft floor gradient */
+.ok-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--ok-beige);
+}
+
+.ok-media::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(12, 12, 12, .42), transparent);
+  opacity: 0;
+  transition: opacity var(--t-mid) var(--e-out);
+}
+
+.ok-card-hover:hover .ok-media::after {
+  opacity: 1;
+}
+
+/* Glass surfaces */
+.ok-glass {
+  background: white;
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, .6);
+}
+
+.ok-glass-dark {
+  background: rgba(14, 14, 14, .55);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+/* Gold hairline divider */
+.ok-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ok-hairline-strong), transparent);
+}
+
+.ok-rule-gold {
+  height: 2px;
+  width: 3.5rem;
+  border-radius: 2px;
+  background: var(--grad-gold);
+}
+
+/* ---------------------------------------------------------
+   6. CHIPS, BADGES, TAGS
+   --------------------------------------------------------- */
+.chip {
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--ok-hairline);
+  padding: .45rem .95rem;
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out),
+    border-color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-out), box-shadow var(--t-mid) var(--e-out);
+}
+
+.chip:hover {
+  border-color: var(--ok-ink);
+  transform: translateY(-1px);
+  box-shadow: var(--sh-1);
+}
+
+.chip.is-active,
+.chip:has(input:checked) {
+  background: var(--ok-ink);
+  color: #fff;
+  border-color: var(--ok-ink);
+  box-shadow: var(--sh-2);
+}
+
+.chip.is-active:hover,
+.chip:has(input:checked):hover {
+  background: var(--ok-ink);
+}
+
+.badge {
+  letter-spacing: .06em;
+  box-shadow: var(--sh-1);
+}
+
+.badge-yellow {
+  background: var(--grad-gold);
+}
+
+.badge-new {
+  background: var(--ok-ink);
+  color: var(--ok-yellow);
+}
+
+/* ---------------------------------------------------------
+   7. FORMS — luxury inputs, floating labels, validation
+   --------------------------------------------------------- */
+.ok-input,
+.ok-select,
+.ok-textarea {
+  border: 1.5px solid var(--ok-hairline-strong);
+  border-radius: var(--r-md);
+  padding: .85rem 1rem;
+  background: #fff;
+  font-size: .96rem;
+  color: var(--ok-ink);
+  transition: border-color var(--t-fast) var(--e-out), box-shadow var(--t-fast) var(--e-out), background-color var(--t-fast) var(--e-out);
+}
+
+.ok-input::placeholder,
+.ok-textarea::placeholder {
+  color: #B4ADA6;
+}
+
+.ok-input:hover,
+.ok-select:hover,
+.ok-textarea:hover {
+  border-color: rgba(20, 20, 20, .3);
+}
+
+.ok-input:focus,
+.ok-select:focus,
+.ok-textarea:focus {
+  border-color: var(--ok-amber);
+  box-shadow: 0 0 0 4px rgba(255, 199, 44, .22);
+  background: #fff;
+}
+
+.ok-label {
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ok-lux-gray);
+}
+
+/* Floating-label field. Markup: .ok-float > input.ok-input[placeholder=" "] + label */
+.ok-float {
+  position: relative;
+}
+
+.ok-float>.ok-input,
+.ok-float>.ok-textarea,
+.ok-float>.ok-select {
+  padding-top: 1.4rem;
+  padding-bottom: .55rem;
+}
+
+.ok-float>label {
+  position: absolute;
+  left: 1.02rem;
+  top: .95rem;
+  margin: 0;
+  pointer-events: none;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #A9A29B;
+  transform-origin: left top;
+  transition: transform .18s var(--e-out), color .18s var(--e-out);
+}
+
+.ok-float>.ok-input:focus+label,
+.ok-float>.ok-input:not(:placeholder-shown)+label,
+.ok-float>.ok-textarea:focus+label,
+.ok-float>.ok-textarea:not(:placeholder-shown)+label,
+.ok-float>.ok-select:focus+label,
+.ok-float>.ok-select+label {
+  transform: translateY(-.72rem) scale(.76);
+  color: var(--ok-gold);
+}
+
+.ok-float>.ok-textarea~label {
+  top: 1rem;
+}
+
+/* Validation feedback */
+.ok-input.is-invalid,
+.ok-textarea.is-invalid,
+.ok-select.is-invalid {
+  border-color: var(--ok-red);
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, .14);
+}
+
+.ok-input.is-valid,
+.ok-textarea.is-valid,
+.ok-select.is-valid {
+  border-color: var(--ok-green);
+}
+
+.ok-err {
+  display: block;
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--ok-red);
+  margin-top: .35rem;
+  min-height: 1rem;
+}
+
+/* Checkbox / radio accent */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--ok-amber);
+}
+
+/* Quantity stepper */
+.qty {
+  border-color: var(--ok-hairline-strong);
+  box-shadow: var(--sh-1);
+}
+
+.qty button {
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+.qty button:hover {
+  background: var(--ok-ink);
+  color: var(--ok-yellow);
+}
+
+/* ---------------------------------------------------------
+   8. HEADER & NAVIGATION
+   --------------------------------------------------------- */
+.ok-header {
+  background: rgba(255, 255, 255, .86);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  border-bottom: 1px solid transparent;
+  transition: box-shadow var(--t-mid) var(--e-out), background-color var(--t-mid) var(--e-out), border-color var(--t-mid) var(--e-out);
+}
+
+.ok-header.is-scrolled {
+  background: rgba(255, 255, 255, .94);
+  border-bottom-color: var(--ok-hairline);
+  box-shadow: 0 1px 0 rgba(20, 20, 20, .04), 0 14px 34px -18px rgba(20, 20, 20, .35);
+}
+
+.ok-header .ok-container {
+  transition: padding var(--t-mid) var(--e-out);
+}
+
+/* Logo micro-lift */
+.ok-header a img {
+  transition: transform var(--t-mid) var(--e-lux);
+}
+
+.ok-header a:hover img {
+  transform: scale(1.04);
+}
+
+/* Nav link: gold rule draws in from the left */
+.nav-link {
+  letter-spacing: .005em;
+  transition: color var(--t-fast) var(--e-out);
+}
+
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--grad-gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .34s var(--e-lux);
+}
+
+.nav-link:hover::before {
+  transform: scaleX(1);
+}
+
+.nav-link.is-active::after {
+  background: var(--grad-gold);
+}
+
+.nav-link:hover {
+  color: var(--ok-cocoa);
+}
+
+/* Dropdown panel */
+.ok-header .group>div>div {
+  box-shadow: var(--sh-4);
+  border-radius: var(--r-md);
+}
+
+.ok-header .group a[href]:not(.nav-link) {
+  transition: background-color var(--t-fast) var(--e-out), padding-left var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+.ok-header .group>div a:not(.nav-link):hover {
+  background: rgba(255, 199, 44, .12);
+  padding-left: 1.35rem;
+  color: var(--ok-cocoa);
+}
+
+/* Cart badge pop */
+#cartCount {
+  transition: transform var(--t-fast) var(--e-out);
+  box-shadow: 0 2px 8px rgba(198, 40, 40, .45);
+}
+
+#cartCount.is-bumped {
+  animation: cartPop .45s var(--e-out);
+}
+
+@keyframes cartPop {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.38);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Drawer */
+.drawer {
+  box-shadow: -24px 0 60px -20px rgba(20, 20, 20, .4);
+}
+
+.drawer a {
+  transition: padding-left var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+.drawer a:hover {
+  padding-left: .4rem;
+  color: var(--ok-cocoa);
+}
+
+.drawer-backdrop {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* Scroll progress rail under the header */
+.ok-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  z-index: 60;
+  pointer-events: none;
+  background: transparent;
+}
+
+.ok-progress span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--grad-gold);
+  box-shadow: 0 0 12px rgba(255, 199, 44, .8);
+  transform-origin: left center;
+}
+
+/* ---------------------------------------------------------
+   9. HERO
+   --------------------------------------------------------- */
+/* Hero shell + internal rhythm. Owning this in CSS is what lets the markup
+   stay semantic instead of carrying a dozen sizing utilities. */
+.ok-hero-stage {
+  height: 82vh;
+  min-height: 540px;
+  max-height: 880px;
+}
+
+@media (min-width:768px) {
+  .ok-hero-stage {
+    height: 88vh;
+    min-height: 640px;
+  }
+}
+
+.ok-hero-track {
+  transition: transform 1s ease-in-out;
+  will-change: transform;
+}
+
+.ok-hero-inner {
+  padding-block: 2.5rem;
+}
+
+.ok-hero-kicker {
+  color: #fff;
+  font-size: .62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .3em;
+}
+
+@media (min-width:768px) {
+  .ok-hero-kicker {
+    font-size: .72rem;
+  }
+}
+
+.ok-hero-eyebrow {
+  margin-bottom: 2.25rem;
+}
+
+.ok-hero-sub {
+  color: #fff;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.6;
+  margin-top: 1.75rem;
+  max-width: 36rem;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .9)
+}
+
+.ok-hero-rule {
+  width: 5rem;
+  height: .75rem;
+  margin-top: 2.25rem;
+  color: var(--ok-yellow);
+}
+
+.ok-hero-cta {
+  margin-top: 2.25rem;
+  width: 100%;
+  text-align: center;
+}
+
+.ok-hero-ratings {
+  margin-top: 2.75rem;
+}
+
+/* Cinematic overlay: keeps .pb-overlay editable from the CMS while adding
+   a vignette + floor gradient so the type always reads. */
+/* Overlay is intentionally almost absent so the photography stays bright.
+   Legibility comes from a soft glow behind the copy plus layered text
+   shadows, not from darkening the whole image. */
+.ok-hero-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(6, 6, 6, .34) 0%, rgba(6, 6, 6, .06) 18%, transparent 34%);
+}
+
+/* Localised halo, sized to the copy block only. */
+.ok-hero-textglow {
+  display: none
+}
+
+/* Hero headline, sized off the viewport so it holds the same proportion the
+   reference does at any width, and capped so it cannot run away on ultrawide. */
+.ok-hero-title {
+  color: #fff;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(2.2rem, 6.2vw, 6.5rem);
+  line-height: 1.06;
+  letter-spacing: -.012em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .9);
+}
+
+.ok-hero-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* Rectangular outlined eyebrow, matching the reference and the rectangular CTA. */
+.ok-hero-eyebrow {
+  border: 1px solid rgba(255, 255, 255, .75);
+  background: rgba(255, 255, 255, .04);
+  /* backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .7);
+}
+
+/* Slow ken-burns drift on the active slide only */
+.ok-kenburns {
+  animation: kenburns 18s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.02);
+  }
+
+  to {
+    transform: scale(1.11);
+  }
+}
+
+/* Scroll cue */
+.ok-scrollcue {
+  position: absolute;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  color: rgba(255, 255, 255, .9);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .85);
+}
+
+.ok-scrollcue i {
+  animation: cueBob 2.1s var(--e-in-out) infinite;
+}
+
+.ok-scrollcue-rail {
+  width: 1px;
+  height: 2.4rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, .7), transparent);
+}
+
+@keyframes cueBob {
+
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: .9;
+  }
+
+  50% {
+    transform: translateY(6px);
+    opacity: .45;
+  }
+}
+
+.ok-stars {
+  color: var(--ok-yellow);
+}
+
+.ok-rating-score {
+  color: rgba(255, 255, 255, .62);
+  font-weight: 500;
+}
+
+/* Hero rating row */
+.ok-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .45rem .95rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: .82rem;
+  font-weight: 700;
+  color: #fff;
+  transition: background-color var(--t-mid) var(--e-out), transform var(--t-fast) var(--e-out);
+}
+
+.ok-rating-pill:hover {
+  background: rgba(255, 255, 255, .18);
+  transform: translateY(-2px);
+}
+
+/* Inner-page hero, one shared treatment across every secondary page */
+.ok-pagehero {
+  position: relative;
+  overflow: hidden;
+  background: var(--grad-ink);
+  color: #fff;
+}
+
+.ok-pagehero>.ok-container {
+  position: relative;
+  z-index: 2;
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+}
+
+.ok-pagehero-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(105% 75% at 50% 40%, rgba(0, 0, 0, .15) 0%, rgba(10, 10, 10, .55) 70%, rgba(8, 8, 8, .8) 100%),
+    linear-gradient(to bottom, rgba(10, 10, 10, .5), rgba(10, 10, 10, .2) 45%, rgba(10, 10, 10, .72));
+}
+
+.ok-pagehero .ok-display {
+  text-shadow: 0 4px 26px rgba(0, 0, 0, .5);
+}
+
+.ok-pagehero p {
+  color: rgba(255, 255, 255, .78);
+}
+
+.ok-pagehero .ok-h2,
+.ok-pagehero h2 {
+  color: #fff;
+}
+
+/* Carousel dots — bottom right so they never collide with the scroll cue */
+.ok-dots {
+  position: absolute;
+  right: clamp(1rem, 4vw, 2.5rem);
+  bottom: 1.75rem;
+  display: flex;
+  gap: .5rem;
+  z-index: 6;
+}
+
+@media (max-width:640px) {
+  .ok-dots {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+}
+
+.ok-dot {
+  width: .5rem;
+  height: .5rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .4);
+  transition: width var(--t-mid) var(--e-lux), background-color var(--t-mid) var(--e-out);
+  cursor: pointer;
+}
+
+.ok-dot.is-active {
+  width: 1.7rem;
+  background: var(--ok-yellow);
+}
+
+/* ---------------------------------------------------------
+   10. MOTION PRIMITIVES
+   Reveal states apply only when .ok-motion is on <html>, so a JS
+   failure or reduced-motion preference leaves everything visible.
+   --------------------------------------------------------- */
+.ok-motion [data-reveal] {
+  opacity: 0;
+}
+
+.ok-motion [data-reveal="up"] {
+  transform: translate3d(0, 28px, 0);
+}
+
+.ok-motion [data-reveal="down"] {
+  transform: translate3d(0, -24px, 0);
+}
+
+.ok-motion [data-reveal="left"] {
+  transform: translate3d(-36px, 0, 0);
+}
+
+.ok-motion [data-reveal="right"] {
+  transform: translate3d(36px, 0, 0);
+}
+
+.ok-motion [data-reveal="scale"] {
+  transform: scale(.94);
+}
+
+.ok-motion [data-reveal-stagger]>* {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+}
+
+.ok-motion .ok-mask {
+  clip-path: inset(0 0 100% 0);
+}
+
+.ok-motion .ok-splitline {
+  overflow: hidden;
+}
+
+/* Mask-reveal wrapper for imagery */
+.ok-reveal-img {
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Page transition veil */
+.ok-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--grad-ink);
+}
+
+.ok-veil.is-on {
+  pointer-events: auto;
+}
+
+/* Luxury preloader — only ever shown while html.ok-loading is set */
+#okLoader {
+  display: none;
+}
+
+html.ok-loading #okLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  background: var(--grad-ink);
+  color: #fff;
+}
+
+#okLoader .ldr-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.35rem;
+}
+
+#okLoader img {
+  height: 4.6rem;
+  width: auto;
+}
+
+#okLoader .ldr-rail {
+  width: min(58vw, 15rem);
+  height: 2px;
+  background: rgba(255, 255, 255, .16);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#okLoader .ldr-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--grad-gold);
+  border-radius: 2px;
+}
+
+#okLoader .ldr-word {
+  font-family: 'Inter', sans-serif;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .55);
+}
+
+html.ok-loading {
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------
+   11. MICRO-INTERACTIONS
+   --------------------------------------------------------- */
+/* Any link in body copy */
+.link-underline {
+  background-image: linear-gradient(var(--ok-amber), var(--ok-amber));
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  text-decoration: none;
+  transition: background-size .34s var(--e-lux), color var(--t-fast) var(--e-out);
+}
+
+.link-underline:hover {
+  background-size: 100% 2px;
+  color: var(--ok-cocoa);
+}
+
+/* Arrow nudge on any "see more" style link */
+.ok-arrow i,
+.link-underline i,
+.ok-btn-outline i {
+  transition: transform var(--t-mid) var(--e-lux);
+}
+
+.ok-arrow:hover i,
+.link-underline:hover i,
+.ok-btn-outline:hover i {
+  transform: translateX(4px);
+}
+
+/* Tile hover (instagram / gallery) */
+.ok-tile {
+  position: relative;
+  overflow: hidden;
+}
+
+.ok-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10, 10, 10, .55), rgba(10, 10, 10, 0) 60%);
+  opacity: 0;
+  transition: opacity var(--t-mid) var(--e-out);
+}
+
+.ok-tile:hover::after {
+  opacity: 1;
+}
+
+.ok-tile .tile-icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  color: #fff;
+  font-size: 1.5rem;
+  opacity: 0;
+  transform: scale(.75);
+  transition: opacity var(--t-mid) var(--e-out), transform var(--t-mid) var(--e-lux);
+}
+
+.ok-tile:hover .tile-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Social buttons */
+.ok-social {
+  transition: background-color var(--t-mid) var(--e-out), color var(--t-mid) var(--e-out), transform var(--t-fast) var(--e-out);
+}
+
+.ok-social:hover {
+  background: var(--ok-yellow);
+  color: var(--ok-ink);
+  transform: translateY(-3px);
+}
+
+/* Footer link */
+.ok-flink {
+  position: relative;
+  display: inline-block;
+  transition: color var(--t-fast) var(--e-out), transform var(--t-fast) var(--e-out);
+}
+
+.ok-flink:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+/* Stat counter */
+.ok-stat {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Horizontal scroller with softly faded edges */
+.ok-edgefade {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
+@media (max-width:768px) {
+  .ok-edgefade {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* Marquee strip */
+.ok-marquee {
+  display: flex;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ok-marquee>div {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3rem;
+  padding-right: 3rem;
+  animation: marquee 32s linear infinite;
+}
+
+.ok-marquee:hover>div {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Toast */
+.ok-toast {
+  background: var(--grad-ink);
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: var(--sh-4);
+  border-radius: var(--r-pill);
+  padding: .8rem 1.3rem;
+}
+
+/* Accordion */
+.acc-q {
+  transition: color var(--t-fast) var(--e-out);
+}
+
+.acc-q:hover {
+  color: var(--ok-cocoa);
+}
+
+.acc-item {
+  border-color: var(--ok-hairline);
+}
+
+/* Tracker polish */
+.tracker-step .dot {
+  box-shadow: var(--sh-1);
+}
+
+/* ---------------------------------------------------------
+   12. ACCESSIBILITY
+   --------------------------------------------------------- */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--ok-amber);
+  outline-offset: 3px;
+  /* No border-radius here. It used to set .35rem, which silently shrank every
+     form field's corners the instant it was focused (14.4px -> 5.6px). The ring
+     is an outline, so it already follows the element's own radius. */
+}
+
+.ok-header .nav-link:focus-visible {
+  outline-offset: 6px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.ok-skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 400;
+  background: var(--ok-ink);
+  color: #fff;
+  padding: .75rem 1.25rem;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  font-size: .85rem;
+  transition: top var(--t-mid) var(--e-out);
+}
+
+.ok-skip:focus {
+  top: 1rem;
+}
+
+/* Secondary text contrast lift (was #6B6B6B on white = 4.4:1, now 4.9:1) */
+.text-slate {
+  color: #63605C;
+}
+
+/* ---------------------------------------------------------
+   13. REDUCED MOTION — full kill switch
+   --------------------------------------------------------- */
+@media (prefers-reduced-motion:reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ok-motion [data-reveal],
+  .ok-motion [data-reveal-stagger]>* {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .ok-motion .ok-mask {
+    clip-path: none !important;
+  }
+
+  .ok-kenburns,
+  .ok-marquee>div {
+    animation: none !important;
+  }
+
+  #okLoader {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   14. RESPONSIVE REFINEMENTS
+   --------------------------------------------------------- */
+@media (max-width:640px) {
+  .btn-lg {
+    padding: .85rem 1.4rem;
+    font-size: .95rem;
+  }
+
+  .ok-btn-outline {
+    padding: .75rem 1.2rem;
+    font-size: .68rem;
+    letter-spacing: .1em;
+  }
+
+  .ok-card-hover:hover {
+    transform: none;
+    box-shadow: var(--sh-2);
+  }
+
+  .ok-card-hover:hover img {
+    transform: none;
+  }
+
+  .ok-scrollcue {
+    display: none;
+  }
+}
+
+/* Touch devices: no hover-dependent affordances */
+@media (hover:none) {
+  .btn:hover {
+    transform: none;
+  }
+.btn:hover {
+  background-color: black;
+  color: white;
+  border: #000;
+  
+}
+  .btn::before {
+    display: none;
+  }
+
+  .ok-card-hover:hover {
+    transform: none;
+    box-shadow: var(--sh-2);
+  }
+
+  .ok-card-hover:hover img,
+  .ok-tile:hover img {
+    transform: none;
+  }
+}
+
+/* Large screens: let the layout breathe further */
+@media (min-width:1536px) {
+  .ok-container {
+    max-width: 1340px;
+  }
+
+  .ok-section {
+    padding-block: 7.5rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   15. HOME SECTION SYSTEM
+   One language every home section follows: same rhythm, same
+   header, same card, same CTA placement. If a section needs to
+   look different it must opt in deliberately (--feature bands).
+   --------------------------------------------------------- */
+
+/* Rhythm: one vertical scale, two alternating surfaces. */
+.ok-band {
+  padding-block: clamp(4rem, 7.5vw, 7rem);
+}
+
+.ok-band--warm {
+  background: var(--ok-warm-white);
+}
+
+.ok-band--white {
+  background: #fff;
+}
+
+.ok-band--feature {
+  padding-block: 0;
+}
+
+/* full-bleed statement bands */
+
+/* Section header: eyebrow → title → squiggle → optional subtitle. Always centred. */
+.ok-sechead {
+  max-width: 48rem;
+  margin-inline: auto;
+  text-align: center;
+  margin-bottom: clamp(2.5rem, 4vw, 3.75rem);
+}
+
+.ok-title {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(1.85rem, 4.0vw, 2.9rem);
+  line-height: 1.03;
+  letter-spacing: -.02em;
+  margin: 0;
+}
+
+.ok-subtitle {
+  margin-top: 1.1rem;
+  color: black;
+  font-size: clamp(1rem, 1.75vw, 1.1rem);
+  line-height: 1.7;
+}
+
+.ok-sechead .ok-eyebrow {
+  margin-bottom: 1rem;
+}
+
+/* The brand squiggle, one size and colour everywhere it appears. */
+.ok-squiggle {
+  display: block;
+  width: 4.25rem;
+  height: .55rem;
+  margin: 1.35rem auto 0;
+  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 8' fill='none' stroke='%23E0A200' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M2 5 C 6 1, 10 1, 14 5 S 22 9, 26 5 S 34 1, 38 5 S 46 9, 50 5 S 58 1, 62 5'/%3E%3C/svg%3E");
+}
+
+.ok-squiggle--light {
+  filter: brightness(0) invert(1) opacity(.85);
+}
+
+.ok-squiggle--left {
+  margin-inline: 0;
+}
+
+/* Section footer: every section's CTA sits here, centred, one per section. */
+.ok-secfoot {
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+  text-align: center;
+}
+
+/* Card grid: one gap scale for every grid on the page. */
+.ok-cardgrid {
+  display: grid;
+  gap: clamp(1.15rem, 1.7vw, 1.5rem);
+}
+
+.ok-cardgrid--2 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.ok-cardgrid--3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.ok-cardgrid--4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width:640px) {
+
+  .ok-cardgrid--2,
+  .ok-cardgrid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width:1024px) {
+  .ok-cardgrid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ok-cardgrid--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Ragged last rows read as a mistake, so centre whatever is left over. */
+.ok-cardgrid--center {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ok-cardgrid--center>* {
+  flex: 1 1 20rem;
+  max-width: 24rem;
+}
+
+/* Card internals: one padding, one media ratio, one title size. */
+.ok-card-body {
+  padding: clamp(1.25rem, 1.7vw, 1.6rem);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ok-card-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.28;
+  letter-spacing: -.012em;
+}
+
+.ok-card-text {
+  font-size: .9rem;
+  line-height: 1.6;
+  color: var(--ok-lux-gray);
+  margin-top: .4rem;
+}
+
+.ok-card-foot {
+  margin-top: auto;
+  padding-top: 1.1rem;
+}
+
+.ok-ratio {
+  aspect-ratio: 4/3;
+}
+
+/* the single content-card ratio */
+.ok-ratio-sq {
+  aspect-ratio: 1/1;
+}
+
+/* gallery tiles only */
+.ok-ratio-wide {
+  aspect-ratio: 16/9;
+}
+
+/* full-width feature card */
+
+/* Inline "see more" affordance, identical in every card. */
+.ok-more {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.1rem;
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: var(--ok-ink);
+}
+
+/* When the "see more" IS the card footer it must sit on the baseline of the
+   card, not float under text of varying length. Declared after .ok-more so the
+   auto margin wins. */
+.ok-more.ok-card-foot {
+  margin-top: auto;
+}
+
+/* ---------------------------------------------------------
+   16. PAGE-BUILDER: per-section CARD styling
+   Driven by the Visual Editor's "Cards" controls, which set
+   --pb-card* vars on the .pb-sec wrapper (same mechanism as
+   the --pb-bg section vars in style.css).
+   --------------------------------------------------------- */
+.pb-sec[style*="--pb-cardbg"] .ok-card {
+  background-color: var(--pb-cardbg) !important;
+}
+
+/* A card's inner panels carry their own background (the cream footer on a
+   category card, the white body on a product card). They have to go
+   transparent, otherwise they paint straight over the chosen colour. */
+.pb-sec[style*="--pb-cardbg"] .ok-card>div:not(.ok-media) {
+  background-color: transparent !important;
+}
+
+.pb-sec[style*="--pb-cardborder"] .ok-card {
+  border-color: var(--pb-cardborder) !important;
+}
+
+.pb-sec[style*="--pb-cardhead"] .ok-card :is(h1, h2, h3, h4) {
+  color: var(--pb-cardhead) !important;
+}
+
+/* Text inside a card. Spans are included so the "see more" label and the price
+   follow the chosen colour too, but anything the template colours inline (brand
+   logos, star rows) and any badge keeps its own colour. */
+.pb-sec[style*="--pb-cardtext"] .ok-card :is(p, li, span:not([style]):not([class*="badge"])) {
+  color: var(--pb-cardtext) !important;
+}
+
+.pb-sec[style*="--pb-cardradius"] .ok-card {
+  border-radius: var(--pb-cardradius) !important;
+}
+
+/* Horizontal overflow is contained at the section level (every decorative blob
+   lives inside an overflow-hidden section). Deliberately NOT set on html/body:
+   setting overflow-x on the root forces overflow-y to `auto`, which turns the
+   root into its own scroll container and breaks hash navigation and sticky. */
+
+/* Section header laid out as a row: title left, section CTA right,
+   with a full-width hairline underneath instead of the brand squiggle. */
+.ok-sechead-row {
+  margin-bottom: 1.25rem;
+}
+
+.ok-sechead-row .ok-title {
+  text-align: left;
+}
+
+.ok-hr {
+  display: block;
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: #d6d6d6;
+  margin: 0 0 clamp(2rem, 3.5vw, 3rem);
+}
+
+/* ---------------------------------------------------------
+   Franchise band: solid brand yellow edge to edge, black type,
+   full viewport height.
+   --------------------------------------------------------- */
+.ok-franchise {
+  background: var(--ok-yellow);
+}
+
+/* the grid carries the height, otherwise the row collapses to the text column
+   and the image half never stretches to fill the band */
+.ok-franchise>.ok-grid {
+  min-height: 100vh;
+}
+
+.ok-franchise,
+.ok-franchise .ok-title,
+.ok-franchise .ok-subtitle,
+.ok-franchise p,
+.ok-franchise h2,
+.ok-franchise h3 {
+  color: #000 !important;
+}
+
+@media (max-width:767.98px) {
+
+  /* stacked on phones: let the content set the height instead of forcing 100vh */
+  .ok-franchise>.ok-grid {
+    min-height: auto;
+  }
+}
+
+/* ---------------------------------------------------------
+   Overlay modals (item / location / schedule)
+   app.js opens these by writing inline styles, so the closed
+   state must not use Bootstrap's .invisible or .pe-none: both
+   are !important and an inline style cannot override them.
+   --------------------------------------------------------- */
+.ok-modal {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+/* Modal hero image: cancels the modal body's 1.5rem padding on the top and
+   both sides so the photo runs edge to edge, while the copy below keeps it.
+   The card's overflow:hidden clips it to the modal's rounded corners. */
+.ok-modal-hero {
+  margin: -1.5rem -1.5rem 1.25rem;
+}
+
+/* ---------------------------------------------------------
+   About page typography (scoped to that page's markup)
+   Matches the reference: uppercase near-black section heads at a
+   restrained size, and body copy that is darker and airier than
+   the muted grey used elsewhere.
+   --------------------------------------------------------- */
+.ok-abt-h {
+  font-family: 'Poppins', 'Inter', sans-serif;
+
+  text-transform: uppercase;
+  /* font-size: clamp(1.9rem, 3.2vw, 2.9rem); */
+    font-size: 33px;
+    font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--ok-ink);
+}
+
+.ok-abt-lead {
+  color: #1B1B1B;
+  font-size: 1rem;
+  line-height: 1.8;
+  letter-spacing: 0;
+}
+
+.ok-abt-body {
+  color: #1B1B1B;
+  font-size: 1rem;
+  line-height: 1.8;
+  letter-spacing: 0;
+}
+
+.ok-abt-body-sm {
+  color: #1B1B1B;
+  font-size: 1rem;
+  line-height: 1.75;
+  letter-spacing: 0;
+}
+
+.ok-abt-cardh {
+  font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 33px;
+    font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -.012em;
+  color: var(--ok-ink);
+}
+
+/* ---------------------------------------------------------
+   About page layout (mirrors the client's reference design)
+   --------------------------------------------------------- */
+.ok-abt-hero {
+  min-height: clamp(15rem, 26vw, 20rem);
+  display: grid;
+  align-items: center;
+}
+
+.ok-abt-hero-veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .42);
+}
+
+.ok-abt-hero-h {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #fff;
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+  letter-spacing: .01em;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+/* press strip */
+.ok-press {
+  background: var(--ok-ink);
+  padding-block: 1.5rem;
+}
+
+.ok-press-label {
+  color: var(--ok-yellow);
+  font-size: .6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  margin-bottom: .9rem;
+}
+
+.ok-press-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem 2.25rem;
+}
+
+.ok-press-logo {
+  color: rgba(255, 255, 255, .82);
+  font-family: 'Poppins', serif;
+  font-weight: 700;
+  font-size: clamp(.8rem, 1.15vw, 1.05rem);
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+/* image frames */
+.ok-abt-frame {
+  border-radius: .25rem;
+  overflow: hidden;
+}
+
+.ok-abt-frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.ok-abt-tilt {
+  display: grid;
+  place-items: center;
+}
+
+.ok-abt-tilt img {
+  /* width:min(100%,22rem); */
+  /* aspect-ratio:1/1;  */
+  object-fit: cover;
+  /* transform:rotate(45deg) scale(.72); */
+  border-radius: .5rem;
+}
+
+/* full-bleed band with the overlapping white card */
+.ok-abt-band {
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+
+.ok-abt-band-card {
+  background: #fff;
+  padding: clamp(1.75rem, 3vw, 2.75rem);
+  max-width: 30rem;
+  box-shadow: var(--sh-4);
+}
+
+.ok-abt-review {
+  width: 19rem;
+  flex-shrink: 0;
+}
+
+.ok-abt-cta {
+  background: var(--ok-warm-white);
+  padding-block: clamp(3rem, 6vw, 5rem);
+  border-top: 1px solid var(--ok-hairline);
+}
+
+/* Full-viewport About section. min-height (not height) so longer CMS copy
+   grows the section instead of being clipped. */
+.ok-abt-full {
+  min-height: 100vh;
+  display: grid;
+  align-items: center;
+}
+/* About story media slot: photo, mp4 or an embed all fill the same 4:3 frame */
+.ok-abt-media{ position:relative; }
+.ok-abt-media video,
+.ok-abt-media iframe,
+.ok-abt-media img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
+  border:0; background:#000; }
+.search-toggle{
+  color: #c1adad !important;
+}
+
+/* YouTube facade: our own cover so the branded overlay never shows unplayed */
+.ok-vidcover{ display:block; position:relative; width:100%; padding:0; border:0;
+  background:#000; cursor:pointer; overflow:hidden; }
+.ok-vidcover img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
+  transition:transform .6s var(--e-lux), filter .3s ease; }
+.ok-vidcover:hover img{ transform:scale(1.04); filter:brightness(.9); }
+.ok-vidplay{ position:absolute; inset:0; display:grid; place-items:center; }
+.ok-vidplay i{ display:grid; place-items:center; width:4.5rem; height:4.5rem;
+  border-radius:50%; background:rgba(255,255,255,.94); color:var(--ok-ink);
+  font-size:1.35rem; padding-left:.2rem; box-shadow:0 8px 30px rgba(0,0,0,.35);
+  transition:transform .25s var(--e-out), background-color .25s ease; }
+.ok-vidcover:hover .ok-vidplay i{ transform:scale(1.08); background:var(--ok-yellow); }
+
+/* Background video: fills the 4:3 frame, and swallows every pointer event so
+   YouTube's controls/overlays can never surface. 16:9 source is scaled up and
+   cropped rather than letterboxed. */
+.ok-vidbg{ position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:#000; }
+.ok-vidbg-poster{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.ok-vidbg-frame{ position:absolute; inset:0; opacity:0; transition:opacity .5s ease; }
+.ok-vidbg.is-playing .ok-vidbg-frame{ opacity:1; }
+.ok-vidbg-frame iframe{ position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%); border:0; pointer-events:none; }
+/* Phones: autoplay is unreliable and the data cost is real, so the poster stands in. */
+@media (max-width:767.98px){ .ok-vidbg-frame{ display:none; } }
+
+/* Instagram reels: vertical 9:16 tiles with a play badge */
+.ok-ratio-reel{ aspect-ratio:1/1; }
+.ok-reel-badge{ position:absolute; top:.6rem; left:.6rem; z-index:2;
+  display:grid; place-items:center; width:1.75rem; height:1.75rem; border-radius:50%;
+  background:rgba(0,0,0,.55); color:#fff; font-size:.62rem; padding-left:.12rem;
+  backdrop-filter:blur(4px); }
+
+/* "Meet us at the table": full-bleed, full-height split. */
+.ok-abt-split{ background:#fff; }
+.ok-abt-split > .ok-grid{ min-height:100vh; }
+.ok-abt-split-media{ position:relative; overflow:hidden; min-height:18rem; }
+.ok-abt-split-media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.ok-abt-split-copy{ display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(2rem,5vw,5rem); }
+@media (max-width:767.98px){
+  /* stacked on phones: let the content decide the height */
+  .ok-abt-split > .ok-grid{ min-height:auto; }
+  .ok-abt-split-media{ aspect-ratio:4/3; min-height:0; }
+}
+
+/* ---------------------------------------------------------
+   Yellow (primary) buttons: one fixed appearance everywhere.
+   Square corners, and the ONLY thing that changes on hover is
+   the label going pure black. No lift, no shadow change, no
+   border change, no sheen sweep, no click ripple. Consistency
+   across the site matters more than per-button flourish.
+   --------------------------------------------------------- */
+.btn-primary{ border-radius:0; }
+.btn-primary::before{ display:none; }        /* kill the sheen sweep */
+.btn-primary .ok-ripple{ display:none; }     /* kill the click ripple */
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:focus-within{
+  background:#000;
+  color:#fff;
+  box-shadow:var(--sh-gold);   /* unchanged from rest, so the footprint never shifts */
+  border-color:transparent;
+  transform:none;
+}
+/* Mouse users see nothing change; keyboard users still get a visible ring,
+   otherwise tabbing through the site becomes impossible to follow. */
+.btn-primary:focus:not(:focus-visible){ outline:none; }
+
+/* No shadows on buttons, in any state. Kept as one blanket rule rather than
+   editing each variant, so a future variant cannot reintroduce a shadow.
+   The keyboard focus ring uses `outline`, not box-shadow, so it survives. */
+.btn, .btn:hover, .btn:focus, .btn:active, .btn:focus-within,
+.ok-btn-outline, .ok-btn-outline:hover, .ok-btn-outline:focus, .ok-btn-outline:active{
+  box-shadow:none;
+}
+
+/* Flat brand yellow on buttons, not the gold gradient. background-image must be
+   cleared explicitly, otherwise the earlier `background:var(--grad-gold)`
+   shorthand leaves its gradient behind. */
+.btn-primary{ background:var(--ok-yellow); background-image:none; }
+
+/* ---------------------------------------------------------
+   No repaint churn on button hover.
+   `.btn` carried will-change:transform + isolation:isolate + a
+   ::before sheen on z-index:-1. Hovering promoted and demoted a
+   compositor layer on every button, which is what made the whole
+   page flash. Buttons now only animate colour, which repaints the
+   button alone.
+   --------------------------------------------------------- */
+.btn, .ok-btn-outline{
+  will-change:auto;
+  isolation:auto;
+  transition:background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.btn::before, .ok-btn-outline::before{ display:none; }
+.btn:hover, .btn:focus, .btn:active, .btn:focus-within,
+.ok-btn-outline:hover, .ok-btn-outline:focus, .ok-btn-outline:active{ transform:none; }
+
+/* the outline button used its ::before as the fill, so give it a real one */
+.ok-btn-outline:hover, .ok-btn-outline:focus, .ok-btn-outline:active{
+  background:var(--ok-ink); color:#fff;
+}
+.ok-btn-outline--light:hover, .ok-btn-outline--light:focus, .ok-btn-outline--light:active{
+  background:#fff; color:var(--ok-ink);
+}
+
+/* Store picker: a single selected state, so the server-rendered choice and the
+   one JS applies can never both be visible at once. */
+.ok-locpick{ border-color:var(--ok-hairline); }
+.ok-locpick.is-selected{ border-color:var(--ok-yellow); }
+
+/* Footer Subscribe: the one yellow button with a soft corner. Hover flips to
+   white on black text, unlike every other primary button. Nothing else about
+   it changes. */
+.ok-btn-subscribe{ border-radius:.4rem; }
+.ok-btn-subscribe:hover,
+.ok-btn-subscribe:focus,
+.ok-btn-subscribe:active{ background:#fff; color:#000; border-color:transparent; }
+
+/* "Apply code" sits on the yellow promo band, so a yellow button would vanish
+   into it: white fill with a black outline by default, inverting on hover. */
+.ok-btn-onyellow{
+  background:#fff; color:#000; border:1px solid #000; border-radius:0;
+  transition:background-color .18s ease, color .18s ease;
+}
+.ok-btn-onyellow:hover,
+.ok-btn-onyellow:focus,
+.ok-btn-onyellow:active{ background:#000; color:#fff; border-color:#000; }
+
+/* ---------------------------------------------------------
+   FORM FIELDS — site-wide, no yellow anywhere.
+   Neutral 1px border at rest; hover, focus and active all give
+   the same black 1px border and nothing else. The gold glow ring
+   and the gold floating label are gone.
+   --------------------------------------------------------- */
+.ok-input, .ok-select, .ok-textarea,
+.form-control, .form-select{ border-width:1px; }
+
+.ok-input:hover, .ok-select:hover, .ok-textarea:hover,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus,
+.ok-input:active, .ok-select:active, .ok-textarea:active,
+.ok-input:focus-visible, .ok-select:focus-visible, .ok-textarea:focus-visible,
+.form-control:hover, .form-control:focus, .form-control:active,
+.form-select:hover, .form-select:focus, .form-select:active{
+  border-color:#000;
+  border-width:1px;
+  box-shadow:none;
+  outline:none;
+}
+
+/* floating labels: neutral, never gold */
+.ok-float > label{ color:#6B6B6B; }
+.ok-float > .ok-input:focus + label,
+.ok-float > .ok-input:not(:placeholder-shown) + label,
+.ok-float > .ok-textarea:focus + label,
+.ok-float > .ok-textarea:not(:placeholder-shown) + label,
+.ok-float > .ok-select:focus + label,
+.ok-float > .ok-select + label{ color:#000; }
+
+/* ticks and choice cards follow the same rule */
+input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
+.form-check-input:checked{ background-color:#000; border-color:#000; }
+.ok-checkable:has(:checked){ border-color:#000 !important; background-color:#fff !important; }
+
+/* the collapsible search fields sit inside a bordered pill, keep them clean too */
+.hdr-search .search-panel > div,
+.menu-search-panel > div{ border-color:#000; }
+
+/* ---------------------------------------------------------
+   ONE HERO TREATMENT FOR EVERY PAGE
+   The home hero is the reference: full-strength photo, a light
+   flat scrim plus a bottom fade, big uppercase white type and a
+   1px text shadow. Page heroes and the About hero had three
+   different overlays and three different type scales; they now
+   all resolve to the same thing.
+   --------------------------------------------------------- */
+
+/* stop washing the photo out (page heroes had it at 30% opacity) */
+.ok-pagehero > .ok-opacity-30,
+.ok-pagehero > .ok-opacity-35,
+.ok-pagehero > .ok-opacity-15{ opacity:1; }
+
+/* same two-layer overlay the home hero uses, and nothing heavier */
+.ok-pagehero-veil,
+.ok-abt-hero-veil{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    linear-gradient(to top, rgba(6,6,6,.34) 0%, rgba(6,6,6,.06) 18%, transparent 34%),
+    rgba(0,0,0,.18);
+}
+
+/* headline: identical to .ok-hero-title */
+.ok-pagehero .ok-display,
+.ok-abt-hero-h{
+  color:#fff;
+  font-family:'Poppins','Inter',sans-serif;
+  font-weight:600;
+  text-transform:uppercase;
+  font-size:clamp(2.2rem,6.2vw,6.5rem);
+  line-height:1.06;
+  letter-spacing:-.012em;
+  text-shadow:0 1px 1px rgba(0,0,0,.9);
+}
+
+/* supporting copy: identical to .ok-hero-sub */
+.ok-pagehero p{
+  color:#fff;
+  font-family:'Poppins','Inter',sans-serif;
+  font-weight:700;
+  font-size:20px;
+  line-height:1.6;
+  text-shadow:0 1px 1px rgba(0,0,0,.9);
+}
+.ok-pagehero .ok-eyebrow{ text-shadow:0 1px 1px rgba(0,0,0,.9); }
+
+/* the bigger type needs room to breathe */
+.ok-pagehero > .ok-container{ padding-block:clamp(5rem,11vw,9rem); }
+.ok-abt-hero{ min-height:clamp(20rem,40vw,30rem); }
+
+/* One radius for every form field, in every state. Pinned so no focus/hover
+   rule anywhere can change the geometry again. */
+.ok-input, .ok-select, .ok-textarea, .form-control, .form-select,
+.ok-input:hover, .ok-select:hover, .ok-textarea:hover,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus,
+.ok-input:active, .ok-select:active, .ok-textarea:active,
+.ok-input:focus-visible, .ok-select:focus-visible, .ok-textarea:focus-visible,
+.form-control:hover, .form-control:focus, .form-control:active,
+.form-select:hover, .form-select:focus, .form-select:active{
+  border-radius:.9rem;
+}
+
+/* One radius for every form field, in every state. Pinned so no future
+   focus/hover rule can change the geometry again. */
+.ok-input, .ok-select, .ok-textarea, .form-control, .form-select,
+.ok-input:hover, .ok-select:hover, .ok-textarea:hover,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus,
+.ok-input:active, .ok-select:active, .ok-textarea:active,
+.ok-input:focus-visible, .ok-select:focus-visible, .ok-textarea:focus-visible,
+.form-control:hover, .form-control:focus, .form-control:active,
+.form-select:hover, .form-select:focus, .form-select:active{
+  border-radius:.9rem;
+}
+
+/* ---------------------------------------------------------
+   HERO TEXT — one colour, readable on any photo.
+   Some heroes used text-white/55, /60, /80 utilities, which carry
+   !important and left the copy washed out. Every heading and
+   paragraph in a hero is now pure white with a four-sided 1px
+   shadow, so the type stays legible over bright imagery without
+   darkening the photo behind it.
+   --------------------------------------------------------- */
+.ok-pagehero h1, .ok-pagehero h2, .ok-pagehero h3, .ok-pagehero h4,
+.ok-pagehero p, .ok-pagehero .ok-display, .ok-pagehero .ok-eyebrow,
+.ok-abt-hero-h,
+.ok-hero-title, .ok-hero-sub, .ok-hero-kicker{
+  color:#fff !important;
+  /* Layer order matters: shadows paint front-to-back, so the tight dark halo
+     is listed first and sits directly against the glyph (that is what buys the
+     contrast), and the white glow spreads out behind it. The result reads as
+     lit type rather than flat white pasted on a photo. */
+  text-shadow:
+    /* 1. tight dark contact on all four sides — the contrast workhorse, and
+          what keeps the type readable over a bright bun as well as a dark room */
+     0  1px 2px rgba(0,0,0,.78),
+     0 -1px 2px rgba(0,0,0,.66),
+     1px 0  2px rgba(0,0,0,.66),
+    -1px 0  2px rgba(0,0,0,.66),
+    /* 2. the shine: a narrow white bloom just outside that dark edge */
+     0  0  9px rgba(255,255,255,.30),
+    /* 3. broad dark ambient so busy photography recedes behind the words */
+     0  5px 22px rgba(0,0,0,.55),
+    /* 4. wide, faint halo that makes the whole block glow rather than sit flat */
+     0  0  42px rgba(255,255,255,.16);
+}
+
+/* ...but not inside a light card that happens to sit in the hero. The rewards
+   points card is white, so the hero's white-text rule made its copy invisible. */
+.ok-pagehero .ok-card,
+.ok-pagehero .ok-card h1, .ok-pagehero .ok-card h2,
+.ok-pagehero .ok-card h3, .ok-pagehero .ok-card h4,
+.ok-pagehero .ok-card p, .ok-pagehero .ok-card span, .ok-pagehero .ok-card div{
+  color:var(--ok-ink) !important;
+  text-shadow:none !important;
+}
+/* the card's own coloured accents keep their colour */
+.ok-pagehero .ok-card .text-muted-warm{ color:var(--ok-slate) !important; }
+.ok-pagehero .ok-card .text-gold{ color:var(--ok-amber) !important; }
+.ok-pagehero .ok-card .text-ok-green{ color:var(--ok-green) !important; }
+.ok-pagehero .ok-card .text-white{ color:#fff !important; }
+
+/* "Meet us at the table": the section keeps its full screen height, but the
+   photo is a contained 4:3 block centred inside it instead of bleeding the
+   whole height. It was running edge to edge top and bottom, so it visually
+   collided with the section underneath. */
+.ok-abt-split > .ok-grid{
+  min-height:100vh;
+  align-items:center;
+  padding-block:clamp(2.5rem,6vw,5rem);
+}
+.ok-abt-split-media{
+  position:relative; overflow:hidden;
+  aspect-ratio:4/3;
+  max-height:calc(100vh - 10rem);
+  min-height:0;
+}
+.ok-abt-split-media img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+@media (max-width:767.98px){
+  .ok-abt-split > .ok-grid{ min-height:auto; padding-block:2.5rem; }
+  .ok-abt-split-media{ max-height:none; }
+}
+
+/* ---------------------------------------------------------
+   EVERY CTA: square corners and the yellow CTA's label style.
+   The outline button was the odd one out with tiny uppercase
+   tracked text; it now matches .btn exactly, so the only thing
+   separating the variants is colour.
+   --------------------------------------------------------- */
+.btn, .btn-sm, .btn-lg, .btn-rect,
+.ok-btn-outline, .ok-btn-subscribe, .ok-btn-onyellow{
+  border-radius:0;
+}
+.ok-btn-outline{
+  font-size:1rem;
+  font-weight:700;
+  text-transform:none;
+  letter-spacing:.005em;
+  padding:.82rem 1.6rem;
+}
+
+/* Search panels (header + menu bar): an even shadow on all four sides so the
+   panel reads as floating above the page. The old one only cast downwards, so
+   the top and side edges disappeared into the content behind them. */
+.hdr-search .search-panel > div,
+.menu-search-panel > div{
+  box-shadow:0 0 0 1px rgba(20,20,20,.06), 0 6px 26px rgba(20,20,20,.18) !important;
+}
+
+/* ---------------------------------------------------------
+   Icon tiles: the pale cream behind an icon was barely visible
+   on a white card, so the icon looked like it floated. Darker
+   yellow, still soft enough for black icons to read on it.
+   --------------------------------------------------------- */
+.bg-cream{ background-color:#FFE08A !important; }
+
+/* Segmented tabs (Earn / Redeem / History). The buttons carry Bootstrap's
+   .bg-transparent, which is !important and was cancelling the active chip's
+   dark fill, leaving white text on a pale pill. Active tab is solid black. */
+[data-tab-group] .chip.is-active{
+  background-color:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+}
+[data-tab-group] .chip{ color:var(--ok-ink); }
+
+/* Rewards page: every CTA inverts to white-on-black text instead of the
+   site-wide black fill. Scoped to this page only. */
+.ok-page-rewards .btn:hover, .ok-page-rewards .btn:focus,
+.ok-page-rewards .btn:active, .ok-page-rewards .btn:focus-within,
+.ok-page-rewards .ok-btn-outline:hover, .ok-page-rewards .ok-btn-outline:focus,
+.ok-page-rewards .ok-btn-outline:active{
+  background:#fff !important;
+  color:#000 !important;
+  border-color:#000 !important;
+}
+
+/* Referral code box sits on the dark card: the !bg-white/10 and !border-white/20
+   utilities it relied on were never generated, so it fell back to .ok-input's
+   white fill and the white code text became invisible. */
+.ok-refcode{
+  background-color:rgba(255,255,255,.1) !important;
+  border-color:rgba(255,255,255,.2) !important;
+  color:#fff !important;
+  cursor:pointer;
+}
+.ok-refcode span:last-child{ color:rgba(255,255,255,.45) !important; }
+
+/* "Redeem points" keeps the brand yellow and inverts to black on hover,
+   unlike the rest of this page's CTAs. */
+.ok-page-rewards a[href="#redeem"].btn-primary{ background:var(--ok-yellow) !important; color:#000 !important; }
+.ok-page-rewards a[href="#redeem"].btn-primary:hover,
+.ok-page-rewards a[href="#redeem"].btn-primary:focus,
+.ok-page-rewards a[href="#redeem"].btn-primary:active{
+  background:#000 !important; color:#fff !important; border-color:#000 !important;
+}
+
+/* Inverted CTA: white fill with black text on every interactive state,
+   instead of the site-wide black fill. Reusable, currently on the catering
+   hero's "Request a quote". */
+.ok-btn-invert:hover, .ok-btn-invert:focus,
+.ok-btn-invert:active, .ok-btn-invert:focus-within{
+  background:#fff !important;
+  color:#000 !important;
+  border-color:#000 !important;
+}
+
+/* Carousel arrows sit centred via `-translate-y-1/2`. The generic .ok-iconbtn
+   hover/active transform REPLACED that translate, so the button dropped half
+   its height out from under the cursor, un-hovered, snapped back, re-hovered:
+   a flicker loop. Keep the centring transform in every state; the background
+   tint still gives the hover feedback. */
+.ok-iconbtn.-translate-y-1\/2,
+.ok-iconbtn.-translate-y-1\/2:hover,
+.ok-iconbtn.-translate-y-1\/2:focus,
+.ok-iconbtn.-translate-y-1\/2:focus-visible,
+.ok-iconbtn.-translate-y-1\/2:active{
+  transform: translateY(-50%);
+  transition: background-color var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
+}
+
+/* ---------------------------------------------------------
+   MENU CATEGORY BAR
+   --------------------------------------------------------- */
+
+/* Sticks under the header: 4rem tall on mobile, 5rem from md up.
+   (The old markup used Tailwind's `top-16`, which was never generated during
+   the Bootstrap migration, so on phones the bar had no `top` at all and
+   position:sticky did nothing.) */
+.ok-menu-stick{ top: 4rem; }
+@media (min-width: 768px){ .ok-menu-stick{ top: 5rem; } }
+
+/* Uniform 1px outline on every side, in every state. The hover shadow used to
+   sit under the pill and read as a heavier bottom edge instead of a border. */
+.menu-catbar .chip,
+.menu-catbar .chip:hover,
+.menu-catbar .chip:focus,
+.menu-catbar .chip:active,
+.menu-catbar .chip.is-active{
+  border-width: 1px;
+  box-shadow: none;
+}
+.menu-catbar .chip:hover{ border-color: var(--ok-ink); }
+
+/* Category photo in place of the icon */
+.chip-cat{ padding-left: .3rem; gap: .5rem; }
+.chip-thumb{
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+  background: var(--ok-hairline);
+}
+
+/* Delivery / Pickup segmented toggle.
+   On phones the labels used to be hidden (`d-none d-sm-inline`), leaving two
+   bare icons. Both labels now always show and the group spans the full width
+   so it fits the phone screen; from lg up it goes back to its natural width. */
+[data-ordertype-group]{
+  width: 100%;
+  align-self: stretch;
+}
+[data-ordertype-group] [data-ordertype]{
+  flex: 1 1 0;
+  justify-content: center;
+  white-space: nowrap;
+}
+@media (min-width: 992px){
+  [data-ordertype-group]{ width: auto; align-self: auto; }
+  [data-ordertype-group] [data-ordertype]{ flex: 0 0 auto; }
+}
+
+/* Home-page-only sticky order bar, phone layout only. */
+.ok-mobile-order{
+  position: fixed;
+  left: .5rem;                 /* inset from both edges instead of inner padding */
+  right: .5rem;
+  bottom: 0;
+  z-index: 40;                 /* under the header (50) and every overlay */
+  width: auto;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ok-yellow);
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;             /* same label style as the other CTAs */
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color .18s ease, color .18s ease;
+}
+.ok-mobile-order:hover,
+.ok-mobile-order:focus,
+.ok-mobile-order:focus-visible,
+.ok-mobile-order:active{
+  background: #000;
+  color: #fff;
+}
+
+/* The fixed bar would otherwise sit on top of the last 40px of the footer. */
+@media (max-width: 991.98px){
+  body:has(.ok-mobile-order){ padding-bottom: 40px; }
+}
+
+/* Menu chips: the hover lift pushed the pill's top edge outside the
+   `overflow-x:auto` scroller, which clips vertically too, so the black top
+   border was sliced off on hover. No lift, no clipping. */
+.menu-catbar .chip:hover,
+.menu-catbar .chip:focus,
+.menu-catbar .chip:active{ transform: none; }
+
+/* ---------------------------------------------------------
+   HEADER SEARCH ON PHONES
+   The toggle used to be hidden below md and the drawer carried a dead
+   duplicate field. It now lives in the header at every width; on phones the
+   panel expands across the header bar instead of hanging off the toggle.
+   --------------------------------------------------------- */
+@media (max-width: 767.98px){
+  .hdr-search .search-panel{
+    position: fixed;
+    /* takes over the whole 4rem header row. An inset panel is not enough: the
+       pill's rounded left end leaves a transparent notch that the logo shows
+       through, so the panel carries its own opaque bar. */
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    padding-inline: .75rem;
+    background: #fff;
+    transform: none;
+    /* wipe open from the right, out of the magnifier that was just tapped;
+       clip-path keeps the label and icons undistorted, unlike scaleX */
+    clip-path: inset(0 0 0 100%);
+    transition: clip-path .3s cubic-bezier(.4, 0, .2, 1), opacity .2s ease;
+  }
+  .hdr-search.is-open .search-panel{
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+  /* the desktop panel is a clamp()-ed fixed width; on phones it fills the bar */
+  .hdr-search .search-panel > div{ width: 100%; height: 2.75rem; }
+}
+
+/* The About hero's veil (z-index:1) was painting OVER its heading, because the
+   content wrapper had position:relative but no z-index of its own — so "About
+   Us" was being viewed through the scrim and read grey instead of white. Page
+   heroes already lift their container to z-index:2; match that here. */
+.ok-abt-hero > .ok-container{ position: relative; z-index: 2; }
+
+/* ---------------------------------------------------------
+   HERO TEXT SHINE
+   A gloss highlight travelling across the type. The fill is a wide
+   gradient clipped to the glyphs, and only its position animates, so
+   nothing reflows and the four-layer shadow underneath still carries
+   the contrast. The base tone sits a touch below pure white — white
+   is the ceiling, so a brighter band is only visible if the rest of
+   the letter is slightly under it.
+   --------------------------------------------------------- */
+/* Stay inside 0%–100%. Background percentages position the image *within* the
+   element, so anything outside that range slides a `no-repeat` 300%-wide
+   gradient clean off the box — the fill then resolves to transparent and the
+   dark text-shadow shows straight through the glyphs. */
+@keyframes okHeroShine{
+  0%   { background-position: 100% 0; }
+  100% { background-position:   0% 0; }
+}
+
+.ok-pagehero h1, .ok-pagehero h2, .ok-pagehero h3, .ok-pagehero h4,
+.ok-pagehero p, .ok-pagehero .ok-display, .ok-pagehero .ok-eyebrow,
+.ok-abt-hero-h,
+.ok-hero-title, .ok-hero-sub, .ok-hero-kicker{
+  background-image: linear-gradient(100deg,
+    #dfe7f1 0%,
+    #dfe7f1 40%,
+    #ffffff 47%,
+    #ffffff 53%,
+    #dfe7f1 60%,
+    #dfe7f1 100%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: okHeroShine 4.5s linear infinite;
+
+  /* A background-clip:text fill lives in the BACKGROUND layer, which paints
+     below text-shadow — so the dark halo covered the gloss and the glyphs
+     came out black. drop-shadow filters the composited result instead, so the
+     shine stays on top and still sits on its dark halo. */
+  text-shadow: none;
+  filter:
+    drop-shadow(0 1px 1.5px rgba(0,0,0,.9))
+    drop-shadow(0 3px 14px rgba(0,0,0,.55));
+}
+
+/* stagger the sweep so a headline and its supporting line do not flash
+   in lockstep — it reads as light moving across the block */
+.ok-pagehero p,
+.ok-hero-sub{ animation-delay: -1.6s; }
+.ok-pagehero .ok-eyebrow,
+.ok-hero-kicker{ animation-delay: -2.8s; }
+
+/* light cards that sit inside a hero keep flat ink text */
+.ok-pagehero .ok-card,
+.ok-pagehero .ok-card h1, .ok-pagehero .ok-card h2,
+.ok-pagehero .ok-card h3, .ok-pagehero .ok-card h4,
+.ok-pagehero .ok-card p, .ok-pagehero .ok-card span, .ok-pagehero .ok-card div{
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .ok-pagehero h1, .ok-pagehero h2, .ok-pagehero h3, .ok-pagehero h4,
+  .ok-pagehero p, .ok-pagehero .ok-display, .ok-pagehero .ok-eyebrow,
+  .ok-abt-hero-h,
+  .ok-hero-title, .ok-hero-sub, .ok-hero-kicker{
+    background-image: none;
+    -webkit-text-fill-color: #fff;
+    animation: none;
+  }
+}
+
+/* Hero overlays, one notch darker across every page. The flat layer does the
+   work (it darkens the whole frame evenly); the bottom gradient stays there to
+   seat the copy block. The home hero's CMS-controlled .pb-overlay still stacks
+   on top of this, so the admin can keep dialling it from the panel. */
+.ok-pagehero-veil,
+.ok-abt-hero-veil{
+  background:
+    linear-gradient(to top, rgba(6,6,6,.46) 0%, rgba(6,6,6,.14) 20%, transparent 38%),
+    rgba(0,0,0,.30);
+}
+.ok-hero-veil{
+  background:
+    linear-gradient(to top, rgba(6,6,6,.46) 0%, rgba(6,6,6,.14) 20%, transparent 38%),
+    rgba(0,0,0,.12);
+}
+
+/* ---------------------------------------------------------
+   FOOTER TEXT — full white
+   Every string in the footer was a faded white (.45 / .55 / .60 alpha),
+   so the column links, the blurb and the copyright line all read as grey
+   on the dark panel. They are pure white now; the utilities themselves are
+   left alone because other dark sections still want the muted version.
+   --------------------------------------------------------- */
+.ok-footer,
+.ok-footer p,
+.ok-footer a,
+.ok-footer li,
+.ok-footer h3,
+.ok-footer h4,
+.ok-footer span,
+.ok-footer .text-w-45,
+.ok-footer .text-w-55,
+.ok-footer .text-w-60,
+.ok-footer .ok-flink{
+  color: #fff !important;
+}
+
+/* Subscribe stays black-on-yellow, and black-on-white when hovered.
+   The blanket white-text rule above had turned the label white in the hover
+   state — and .ok-btn-subscribe's hover background is white, so the word
+   disappeared completely. Black in every state. */
+.ok-footer .btn-primary,
+.ok-footer .btn-primary span,
+.ok-footer .btn-primary:hover,
+.ok-footer .btn-primary:focus,
+.ok-footer .btn-primary:focus-within,
+.ok-footer .btn-primary:active{ color: #000 !important; }
+.ok-footer svg text{ color: initial !important; }
+.ok-footer .text-ink,
+.ok-footer .text-ink i{ color: var(--ok-ink) !important; }
+.ok-footer input{ color: var(--ok-ink) !important; }
+.ok-footer input::placeholder{ color: var(--ok-slate) !important; }
+
+/* the dividers were white at 10% too — lift them so the sections read */
+.ok-footer .border-w-10{ border-color: rgba(255,255,255,.22) !important; }
+
+/* ---------------------------------------------------------
+   ONE RADIUS: 8px, everywhere, in every state
+   Buttons had been squared off (0) and fields were on .9rem
+   (14.4px), so the two halves of a form never lined up. Both are
+   8px now. Pinned across hover / focus / active so nothing can
+   change the geometry mid-interaction.
+   --------------------------------------------------------- */
+:root{ --r-control: 8px; }
+
+/* form fields */
+.ok-input, .ok-select, .ok-textarea, .form-control, .form-select,
+.ok-input:hover, .ok-select:hover, .ok-textarea:hover,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus,
+.ok-input:active, .ok-select:active, .ok-textarea:active,
+.ok-input:focus-visible, .ok-select:focus-visible, .ok-textarea:focus-visible,
+.form-control:hover, .form-control:focus, .form-control:active,
+.form-select:hover, .form-select:focus, .form-select:active,
+input[type="text"], input[type="email"], input[type="tel"], input[type="url"],
+input[type="date"], input[type="datetime-local"], input[type="number"],
+input[type="password"], input[type="search"], textarea, select{
+  border-radius: var(--r-control);
+}
+
+/* buttons and CTAs */
+.btn, .btn-sm, .btn-lg, .btn-rect, .btn-block,
+.btn-primary, .btn-secondary, .btn-dark,
+.ok-btn-outline, .ok-btn-subscribe, .ok-btn-onyellow, .ok-btn-invert,
+.btn:hover, .btn:focus, .btn:active, .btn:focus-within,
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active,
+.ok-btn-outline:hover, .ok-btn-outline:focus, .ok-btn-outline:active,
+.ok-btn-subscribe:hover, .ok-btn-subscribe:focus, .ok-btn-subscribe:active,
+.ok-btn-onyellow:hover, .ok-btn-onyellow:focus, .ok-btn-onyellow:active{
+  border-radius: var(--r-control);
+}
+
+/* pills stay pills — chips, avatars and icon buttons are meant to be round */
+.chip, .badge, .rounded-pill, .ok-iconbtn, .chip-thumb{ border-radius: 9999px; }
+
+/* ---------------------------------------------------------
+   ONE TYPE SYSTEM — the home page is the reference
+   Four competing sets had grown up: the home sections
+   (.ok-title / .ok-subtitle / .ok-card-title / .ok-card-text),
+   the inner pages (.ok-h2 + "font-display fw-bold ok-fs-lg"),
+   the About page (.ok-abt-*), and a scatter of raw size
+   utilities. Everything resolves to the home's scale now.
+   Aliased in CSS rather than rewritten across ~40 templates:
+   one place to read, one place to change.
+   --------------------------------------------------------- */
+
+/* ── section heading = .ok-title ───────────────────────────── */
+.ok-h2,
+.ok-abt-h,
+.ok-sechead h2,
+.ok-section > .ok-container > .text-center > h2{
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: clamp(1.85rem, 4vw, 2.9rem);
+  line-height: 1.03;
+  letter-spacing: -.02em;
+  color: var(--ok-ink);
+}
+
+/* ── supporting paragraph under a heading = .ok-subtitle ───── */
+.ok-abt-body,
+.ok-abt-body-sm,
+.ok-sechead p,
+.ok-h2 + p,
+.ok-abt-h + p{
+  font-size: clamp(1rem, 1.75vw, 1.1rem);
+  line-height: 1.7;
+  letter-spacing: 0;
+}
+
+/* ── card heading = .ok-card-title ─────────────────────────── */
+.ok-card h3,
+.ok-abt-cardh,
+article.ok-card > h3,
+.ok-card .font-display.fw-bold{
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.28;
+  letter-spacing: -.012em;
+}
+
+/* ── card body copy = .ok-card-text ────────────────────────── */
+.ok-card > p,
+.ok-card h3 + p,
+.ok-abt-cardh + p{
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+/* The menu card is deliberately outside this: its title is a small
+   uppercase label sized to sit beside a photo, and the item modal was
+   matched to it on purpose. */
+.ok-card h3.text-uppercase,
+.menu-catbar .chip{
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+/* .ok-btn-invert wraps its label in a <span> on checkout; the colour has to
+   reach the span too or the text stays black-on-black. */
+.ok-btn-invert:hover span, .ok-btn-invert:focus span,
+.ok-btn-invert:active span, .ok-btn-invert:focus-within span{
+  color: #000 !important;
+}
+
+/* Header search sits centred in the bar on phones instead of bunched in with
+   the cart and the burger. No transform is used to do the centring: a
+   transform on this element would become the containing block for the
+   position:fixed search panel inside it and break the panel's placement. */
+@media (max-width: 767.98px){
+  .ok-header .ok-container > .d-flex{ position: relative; }
+  .hdr-search{
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 2.5rem;              /* the toggle's own size */
+    margin-inline: auto;
+  }
+}

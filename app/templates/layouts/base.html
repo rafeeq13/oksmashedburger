@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#141414">
+  <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}Order OK Smashed Burger for delivery or pickup.{% endblock %}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+  {# Bootstrap first so our own layers always win. Tailwind's CDN still loads
+     above during the migration and is removed once every page is converted. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/premium.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/utils.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/generated.css') }}">
+
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="font-body bg-white text-ink antialiased">
+  <a href="#main" class="ok-skip">Skip to content</a>
+
+  {# Luxury loading sequence, first visit of the session only. #}
+  <div id="okLoader" aria-hidden="true">
+    <div class="ldr-inner">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="">
+      <div class="ldr-rail"><span class="ldr-fill"></span></div>
+      <div class="ldr-word">Fresh smashed, every time</div>
+    </div>
+  </div>
+
+  <div class="ok-progress" data-progress aria-hidden="true"><span></span></div>
+
+  {% include "partials/header.html" %}
+
+  <main id="main" class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
+
+  {% include "partials/footer.html" %}
+  {% include "partials/location_modal.html" %}
+  {% include "partials/item_modal.html" %}
+  {% include "partials/flash.html" %}
+
+  <div class="ok-veil" data-veil aria-hidden="true"></div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

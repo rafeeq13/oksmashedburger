@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% block title %}Customers, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+  <div>
+    <h2 class="ok-h2">Customers</h2>
+    <p class="text-slate text-sm mt-1">{{ rows|length }} registered customer{{ '' if rows|length == 1 else 's' }}</p>
+  </div>
+  <a href="/admin/customers/export.csv{% if q %}?q={{ q }}{% endif %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-arrow-down"></i> Export CSV</a>
+</div>
+
+<form method="get" class="mb-5 flex gap-2 max-w-md">
+  <input name="q" value="{{ q }}" class="ok-input py-2 text-sm" placeholder="Search name or email…">
+  <button class="btn btn-dark btn-sm shrink-0"><i class="fa-solid fa-magnifying-glass"></i></button>
+  {% if q %}<a href="/admin/customers" class="btn btn-secondary btn-sm shrink-0">Clear</a>{% endif %}
+</form>
+
+{% if rows %}
+<div class="ok-card overflow-x-auto">
+  <table data-table data-page-size="10" class="w-full text-sm">
+    <thead><tr class="text-left text-slate border-b border-[var(--ok-line)]">
+      <th class="p-3 font-semibold">Customer</th><th class="p-3 font-semibold">Email</th><th class="p-3 font-semibold text-right">Orders</th><th class="p-3 font-semibold text-right">Total spend</th><th class="p-3 font-semibold text-right">Points</th><th class="p-3 font-semibold">Last order</th><th class="p-3"></th>
+    </tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="border-b border-[var(--ok-line)] last:border-0  transition">
+        <td class="p-3">
+          <a href="/admin/customers/{{ r.user.id }}{{ qs }}" class="flex items-center gap-2 font-semibold ">
+            <span class="w-8 h-8 rounded-full bg-softyellow text-okamber grid place-items-center font-bold shrink-0">{{ (r.user.first_name or r.user.email)[0]|upper }}</span>
+            {{ r.user.full_name }}
+          </a>
+        </td>
+        <td class="p-3 text-slate">{{ r.user.email }}</td>
+        <td class="p-3 text-right font-semibold">{{ r.orders }}</td>
+        <td class="p-3 text-right font-bold">${{ '%.2f'|format(r.spend) }}</td>
+        <td class="p-3 text-right">{{ '{:,}'.format(r.points) }}</td>
+        <td class="p-3 text-slate whitespace-nowrap">{{ r.last.strftime('%b %d, %Y') if r.last else '-' }}</td>
+        <td class="p-3 text-right"><a href="/admin/customers/{{ r.user.id }}{{ qs }}" class="link-underline">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="ok-card p-12 text-center text-slate">No customers{% if q %} matching “{{ q }}”{% endif %} yet.</div>
+{% endif %}
+{% endblock %}

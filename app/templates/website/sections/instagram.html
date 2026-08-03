@@ -1,0 +1,34 @@
+<!-- Follow us on Instagram -->
+{% set ig_imgs = [] %}
+{% for i in range(1, 9) %}{% set _ = ig_imgs.append(site.get('ig_' ~ i ~ '_img') or site_defaults.get('ig_' ~ i ~ '_img')) %}{% endfor %}
+{% set _handle = cfg.get('handle') or 'oksmashedburger' %}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--white') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'Follow us on Instagram' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+      <p class="ok-subtitle">{{ cfg.get('tagline') or 'Real smashed burgers, fast. Tag us and you might land on the grid.' }}</p>
+    </div>
+
+    {# Reels, not photo posts: 9:16 tiles with a reel badge. Each tile links to
+       its own reel when `ig_N_reel` is set, otherwise to the profile's reels
+       tab. Instagram has no public feed endpoint, so the covers stay the
+       existing ig_N_img images that the admin already manages. #}
+    <div class="ok-cardgrid ok-cardgrid--4" data-reveal-stagger>
+      {% for img in ig_imgs %}
+      {% set _reel = site.get('ig_' ~ loop.index ~ '_reel') %}
+      <a href="{{ _reel or ('https://instagram.com/' ~ _handle ~ '/reels/') }}" target="_blank" rel="noopener"
+         class="ok-tile ok-ratio-reel d-block ok-rounded-2xl bg-ink ok-shadow-md">
+        <img src="{{ img }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy">
+        <span class="ok-reel-badge"><i class="fa-solid fa-play"></i></span>
+        <span class="tile-icon"><i class="fa-brands fa-instagram"></i></span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="ok-secfoot" data-reveal="up">
+      <a href="https://instagram.com/{{ _handle }}/reels/" target="_blank" rel="noopener" class="ok-btn-outline"><i class="fa-brands fa-instagram"></i> {{ cfg.get('cta_text') or 'Watch our reels' }}</a>
+    </div>
+  </div>
+</section>

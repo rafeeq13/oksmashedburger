@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GrapesJS drag diagnostic</title>
+<link rel="stylesheet" href="./grapes.min.css">
+<style>
+  body{margin:0;font-family:system-ui,sans-serif}
+  #note{padding:10px 14px;background:#141414;color:#fff;font-size:14px}
+  #note b{color:#FFC72C}
+  #err{padding:8px 14px;background:#C62828;color:#fff;font:12px monospace;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div id="note">
+  <b>Drag test (vanilla GrapesJS).</b>
+  1) Left panel se ek block (Text / Box) uthaa kar canvas pe chhodein.
+  2) Canvas me "Drag me" box ko select karke uske move-handle (✥) se pakad kar upar/neeche move karein.
+  &nbsp;→ Agar yahan drag chalta hai to library theek hai; masla builder config me hai. Agar yahan bhi nahi chalta to library/browser ka masla hai.
+</div>
+<div id="err"></div>
+<div id="gjs" style="height:calc(100vh - 60px)"></div>
+
+<script src="./grapes.min.js"></script>
+<script>
+  // Surface ANY error visibly so we can see it without opening the console.
+  window.addEventListener('error', function (e) {
+    var b = document.getElementById('err');
+    b.style.display = 'block';
+    b.textContent += 'JS ERROR: ' + (e.message || e) + '  @ ' + (e.filename || '') + ':' + (e.lineno || '') + '\n';
+  });
+
+  var editor = grapesjs.init({
+    container: '#gjs',
+    height: '100%',
+    fromElement: false,
+    storageManager: false,
+    // NO custom appendTo, NO custom panels -> GrapesJS default UI (panel + blocks on the right)
+    blockManager: {
+      blocks: [
+        { id: 'b-text', label: 'Text', content: '<div style="padding:14px">Insert your text here</div>' },
+        { id: 'b-box',  label: 'Box',  content: '<div style="height:90px;background:#FFC72C;margin:10px;border-radius:8px"></div>' },
+        { id: 'b-btn',  label: 'Button', content: '<a style="display:inline-block;background:#141414;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;margin:10px">Click me</a>' }
+      ]
+    }
+  });
+
+  // Some initial content to try reordering.
+  editor.setComponents(
+    '<section style="padding:40px;text-align:center;background:#f4f4f4">' +
+      '<h1 style="font-family:sans-serif">Drag me (heading)</h1>' +
+      '<p style="font-family:sans-serif">And drag me too (paragraph). Try moving one above the other.</p>' +
+      '<div style="height:80px;background:#FFC72C;border-radius:8px;margin:16px auto;max-width:300px"></div>' +
+    '</section>'
+  );
+
+  // Open the blocks panel by default (GrapesJS default UI shows it via the panel button).
+  editor.on('load', function () { try { editor.runCommand('open-blocks'); } catch (e) {} });
+</script>
+</body>
+</html>

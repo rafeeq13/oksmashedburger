@@ -1,0 +1,184 @@
+/* =========================================================
+   OK Smashed Burger — BOOTSTRAP THEME LAYER
+   Load order: bootstrap.min.css → style.css → premium.css → theme.css
+
+   Purpose of this file:
+     1. Map the brand onto Bootstrap's CSS variables.
+     2. Pin the base reset so pages render identically whether or
+        not the Tailwind CDN is still loaded (the migration runs
+        page by page, both frameworks coexist until it is done).
+     3. Provide the handful of utilities Tailwind gave us that
+        Bootstrap has no equivalent for.
+   No page-specific rules belong here.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. BRAND ON BOOTSTRAP'S VARIABLES
+   --------------------------------------------------------- */
+:root{
+  --bs-primary:#FFC72C;
+  --bs-primary-rgb:255,199,44;
+  --bs-secondary:#141414;
+  --bs-secondary-rgb:20,20,20;
+  --bs-success:#2E7D32;
+  --bs-danger:#C62828;
+  --bs-warning:#E0A200;
+
+  --bs-body-color:#141414;
+  --bs-body-bg:#FCFAF6;
+  --bs-body-font-family:'Quicksand','Inter',system-ui,sans-serif;
+  --bs-body-font-weight:500;
+  --bs-emphasis-color:#0E0E0E;
+  --bs-secondary-color:#63605C;
+
+  --bs-border-color:var(--ok-hairline,rgba(20,20,20,.09));
+  --bs-border-radius:.9rem;
+  --bs-border-radius-sm:.6rem;
+  --bs-border-radius-lg:1.25rem;
+  --bs-border-radius-xl:1.75rem;
+  --bs-border-radius-pill:9999px;
+
+  --bs-link-color:#141414;
+  --bs-link-hover-color:#2A1B12;
+
+  /* Must stay `inherit` (Bootstrap's own default). Pinning a colour here makes
+     the reboot set an explicit colour on every h1-h6, which breaks inheritance
+     for headings inside dark sections such as .ok-pagehero. */
+  --bs-heading-color:inherit;
+  --bs-font-sans-serif:'Quicksand','Inter',system-ui,sans-serif;
+}
+
+/* ---------------------------------------------------------
+   2. BASE RESET PARITY
+   Bootstrap's reboot gives headings and paragraphs bottom
+   margins; our components own their own spacing, so we zero
+   them explicitly. Doing this here means removing Tailwind
+   later cannot shift a single layout.
+   --------------------------------------------------------- */
+h1,h2,h3,h4,h5,h6,p,figure,blockquote,dl,dd{ margin:0; }
+ul,ol{ margin:0; padding:0; list-style:none; }
+ul.ok-list,ol.ok-list{ padding-left:1.15rem; list-style:revert; }
+button{ background:none; border:0; padding:0; color:inherit; font:inherit; }
+a{ text-decoration:none; color:inherit; }
+img,svg,video,iframe{ display:block; max-width:100%; }
+table{ border-collapse:collapse; }
+hr{ margin:0; opacity:1; border:0; }
+:where(input,select,textarea,button){ font-family:inherit; }
+
+/* Bootstrap containers must not fight our own page container. */
+.ok-container{ width:100%; }
+
+/* ---------------------------------------------------------
+   3. BOOTSTRAP COMPONENTS, RE-SKINNED
+   Our .btn / .badge / .card rules live in premium.css and are
+   loaded after Bootstrap, so they already win. These fill the
+   gaps Bootstrap owns outright.
+   --------------------------------------------------------- */
+.btn{ --bs-btn-padding-x:1.6rem; --bs-btn-padding-y:.82rem; --bs-btn-border-radius:9999px;
+  --bs-btn-font-weight:700; --bs-btn-box-shadow:none; }
+.btn:focus-visible{ box-shadow:none; }
+
+.form-control,.form-select{
+  border:1.5px solid var(--ok-hairline-strong,rgba(20,20,20,.16)); border-radius:.9rem;
+  padding:.85rem 1rem; font-size:.96rem; color:var(--ok-ink,#0E0E0E); background-color:#fff;
+}
+.form-control:focus,.form-select:focus{
+  border-color:var(--ok-amber,#E0A200); box-shadow:0 0 0 4px rgba(255,199,44,.22);
+}
+.form-control::placeholder{ color:#B4ADA6; }
+.form-check-input:checked{ background-color:var(--ok-amber,#E0A200); border-color:var(--ok-amber,#E0A200); }
+
+.dropdown-menu{ border:1px solid var(--ok-hairline,rgba(20,20,20,.09)); border-radius:.9rem;
+  box-shadow:var(--sh-4,0 8px 18px rgba(28,22,16,.08)); padding:.5rem 0; }
+
+/* ---------------------------------------------------------
+   4. UTILITIES BOOTSTRAP DOES NOT SHIP
+   Only what the templates actually need, named ok-* so there
+   is never a collision with a Bootstrap class.
+   --------------------------------------------------------- */
+
+/* Object fit */
+.ok-cover{ width:100%; height:100%; object-fit:cover; }
+.ok-contain{ width:100%; height:100%; object-fit:contain; }
+
+/* Line clamping */
+.ok-clamp-1,.ok-clamp-2,.ok-clamp-3,.ok-clamp-5{
+  display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+.ok-clamp-1{ -webkit-line-clamp:1; }
+.ok-clamp-2{ -webkit-line-clamp:2; }
+.ok-clamp-3{ -webkit-line-clamp:3; }
+.ok-clamp-5{ -webkit-line-clamp:5; }
+
+/* Surfaces */
+.bg-ink{ background-color:var(--ok-jet,#141414) !important; }
+.bg-cream{ background-color:#FFF3CC !important; }
+.bg-cream-soft{ background-color:rgba(255,243,204,.3) !important; }
+.bg-gold{ background:var(--grad-gold) !important; }
+.text-ink{ color:var(--ok-jet,#141414) !important; }
+.text-muted-warm{ color:var(--ok-lux-gray,#8A8480) !important; }
+.text-gold{ color:var(--ok-amber,#E0A200) !important; }
+
+/* Radii */
+.ok-r-sm{ border-radius:.6rem; }
+.ok-r-md{ border-radius:.9rem; }
+.ok-r-lg{ border-radius:1.25rem; }
+.ok-r-xl{ border-radius:1.75rem; }
+.ok-r-pill{ border-radius:9999px; }
+.ok-r-0{ border-radius:0 !important; }
+
+/* Elevation */
+.ok-sh-1{ box-shadow:var(--sh-1); }
+.ok-sh-2{ box-shadow:var(--sh-2); }
+.ok-sh-3{ box-shadow:var(--sh-3); }
+.ok-sh-4{ box-shadow:var(--sh-4); }
+
+/* Sizing helpers */
+.ok-min-w-0{ min-width:0; }
+.ok-mw-sm{ max-width:32rem; }
+.ok-mw-md{ max-width:42rem; }
+.ok-mw-lg{ max-width:56rem; }
+.ok-mw-xl{ max-width:72rem; }
+.ok-fill{ position:absolute; inset:0; }
+
+/* Stacks: Bootstrap's gap utilities need a flex parent, this is the
+   simple vertical-rhythm helper the old markup relied on. */
+.ok-stack-1 > * + *{ margin-top:.5rem; }
+.ok-stack-2 > * + *{ margin-top:.75rem; }
+.ok-stack-3 > * + *{ margin-top:1rem; }
+.ok-stack-4 > * + *{ margin-top:1.5rem; }
+
+/* Type scale used outside the heading components */
+.ok-fs-xs{ font-size:.72rem; }
+.ok-fs-sm{ font-size:.82rem; }
+.ok-fs-md{ font-size:.9rem; }
+.ok-fs-lg{ font-size:1.0625rem; }
+.ok-tracking{ letter-spacing:.16em; }
+.ok-tracking-wide{ letter-spacing:.3em; }
+.ok-upper{ text-transform:uppercase; }
+
+/* Z-index steps */
+.ok-z-1{ z-index:1; }
+.ok-z-10{ z-index:10; }
+.ok-z-20{ z-index:20; }
+
+/* Hover-scoped children, replacing Tailwind's group-hover */
+.ok-hovergroup .ok-onhover{ transition:color var(--t-fast,.18s) var(--e-out,ease); }
+.ok-hovergroup:hover .ok-onhover{ color:var(--ok-amber,#E0A200); }
+
+/* ---------------------------------------------------------
+   5. BARE FORM CONTROLS
+   Tailwind's preflight zeroed the default border on every input;
+   Bootstrap's reboot does not. Without this every bare input
+   (header search, drawer search, menu search, faq search, the
+   inputs nested inside an .ok-input wrapper) renders the
+   browser's native inset border on top of our own styling.
+   Class-based controls (.ok-input/.form-control/.btn/.chip) win
+   on specificity, so they keep their borders.
+   --------------------------------------------------------- */
+input, textarea, select{ border:0; background-color:transparent; }
+input[type="search"]{ -webkit-appearance:none; appearance:none; }
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button{ -webkit-appearance:none; }
+/* keep the real form controls opaque */
+.ok-input, .ok-select, .ok-textarea, .form-control, .form-select{ background-color:#fff; }

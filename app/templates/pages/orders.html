@@ -1,0 +1,80 @@
+{% extends "layouts/base.html" %}
+{% block title %}My Orders, {{ brand_name }}{% endblock %}
+{% block main_class %}bg-softyellow/20{% endblock %}
+
+{% macro order_card(o, csrf_token) %}
+<article class="ok-card ok-p-5">
+  <div class="d-flex flex-wrap align-items-start justify-content-between ok-gap-3 ok-mb-3">
+    <div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="font-display fw-bold ok-fs-lg">{{ o.number }}</span>
+        {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>
+        {% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
+        {% else %}<span class="badge badge-yellow">{{ o.status.replace('_',' ')|title }}</span>{% endif %}
+      </div>
+      <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
+    </div>
+    <div class="text-end"><div class="font-display fw-bold ok-fs-lg">${{ '%.2f'|format(o.total) }}</div><div class="ok-fs-xs text-muted-warm">{{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</div></div>
+  </div>
+  <ul class="ok-fs-sm text-muted-warm ok-mb-3 ok-stack-05">
+    {% for it in o.items %}<li>{{ it.qty }}× {{ it.name }}</li>{% endfor %}
+  </ul>
+  <div class="d-flex flex-wrap gap-2">
+    {% if o.status not in ['completed', 'cancelled'] %}<a href="/tracking/{{ o.number }}" class="btn btn-primary btn-sm">Track order</a>{% endif %}
+    <a href="/tracking/{{ o.number }}" class="btn btn-secondary btn-sm">View details</a>
+    <form method="post" action="/orders/{{ o.number }}/reorder" class="d-inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" class="btn btn-ghost btn-sm"><i class="fa-solid fa-rotate-right"></i> Reorder</button>
+    </form>
+    <a href="/orders/{{ o.number }}/receipt.pdf" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><i class="fa-solid fa-file-pdf"></i> Receipt</a>
+  </div>
+</article>
+{% endmacro %}
+
+{% block content %}
+<section class="bg-ink text-white">
+  <div class="ok-container ok-py-3 ok-paddin-2rem-md">
+    <nav class="text-w-50 ok-fs-xs mb-2"><a href="/" class="">Home</a> <span class="mx-1">/</span> <a href="/account" class="">Account</a> <span class="mx-1">/</span> <span class="text-w-80">My Orders</span></nav>
+    <h1 class="ok-h1">My Orders</h1>
+  </div>
+</section>
+
+<div class="ok-container ok-py-8 ok-paddin-25rem-md">
+  <div class="ok-grid ok-gc-260px1fr-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
+    <!-- sidebar -->
+    <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
+      <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
+        <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+        <div class="ok-min-w-0"><div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div><div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.loyalty_points }} pts</div></div>
+      </div>
+      <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar">
+        <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="/orders" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+        <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+        <a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+      </nav>
+      <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline"><a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a></div>
+    </aside>
+
+    <!-- main -->
+    <div class="ok-min-w-0" data-tab-group>
+      <div class="d-flex gap-2 ok-mb-3">
+        <button data-tab="active" class="chip is-active">Active <span class="badge badge-yellow ms-1">{{ active|length }}</span></button>
+        <button data-tab="past" class="chip">Past <span class="badge badge-soft ms-1">{{ past|length }}</span></button>
+      </div>
+
+      <div data-panel="active" class="ok-stack-5">
+        {% for o in active %}{{ order_card(o, csrf_token) }}{% else %}
+        <div class="ok-card ok-p-10 text-center text-muted-warm"><p class="ok-mb-3">No active orders.</p><a href="/menu" class="btn btn-primary">Start an order</a></div>
+        {% endfor %}
+      </div>
+
+      <div data-panel="past" class="ok-stack-5 d-none">
+        {% for o in past %}{{ order_card(o, csrf_token) }}{% else %}
+        <div class="ok-card ok-p-10 text-center text-muted-warm">No past orders yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+<header class="ok-header" id="okHeader"><div class="ok-container">
+  <div class="d-flex align-items-center ok-gap-3 ok-gap-15rem-md ok-h-16 ok-height-5rem-md">
+    <a href="/" class="d-flex align-items-center flex-shrink-0" aria-label="{{ brand_name }} home">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ brand_name }}" class="ok-h-11 ok-height-35rem-md w-auto">
+    </a>
+
+    <button data-open="location" class="d-none d-md-flex align-items-center ok-gap-25 text-start ok-pl-25 ok-pr-35 ok-py-15 rounded-pill border border-transparent   transition-all duration-200 flex-shrink-0 text-nowrap">
+      <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center text-ink flex-shrink-0"><i class="fa-solid fa-location-dot"></i></span>
+      <span class="ok-lh-tight">
+        <span class="d-block ok-fs-62rem text-muted-warm text-uppercase fw-bold ok-ls-12em">Delivery to</span>
+        <span class="d-flex align-items-center ok-gap-15 ok-fs-sm fw-bold">
+          <span data-store-label>{% if current_store %}{{ current_store.city }} · {{ current_store.zip_code }}{% else %}Select store{% endif %}</span>
+          <i class="fa-solid fa-chevron-down ok-fs-6rem text-muted-warm"></i>
+        </span>
+      </span>
+    </button>
+
+    <nav class="d-none d-lg-flex align-items-center ok-gap-3 ok-gap-175rem-xl">
+      {% for n in nav_links %}
+      {% if n.children %}
+      {% set child_hrefs = n.children | map(attribute='href') | list %}
+      <div class="position-relative ok-hovergroup">
+        <a href="{{ n.href }}" class="nav-link d-inline-flex align-items-center ok-gap-15{% if request.path in child_hrefs %} is-active{% endif %}" aria-haspopup="true">
+          {{ n.label }} <i class="fa-solid fa-chevron-down ok-fs-6rem transition-transform duration-300 ok-chev"></i>
+        </a>
+        <!-- pt keeps the panel touching the trigger so hover does not break in the gap -->
+        <div class="position-absolute start-0 top-full ok-pt-3 ok-z-50 ok-dropdown ok-dropdown">
+          <div class="bg-white ok-rounded-xl ok-shadow-xl border ok-bc-varokline py-2 ok-minw-135rem overflow-hidden">
+            {% for c in n.children %}
+            <a href="{{ c.href }}" class="d-block ok-px-3 ok-py-25 ok-fs-sm fw-semibold text-nowrap{% if request.path == c.href %} text-gold{% endif %}">{{ c.label }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ n.href }}" class="nav-link{% if request.path == n.href %} is-active{% endif %}">{{ n.label }}{% if n.hot %} <span class="badge badge-deal" style="font-size:.6rem;padding:.12rem .4rem">HOT</span>{% endif %}</a>
+      {% endif %}
+      {% endfor %}
+    </nav>
+
+    <div class="d-flex align-items-center gap-1 ok-gap-0375rem-md ml-auto flex-shrink-0">
+      <div class="hdr-search" id="okSearch">
+        <button type="button" data-search-open class="search-toggle ok-iconbtn ok-w-10 ok-h-10" aria-label="Search menu" title="Search menu"><i class="fa-solid fa-magnifying-glass icon-lg"></i></button>
+        <div class="search-panel"><form action="/menu" method="get" class="d-flex align-items-center gap-2 bg-white rounded-pill border-2 border-ink ok-shadow-lg ps-3 ok-pr-15 ok-py-15 ok-w-clamp240px34vw440p">
+          <button type="submit" class="text-muted-warm bg-transparent border-0 p-0" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <input data-search-input name="q" type="search" placeholder="Search the menu…" class="bg-transparent ok-fs-sm w-100 ok-nofocus py-1">
+          <button type="button" data-search-close class="ok-iconbtn ok-w-8 ok-h-8 text-muted-warm flex-shrink-0" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button>
+        </form></div>
+      </div>
+      {% if current_user and current_user.role and current_user.role.name in ['super_admin','franchise_owner','store_manager'] %}
+      <a href="/admin" class="d-none d-md-inline-flex btn btn-secondary btn-sm" title="Admin">Admin</a>
+      {% endif %}
+      {% if current_user and current_user.role and current_user.role.name == 'driver' %}
+      <a href="/driver" class="d-none d-md-inline-flex btn btn-dark btn-sm" title="Driver">Driver</a>
+      {% endif %}
+      <a href="/account" class="d-none d-sm-grid ok-iconbtn ok-w-10 ok-h-10" title="Account" aria-label="Account"><i class="fa-solid fa-user icon-lg"></i></a>
+      <a href="/cart" class="position-relative ok-iconbtn ok-w-10 ok-h-10" title="Cart" aria-label="Cart"><i class="fa-solid fa-bag-shopping icon-lg"></i>
+        <span id="cartCount" class="position-absolute -top-05 -right-05 bg-ok-red text-white ok-fs-65rem fw-bold ok-w-5 ok-h-5 ok-grid ok-place-center rounded-pill">{{ cart_count }}</span></a>
+      <button data-open="drawer" class="d-lg-none ok-iconbtn ok-w-10 ok-h-10" aria-label="Menu"><i class="fa-solid fa-bars icon-lg"></i></button>
+    </div>
+  </div>
+</div></header>
+
+<div class="drawer-backdrop" data-close="drawer"></div>
+<aside class="drawer" id="okDrawer" aria-label="Mobile menu">
+  <div class="d-flex align-items-center justify-content-between ok-mb-5">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-12" alt="{{ brand_name }}">
+    <button data-close="drawer" class="ok-iconbtn ok-w-9 ok-h-9" aria-label="Close"><i class="fa-solid fa-xmark icon-lg"></i></button>
+  </div>
+  {# Search lives in the header on every screen size now, so the drawer no
+     longer carries its own (dead) copy of the field. #}
+  {% for n in nav_links %}
+  {% if n.children %}
+  <div class="ok-pt-3 pb-1 ok-fs-68rem fw-bold text-uppercase ok-ls-018em text-gold">{{ n.label }}</div>
+  {% for c in n.children %}
+  <a href="{{ c.href }}" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">{{ c.label }}</a>
+  {% endfor %}
+  {% else %}
+  <a href="{{ n.href }}" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">{{ n.label }}</a>
+  {% endif %}
+  {% endfor %}
+  <a href="/account" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">My Account</a>
+  <a href="/orders" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">My Orders</a>
+  <a href="/menu" class="btn btn-primary btn-block ok-mt-3">Order Now</a>
+  <button data-open="location" class="btn btn-secondary btn-block ok-mt-3"><i class="fa-solid fa-location-dot"></i> Change Location</button>
+</aside>

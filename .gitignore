@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Env & secrets
+.env
+
+# Local dev database & logs
+dev.db
+*.sqlite3
+*.log
+instance/
+
+# OS / editor
+.DS_Store
+Thumbs.db

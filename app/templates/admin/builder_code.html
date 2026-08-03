@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% block title %}Code, {{ page.title }}{% endblock %}
+
+{% block admin %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <div class="min-w-0">
+    <h2 class="ok-h2 leading-tight">Code editor, {{ page.title }}</h2>
+    <p class="text-slate text-xs">Write the page in raw HTML/CSS. Drop in <code class="text-xs">&lt;section data-dyn="menu"&gt;&lt;/section&gt;</code> (or hero/best_sellers/locations/…) for live store data. Saved exactly as written and rendered at <a href="{{ '/' if page.is_home else '/p/' ~ page.slug }}" target="_blank" class="link-underline">{{ '/' if page.is_home else '/p/' ~ page.slug }}</a>.</p>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <a href="/admin/builder/{{ page.id }}{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen-ruler"></i> Visual editor</a>
+    <a href="{{ '/' if page.is_home else '/p/' ~ page.slug }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> View</a>
+  </div>
+</div>
+
+<form method="post" action="/admin/builder/{{ page.id }}/code{{ qs }}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="lg:col-span-2">
+      <label class="ok-label !text-xs">HTML <span class="text-slate font-normal">(page body)</span></label>
+      <textarea name="html" class="code-area" spellcheck="false" rows="18">{{ page.html or '' }}</textarea>
+    </div>
+    <div>
+      <label class="ok-label !text-xs">CSS</label>
+      <textarea name="css" class="code-area" spellcheck="false" rows="12">{{ page.css or '' }}</textarea>
+    </div>
+    <div>
+      <label class="ok-label !text-xs">Head code <span class="text-slate font-normal">(meta / &lt;style&gt; / &lt;script&gt;)</span></label>
+      <textarea name="head_code" class="code-area" spellcheck="false" rows="12">{{ page.head_code or '' }}</textarea>
+    </div>
+  </div>
+  <div class="sticky bottom-0 bg-[#f4f5f7] py-3 mt-4 -mx-4 px-4 border-t border-[var(--ok-line)]">
+    <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save code</button>
+    <span class="text-xs text-slate ml-3">Tip: <kbd>Tab</kbd> indents. Editing here resets the visual editor to match this HTML.</span>
+  </div>
+</form>
+
+<style>
+  .code-area{ width:100%; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; line-height:1.55; background:#0f1115; color:#e6e6e6; border:1px solid var(--ok-line); border-radius:10px; padding:12px 14px; resize:vertical; tab-size:2; }
+  .code-area:focus{ outline:none; border-color:#FFC72C; box-shadow:0 0 0 3px rgba(255,199,44,.18); }
+</style>
+<script>
+  // Tab key inserts two spaces instead of moving focus.
+  document.querySelectorAll('.code-area').forEach(function (ta) {
+    ta.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      var s = this.selectionStart, en = this.selectionEnd;
+      this.value = this.value.slice(0, s) + '  ' + this.value.slice(en);
+      this.selectionStart = this.selectionEnd = s + 2;
+    });
+  });
+</script>
+{% endblock %}

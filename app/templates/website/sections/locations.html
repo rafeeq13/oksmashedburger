@@ -1,0 +1,36 @@
+<!-- Locations near you -->
+{% if all_stores %}
+{% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--white') %}
+<section class="ok-band {{ _bg }}">
+  <div class="ok-container">
+    <div class="ok-sechead" data-reveal="up">
+<h2 class="ok-title">{{ cfg.get('heading') or 'Locations near you' }}</h2>
+      <span class="ok-squiggle" aria-hidden="true"></span>
+    </div>
+
+    <div class="ok-cardgrid ok-cardgrid--center" data-reveal-stagger>
+      {% for s in all_stores %}
+      <div class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
+        <div class="ok-media ok-ratio bg-cream-40 !rounded-none">
+          <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35 ok-ungray ok-tr-filter duration-500" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
+          {% if s.open_now %}<span class="badge badge-green position-absolute top-3 left-3 ok-z-10"><span class="status-dot bg-ok-green"></span> Open now</span>{% endif %}
+        </div>
+        <div class="ok-card-body">
+          <h3 class="ok-card-title ok-mb-3">{{ s.name }}, {{ s.state }}</h3>
+          <ul class="ok-stack-25 ok-fs-sm text-muted-warm">
+            <li class="d-flex ok-gap-3"><i class="fa-solid fa-location-dot text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><span>{{ s.full_address }}</span></li>
+            <li class="d-flex ok-gap-3"><i class="fa-solid fa-clock text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><span>Today {{ s.today_hours }}</span></li>
+            {% if s.phone %}<li class="d-flex ok-gap-3"><i class="fa-solid fa-phone text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><a href="tel:{{ s.phone }}" class="link-underline">{{ s.phone }}</a></li>{% endif %}
+          </ul>
+          <a href="/set-location/{{ s.slug }}?next=/menu" class="ok-more ok-arrow ok-card-foot">See menu <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="ok-secfoot" data-elw="btn" data-reveal="up"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+      <a href="{{ cfg.get('cta_href') or '/locations' }}" data-el="btn" class="ok-btn-outline"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'See all locations' }} <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+{% endif %}

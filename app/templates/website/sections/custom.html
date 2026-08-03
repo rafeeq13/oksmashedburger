@@ -1,0 +1,23 @@
+<!-- Admin-added custom block (types: banner / image / content) -->
+{% set _t = cfg.get('_type') or 'content' %}
+{% if _t == 'banner' %}
+  {% if cfg.get('heading') %}
+  <section class="w-100 ok-py-25 ok-px-3 bg-ink text-white text-center">
+    <p class="ok-fs-sm fw-semibold m-0">{% if cfg.get('cta_href') %}<a href="{{ cfg.get('cta_href') }}" class="ok-hover-underline">{{ cfg.get('heading') }}</a>{% else %}{{ cfg.get('heading') }}{% endif %}</p>
+  </section>
+  {% endif %}
+{% elif cfg.get('heading') or cfg.get('subheading') or cfg.get('image') or cfg.get('cta_text') %}
+  {% set _theme = cfg.get('theme') %}
+  {% set _bg = {'cream':'bg-softyellow/20','white':'bg-white','dark':'bg-jet text-white'}.get(_theme, 'bg-white') %}
+  {% set _sub = 'text-white/80' if _theme == 'dark' else 'text-slate' %}
+  <section class="ok-section {{ _bg }} border-top ok-bc-varokline">
+    <div class="ok-container {% if _t == 'image' %}ok-grid ok-grid-md-2 ok-gap-8 ok-gap-3rem-md align-items-center{% else %}text-center max-w-3xl mx-auto{% endif %}">
+      {% if cfg.get('image') %}<img src="{{ cfg.get('image') }}" alt="" data-el="img" class="w-100 {% if _t == 'image' %}aspect-[4/3]{% else %}max-h-80{% endif %} ok-cover ok-rounded-2xl {% if _t != 'image' %}ok-mb-8{% endif %} ok-shadow-lg"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>{% endif %}
+      <div>
+        {% if cfg.get('heading') %}<h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-4xl text-uppercase tracking-tight ok-mb-3">{{ cfg.get('heading') }}</h2>{% endif %}
+        {% if cfg.get('subheading') %}<p class="{{ _sub }} ok-fs-md-lg ok-mb-3 whitespace-pre-line">{{ cfg.get('subheading') }}</p>{% endif %}
+        {% if cfg.get('cta_text') %}<div data-elw="btn"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}><a href="{{ cfg.get('cta_href') or '#' }}" data-el="btn" class="btn btn-primary btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') }}</a></div>{% endif %}
+      </div>
+    </div>
+  </section>
+{% endif %}

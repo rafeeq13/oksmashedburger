@@ -1,0 +1,19 @@
+<!-- Catering (full-bleed statement band) -->
+<section class="position-relative overflow-hidden bg-ink">
+  <div class="position-absolute ok-fill scale-110">
+    <img src="{{ site.get('catering_img') or site_defaults.get('catering_img') }}" alt="Catering spread" class="w-100 h-100 ok-cover" data-parallax="0.14" loading="lazy">
+  </div>
+  <div class="pb-overlay position-absolute ok-fill bg-gradient-to-r from-jet/80 via-jet/35 to-transparent"></div>
+  <div class="position-absolute ok-fill bg-gradient-to-t from-jet/55 via-transparent to-jet/20 pe-none"></div>
+
+  <div class="ok-container position-relative ok-band">
+    <div class="ok-glass ok-r-175rem ok-p-8 ok-paddin-3rem-md max-w-lg ok-shadow-2xl" data-reveal="left">
+<h2 class="ok-title ok-mt-3">{{ (cfg.get('heading') or 'Catering for<br>any event')|safe }}</h2>
+      <span class="ok-squiggle ok-squiggle--left" aria-hidden="true"></span>
+      <p class="ok-subtitle">{{ cfg.get('subheading') or 'From team breakfasts to weekend gatherings, we bring fresh-smashed burgers, loaded sides, and crowd-pleasing favorites straight to your event.' }}</p>
+      <div class="ok-mt-9" data-elw="btn"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
+        <a href="{{ cfg.get('cta_href') or '/catering' }}" data-el="btn" class="btn btn-primary btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'See catering' }} <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</section>

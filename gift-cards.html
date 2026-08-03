@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gift Cards — OK Smashed Burger</title>
+  <meta name="description" content="Send a digital OK Smashed Burger gift card in seconds. Pick a design, choose an amount, add a personal message and deliver it now or schedule it.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="relative overflow-hidden bg-jet text-white">
+      <div class="absolute inset-0 opacity-15">
+        <img data-ph="Gift Cards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">
+      </div>
+      <div class="absolute -left-24 -top-24 w-96 h-96 rounded-full bg-okyellow/20 blur-3xl"></div>
+      <div class="ok-container relative py-14 md:py-20 text-center">
+        <span class="badge badge-yellow mb-4"><i class="fa-solid fa-gift"></i> Digital gift cards</span>
+        <h1 class="ok-display mb-4 max-w-2xl mx-auto">
+          Give the gift of a smash <span class="whitespace-nowrap"><i class="fa-solid fa-burger"></i></span>
+        </h1>
+        <p class="text-white/80 text-lg mb-2 max-w-xl mx-auto">Delivered instantly by email or scheduled for the perfect moment. Any amount, redeemable on everything we make.</p>
+        <p class="text-sm text-white/60">Never expires · Redeemable online &amp; in-store · Delivered in seconds</p>
+      </div>
+    </section>
+
+    <!-- ============ BUILDER + PREVIEW ============ -->
+    <section class="ok-section">
+      <div class="ok-container grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+
+        <!-- ---- LEFT: builder form ---- -->
+        <form onsubmit="return false" class="ok-card p-6 md:p-8">
+          <h2 class="ok-h2 text-2xl mb-6">Build your gift card</h2>
+
+          <!-- design -->
+          <label class="ok-label">1 · Choose a design</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6" data-chip-group>
+            <button type="button" class="chip is-active justify-center py-3"><i class="fa-solid fa-burger"></i> Classic</button>
+            <button type="button" class="chip justify-center py-3"><i class="fa-solid fa-cake-candles"></i> Birthday</button>
+            <button type="button" class="chip justify-center py-3"><i class="fa-solid fa-heart"></i> Thank You</button>
+            <button type="button" class="chip justify-center py-3"><i class="fa-solid fa-hands-clapping"></i> Congrats</button>
+          </div>
+
+          <!-- amount -->
+          <label class="ok-label">2 · Choose an amount</label>
+          <div class="flex flex-wrap gap-2 mb-3" data-chip-group>
+            <button type="button" class="chip">$10</button>
+            <button type="button" class="chip is-active">$25</button>
+            <button type="button" class="chip">$50</button>
+            <button type="button" class="chip">$100</button>
+            <button type="button" class="chip">Custom</button>
+          </div>
+          <div class="mb-6">
+            <label class="ok-label !text-slate !font-normal !text-xs">Custom amount ($5–$500)</label>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg">$</span>
+              <input type="number" min="5" max="500" placeholder="Enter a custom amount" class="ok-input">
+            </div>
+          </div>
+
+          <div class="divider mb-6"></div>
+
+          <!-- recipient -->
+          <label class="ok-label">3 · Who's it for?</label>
+          <div class="grid sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Recipient name</label>
+              <input type="text" placeholder="Alex" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Recipient email</label>
+              <input type="email" placeholder="alex@email.com" class="ok-input">
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Your name</label>
+              <input type="text" value="Jordan" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Your email</label>
+              <input type="email" placeholder="you@email.com" class="ok-input">
+            </div>
+          </div>
+
+          <!-- message -->
+          <div class="mb-6">
+            <label class="ok-label">4 · Personal message <span class="ok-hint font-normal">(optional)</span></label>
+            <textarea rows="3" maxlength="200" placeholder="Happy birthday! Grab a smash on me" class="ok-textarea">Happy birthday! Grab a smash on me</textarea>
+            <p class="ok-hint mt-1">Up to 200 characters.</p>
+          </div>
+
+          <div class="divider mb-6"></div>
+
+          <!-- delivery -->
+          <label class="ok-label">5 · Delivery</label>
+          <div class="flex flex-wrap gap-2 mb-3" data-chip-group>
+            <button type="button" class="chip is-active"><i class="fa-solid fa-paper-plane"></i> Send now</button>
+            <button type="button" class="chip"><i class="fa-solid fa-calendar-days"></i> Schedule</button>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3 mb-6">
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Delivery date</label>
+              <input type="date" value="2026-07-18" class="ok-input">
+            </div>
+            <div>
+              <label class="ok-label !text-slate !font-normal !text-xs">Delivery time</label>
+              <select class="ok-select">
+                <option>Morning (9:00 AM)</option>
+                <option>Midday (12:00 PM)</option>
+                <option>Evening (6:00 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" data-add-cart="Gift card" class="btn btn-primary btn-block btn-lg">Buy &amp; Send Gift Card</button>
+          <p class="ok-hint text-center mt-3"><i class="fa-solid fa-lock"></i> Secure checkout · You won't be charged in this demo.</p>
+        </form>
+
+        <!-- ---- RIGHT: sticky preview ---- -->
+        <div class="lg:sticky lg:top-28">
+          <h2 class="ok-h2 text-2xl mb-5">How it'll look</h2>
+
+          <!-- gift card -->
+          <div class="rounded-2xl bg-jet text-white p-6 md:p-7 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-okyellow/25 blur-2xl"></div>
+            <div class="absolute inset-0 border-2 border-okyellow/30 rounded-2xl pointer-events-none"></div>
+            <div class="relative">
+              <div class="flex items-center justify-between mb-8">
+                <img src="assets/img/logo.svg" alt="OK Smashed Burger" class="h-10 w-auto">
+                <span class="badge badge-yellow">Gift Card</span>
+              </div>
+              <div class="mb-8">
+                <div class="text-xs uppercase tracking-widest text-white/50 mb-1">Value</div>
+                <div class="font-display font-extrabold text-5xl text-okyellow leading-none">$25.00</div>
+              </div>
+              <div class="flex items-end justify-between gap-4">
+                <div class="text-sm leading-relaxed">
+                  <div><span class="text-white/50">To:</span> <b>Alex</b></div>
+                  <div><span class="text-white/50">From:</span> <b>Jordan</b></div>
+                </div>
+                <div class="text-right text-xs text-white/40 font-mono">OKGC-2026<br>····-····</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- message preview -->
+          <div class="ok-card p-5 mt-4">
+            <div class="flex items-center gap-2 mb-2 text-slate text-xs font-semibold uppercase tracking-wide">
+              <span><i class="fa-solid fa-comment"></i></span> Your message
+            </div>
+            <p class="italic text-jet">"Happy birthday! Grab a smash on me <i class="fa-solid fa-burger"></i>"</p>
+            <div class="divider my-4"></div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate">Delivery</span>
+              <span class="font-semibold"><i class="fa-solid fa-paper-plane"></i> Send now · Jul 18, 2026</span>
+            </div>
+          </div>
+
+          <p class="ok-hint text-center mt-4">This preview updates to match your choices in the final product.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHECK BALANCE ============ -->
+    <section class="ok-section bg-softyellow/40">
+      <div class="ok-container max-w-2xl">
+        <div class="text-center mb-6"><h2 class="ok-h2">Check your balance</h2></div>
+        <div class="ok-card p-6 md:p-8">
+          <label class="ok-label">Gift card code</label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" value="OKGC-2026-4XT9" class="ok-input font-mono tracking-wide" placeholder="OKGC-XXXX-XXXX">
+            <button data-add-cart="Balance checked" class="btn btn-dark shrink-0">Check balance</button>
+          </div>
+          <div class="mt-5 flex items-center justify-between rounded-xl bg-softyellow/70 px-5 py-4">
+            <div>
+              <div class="text-xs uppercase tracking-wide text-slate font-semibold">Available balance</div>
+              <div class="font-display font-extrabold text-2xl text-okgreen">$25.00</div>
+            </div>
+            <a href="menu.html" class="btn btn-primary btn-sm">Spend it <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <p class="ok-hint mt-3">Enter the 12-digit code from your gift card email to see the remaining balance.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="ok-section">
+      <div class="ok-container">
+        <div class="text-center mb-10"><h2 class="ok-h2">How it works</h2></div>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center text-2xl font-bold mx-auto mb-4"><i class="fa-solid fa-palette icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">1 · Design it</h3>
+            <p class="text-slate text-sm max-w-xs mx-auto">Pick a design and amount, then add a personal message for the lucky recipient.</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center text-2xl font-bold mx-auto mb-4"><i class="fa-solid fa-paper-plane icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">2 · Send it</h3>
+            <p class="text-slate text-sm max-w-xs mx-auto">Deliver instantly by email or schedule it to arrive on the perfect day.</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 rounded-full bg-okyellow text-jet grid place-items-center text-2xl font-bold mx-auto mb-4"><i class="fa-solid fa-burger icon-lg"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">3 · They smash</h3>
+            <p class="text-slate text-sm max-w-xs mx-auto">They redeem the code online or in-store on anything we make. Never expires.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORPORATE / BULK BANNER ============ -->
+    <section class="ok-section pt-0">
+      <div class="ok-container">
+        <div class="ok-card bg-jet text-white overflow-hidden relative">
+          <div class="absolute -right-10 -bottom-10 w-72 h-72 rounded-full bg-okyellow/20 blur-2xl"></div>
+          <div class="relative p-8 md:p-12 grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h2 class="ok-h2 mb-3">Corporate &amp; bulk gift cards</h2>
+              <p class="text-white/70 mb-5 max-w-md">Reward your team or thank your clients. Order gift cards in bulk with custom branding, volume discounts and a single invoice. Our team will help you set it up.</p>
+              <div class="flex flex-wrap gap-3">
+                <a href="contact.html" class="btn btn-primary">Talk to our team</a>
+                <a href="faq.html" class="btn btn-secondary !bg-transparent !text-white !border-white hover:!bg-white hover:!text-jet">Learn more</a>
+              </div>
+              <p class="text-sm text-white/50 mt-4">Prefer email? Reach us at <b class="text-white">corporate@oksmashedburger.com</b></p>
+            </div>
+            <div class="justify-self-center md:justify-self-end w-full max-w-xs">
+              <div class="ok-card overflow-hidden -rotate-2 shadow-2xl">
+                <img data-ph="Corporate Gifting" data-ph-ratio="4/3" class="ph-img" alt="">
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-xs text-slate mt-6 max-w-2xl mx-auto">Gift cards are issued by OK Brands and never expire. Not redeemable for cash except where required by law. See our full <a href="faq.html" class="link-underline">gift card terms &amp; conditions</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>

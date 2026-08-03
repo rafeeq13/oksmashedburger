@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+{% block title %}Gift Cards, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Gift cards</h2>
+<p class="text-slate text-sm mb-5">Cards bought on the storefront and any you issue here. Balances are drawn down at checkout.</p>
+
+<div class="grid sm:grid-cols-3 gap-4 mb-6">
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">{{ cards|length }}</div><div class="text-sm text-slate">Cards</div></div>
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">${{ '%.2f'|format(issued) }}</div><div class="text-sm text-slate">Total issued</div></div>
+  <div class="ok-card p-4"><div class="font-display font-extrabold text-2xl">${{ '%.2f'|format(outstanding) }}</div><div class="text-sm text-slate">Outstanding balance</div></div>
+</div>
+
+<details class="ok-card p-5 mb-6">
+  <summary class="cursor-pointer font-semibold flex items-center gap-2"><i class="fa-solid fa-plus"></i> Issue a gift card</summary>
+  <form method="post" action="/admin/gift-cards{{ qs }}" class="grid sm:grid-cols-4 gap-3 mt-4 items-end">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div><label class="ok-label !text-xs">Amount ($5–$1000)</label><input name="amount" type="number" step="0.01" min="5" max="1000" required class="ok-input py-2 text-sm" placeholder="25"></div>
+    <div><label class="ok-label !text-xs">Recipient email</label><input name="recipient" type="email" class="ok-input py-2 text-sm" placeholder="friend@email.com"></div>
+    <div><label class="ok-label !text-xs">Message</label><input name="message" class="ok-input py-2 text-sm" placeholder="Enjoy!"></div>
+    <div><button class="btn btn-primary btn-block">Issue card</button></div>
+  </form>
+</details>
+
+<div class="ok-card overflow-x-auto">
+  <table data-table data-page-size="10" class="w-full text-sm">
+    <thead><tr class="text-left text-slate border-b border-[var(--ok-line)]">
+      <th class="p-3 font-semibold">Code</th><th class="p-3 font-semibold text-right">Initial</th><th class="p-3 font-semibold text-right">Balance</th><th class="p-3 font-semibold">Recipient</th><th class="p-3 font-semibold">Issued</th><th class="p-3 font-semibold">Status</th><th class="p-3"></th>
+    </tr></thead>
+    <tbody>
+      {% for g in cards %}
+      <tr class="border-b border-[var(--ok-line)] last:border-0 {% if not g.active %}opacity-60{% endif %}">
+        <td class="p-3 font-mono font-bold">{{ g.code }}</td>
+        <td class="p-3 text-right">${{ '%.2f'|format(g.initial_balance) }}</td>
+        <td class="p-3 text-right font-bold">${{ '%.2f'|format(g.balance) }}</td>
+        <td class="p-3 text-slate">{{ g.recipient_email or '-' }}</td>
+        <td class="p-3 text-slate whitespace-nowrap">{{ g.created_at.strftime('%b %d, %Y') if g.created_at else '-' }}</td>
+        <td class="p-3">{% if g.active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-soft">Disabled</span>{% endif %}</td>
+        <td class="p-3 text-right"><form method="post" action="/admin/gift-cards/{{ g.id }}/toggle{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline text-xs {% if g.active %}!text-okred{% endif %}">{{ 'Disable' if g.active else 'Enable' }}</button></form></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="p-8 text-center text-slate">No gift cards yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

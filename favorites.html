@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Favorites — OK Smashed Burger</title>
+  <meta name="description" content="Your favorite OK Smashed Burger items and saved orders. One-tap reorder your go-to smashed burgers, sides and shakes.">
+  <link rel="icon" href="assets/img/logo.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { okyellow:'#FFC72C', okamber:'#E0A200', softyellow:'#FFF3CC', jet:'#141414', slate:'#6B6B6B', okgreen:'#2E7D32', okred:'#C62828', okbrandred:'#E11B22' },
+      fontFamily: { display:['Poppins','sans-serif'], body:['Inter','sans-serif'] }
+    }}}
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script defer src="assets/js/app.js"></script>
+</head>
+<body class="font-body bg-white text-jet antialiased">
+  <div id="site-header"></div>
+
+  <main class="bg-softyellow/20">
+    <!-- ============ PAGE HEADER STRIP ============ -->
+    <section class="bg-jet text-white">
+      <div class="ok-container py-6 md:py-8">
+        <nav class="text-white/50 text-xs mb-2" aria-label="Breadcrumb">
+          <a href="index.html" class="hover:text-okyellow">Home</a> <span class="mx-1">/</span> <a href="account.html" class="hover:text-okyellow">Account</a> <span class="mx-1">/</span> <span class="text-white/80">Favorites</span>
+        </nav>
+        <h1 class="ok-h1">Your Favorites</h1>
+      </div>
+    </section>
+
+    <div class="ok-container py-8 md:py-10">
+      <div class="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-8 items-start">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="ok-card p-4 lg:sticky lg:top-24">
+          <div class="flex items-center gap-3 pb-4 mb-3 border-b border-[var(--ok-line)]">
+            <img data-ph="Jordan Miller" data-ph-type="avatar" data-ph-ratio="1/1" class="w-11 h-11 rounded-full shrink-0" alt="">
+            <div class="min-w-0">
+              <div class="font-display font-bold leading-tight truncate">Jordan Miller</div>
+              <div class="text-xs text-slate truncate">Gold member · 1,240 pts</div>
+            </div>
+          </div>
+          <nav class="flex lg:flex-col gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="orders.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
+            <a href="favorites.html" aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm bg-jet text-white whitespace-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
+            <a href="rewards.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="account.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-jet hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
+          </nav>
+          <div class="mt-3 pt-3 border-t border-[var(--ok-line)]">
+            <a href="login.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-okred hover:bg-softyellow whitespace-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+          </div>
+        </aside>
+
+        <!-- ============ MAIN ============ -->
+        <div class="min-w-0 space-y-10">
+
+          <!-- Favorite items -->
+          <section>
+            <div class="flex items-end justify-between mb-5">
+              <div>
+                <h2 class="ok-h2 text-xl">Favorite items</h2>
+              </div>
+              <a href="menu.html" class="link-underline text-sm hidden sm:block">Browse menu <i class="fa-solid fa-arrow-right inline-block align-middle"></i></a>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-5">
+
+              <!-- item card -->
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="The OK Classic" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">The OK Classic</h3></a>
+                  <p class="text-xs text-slate mb-2">Single smash, American cheese, OK sauce.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$8.49</span>
+                    <button data-add-cart="The OK Classic" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add The OK Classic to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="Double Bacon Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">Double Bacon Smash</h3></a>
+                  <p class="text-xs text-slate mb-2">Two patties, bacon, cheddar, pickles.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$12.99</span>
+                    <button data-add-cart="Double Bacon Smash" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add Double Bacon Smash to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="Buffalo Crisp Chicken" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">Buffalo Crisp Chicken</h3></a>
+                  <p class="text-xs text-slate mb-2">Crispy thigh, buffalo, ranch slaw.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$10.99</span>
+                    <button data-add-cart="Buffalo Crisp Chicken" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add Buffalo Crisp Chicken to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="Loaded OK Fries" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">Loaded OK Fries</h3></a>
+                  <p class="text-xs text-slate mb-2">Cheese sauce, crispy onions, OK drizzle.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$6.99</span>
+                    <button data-add-cart="Loaded OK Fries" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add Loaded OK Fries to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="OK Vanilla Shake" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">OK Vanilla Shake</h3></a>
+                  <p class="text-xs text-slate mb-2">Hand-spun real vanilla, whipped top.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$5.49</span>
+                    <button data-add-cart="OK Vanilla Shake" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add OK Vanilla Shake to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="ok-card ok-card-hover overflow-hidden group">
+                <a href="item.html" class="block relative aspect-square overflow-hidden">
+                  <img data-ph="Smoky BBQ Smash" data-ph-type="food" data-ph-ratio="1/1" class="ph-img group-hover:scale-105 transition" alt="">
+                  <button class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow grid place-items-center text-lg text-okbrandred hover:scale-110 transition" aria-pressed="true" aria-label="Remove from favorites"><i class="fa-solid fa-heart fill-current"></i></button>
+                </a>
+                <div class="p-4">
+                  <a href="item.html"><h3 class="font-display font-bold">Smoky BBQ Smash</h3></a>
+                  <p class="text-xs text-slate mb-2">Smash patty, BBQ, onion rings, cheddar.</p>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold">$11.49</span>
+                    <button data-add-cart="Smoky BBQ Smash" class="w-9 h-9 rounded-full btn-primary btn grid place-items-center !p-0 text-lg" aria-label="Add Smoky BBQ Smash to cart">+</button>
+                  </div>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- Saved orders -->
+          <section>
+            <div class="flex items-end justify-between mb-5">
+              <div>
+                <h2 class="ok-h2 text-xl">Saved orders</h2>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-5">
+
+              <article class="ok-card p-5 flex flex-col">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-burger text-xl"></i>
+                    <h3 class="font-display font-bold text-lg">My Usual</h3>
+                  </div>
+                  <span class="badge badge-soft">3 items</span>
+                </div>
+                <ul class="text-sm text-slate space-y-1 mb-4">
+                  <li class="flex justify-between"><span>1 × The OK Classic</span><span class="text-jet font-semibold">$8.49</span></li>
+                  <li class="flex justify-between"><span>1 × Loaded OK Fries</span><span class="text-jet font-semibold">$6.99</span></li>
+                  <li class="flex justify-between"><span>1 × OK Vanilla Shake</span><span class="text-jet font-semibold">$5.49</span></li>
+                </ul>
+                <div class="divider mb-3"></div>
+                <div class="flex items-center justify-between mt-auto">
+                  <div><span class="text-xs text-slate">Total</span> <span class="font-display font-bold text-lg ml-1">$20.97</span></div>
+                  <button data-add-cart="My Usual" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Reorder</button>
+                </div>
+              </article>
+
+              <article class="ok-card p-5 flex flex-col">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-users text-xl"></i>
+                    <h3 class="font-display font-bold text-lg">Friday Family Night</h3>
+                  </div>
+                  <span class="badge badge-soft">4 items</span>
+                </div>
+                <ul class="text-sm text-slate space-y-1 mb-4">
+                  <li class="flex justify-between"><span>1 × Family Feast Box</span><span class="text-jet font-semibold">$39.99</span></li>
+                  <li class="flex justify-between"><span>2 × Loaded OK Fries</span><span class="text-jet font-semibold">$13.98</span></li>
+                  <li class="flex justify-between"><span>1 × Double Bacon Smash</span><span class="text-jet font-semibold">$12.99</span></li>
+                </ul>
+                <div class="divider mb-3"></div>
+                <div class="flex items-center justify-between mt-auto">
+                  <div><span class="text-xs text-slate">Total</span> <span class="font-display font-bold text-lg ml-1">$66.96</span></div>
+                  <button data-add-cart="Friday Family Night" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Reorder</button>
+                </div>
+              </article>
+
+            </div>
+          </section>
+
+          <!-- Empty-state hint -->
+          <div class="ok-card border-dashed p-8 text-center bg-softyellow/30">
+            <div class="text-4xl mb-2"><i class="fa-solid fa-utensils icon-xl"></i></div>
+            <h3 class="font-display font-bold text-lg mb-1">Found a new favorite yet?</h3>
+            <p class="text-sm text-slate max-w-md mx-auto mb-4">Tap the <i class="fa-solid fa-heart inline-block align-middle"></i> on any item to save it here for faster ordering next time. Explore the full menu to discover your next go-to.</p>
+            <a href="menu.html" class="btn btn-primary btn-sm">Browse the menu</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+</body>
+</html>
