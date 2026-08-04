@@ -32,7 +32,7 @@
             <p class="ok-fs-sm text-muted-warm">{{ s.full_address }}</p>
             <div class="d-flex flex-wrap align-items-center gap-x-2 gap-y-1 ok-fs-xs mt-2 fw-semibold {% if s.open_now %}text-ok-green{% elif s.scheduling_open %}text-gold{% else %}text-ok-red{% endif %}">
               <span class="d-inline-flex align-items-center ok-gap-15"><span class="status-dot" style="background:currentColor"></span>
-                {% if s.open_now %}Open now · ~{{ s.avg_prep_minutes }} min prep{% elif s.scheduling_open %}Closed now · schedule ahead{% else %}Closed{% endif %} · Today {{ s.today_hours }}</span>
+                {% if s.open_now %}Open now · ~{{ s.avg_prep_minutes }} min prep · Today {{ s.today_hours }}{% elif s.scheduling_open %}<span class="ok-status-closed">Closed now</span><span class="ok-status-rest"> · schedule ahead · Today {{ s.today_hours }}</span>{% else %}<span class="ok-status-closed">Closed</span><span class="ok-status-rest"> · Today {{ s.today_hours }}</span>{% endif %}</span>
               <span data-distance-label class="badge badge-soft !text-jet" style="display:none"></span>
             </div>
             <div class="d-flex flex-wrap ok-gap-15 ok-mt-3">

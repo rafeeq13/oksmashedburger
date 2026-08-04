@@ -3132,3 +3132,9 @@ button:focus, button:focus-visible,
   font-weight: 800;
 }
 .ok-cater-unit{ font-size: .85rem; }
+
+/* Store status line: the status word carries the warning, the rest is detail.
+   Both were one colour before, so "Closed now" did not stand out from the
+   opening hours sitting next to it. */
+.ok-status-closed{ color: var(--ok-red, #C62828) !important; }
+.ok-status-rest{ color: var(--ok-yellow) !important; }

@@ -27,7 +27,7 @@
             <div class="ok-fs-sm text-muted-warm">{{ s.address_line }}, {{ s.zip_code }}</div>
             <div class="d-flex align-items-center ok-gap-15 ok-fs-xs mt-1 fw-semibold {% if s.open_now %}text-ok-green{% elif s.scheduling_open %}text-gold{% else %}text-ok-red{% endif %}">
               {% if s.open_now %}<span class="status-dot" style="background:#2E7D32"></span> Open now · ~{{ s.avg_prep_minutes }} min
-              {% elif s.scheduling_open %}<span class="status-dot" style="background:#E0A200"></span> Closed now · schedule ahead
+              {% elif s.scheduling_open %}<span class="status-dot" style="background:#C62828"></span> <span class="ok-status-closed">Closed now</span><span class="ok-status-rest"> · schedule ahead</span>
               {% else %}<span class="status-dot" style="background:#C62828"></span> Closed{% endif %}
             </div>
           </div>
