@@ -18,7 +18,11 @@
         <!-- ============ SIDEBAR ============ -->
         <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
           <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
-            <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+            {% if current_user.avatar_url %}
+            <img src="{{ current_user.avatar_url }}" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0 ok-cover" alt="{{ current_user.full_name }}">
+            {% else %}
+            <span class="ok-avatar ok-w-11 ok-h-11 flex-shrink-0" aria-hidden="true">{{ current_user.initials }}</span>
+            {% endif %}
             <div class="ok-min-w-0">
               <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
               <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }} · {{ current_user.loyalty_points }} pts</div>
@@ -47,7 +51,11 @@
             <div class="position-absolute -right-10 -top-16 ok-w-64 ok-h-64 rounded-pill bg-yellow-20 blur-3xl"></div>
             <div class="position-relative ok-p-3 ok-paddin-2rem-md d-flex flex-column flex-sm-row align-items-sm-center ok-gap-5 justify-content-between">
               <div class="d-flex align-items-center ok-gap-3">
-                <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-16 ok-h-16 rounded-pill ok-ring-4 ring-white/10 flex-shrink-0" alt="">
+                {% if current_user.avatar_url %}
+                <img src="{{ current_user.avatar_url }}" class="ok-w-16 ok-h-16 rounded-pill ok-ring-4 ring-white/10 flex-shrink-0 ok-cover" alt="{{ current_user.full_name }}">
+                {% else %}
+                <span class="ok-avatar ok-avatar--lg ok-w-16 ok-h-16 ok-ring-4 ring-white/10 flex-shrink-0" aria-hidden="true">{{ current_user.initials }}</span>
+                {% endif %}
                 <div>
                   <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl ok-lh-tight d-inline-flex align-items-center gap-2">Hi, {{ current_user.first_name or 'there' }} <i class="fa-solid fa-hand"></i></h2>
                   <p class="text-w-70 ok-fs-sm mt-1">Welcome back, you have <b class="text-yellow">{{ current_user.loyalty_points }} points</b> ready to spend.</p>
@@ -243,8 +251,25 @@
             <details class="ok-card ok-p-5">
               <summary class="ok-pointer fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-pen"></i> Edit profile &amp; password</summary>
               <div class="ok-grid ok-grid-md-2 ok-gap-3 ok-mt-5">
-                <form method="post" action="/account/profile" class="ok-stack-3">
+                <form method="post" action="/account/profile" enctype="multipart/form-data" class="ok-stack-3">
                   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                  <div class="d-flex align-items-center ok-gap-3">
+                    {% if current_user.avatar_url %}
+                    <img src="{{ current_user.avatar_url }}" class="ok-w-14 ok-h-14 rounded-pill ok-cover flex-shrink-0" alt="">
+                    {% else %}
+                    <span class="ok-avatar ok-w-14 ok-h-14 flex-shrink-0" aria-hidden="true">{{ current_user.initials }}</span>
+                    {% endif %}
+                    <div class="ok-min-w-0">
+                      <label class="ok-label !text-xs" for="avatar">Profile photo</label>
+                      <input id="avatar" name="avatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="ok-input py-2 ok-fs-sm w-100">
+                      <p class="ok-hint ok-mt-05">JPG, PNG, WEBP or GIF, up to 4 MB. Without one we show your initials.</p>
+                      {% if current_user.avatar_url %}
+                      <label class="d-inline-flex align-items-center gap-2 ok-fs-xs ok-mt-15 ok-pointer">
+                        <input type="checkbox" name="remove_avatar" value="1"> Remove my photo
+                      </label>
+                      {% endif %}
+                    </div>
+                  </div>
                   <div class="ok-grid ok-grid-2 ok-gap-3">
                     <div><label class="ok-label !text-xs">First name</label><input name="first_name" aria-label="First name" value="{{ current_user.first_name or '' }}" class="ok-input py-2 ok-fs-sm"></div>
                     <div><label class="ok-label !text-xs">Last name</label><input name="last_name" aria-label="Last name" value="{{ current_user.last_name or '' }}" class="ok-input py-2 ok-fs-sm"></div>

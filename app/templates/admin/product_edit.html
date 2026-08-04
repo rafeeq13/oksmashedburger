@@ -30,12 +30,20 @@
     <div><label class="ok-label !text-xs">Tags (comma)</label><input name="tags" value="{{ (product.tags or [])|join(', ') }}" class="ok-input py-2 text-sm"></div>
     <label class="flex items-center gap-2 text-sm mt-1"><input type="checkbox" name="is_vegan" {% if product.is_vegan %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Vegan</label>
     <label class="flex items-center gap-2 text-sm mt-1"><input type="checkbox" name="is_active" {% if product.is_active %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Active (visible on menus)</label>
-    <div class="sm:col-span-2 pt-3 border-t border-[var(--ok-line)]"><button class="btn btn-primary btn-sm">Save changes</button></div>
+    <div class="sm:col-span-2 pt-3 border-t border-[var(--ok-line)] flex flex-wrap items-center gap-3">
+      <button class="btn btn-primary btn-sm">Save changes</button>
+      {# the destructive action is kept on the far right, away from Save #}
+      <button type="submit" form="deleteItem"
+              class="ml-auto inline-flex items-center gap-2 text-sm font-semibold !text-okred px-3 py-2 rounded-lg hover:bg-okred/10">
+        <i class="fa-solid fa-trash"></i> Delete this item
+      </button>
+    </div>
   </form>
 </div>
 
-<form method="post" action="/admin/menu/{{ product.id }}/delete{{ qs }}" onsubmit="return confirm('Delete {{ product.name }}? (It is archived instead if it has order history.)')" class="mt-4">
+{# outside the edit form on purpose — a form cannot be nested inside another #}
+<form id="deleteItem" method="post" action="/admin/menu/{{ product.id }}/delete{{ qs }}"
+      onsubmit="return confirm('Delete {{ product.name }}? (It is archived instead if it has order history.)')" class="hidden">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <button class="link-underline text-sm !text-okred"><i class="fa-solid fa-trash"></i> Delete this item</button>
 </form>
 {% endblock %}

@@ -17,20 +17,20 @@
         <!-- order type -->
         <div class="ok-grid ok-grid-2 gap-2 ok-mb-5">
           {% for ot, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
-          <label class="d-flex flex-column align-items-center ok-gap-15 ok-rounded-xl border-2 ok-py-3 ok-pointer transition ok-bc-varokline ok-checkable">
+          <label class="ok-choice d-flex align-items-center justify-content-center ok-gap-25 ok-pointer transition ok-bc-varokline ok-checkable">
             <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if order_type == ot %}checked{% endif %}>
-            <i class="fa-solid fa-{{ icon }} ok-fs-xl text-gold"></i>
+            <i class="fa-solid fa-{{ icon }} ok-fs-lg text-gold"></i>
             <span class="ok-fs-sm fw-semibold">{{ label }}</span>
           </label>
           {% endfor %}
         </div>
 
-        <!-- address (delivery) -->
-        <div class="ok-mb-5">
-          <label class="ok-label" for="address">Delivery address <span class="text-muted-warm fw-normal">(for delivery orders)</span></label>
+        <!-- address (delivery only — hidden for pickup by app.js) -->
+        <div class="ok-mb-5" data-address-row>
+          <label class="ok-label" for="address">Delivery address <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
           <div class="d-flex align-items-center gap-2 ok-input">
             <span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span>
-            <input id="address" name="address" class="w-100 bg-transparent ok-nofocus" placeholder="1520 Chestnut St, Apt 4B, Philadelphia 19102" value="{{ default_address.one_line if default_address else '' }}">
+            <input id="address" name="address" data-address-field required class="w-100 bg-transparent ok-nofocus" placeholder="1520 Chestnut St, Apt 4B, Philadelphia 19102" value="{{ default_address.one_line if default_address else '' }}">
           </div>
         </div>
 
@@ -39,14 +39,14 @@
         <div class="ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-exclamation"></i> {{ store.name if store else 'This store' }} is currently closed and not accepting orders. Please try again later.</div>
         {% else %}
         <div class="ok-grid ok-grid-sm-2 gap-2">
-          <label class="d-flex align-items-center ok-gap-3 ok-rounded-xl border-2 ok-p-3 ok-pointer transition ok-checkable ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
-            <input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if store.open_now %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}>
-            <span><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span><span class="d-block ok-fs-xs text-muted-warm">{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span></span>
+          <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
+            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if store.open_now %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
+            <span class="ok-fs-xs text-muted-warm ok-asap-note">{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
           </label>
           {% if store.scheduling_open %}
-          <label class="ok-rounded-xl border-2 ok-p-3 ok-pointer transition ok-checkable ok-bc-varokline">
+          <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline">
             <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if not store.open_now %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
-            <input type="datetime-local" name="scheduled_for" class="ok-input ok-mt-3 py-2 ok-fs-sm" min="{{ min_schedule }}" value="{{ default_schedule }}">
+            <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ default_schedule }}">
           </label>
           {% endif %}
         </div>
@@ -109,7 +109,7 @@
         </div>
 
         <p class="ok-hint ok-mt-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-lock text-ok-green"></i>
-          {% if store %}Processed on <b class="text-ink">{{ store.name }}</b>'s own Stripe account{% if not stripe_connected %} <span class="text-gold">(demo mode)</span>{% endif %}.{% else %}Secure, PCI-DSS compliant.{% endif %}
+          {% if store %}<b class="text-ink">{{ store.name }}</b>{% if not stripe_connected %} <span class="text-gold">(demo mode)</span>{% endif %}{% else %}Secure, PCI-DSS compliant.{% endif %}
         </p>
       </section>
     </div>
@@ -164,7 +164,7 @@
         <!-- total + CTA -->
         <div class="ok-px-5 ok-py-3 bg-ink text-white">
           <div class="d-flex justify-content-between align-items-center ok-mb-3">
-            <div><div class="text-white ok-fs-xs text-uppercase tracking-wide fw-semibold">Total</div>{% if user %}<div class="ok-fs-7rem text-yellow">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
+            <div><div class="text-white ok-fs-base text-uppercase tracking-wide fw-bold">Total</div>{% if user %}<div class="ok-fs-sm text-yellow fw-semibold">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
             <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}">${{ '%.2f'|format(summary.total) }}</span>
           </div>
           {% if store and store.can_order %}
@@ -176,12 +176,11 @@
       </div>
 
       <!-- trust -->
-      <div class="ok-card ok-p-3 ok-grid ok-grid-3 gap-2 text-center">
+      <div class="ok-card ok-p-3 ok-grid ok-grid-3 gap-2 text-center d-none">
         <div class="ok-fs-xs"><i class="fa-solid fa-lock text-ok-green ok-fs-lg d-block mb-1"></i>Secure<br>payment</div>
         <div class="ok-fs-xs"><i class="fa-solid fa-location-dot text-gold ok-fs-lg d-block mb-1"></i>Live<br>tracking</div>
         <div class="ok-fs-xs"><i class="fa-solid fa-arrow-rotate-left text-ink ok-fs-lg d-block mb-1"></i>Easy<br>reorder</div>
       </div>
-      <p class="text-center ok-fs-xs text-muted-warm">Promo codes, points &amp; gift cards are applied in your <a href="/cart" class="link-underline">cart</a>.</p>
     </aside>
   </div>
 </form>

@@ -33,6 +33,7 @@ class User(TimestampMixin, db.Model):
     last_name = db.Column(db.String(80))
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     email_verified = db.Column(db.Boolean, default=False, nullable=False)
+    avatar_url = db.Column(db.String(500))          # uploaded photo; falls back to initials
 
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False)
     role = db.relationship("Role", back_populates="users")
@@ -51,6 +52,13 @@ class User(TimestampMixin, db.Model):
             return _ph.verify(self.password_hash, raw)
         except VerifyMismatchError:
             return False
+
+    @property
+    def initials(self):
+        parts = [p for p in [self.first_name, self.last_name] if p]
+        if parts:
+            return "".join(p[0] for p in parts[:2]).upper()
+        return (self.email or "?")[0].upper()
 
     @property
     def full_name(self):

@@ -1,6 +1,7 @@
 <!-- What locals have to say (testimonials) -->
 {% set avatar_colors = ['#4285F4','#E0A200','#06C167','#D32323','#7C3AED'] %}
-{% set testimonials = content_list('testimonials') %}{# Customer reviews: editable in Admin > Website Content #}
+{# Curated quotes (Admin > Website Content) plus approved customer reviews (Admin > Reviews) #}
+{% set testimonials = testimonials_feed() %}
 {% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
 <section class="ok-band {{ _bg }}">
   <div class="ok-container">
@@ -10,7 +11,7 @@
     </div>
 
     <div class="position-relative" data-reveal="up">
-      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:-336,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -left-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
+      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:-336,behavior:'smooth'})" class="ok-iconbtn ok-carobtn ok-grid position-absolute ok-caro-prev top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
 
       <div id="localsScroll" class="ok-edgefade d-flex ok-gap-5 overflow-x-auto hide-scrollbar snap-x px-1 py-2 scroll-smooth">
         {% for t in testimonials %}
@@ -32,7 +33,56 @@
         {% endfor %}
       </div>
 
-      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:336,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -right-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
+      <button type="button" onclick="document.getElementById('localsScroll').scrollBy({left:336,behavior:'smooth'})" class="ok-iconbtn ok-carobtn ok-grid position-absolute ok-caro-next top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline" aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
+
+    <!-- write a review -->
+    <div id="reviews" class="text-center ok-mt-8 scroll-mt-24">
+      <button type="button" data-review-open class="ok-btn-outline">
+        <i class="fa-solid fa-pen"></i> Write a review
+      </button>
+    </div>
+
+    <form method="post" action="/reviews" data-review-form class="ok-card ok-p-5 ok-paddin-2rem-md max-w-xl mx-auto ok-mt-5 d-none text-start">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <h3 class="font-display fw-bold ok-fs-lg ok-mb-3">How was it?</h3>
+
+      <div class="ok-mb-3">
+        <span class="ok-label d-block">Your rating</span>
+        {# radios, not a widget: works with no JS and is reachable by keyboard #}
+        <div class="ok-stars-pick d-inline-flex flex-row-reverse ok-gap-05">
+          {% for n in [5, 4, 3, 2, 1] %}
+          <input type="radio" id="star{{ n }}" name="rating" value="{{ n }}" class="visually-hidden" required>
+          <label for="star{{ n }}" title="{{ n }} star{{ '' if n == 1 else 's' }}" aria-label="{{ n }} out of 5">
+            <i class="fa-solid fa-star"></i>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+        <div>
+          <label class="ok-label" for="rv-name">Your name</label>
+          <input id="rv-name" name="name" required maxlength="80" class="ok-input" placeholder="Jordan Miller">
+        </div>
+        <div>
+          <label class="ok-label" for="rv-order">Order number <span class="text-muted-warm fw-normal">(optional)</span></label>
+          <input id="rv-order" name="order_number" maxlength="30" class="ok-input" placeholder="OK-4021">
+        </div>
+        <div class="ok-gridco-span2span2-sm">
+          <label class="ok-label" for="rv-email">Email <span class="text-muted-warm fw-normal">(never shown publicly)</span></label>
+          <input id="rv-email" name="email" type="email" class="ok-input" placeholder="you@email.com">
+        </div>
+        <div class="ok-gridco-span2span2-sm">
+          <label class="ok-label" for="rv-body">Your review</label>
+          <textarea id="rv-body" name="body" rows="4" required minlength="15" class="ok-textarea" placeholder="What did you order, and how was it?"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center ok-gap-3 ok-mt-3">
+        <button class="btn btn-primary">Send review</button>
+        <span class="ok-fs-sm text-muted-warm">We read every one before it goes up.</span>
+      </div>
+    </form>
   </div>
 </section>

@@ -12,18 +12,26 @@
     </div>
 
     <!-- facts -->
-    <div class="ok-card ok-p-5 ok-grid ok-grid-2 ok-grid-sm-4 ok-gap-3 text-center ok-mb-3">
-      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Order</div><div class="font-display fw-bold">{{ order.number }}</div></div>
-      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">{% if order.scheduled_for %}Scheduled{% else %}ETA{% endif %}</div><div class="font-display fw-bold">{% if order.scheduled_for %}{{ order.scheduled_for.strftime('%b %d, %I:%M %p') }}{% else %}~{{ order.store.avg_prep_minutes }} min{% endif %}</div></div>
-      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Store</div><div class="font-display fw-bold">{{ order.store.name }}</div></div>
-      <div><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Type</div><div class="font-display fw-bold text-capitalize">{{ order.order_type }}</div></div>
+    {# Order / ETA / Type stay on one row at every width; the store name is the
+       only long value here and was wrapping to four lines inside a quarter
+       column, so it gets its own full-width row underneath. #}
+    <div class="ok-card ok-p-5 text-center ok-mb-3">
+      <div class="d-flex align-items-start justify-content-center ok-gap-3 ok-gap-5-sm">
+        <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Order</div><div class="font-display fw-bold">{{ order.number }}</div></div>
+        <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">{% if order.scheduled_for %}Scheduled{% else %}ETA{% endif %}</div><div class="font-display fw-bold">{% if order.scheduled_for %}{{ order.scheduled_for.strftime('%b %d, %I:%M %p') }}{% else %}~{{ order.store.avg_prep_minutes }} min{% endif %}</div></div>
+        <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Type</div><div class="font-display fw-bold text-capitalize">{{ order.order_type }}</div></div>
+      </div>
+      <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokhairline">
+        <div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Store</div>
+        <div class="font-display fw-bold">{{ order.store.name }}</div>
+      </div>
     </div>
 
     <!-- payment status -->
     <div class="ok-mb-3 d-flex align-items-center gap-2 justify-content-center ok-fs-sm">
       {% if order.payment_status == 'paid' %}
       <span class="badge badge-green"><i class="fa-solid fa-circle-check"></i> Paid</span>
-      <span class="text-muted-warm">Charged on {{ order.store.name }}'s Stripe account{% if order.payment and order.payment.raw and order.payment.raw.demo %} (demo){% endif %}.</span>
+      <span class="text-muted-warm">{{ order.store.name }}{% if order.payment and order.payment.raw and order.payment.raw.demo %} (demo){% endif %}</span>
       {% else %}
       <span class="badge badge-soft">Pay at store</span>
       <span class="text-muted-warm">Payment on {{ order.order_type }}.</span>

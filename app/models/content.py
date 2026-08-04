@@ -132,6 +132,66 @@ CONTENT_LISTS = [
             {"title": "The Block Party", "serves": "Great for 40+ people", "price": "Custom quote", "popular": "", "desc": "Full menu build with your team\nOn-site setup and staffing options\nDedicated event contact\nInvoicing available"}
         ],
     },
+    {
+        "kind": "rewards_earn",
+        "label": "Rewards — ways to earn",
+        "where": "Rewards page, Earn tab",
+        "fields": [("title", "What they do", TEXT), ("badge", "Badge", TEXT), ("icon", "Icon name", TEXT), ("desc", "Description", AREA)],
+        "defaults": [
+            {"icon": "burger", "title": "Order anything", "badge": "10 pts / $1", "badge_style": "badge-yellow", "desc": "Earn 10 points for every dollar you spend on delivery or pickup."},
+            {"icon": "users", "title": "Refer a friend", "badge": "+$5 both", "badge_style": "badge-green", "desc": "Share your code, you both get $5 off when they place their first order."},
+            {"icon": "cake-candles", "title": "Birthday reward", "badge": "Yearly", "badge_style": "badge-soft", "desc": "A free treat lands in your account every year during your birthday month."},
+            {"icon": "pencil", "title": "Write a review", "badge": "+50 pts", "badge_style": "badge-yellow", "desc": "Rate your order and leave a review to earn 50 bonus points, up to once a day."},
+            {"icon": "mobile-screen-button", "title": "Install the app", "badge": "+100 pts", "badge_style": "badge-yellow", "desc": "Add OK to your home screen and get a one-time 100-point welcome bonus."}
+        ],
+    },
+    {
+        "kind": "rewards_faq",
+        "label": "Rewards — FAQ",
+        "where": "Rewards page",
+        "fields": [("q", "Question", TEXT), ("a", "Answer", AREA)],
+        "defaults": [
+            {"q": "How do I earn points?", "a": "You earn 10 points for every $1 spent, automatically applied when you're signed in. Bonus points come from reviews, referrals, birthdays and installing the app."},
+            {"q": "Do my points expire?", "a": "Points stay active as long as you place at least one order every 12 months. After 12 months of inactivity, unused points expire."},
+            {"q": "How do I redeem a reward?", "a": "Open the Redeem tab, choose a reward you can afford, and add it to your cart. The points are deducted at checkout."},
+            {"q": "Can I combine rewards with deals?", "a": "Most reward redemptions can be combined with everyday menu pricing, but not with other promo codes on the same item. See full terms for details."}
+        ],
+    },
+    {
+        "kind": "giftcard_steps",
+        "label": "Gift cards — how it works",
+        "where": "Gift Cards page",
+        "fields": [("title", "Step", TEXT), ("desc", "Description", AREA)],
+        "defaults": [
+            {"title": "1 · Design it", "desc": "Pick a design and amount, then add a personal message for the lucky recipient."},
+            {"title": "2 · Send it", "desc": "Deliver instantly by email or schedule it to arrive on the perfect day."},
+            {"title": "3 · They smash", "desc": "They redeem the code online or in-store on anything we make. Never expires."}
+        ],
+    },
+    {
+        "kind": "giftcard_amounts",
+        "label": "Gift cards — amounts",
+        "where": "Gift Cards page, the preset buttons",
+        "fields": [("amount", "Amount in dollars", NUM)],
+        "defaults": [
+            {"amount": "10"},
+            {"amount": "25"},
+            {"amount": "50"},
+            {"amount": "100"}
+        ],
+    },
+    {
+        "kind": "rewards_tiers",
+        "label": "Rewards — membership tiers",
+        "where": "Rewards page. The points thresholds here also drive the progress bar.",
+        "fields": [("name", "Tier name", TEXT), ("min_points", "Starts at (points)", NUM),
+                   ("tagline", "Tagline", TEXT), ("perks", "Perks, one per line", AREA)],
+        "defaults": [
+            {"name": "Bronze", "min_points": 0, "tagline": "Getting started", "perks": "10 points per $1 spent\nBirthday reward\nMembers-only weekly deals"},
+            {"name": "Silver", "min_points": 2500, "tagline": "More perks", "perks": "Everything in Bronze\n12 points per $1 spent\nFree delivery once a week\nEarly access to new drops"},
+            {"name": "Gold", "min_points": 6000, "tagline": "Top tier", "perks": "Everything in Silver\n15 points per $1 spent\nFree delivery, always\nSurprise gifts & VIP events"}
+        ],
+    },
 ]
 
 LIST_BY_KIND = {c["kind"]: c for c in CONTENT_LISTS}
@@ -154,6 +214,70 @@ def content_list(kind):
     if rows:
         return [dict(r.data or {}, _id=r.id) for r in rows]
     return defaults_for(kind)
+
+
+def testimonials_feed(limit=16):
+    """What the carousel shows: the client's curated entries first, then
+    approved customer reviews, newest first. Curated ones lead because they are
+    chosen copy; customer reviews follow so the list keeps growing on its own."""
+    from .review import approved_reviews
+    curated = content_list("testimonials")
+    submitted = [r.as_card() for r in approved_reviews(limit)]
+    return (curated + submitted)[:limit]
+
+
+def _lines(text):
+    """Split a "one per line" textarea into a clean list."""
+    return [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
+
+
+def tier_status(points):
+    """Resolve a points balance against the admin's tier list.
+
+    One source of truth on purpose. The page used to hardcode both the tier
+    cards AND the progress maths (`next_target = 1500 if pts < 1500 else …`),
+    so the bar and the printed thresholds could disagree with each other.
+    Everything below is derived from the same rows the client edits.
+    """
+    tiers = sorted(content_list("rewards_tiers"),
+                   key=lambda t: int(t.get("min_points") or 0))
+    if not tiers:
+        return {"tiers": [], "current": None, "next": None,
+                "to_go": 0, "pct": 0, "points": points}
+
+    current = tiers[0]
+    for t in tiers:
+        if points >= int(t.get("min_points") or 0):
+            current = t
+    nxt = next((t for t in tiers
+                if int(t.get("min_points") or 0) > points), None)
+
+    out = []
+    for i, t in enumerate(tiers):
+        lo = int(t.get("min_points") or 0)
+        hi = int(tiers[i + 1].get("min_points") or 0) - 1 if i + 1 < len(tiers) else None
+        out.append(dict(
+            t,
+            min_points=lo,
+            # the printed range is derived, so it can never contradict the
+            # threshold that actually decides the tier
+            range_label=("{:,}+ pts".format(lo) if hi is None
+                         else "{:,} – {:,} pts".format(lo, hi)),
+            perk_lines=_lines(t.get("perks")),
+            is_current=(t is current),
+        ))
+
+    if nxt:
+        lo = int(current.get("min_points") or 0)
+        hi = int(nxt.get("min_points") or 0)
+        span = max(1, hi - lo)
+        pct = round((points - lo) / span * 100)
+        to_go = hi - points
+    else:
+        pct, to_go = 100, 0
+
+    return {"tiers": out, "current": current, "next": nxt,
+            "to_go": to_go, "pct": max(0, min(100, pct)), "points": points}
 
 
 def has_rows(kind):

@@ -22,6 +22,10 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body class="admin-ui font-body bg-[#f4f5f7] text-jet antialiased">
+  {# Modern (Lucide) icon sprite. app.js swaps every fa-solid/fa-regular
+     glyph for one of these; fa-brands stays on Font Awesome because
+     Lucide deliberately ships no brand marks. #}
+  <span hidden>{% include "partials/icons.svg" %}</span>
   {% set rn = current_user.role.name if (current_user and current_user.role) else '' %}
   {% set is_admin = rn in ['super_admin', 'franchise_owner', 'store_manager'] %}
 
@@ -83,6 +87,7 @@
           {{ navlink('/admin/hours', 'Hours', 'clock') }}
           {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
           {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
+          {{ navlink('/admin/reviews', 'Reviews', 'star') }}
           {{ navlink('/admin/messages', 'Messages', 'envelope') }}
           {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
         </div></div>

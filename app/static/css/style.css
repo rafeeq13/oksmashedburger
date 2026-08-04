@@ -360,3 +360,18 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 .pb-sec[style*="--pb-tcolor"] :is(p,li){ color:var(--pb-tcolor) !important; }
 .pb-sec[style*="--pb-font"] :is(h1,h2,h3){ font-family:var(--pb-font) !important; }
 .pb-sec[style*="--pb-overlay"] .pb-overlay{ opacity:var(--pb-overlay) !important; }
+
+
+/* Lucide icon sprite (see modernIcons() in app.js). Lives here, not in
+   premium.css, because the admin only loads this file — icons sized purely
+   from premium.css collapsed to the 300x150 SVG default there. */
+.ok-i{
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -.125em;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+.ok-i.icon-lg{ width: 1.15em; height: 1.15em; }
+.ok-i.icon-xl{ width: 1.3em; height: 1.3em; }

@@ -39,9 +39,10 @@
           <label class="ok-label">2 · Choose an amount</label>
           <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
             <button type="button" class="chip">$10</button>
-            <button type="button" class="chip is-active">$25</button>
-            <button type="button" class="chip">$50</button>
-            <button type="button" class="chip">$100</button>
+            {# Amounts — editable in Admin > Website Content #}
+            {% for a in content_list('giftcard_amounts') %}
+            <button type="button" class="chip{{ ' is-active' if loop.first }}">${{ a.amount }}</button>
+            {% endfor %}
             <button type="button" class="chip">Custom</button>
           </div>
           <div class="ok-mb-3">
@@ -185,20 +186,13 @@
         <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ site.get('giftcards_how_heading') or 'How it works' }}</h2></div>
         <div class="ok-grid ok-grid-md-3 ok-gap-3">
           <div class="text-center">
-            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-palette icon-lg"></i></div>
-            <h3 class="font-display fw-bold ok-fs-lg mb-1">1 · Design it</h3>
-            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">Pick a design and amount, then add a personal message for the lucky recipient.</p>
+            {# How it works — editable in Admin > Website Content #}
+          {% for st in content_list('giftcard_steps') %}
+          <div class="ok-card ok-p-3 text-center">
+            <h3 class="font-display fw-bold ok-fs-lg mb-1">{{ st.title }}</h3>
+            <p class="ok-fs-sm text-muted-warm">{{ st.desc }}</p>
           </div>
-          <div class="text-center">
-            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-paper-plane icon-lg"></i></div>
-            <h3 class="font-display fw-bold ok-fs-lg mb-1">2 · Send it</h3>
-            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">Deliver instantly by email or schedule it to arrive on the perfect day.</p>
-          </div>
-          <div class="text-center">
-            <div class="ok-w-16 ok-h-16 rounded-pill bg-yellow text-ink ok-grid ok-place-center ok-fs-2xl fw-bold mx-auto ok-mb-3"><i class="fa-solid fa-burger icon-lg"></i></div>
-            <h3 class="font-display fw-bold ok-fs-lg mb-1">3 · They smash</h3>
-            <p class="text-muted-warm ok-fs-sm max-w-xs mx-auto">They redeem the code online or in-store on anything we make. Never expires.</p>
-          </div>
+          {% endfor %}
         </div>
       </div>
     </section>

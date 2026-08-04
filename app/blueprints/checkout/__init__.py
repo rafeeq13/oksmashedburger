@@ -51,6 +51,13 @@ def checkout():
                       "please schedule your order for later.", "error")
                 return redirect("/checkout")
 
+        # A delivery order without an address is undeliverable, and the browser
+        # `required` attribute is not a guarantee — it is trivially bypassed.
+        address = request.form.get("address", "").strip()
+        if order_type == "delivery" and not address:
+            flash("Please enter a delivery address.", "error")
+            return redirect("/checkout")
+
         s = cartlib.summary(store, tip=tip, order_type=order_type)
 
         order = Order(
@@ -59,7 +66,7 @@ def checkout():
             customer_name=request.form.get("name", "").strip(),
             customer_email=request.form.get("email", "").strip(),
             customer_phone=request.form.get("phone", "").strip(),
-            address=request.form.get("address", "").strip(),
+            address=address,
             notes=request.form.get("notes", "").strip(),
             subtotal=Decimal(str(s["subtotal"])), tax=Decimal(str(s["tax"])),
             delivery_fee=Decimal(str(s["delivery_fee"])), tip=Decimal(str(s["tip"])),

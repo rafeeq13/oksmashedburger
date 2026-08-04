@@ -25,6 +25,10 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body class="font-body bg-white text-ink antialiased">
+  {# Modern (Lucide) icon sprite. app.js swaps every fa-solid/fa-regular
+     glyph for one of these; fa-brands stays on Font Awesome because
+     Lucide deliberately ships no brand marks. #}
+  <span hidden>{% include "partials/icons.svg" %}</span>
   <a href="#main" class="ok-skip">Skip to content</a>
 
   {# Luxury loading sequence, first visit of the session only. #}

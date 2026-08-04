@@ -22,10 +22,14 @@
 
         <!-- Points card -->
         <div class="ok-card bg-white text-ink ok-p-3 ok-paddin-175rem-md ok-shadow-2xl">
+          {# Everything about tiers comes from tier_status(), which reads the
+             same admin rows the cards below render. The old maths hardcoded a
+             1,500 target that had nothing to do with the printed thresholds. #}
           {% set pts = current_user.loyalty_points if current_user else 1240 %}
-          {% set next_target = 1500 if pts < 1500 else ((pts // 500) + 1) * 500 %}
-          {% set to_go = next_target - pts %}
-          {% set pct = (pts / next_target * 100) | round | int %}
+          {% set ts = tier_status(pts) %}
+          {% set next_target = (ts.next.min_points if ts.next else pts) %}
+          {% set to_go = ts.to_go %}
+          {% set pct = ts.pct %}
           <div class="d-flex align-items-start justify-content-between ok-mb-5">
             <div class="d-flex align-items-center ok-gap-3">
               <img data-ph="Jordan" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-12 ok-h-12 rounded-pill" alt="">
@@ -76,31 +80,17 @@
         <!-- ---- EARN panel ---- -->
         <div data-panel="earn">
           <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
+            {# Ways to earn — editable in Admin > Website Content #}
+            {% for e in content_list('rewards_earn') %}
             <article class="ok-card ok-card-hover ok-p-3">
-              <div class="ok-w-14 ok-h-14 ok-rounded-2xl bg-cream ok-grid ok-place-center ok-fs-3xl ok-mb-3"><i class="fa-solid fa-burger icon-xl"></i></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">Order anything</h3><span class="badge badge-yellow">10 pts / $1</span></div>
-              <p class="ok-fs-sm text-muted-warm">Earn 10 points for every dollar you spend on delivery or pickup.</p>
+              <div class="d-flex align-items-center ok-gap-25 mb-1 flex-wrap">
+                <span class="ok-w-11 ok-h-11 ok-rounded-xl bg-cream ok-grid ok-place-center ok-fs-lg flex-shrink-0"><i class="fa-solid fa-{{ e.icon or 'star' }}"></i></span>
+                <h3 class="font-display fw-bold ok-fs-lg">{{ e.title }}</h3>
+                {% if e.badge %}<span class="badge {{ e.badge_style or 'badge-yellow' }}">{{ e.badge }}</span>{% endif %}
+              </div>
+              <p class="ok-fs-sm text-muted-warm">{{ e.desc }}</p>
             </article>
-            <article class="ok-card ok-card-hover ok-p-3">
-              <div class="ok-w-14 ok-h-14 ok-rounded-2xl bg-cream ok-grid ok-place-center ok-fs-3xl ok-mb-3"><i class="fa-solid fa-users icon-xl"></i></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">Refer a friend</h3><span class="badge badge-green">+$5 both</span></div>
-              <p class="ok-fs-sm text-muted-warm">Share your code, you both get $5 off when they place their first order.</p>
-            </article>
-            <article class="ok-card ok-card-hover ok-p-3">
-              <div class="ok-w-14 ok-h-14 ok-rounded-2xl bg-cream ok-grid ok-place-center ok-fs-3xl ok-mb-3"><i class="fa-solid fa-cake-candles icon-xl"></i></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">Birthday reward</h3><span class="badge badge-soft">Yearly</span></div>
-              <p class="ok-fs-sm text-muted-warm">A free treat lands in your account every year during your birthday month.</p>
-            </article>
-            <article class="ok-card ok-card-hover ok-p-3">
-              <div class="ok-w-14 ok-h-14 ok-rounded-2xl bg-cream ok-grid ok-place-center ok-fs-3xl ok-mb-3"><i class="fa-solid fa-pencil icon-xl"></i></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">Write a review</h3><span class="badge badge-yellow">+50 pts</span></div>
-              <p class="ok-fs-sm text-muted-warm">Rate your order and leave a review to earn 50 bonus points, up to once a day.</p>
-            </article>
-            <article class="ok-card ok-card-hover ok-p-3">
-              <div class="ok-w-14 ok-h-14 ok-rounded-2xl bg-cream ok-grid ok-place-center ok-fs-3xl ok-mb-3"><i class="fa-solid fa-mobile-screen-button icon-xl"></i></div>
-              <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">Install the app</h3><span class="badge badge-yellow">+100 pts</span></div>
-              <p class="ok-fs-sm text-muted-warm">Add OK to your home screen and get a one-time 100-point welcome bonus.</p>
-            </article>
+            {% endfor %}
             <article class="ok-card ok-card-hover ok-p-3 bg-ink text-white d-flex flex-column justify-content-center">
               <h3 class="font-display fw-bold ok-fs-lg mb-1">Ready to stack points?</h3>
               <p class="ok-fs-sm text-w-70 ok-mb-3">Start an order now and watch your balance grow.</p>
@@ -258,52 +248,31 @@
           <p class="text-muted-warm mt-2 max-w-xl mx-auto">The more you order, the more you unlock. Tiers are based on points earned in a calendar year.</p>
         </div>
         <div class="ok-grid ok-grid-md-3 ok-gap-5 align-items-stretch">
-          <!-- Bronze -->
-          <article class="ok-card ok-p-3 d-flex flex-column">
+          {# Membership tiers — editable in Admin > Website Content.
+             Ranges and the "your tier" marker are derived from the same rows,
+             so the copy can never disagree with the thresholds. #}
+          {% for t in ts.tiers %}
+          <article class="ok-card ok-p-3 d-flex flex-column{{ ' ok-card-hover position-relative border-2 border-yellow ok-shadow-xl ok-ty-2-md' if t.is_current }}">
+            {% if t.is_current %}<span class="badge badge-yellow position-absolute -top-3 left-1/2 -translate-x-1/2">Your tier</span>{% endif %}
             <div class="d-flex align-items-center justify-content-between ok-mb-3">
-              <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Bronze</span>
-              <span class="ok-fs-sm text-muted-warm fw-semibold">0 – 2,499 pts</span>
+              <span class="badge {{ 'badge-yellow' if loop.last else 'badge-soft' }}"><i class="fa-solid fa-medal"></i> {{ t.name }}</span>
+              <span class="ok-fs-sm text-muted-warm fw-semibold">{{ t.range_label }}</span>
             </div>
-            <h3 class="font-display fw-bold ok-fs-xl ok-mb-3">Getting started</h3>
+            <h3 class="font-display fw-bold ok-fs-xl ok-mb-3">{{ t.tagline }}</h3>
             <ul class="ok-stack-2 ok-fs-sm text-muted-warm flex-grow-1">
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> 10 points per $1 spent</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Birthday reward</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Members-only weekly deals</li>
+              {% for perk in t.perk_lines %}
+              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> {{ perk }}</li>
+              {% endfor %}
             </ul>
-          </article>
-          <!-- Silver (current) -->
-          <article class="ok-card ok-card-hover ok-p-3 d-flex flex-column position-relative border-2 border-yellow ok-shadow-xl ok-ty-2-md">
-            <span class="badge badge-yellow position-absolute -top-3 left-1/2 -translate-x-1/2">Your tier</span>
-            <div class="d-flex align-items-center justify-content-between ok-mb-3">
-              <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Silver</span>
-              <span class="ok-fs-sm text-muted-warm fw-semibold">2,500 – 5,999 pts</span>
-            </div>
-            <h3 class="font-display fw-bold ok-fs-xl ok-mb-3">More perks</h3>
-            <ul class="ok-stack-2 ok-fs-sm text-muted-warm flex-grow-1">
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Everything in Bronze</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> 12 points per $1 spent</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Free delivery once a week</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Early access to new drops</li>
-            </ul>
+            {% if t.is_current %}
             <div class="divider ok-my-3"></div>
-            <p class="ok-fs-xs text-muted-warm">You've earned <b class="text-ink">3,180 pts</b> this year.</p>
-          </article>
-          <!-- Gold -->
-          <article class="ok-card ok-p-3 d-flex flex-column">
-            <div class="d-flex align-items-center justify-content-between ok-mb-3">
-              <span class="badge badge-yellow"><i class="fa-solid fa-medal"></i> Gold</span>
-              <span class="ok-fs-sm text-muted-warm fw-semibold">6,000+ pts</span>
-            </div>
-            <h3 class="font-display fw-bold ok-fs-xl ok-mb-3">Top tier</h3>
-            <ul class="ok-stack-2 ok-fs-sm text-muted-warm flex-grow-1">
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Everything in Silver</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> 15 points per $1 spent</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Free delivery, always</li>
-              <li class="d-flex gap-2"><span class="text-ok-green"><i class="fa-solid fa-circle-check"></i></span> Surprise gifts &amp; VIP events</li>
-            </ul>
+            <p class="ok-fs-xs text-muted-warm">You've earned <b class="text-ink">{{ "{:,}".format(pts) }} pts</b> so far.</p>
+            {% elif ts.next and t.name == ts.next.name %}
             <div class="divider ok-my-3"></div>
-            <p class="ok-fs-xs text-muted-warm"><i class="fa-solid fa-lock"></i> <b class="text-ink">2,820 pts</b> to reach Gold this year.</p>
+            <p class="ok-fs-xs text-muted-warm"><i class="fa-solid fa-lock"></i> <b class="text-ink">{{ "{:,}".format(to_go) }} pts</b> to reach {{ t.name }}.</p>
+            {% endif %}
           </article>
+          {% endfor %}
         </div>
       </div>
     </section>
@@ -324,10 +293,10 @@
                   <span data-refcode>JORDAN-OK</span>
                   <span class="ok-fs-xs font-body fw-normal tracking-normal">Tap to copy</span>
                 </div>
-                <button type="button" data-copy="[data-refcode]" class="btn btn-primary flex-shrink-0">Copy</button>
+                <button type="button" data-copy="[data-refcode]" class="btn btn-primary flex-shrink-0 d-none d-sm-inline-flex">Copy</button>
               </div>
 
-              <div class="d-flex flex-wrap gap-2">
+              <div class="ok-sharerow">
                 <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40"><i class="fa-solid fa-envelope"></i> Email</a>
                 <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40"><i class="fa-solid fa-comment"></i> Text</a>
                 <a href="#" class="btn btn-secondary btn-sm !bg-transparent !text-white !border-white/40"><i class="fa-brands fa-instagram"></i> Instagram</a>
@@ -349,24 +318,13 @@
       <div class="ok-container max-w-3xl">
         <div class="text-center ok-mb-8"><h2 class="ok-h2">{{ site.get('rewards_faq_heading') or 'Rewards FAQ' }}</h2></div>
         <div class="ok-card ok-px-3">
-          <div class="acc-item">
-            <button class="acc-q">How do I earn points? <span class="acc-icon">+</span></button>
-            <div class="acc-a"><p>You earn 10 points for every $1 spent, automatically applied when you're signed in. Bonus points come from reviews, referrals, birthdays and installing the app.</p></div>
+          {# Rewards FAQ — editable in Admin > Website Content #}
+            {% for f in content_list('rewards_faq') %}
+            <div class="acc-item{{ ' is-open' if loop.first }}">
+              <button class="acc-q">{{ f.q }} <span class="acc-icon">+</span></button>
+              <div class="acc-a"><p>{{ f.a|safe }}</p></div>
+            </div>
+            {% endfor %}
           </div>
-          <div class="acc-item">
-            <button class="acc-q">Do my points expire? <span class="acc-icon">+</span></button>
-            <div class="acc-a"><p>Points stay active as long as you place at least one order every 12 months. After 12 months of inactivity, unused points expire.</p></div>
-          </div>
-          <div class="acc-item">
-            <button class="acc-q">How do I redeem a reward? <span class="acc-icon">+</span></button>
-            <div class="acc-a"><p>Open the Redeem tab, choose a reward you can afford, and add it to your cart. The points are deducted at checkout.</p></div>
-          </div>
-          <div class="acc-item">
-            <button class="acc-q">Can I combine rewards with deals? <span class="acc-icon">+</span></button>
-            <div class="acc-a"><p>Most reward redemptions can be combined with everyday menu pricing, but not with other promo codes on the same item. See full terms for details.</p></div>
-          </div>
-        </div>
-        <div class="text-center ok-mt-3"><a href="/faq" class="btn btn-secondary">Visit the full Help Center <i class="fa-solid fa-arrow-right"></i></a></div>
-      </div>
     </section>
 {% endblock %}

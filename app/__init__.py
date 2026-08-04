@@ -149,8 +149,10 @@ def create_app(config_object=None):
 
     # Admin-editable content lists (hero slides, reviews, jobs, news, FAQ…).
     # Falls back to the built-in defaults until the client imports a list.
-    from .models.content import content_list
+    from .models.content import content_list, testimonials_feed, tier_status
     app.jinja_env.globals["content_list"] = content_list
+    app.jinja_env.globals["testimonials_feed"] = testimonials_feed
+    app.jinja_env.globals["tier_status"] = tier_status
 
     @app.context_processor
     def inject_globals():

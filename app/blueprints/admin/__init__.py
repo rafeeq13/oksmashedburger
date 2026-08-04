@@ -1967,3 +1967,58 @@ def driver_delete(did):
         db.session.commit()
         flash("Driver removed.", "success")
     return redirect("/admin/drivers" + _qs(_admin_store()))
+
+
+# ── Customer reviews (moderation) ────────────────────────────────────────
+# Public submissions land as `pending` and are invisible until approved here.
+from app.models.review import Review, pending_count                 # noqa: E402
+
+
+@bp.get("/admin/reviews")
+@roles_required(*ADMIN_ROLES)
+def reviews():
+    store = _admin_store()
+    status = request.args.get("status") or "pending"
+    q = Review.query
+    if status in ("pending", "approved", "rejected"):
+        q = q.filter_by(status=status)
+    rows = q.order_by(Review.created_at.desc()).limit(200).all()
+    counts = {s: Review.query.filter_by(status=s).count()
+              for s in ("pending", "approved", "rejected")}
+    return render_template("admin/reviews.html", rows=rows, status=status,
+                           counts=counts, **_shell(store))
+
+
+def _moderate(rid, new_status):
+    row = Review.query.get_or_404(rid)
+    row.status = new_status
+    row.moderated_at = datetime.now(timezone.utc)
+    u = current_user()
+    row.moderated_by_id = u.id if u else None
+    db.session.commit()
+    return row
+
+
+@bp.post("/admin/reviews/<int:rid>/approve")
+@roles_required(*ADMIN_ROLES)
+def review_approve(rid):
+    row = _moderate(rid, "approved")
+    flash("Published — %s's review is live on the site." % row.display_name, "success")
+    return redirect(request.form.get("next") or "/admin/reviews")
+
+
+@bp.post("/admin/reviews/<int:rid>/reject")
+@roles_required(*ADMIN_ROLES)
+def review_reject(rid):
+    _moderate(rid, "rejected")
+    flash("Rejected — it stays hidden from the site.", "success")
+    return redirect(request.form.get("next") or "/admin/reviews")
+
+
+@bp.post("/admin/reviews/<int:rid>/delete")
+@roles_required("super_admin", "franchise_owner")
+def review_delete(rid):
+    db.session.delete(Review.query.get_or_404(rid))
+    db.session.commit()
+    flash("Review deleted.", "success")
+    return redirect(request.form.get("next") or "/admin/reviews")

@@ -31,7 +31,7 @@
   {% if product.variants %}
   <div class="ok-mb-3">
     <label class="ok-label">Choose a size</label>
-    <div class="d-flex flex-wrap gap-2" data-chip-group>
+    <div class="d-flex gap-2 ok-optrow" data-chip-group>
       {% for v in product.variants %}
       <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
       {% endfor %}

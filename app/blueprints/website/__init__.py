@@ -9,6 +9,7 @@ from app.extensions import db, limiter
 from app.helpers import get_current_store
 from app.models.promo import Coupon, GiftCard
 from app.models.contact import ContactMessage, Subscriber
+from app.models.review import Review
 from app.models.page import home_sections_ordered, BuilderPage, DYNAMIC_SECTION_KEYS
 from app.auth import current_user
 
@@ -288,6 +289,42 @@ def unsubscribe(token):
         row.is_active = False
         db.session.commit()
     return render_template("website/unsubscribe.html", email=email, ok=True)
+
+
+@bp.post("/reviews")
+@limiter.limit("3 per minute; 10 per hour")
+def review_submit():
+    """Public review submission. Every row lands as `pending` — nothing a
+    visitor writes reaches the site until a manager approves it."""
+    name = request.form.get("name", "").strip()
+    body = request.form.get("body", "").strip()
+    rating = request.form.get("rating", type=int) or 0
+    back = (request.referrer or "/") + "#reviews"
+
+    if not name or not body:
+        flash("Please add your name and a few words about your visit.", "error")
+        return redirect(back)
+    if len(body) < 15:
+        flash("Could you tell us a little more? A sentence or two helps.", "error")
+        return redirect(back)
+    if not 1 <= rating <= 5:
+        flash("Please choose a star rating.", "error")
+        return redirect(back)
+
+    user = current_user()
+    store = get_current_store()
+    db.session.add(Review(
+        name=name[:80],
+        email=(request.form.get("email", "").strip() or (user.email if user else ""))[:255],
+        user_id=user.id if user else None,
+        rating=rating,
+        body=body[:2000],
+        store_id=store.id if store else None,
+        order_number=request.form.get("order_number", "").strip()[:30],
+        status="pending"))
+    db.session.commit()
+    flash("Thanks! Your review has been sent to us and will appear once it's checked.", "success")
+    return redirect(back)
 
 
 @bp.post("/subscribe")

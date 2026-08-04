@@ -2205,6 +2205,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 
 /* the collapsible search fields sit inside a bordered pill, keep them clean too */
 .hdr-search .search-panel > div,
+.hdr-search .search-panel > form,
 .menu-search-panel > div{ border-color:#000; }
 
 /* ---------------------------------------------------------
@@ -2372,6 +2373,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
    panel reads as floating above the page. The old one only cast downwards, so
    the top and side edges disappeared into the content behind them. */
 .hdr-search .search-panel > div,
+.hdr-search .search-panel > form,
 .menu-search-panel > div{
   box-shadow:0 0 0 1px rgba(20,20,20,.06), 0 6px 26px rgba(20,20,20,.18) !important;
 }
@@ -2572,7 +2574,8 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
     clip-path: inset(0 0 0 0);
   }
   /* the desktop panel is a clamp()-ed fixed width; on phones it fills the bar */
-  .hdr-search .search-panel > div{ width: 100%; height: 2.75rem; }
+  .hdr-search .search-panel > div,
+.hdr-search .search-panel > form{ width: 100%; height: 2.75rem; }
 }
 
 /* The About hero's veil (z-index:1) was painting OVER its heading, because the
@@ -2825,17 +2828,272 @@ article.ok-card > h3,
   color: #000 !important;
 }
 
-/* Header search sits centred in the bar on phones instead of bunched in with
-   the cart and the burger. No transform is used to do the centring: a
-   transform on this element would become the containing block for the
-   position:fixed search panel inside it and break the panel's placement. */
+/* On phones the magnifier stays where it belongs — in the icon group on the
+   right. It is only the OPEN field that centres itself across the bar. */
 @media (max-width: 767.98px){
-  .ok-header .ok-container > .d-flex{ position: relative; }
-  .hdr-search{
-    position: absolute;
-    left: 0;
-    right: 0;
-    width: 2.5rem;              /* the toggle's own size */
-    margin-inline: auto;
+  .hdr-search .search-panel > div,
+.hdr-search .search-panel > form{
+    justify-content: center;
+  }
+  /* the input carries Bootstrap's .w-100, which is !important — without
+     matching that it keeps filling the row and nothing can centre. */
+  .hdr-search .search-panel input[data-search-input]{
+    width: auto !important;
+    flex: 0 1 14rem;
+    text-align: center;
   }
 }
+
+/* ---------------------------------------------------------
+   SECTION HEADINGS — one step down
+   The shared scale peaked at 2.9rem (46px), which read as a page
+   title rather than a section label. Down to 2.2rem (35px) max.
+   Applied to .ok-title as well, not just the aliases: shrinking
+   only the inner pages would put the home out of step again, and
+   these are all meant to be the same size now.
+   --------------------------------------------------------- */
+.ok-title,
+.ok-h2,
+.ok-abt-h,
+.ok-sechead h2,
+.ok-section > .ok-container > .text-center > h2{
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  line-height: 1.08;
+}
+
+/* ---------------------------------------------------------
+   POPUPS
+   --------------------------------------------------------- */
+
+/* A scroll gesture that reaches the end of a modal's own scroller used to
+   carry on and move the page behind it. Contain it at the panel. */
+.modal-scroll,
+.ok-modal .overflow-y-auto,
+.drawer,
+#okDrawer{
+  overscroll-behavior: contain;
+}
+
+/* the location modal's search row sits above the list it filters */
+.ok-locsearch{
+  /* the panel has its own padding; pull the sticky bar out to the edges so
+     nothing shows through beside it while the list scrolls past */
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  padding-top: .25rem;
+  box-shadow: 0 1px 0 var(--ok-hairline);
+}
+
+/* ---------------------------------------------------------
+   NO BLUE ON TAP / CLICK
+   Mobile browsers paint a translucent blue box behind whatever
+   was tapped, and Bootstrap's own focus ring is blue too. Both
+   are off-palette; focus is shown with the brand outline instead.
+   --------------------------------------------------------- */
+html{ -webkit-tap-highlight-color: transparent; }
+a, button, [role="button"], input, select, textarea, label, summary,
+.btn, .chip, .ok-iconbtn, .ok-card-hover{
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:focus, .btn:focus-visible, .btn:active,
+.chip:focus, .chip:focus-visible,
+.ok-iconbtn:focus, .ok-iconbtn:focus-visible,
+a:focus, a:focus-visible,
+button:focus, button:focus-visible,
+.form-control:focus, .form-select:focus,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus{
+  outline-color: var(--ok-ink);
+  box-shadow: none;
+  --bs-btn-focus-box-shadow: none;
+  --bs-focus-ring-color: transparent;
+}
+::selection{ background: var(--ok-yellow); color: #000; }
+
+/* ---------------------------------------------------------
+   CHECKOUT CHOICE TILES
+   Delivery/Pickup stacked their icon above the label, which made
+   them ~90px tall next to a 48px address field, and ASAP sat in a
+   short box beside a taller Schedule box. One shell for all four,
+   sized off the form fields they sit with.
+   --------------------------------------------------------- */
+.ok-choice{
+  border: 2px solid var(--ok-hairline);
+  border-radius: var(--r-control);
+  padding: .7rem 1rem;
+  min-height: 3rem;                 /* the height of an .ok-input */
+  transition: border-color var(--t-fast) var(--e-out),
+              background-color var(--t-fast) var(--e-out);
+}
+
+/* the timing pair carries a second line (and a date field), so it grows —
+   but both halves of the row grow together */
+.ok-choice--stack{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: .25rem;
+  padding: .85rem 1rem;
+}
+.ok-choice--stack > span{ display: block; }
+
+/* grid children already stretch; this makes the shorter card centre its
+   content instead of pinning it to the top of the taller neighbour */
+.ok-grid-sm-2 > .ok-choice--stack{ height: 100%; }
+
+/* the ASAP sub-line lines up under its title, not under the radio */
+.ok-asap-note{ padding-left: 2.05rem; }
+
+/* ---------------------------------------------------------
+   NO BLUE ON CLICK
+   Bootstrap paints :active from --bs-btn-active-bg, and its
+   selectors (.btn:first-child:active, :not(.btn-check)+.btn:active)
+   are specificity 0,3,0 — they outrank our own 0,2,0 :active rules,
+   so a click flashed Bootstrap blue (#0a58ca on primary, #565e64 on
+   secondary, #4d5154 on dark) before settling back.
+   Fixing the variables kills it at the source, for every path
+   Bootstrap uses (:active, .active, .show, .btn-check:checked).
+   Click now looks exactly like hover.
+   --------------------------------------------------------- */
+.btn{
+  --bs-btn-active-bg: var(--ok-ink);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: var(--ok-ink);
+  --bs-btn-focus-box-shadow: none;
+  --bs-btn-active-shadow: none;
+}
+.btn-primary{                       /* hover = black on white text */
+  --bs-btn-active-bg: #000;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: #000;
+}
+.btn-secondary{                     /* hover = ink fill */
+  --bs-btn-active-bg: var(--ok-ink);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-border-color: var(--ok-ink);
+}
+.btn-dark{                          /* hover keeps the dark fill, yellow label */
+  --bs-btn-active-bg: var(--ok-ink);
+  --bs-btn-active-color: var(--ok-yellow);
+  --bs-btn-active-border-color: var(--ok-ink);
+}
+/* these two invert on hover, so they invert on click too */
+.ok-btn-invert, .ok-btn-subscribe{
+  --bs-btn-active-bg: #fff;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-border-color: #000;
+}
+
+/* Item-modal size options stay on one line. They used to wrap, which on a
+   phone put two chips up and one orphaned underneath. If they cannot all fit
+   the row scrolls sideways rather than breaking. */
+.ok-optrow{
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  padding-block: 2px;             /* room for the chip border, which the
+                                     overflow container would otherwise clip */
+}
+.ok-optrow::-webkit-scrollbar{ display: none; }
+.ok-optrow > .chip{ flex: 0 0 auto; }
+
+/* Referral share links: two per row on a phone so the four buttons form a
+   tidy 2×2 block instead of a ragged 2 + 1 + 1 wrap. Untouched from sm up. */
+@media (max-width: 575.98px){
+  .ok-sharerow{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+  }
+  .ok-sharerow > .btn{ width: 100%; }
+}
+
+/* the share row is laid out here, not by utilities — see the note in
+   rewards.html: Bootstrap's d-flex is !important and blocked the grid */
+.ok-sharerow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+@media (max-width: 575.98px){
+  .ok-sharerow{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .ok-sharerow > .btn{ width: 100%; }
+}
+
+/* ---------------------------------------------------------
+   REVIEWS
+   --------------------------------------------------------- */
+
+/* Carousel arrows were desktop-only (d-none d-md-grid), which is backwards —
+   a phone is exactly where people need a hint that the row scrolls. They sit
+   inside the track on small screens so they never hang off the viewport. */
+.ok-carobtn{
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: #fff;
+  border: 1px solid var(--ok-hairline);
+  box-shadow: 0 6px 20px rgba(20,20,20,.14);
+}
+.ok-caro-prev{ left: -1.25rem; }
+.ok-caro-next{ right: -1.25rem; }
+@media (max-width: 767.98px){
+  .ok-carobtn{ width: 2.25rem; height: 2.25rem; }
+  .ok-caro-prev{ left: -.25rem; }
+  .ok-caro-next{ right: -.25rem; }
+}
+
+/* star picker: laid out reversed so "hover a star, fill it and everything to
+   its left" is a pure-CSS sibling selector, no JS */
+.ok-stars-pick label{
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--ok-hairline);
+  transition: color .12s ease;
+}
+.ok-stars-pick label:hover,
+.ok-stars-pick label:hover ~ label,
+.ok-stars-pick input:checked ~ label{ color: var(--ok-yellow); }
+.ok-stars-pick input:focus-visible + label{ outline: 2px solid var(--ok-ink); outline-offset: 2px; }
+
+/* Initials avatar — the fallback when a customer has not uploaded a photo.
+   Previously a random stock face was pulled in, which put a stranger's
+   portrait next to somebody's real name. */
+.ok-avatar{
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--grad-gold);
+  color: var(--ok-ink);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: .95rem;
+  letter-spacing: .01em;
+  user-select: none;
+}
+.ok-avatar--lg{ font-size: 1.35rem; }
+
+/* ---------------------------------------------------------
+   ICONS
+   Lucide SVGs sized off the surrounding font-size, exactly the
+   way the Font Awesome glyphs they replaced were, so nothing in
+   the layout has to change.
+   --------------------------------------------------------- */
+.ok-i{
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -.125em;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+.ok-i.icon-lg{ width: 1.15em; height: 1.15em; }
+.ok-i.icon-xl{ width: 1.3em; height: 1.3em; }
+/* stroke icons read lighter than filled ones at large sizes */
+.ok-fs-2xl > .ok-i, .ok-fs-3xl > .ok-i, .ok-fs-4xl > .ok-i{ stroke-width: 1.75; }

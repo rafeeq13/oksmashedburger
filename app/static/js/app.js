@@ -112,6 +112,39 @@
     });
   }
 
+  /* ---------- modern icons ----------
+     Font Awesome Solid is a heavy, filled set. Every fa-solid / fa-regular
+     glyph is swapped for the matching Lucide symbol from the inline sprite —
+     same meaning, modern stroke style. Brand marks (Instagram, Visa, Apple…)
+     are left alone: Lucide ships none, so those stay on Font Awesome.
+     Done here rather than across ~400 template usages so the mapping lives in
+     one place and can be turned off in one line. */
+  function modernIcons(root) {
+    if (!document.getElementById("i-check")) return;      // sprite not on this page
+    (root || document).querySelectorAll("i.fa-solid, i.fa-regular").forEach(function (el) {
+      var name = null;
+      el.classList.forEach(function (c) {
+        if (c.indexOf("fa-") === 0 && c !== "fa-solid" && c !== "fa-regular" && !name) {
+          name = c.slice(3);
+        }
+      });
+      if (!name || !document.getElementById("i-" + name)) return;
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "ok-i " + el.className.replace(/fa-[a-z0-9-]+/g, "").trim());
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("focusable", "false");
+      // An <svg> with no intrinsic size renders at 300x150 and wrecks the
+      // layout. These are presentation attributes, so any width/height class
+      // the element already carries still wins over them.
+      svg.setAttribute("width", "1em");
+      svg.setAttribute("height", "1em");
+      var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", "#i-" + name);
+      svg.appendChild(use);
+      el.replaceWith(svg);
+    });
+  }
+
   /* ---------- toast ---------- */
   function toast(msg) {
     var wrap = document.getElementById("ok-toast-wrap");
@@ -128,8 +161,13 @@
   var _locks = 0;
   function lockScroll(on) {
     _locks = Math.max(0, _locks + (on ? 1 : -1));
-    document.documentElement.style.overflow = _locks ? "hidden" : "";
-    document.body.style.overflow = _locks ? "hidden" : "";
+    var locked = !!_locks;
+    document.documentElement.style.overflow = locked ? "hidden" : "";
+    document.body.style.overflow = locked ? "hidden" : "";
+    // overflow:hidden alone still lets a touch scroll inside a modal chain out
+    // to the page once the panel hits its end. overscroll-behavior stops that.
+    document.documentElement.style.overscrollBehavior = locked ? "none" : "";
+    document.body.style.overscrollBehavior = locked ? "none" : "";
   }
 
   function openDrawer(open) {
@@ -243,8 +281,10 @@
   function locStep(n) {
     var m = document.getElementById("locModal"); if (!m) return;
     var s1 = m.querySelector('[data-loc-step="1"]'), s2 = m.querySelector('[data-loc-step="2"]');
-    if (s1) s1.classList.toggle("hidden", n !== 1);
-    if (s2) s2.classList.toggle("hidden", n !== 2);
+    // d-none, not "hidden": the templates use Bootstrap and .hidden is not
+    // defined anywhere, so this toggle used to be a no-op in both directions.
+    if (s1) s1.classList.toggle("d-none", n !== 1);
+    if (s2) s2.classList.toggle("d-none", n !== 2);
     locSchedule(false);
   }
   function locPick(card) {
@@ -254,7 +294,10 @@
     if (nameEl) nameEl.textContent = card.dataset.locName || "your store";
     // choosing a store in the modal selects it everywhere too (header, cards, …)
     selectStore(card.dataset.locPick, { name: card.dataset.locName, city: card.dataset.city, zip: card.dataset.zip });
-    locStep(2);
+    // the location is the thing the visitor came here to change, so close on
+    // pick rather than pushing them through a second step
+    openLocation(false);
+    locStep(1);
   }
   function locFind() {
     var m = document.getElementById("locModal"); if (!m) return;
@@ -275,6 +318,8 @@
   }
 
   function wire() {
+    modernIcons();
+
     var hd = document.getElementById("okHeader");
     if (hd) window.addEventListener("scroll", function () { hd.classList.toggle("is-scrolled", window.scrollY > 8); });
 
@@ -285,6 +330,42 @@
       if (open) { var i = searchBox.querySelector("[data-search-input]"); if (i) setTimeout(function () { i.focus(); }, 40); }
     }
     if (searchBox) searchBox.addEventListener("focusout", function (e) { if (!searchBox.contains(e.relatedTarget)) openSearch(false); });
+
+    // Checkout: the address is required for delivery and meaningless for
+    // pickup, so the attribute follows the order-type radios.
+    (function () {
+      var addr = document.querySelector("[data-address-field]");
+      if (!addr) return;
+      var radios = document.querySelectorAll('input[name="order_type"]');
+      var row = document.querySelector("[data-address-row]");
+      function sync() {
+        var picked = document.querySelector('input[name="order_type"]:checked');
+        var delivery = !picked || picked.value === "delivery";
+        // required must come off with the field, or a pickup order can never
+        // be submitted: browsers refuse to validate a hidden required input.
+        addr.required = delivery;
+        if (row) row.classList.toggle("d-none", !delivery);
+      }
+      radios.forEach(function (r) { r.addEventListener("change", sync); });
+      sync();
+    })();
+
+    // Review form starts collapsed so the section stays a wall of reviews,
+    // not a form. Opens on demand, and stays open if the server bounced the
+    // submission back with an error.
+    (function () {
+      var form = document.querySelector("[data-review-form]");
+      if (!form) return;
+      function open() {
+        form.classList.remove("d-none");
+        var first = form.querySelector("input[name='name']");
+        if (first) first.focus();
+      }
+      document.addEventListener("click", function (e) {
+        if (e.target.closest("[data-review-open]")) { e.preventDefault(); open(); }
+      });
+      if (location.hash === "#reviews") open();
+    })();
 
     var catbar = document.getElementById("menuCatbar");
     function openMenuSearch(open) {

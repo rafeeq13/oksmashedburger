@@ -13,6 +13,7 @@ from .notification import Notification, NOTIFY_CHANNELS, NOTIFY_STATUSES  # noqa
 from .favorite import Favorite  # noqa: F401
 from .address import UserAddress  # noqa: F401
 from .contact import ContactMessage, Subscriber  # noqa: F401
+from .review import Review, REVIEW_STATUSES, approved_reviews  # noqa: F401
 from .site import SiteSetting  # noqa: F401
 from .content import ContentItem, CONTENT_LISTS, content_list  # noqa: F401
 from .page import PageSection, HOME_SECTIONS, SECTION_THEMES, home_sections_ordered  # noqa: F401

@@ -12,6 +12,9 @@ from app.models.favorite import Favorite
 from app.models.address import UserAddress
 from app.services.orders import orders_for_user, STAGE_META
 
+AVATAR_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+AVATAR_MAX_BYTES = 4 * 1024 * 1024      # 4 MB
+
 bp = Blueprint("account", __name__)
 
 
@@ -110,9 +113,80 @@ def profile_update():
     u.first_name = request.form.get("first_name", "").strip()
     u.last_name = request.form.get("last_name", "").strip()
     u.phone = request.form.get("phone", "").strip()
+
+    photo = request.files.get("avatar")
+    if photo and photo.filename:
+        url, err = _save_avatar(photo, u)
+        if err:
+            flash(err, "error")
+            return redirect("/account")
+        u.avatar_url = url
+
+    if request.form.get("remove_avatar"):
+        u.avatar_url = None
+
     db.session.commit()
     flash("Profile updated.", "success")
     return redirect("/account")
+
+
+def _looks_like_image(head):
+    """Magic-byte sniff. Python 3.13 dropped `imghdr`, and checking the bytes
+    ourselves is clearer anyway: an extension is just a claim, and this folder
+    is served straight back to browsers."""
+    SIGNATURES = (
+        bytes.fromhex("ffd8ff"),            # jpeg
+        bytes.fromhex("89504e470d0a1a0a"),  # png
+        b"GIF87a", b"GIF89a",               # gif
+    )
+    if any(head.startswith(sig) for sig in SIGNATURES):
+        return True
+    return head[:4] == b"RIFF" and head[8:12] == b"WEBP"    # webp
+
+
+def _save_avatar(file, user):
+    """Store a profile photo. Returns (url, error).
+
+    Checked on extension AND on what the bytes actually are — a file called
+    .png that is really something else must not be written into a folder the
+    web server hands back to browsers. Named by user id so re-uploading
+    replaces the old file instead of littering the disk.
+    """
+    import os
+    from flask import current_app
+    from werkzeug.utils import secure_filename
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in AVATAR_EXTS:
+        return None, "Please use a JPG, PNG, WEBP or GIF image."
+
+    file.stream.seek(0, os.SEEK_END)
+    size = file.stream.tell()
+    file.stream.seek(0)
+    if size > AVATAR_MAX_BYTES:
+        return None, "That image is over 4 MB — please use a smaller one."
+
+    head = file.stream.read(16)
+    file.stream.seek(0)
+    if not _looks_like_image(head):
+        return None, "That file does not look like an image."
+
+    updir = os.path.join(current_app.static_folder, "img", "avatars")
+    os.makedirs(updir, exist_ok=True)
+    fname = secure_filename("user-%d%s" % (user.id, ext))
+    # drop any previous photo in another format, or two would linger
+    for old_ext in AVATAR_EXTS:
+        prev = os.path.join(updir, "user-%d%s" % (user.id, old_ext))
+        if old_ext != ext and os.path.exists(prev):
+            try:
+                os.remove(prev)
+            except OSError:
+                pass
+    file.save(os.path.join(updir, fname))
+    # cache-buster: the filename never changes, so the browser would keep the
+    # old photo forever without one
+    import time
+    return "/static/img/avatars/%s?v=%d" % (fname, int(time.time())), None
 
 
 @bp.post("/account/password")
