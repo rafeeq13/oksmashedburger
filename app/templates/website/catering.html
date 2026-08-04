@@ -61,7 +61,17 @@
         {% if hot %}<span class="badge badge-new position-absolute -top-3 left-6">Most popular</span>{% endif %}
         <h3 class="font-display ok-fw-800 ok-fs-xl">{{ pk.title }}</h3>
         <p class="ok-fs-sm text-muted-warm mt-1">{{ pk.serves }}</p>
-        <div class="font-display ok-fw-800 ok-fs-3xl ok-mt-3">{{ pk.price }}</div>
+        {# "$18 / person" renders as a big number with a small muted unit;
+           a wordy price like "Custom quote" would look shouty at that size,
+           so it drops a step and stays on one line. #}
+        {% set _p = (pk.price or '').split('/') %}
+        <div class="ok-cater-price ok-mt-3">
+          {% if _p|length > 1 %}
+          <span class="ok-cater-amount">{{ _p[0]|trim }}</span><span class="ok-cater-unit"> / {{ _p[1]|trim }}</span>
+          {% else %}
+          <span class="ok-cater-words">{{ pk.price }}</span>
+          {% endif %}
+        </div>
         <ul class="ok-stack-2 ok-fs-sm ok-mt-5 flex-grow-1">
           {% for line in (pk.desc or '').split('
 ') if line.strip() %}

@@ -1575,7 +1575,7 @@ html.ok-loading {
 }
 
 .ok-band--warm {
-  background: var(--ok-warm-white);
+  background: #fff
 }
 
 .ok-band--white {
@@ -3097,3 +3097,38 @@ button:focus, button:focus-visible,
 .ok-i.icon-xl{ width: 1.3em; height: 1.3em; }
 /* stroke icons read lighter than filled ones at large sizes */
 .ok-fs-2xl > .ok-i, .ok-fs-3xl > .ok-i, .ok-fs-4xl > .ok-i{ stroke-width: 1.75; }
+
+/* Catering package price.
+   It was one 3xl string, so "$14 / person" put "/ person" at headline size
+   and "Custom quote" became the loudest thing in the section — three cards
+   that are meant to read as equals did not. */
+.ok-cater-price{
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.1;
+}
+.ok-cater-amount{
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+}
+.ok-cater-unit{
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--ok-slate);
+}
+/* a phrase, not a figure — sized so it sits level with the numbers */
+.ok-cater-words{
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2vw, 1.4rem);
+  white-space: nowrap;
+}
+
+/* Price matched to the package title above it (both 1.125rem). The amount
+   keeps the heavier weight so it still reads as the figure, and the unit
+   stays a size down and muted. */
+.ok-cater-amount,
+.ok-cater-words{
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.ok-cater-unit{ font-size: .85rem; }
