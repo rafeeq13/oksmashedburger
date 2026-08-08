@@ -2037,3 +2037,179 @@ def review_delete(rid):
     db.session.commit()
     flash("Review deleted.", "success")
     return redirect(request.form.get("next") or "/admin/reviews")
+
+
+# ── Theme (brand palette, type, shape) ───────────────────────────────────
+# The palette lived only in premium.css, so a colour change meant editing a
+# stylesheet. These are settings now, emitted as a :root{} block in the head.
+from app.models.theme import (                                      # noqa: E402
+    THEME_TOKENS, FONT_CHOICES, theme_values, theme_css,
+)
+
+
+@bp.get("/admin/theme")
+@roles_required("super_admin", "franchise_owner")
+def theme():
+    store = _admin_store()
+    return render_template("admin/theme.html",
+                           tokens=THEME_TOKENS, fonts=FONT_CHOICES,
+                           values=theme_values(), css=theme_css(),
+                           **_shell(store))
+
+
+@bp.post("/admin/theme")
+@roles_required("super_admin", "franchise_owner")
+def theme_save():
+    changed = 0
+    for key, _label, _prop, _kind, _default, _help in THEME_TOKENS:
+        val = (request.form.get(key) or "").strip()
+        row = SiteSetting.query.filter_by(key=key).first()
+        # An empty box means "use the built-in value", so the row is removed
+        # rather than stored blank — that keeps theme_css() free of noise.
+        if not val:
+            if row:
+                db.session.delete(row)
+                changed += 1
+            continue
+        if row:
+            if row.value != val:
+                row.value = val
+                changed += 1
+        else:
+            db.session.add(SiteSetting(key=key, value=val))
+            changed += 1
+    db.session.commit()
+    flash("Theme saved." if changed else "Nothing changed.", "success")
+    return redirect("/admin/theme")
+
+
+@bp.post("/admin/theme/reset")
+@roles_required("super_admin", "franchise_owner")
+def theme_reset():
+    keys = [t[0] for t in THEME_TOKENS]
+    n = SiteSetting.query.filter(SiteSetting.key.in_(keys)).delete(synchronize_session=False)
+    db.session.commit()
+    flash("Theme reset to the built-in design." if n else "Already on the built-in design.",
+          "success")
+    return redirect("/admin/theme")
+
+
+# ── Page design (per-section styling for every inner page) ───────────────
+# The Visual Editor only ever reached the home page. Every top-level section on
+# the other nine pages is wrapped in the same .pb-sec shell now, so the same
+# style vocabulary works there — this is the UI for it.
+from app.models.page import INNER_PAGES, INNER_PAGE_BY_KEY, inner_sections  # noqa: E402
+
+# key, label, input type — matches what pb_section_style() understands
+DESIGN_FIELDS = [
+    ("style_bg", "Section background", "color"),
+    ("style_hcolor", "Heading colour", "color"),
+    ("style_tcolor", "Text colour", "color"),
+    ("style_align", "Text alignment", "align"),
+    ("style_pt", "Padding top", "px"),
+    ("style_pb", "Padding bottom", "px"),
+    ("style_cardbg", "Card background", "color"),
+    ("style_cardborder", "Card border", "color"),
+    ("style_cardhead", "Card heading", "color"),
+    ("style_cardtext", "Card text", "color"),
+    ("style_cardradius", "Card radius", "px"),
+    ("style_overlay", "Image overlay", "opacity"),
+]
+
+
+@bp.get("/admin/design")
+@roles_required(*ADMIN_ROLES)
+def design():
+    store = _admin_store()
+    page = request.args.get("page") or INNER_PAGES[0]["page"]
+    spec = INNER_PAGE_BY_KEY.get(page)
+    if not spec:
+        abort(404)
+    styled = {s["key"]: any(str(v).strip() for k, v in s["config"].items()
+                            if k.startswith("style_"))
+              for s in inner_sections(page)}
+    return render_template("admin/design.html",
+                           pages=INNER_PAGES, page=page, spec=spec,
+                           sections=inner_sections(page), fields=DESIGN_FIELDS,
+                           styled=styled, **_shell(store))
+
+
+@bp.post("/admin/design/<page>/<key>")
+@roles_required(*ADMIN_ROLES)
+def design_save(page, key):
+    if page not in INNER_PAGE_BY_KEY:
+        abort(404)
+    row = PageSection.query.filter_by(page=page, key=key).first()
+    if not row:
+        label = next((s["label"] for s in INNER_PAGE_BY_KEY[page]["sections"]
+                      if s["key"] == key), key)
+        row = PageSection(page=page, key=key, label=label, enabled=True, sort_order=0)
+        db.session.add(row)
+
+    cfg = dict(row.config or {})
+    for fkey, _label, _kind in DESIGN_FIELDS:
+        val = (request.form.get(fkey) or "").strip()
+        # blank clears the override rather than storing "" — keeps the inline
+        # style attribute (and therefore the CSS) free of dead declarations
+        if val:
+            cfg[fkey] = val
+        else:
+            cfg.pop(fkey, None)
+    row.config = cfg
+    db.session.commit()
+    flash("Saved.", "success")
+    return redirect("/admin/design?page=" + page + "#s-" + key)
+
+
+@bp.post("/admin/design/<page>/<key>/reset")
+@roles_required(*ADMIN_ROLES)
+def design_reset(page, key):
+    row = PageSection.query.filter_by(page=page, key=key).first()
+    if row:
+        row.config = {k: v for k, v in (row.config or {}).items()
+                      if not k.startswith("style_")}
+        db.session.commit()
+    flash("Section reset to the built-in design.", "success")
+    return redirect("/admin/design?page=" + page + "#s-" + key)
+
+
+@bp.post("/admin/design/<page>/reset-all")
+@roles_required("super_admin", "franchise_owner")
+def design_reset_page(page):
+    if page not in INNER_PAGE_BY_KEY:
+        abort(404)
+    for row in PageSection.query.filter_by(page=page).all():
+        row.config = {k: v for k, v in (row.config or {}).items()
+                      if not k.startswith("style_")}
+    db.session.commit()
+    flash("Every section on this page is back to the built-in design.", "success")
+    return redirect("/admin/design?page=" + page)
+
+
+# ── Inline text editing ──────────────────────────────────────────────────
+# An admin adds ?edit=1 to any storefront page and edits copy where it sits,
+# instead of hunting for the matching field on the Page Content screen.
+@bp.post("/admin/inline-save")
+@roles_required(*ADMIN_ROLES)
+def inline_save():
+    data = request.get_json(silent=True) or {}
+    key = (data.get("key") or "").strip()
+    value = (data.get("value") or "").strip()
+
+    # Only keys the Page Content registry knows about — this endpoint must not
+    # become a way to write arbitrary settings rows.
+    allowed = {f[0] for p in PAGE_CONTENT for f in p["fields"]}
+    if key not in allowed:
+        return {"ok": False, "error": "unknown field"}, 400
+
+    row = SiteSetting.query.filter_by(key=key).first()
+    if not value:
+        # cleared -> fall back to the built-in copy rather than showing nothing
+        if row:
+            db.session.delete(row)
+    elif row:
+        row.value = value
+    else:
+        db.session.add(SiteSetting(key=key, value=value))
+    db.session.commit()
+    return {"ok": True, "key": key}

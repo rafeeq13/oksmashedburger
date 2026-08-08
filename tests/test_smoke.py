@@ -299,3 +299,93 @@ def test_no_storefront_field_is_missing_an_accessible_name():
                 continue
             unnamed.append("%s: %s" % (rel, tag[:70]))
     assert not unnamed, "fields with no accessible name:\n" + "\n".join(unnamed)
+
+
+# ── theme, page design and inline editing ───────────────────────────────
+
+def test_theme_is_off_until_the_client_changes_something(client):
+    assert 'id="ok-theme"' not in client.get("/", follow_redirects=True).get_data(as_text=True)
+
+
+def test_theme_repaints_every_page(app):
+    from app.models.site import SiteSetting
+    c = admin_client(app)
+    with app.app_context():
+        try:
+            c.post("/admin/theme", data={"_csrf": csrf(c, "/admin/theme"),
+                                         "theme_primary": "#FF3B30",
+                                         "theme_radius_control": "2"})
+            for path in ("/", "/menu", "/about", "/rewards"):
+                html = c.get(path, follow_redirects=True).get_data(as_text=True)
+                assert "--ok-yellow:#FF3B30" in html, path
+                assert "--r-control:2px" in html, path
+        finally:
+            c.post("/admin/theme/reset", data={"_csrf": csrf(c, "/admin/theme")})
+            assert SiteSetting.query.filter(SiteSetting.key.like("theme_%")).count() == 0
+
+
+def test_every_inner_page_section_is_styleable(app):
+    """Regression: styling only ever reached the home page."""
+    from app.models.page import INNER_PAGES, PageSection
+    c = admin_client(app)
+    with app.app_context():
+        assert len(INNER_PAGES) == 9
+        for spec in INNER_PAGES:
+            html = c.get(spec["url"], follow_redirects=True).get_data(as_text=True)
+            assert html.count('class="pb-sec"') == len(spec["sections"]), spec["page"]
+
+        try:
+            c.post("/admin/design/careers/why_work_here", data={
+                "_csrf": csrf(c, "/admin/design?page=careers"),
+                "style_bg": "#101820", "style_cardradius": "20"})
+            html = c.get("/careers").get_data(as_text=True)
+            assert "--pb-bg:#101820" in html
+            assert "--pb-cardradius:20px" in html
+        finally:
+            PageSection.query.filter_by(page="careers").delete()
+            db.session.commit()
+
+
+def test_inline_editing_is_admin_only_and_saves(app):
+    """No app context is held around the requests here on purpose: this test
+    mixes an anonymous client and an admin one, and current_user() memoises
+    onto `g`, which a shared context would leak between them (see the `app`
+    fixture). DB work opens its own short context."""
+    import json
+    from app.models.site import SiteSetting
+
+    anon = app.test_client()
+    c = admin_client(app)
+
+    # a visitor can never see it, even with ?edit=1
+    assert "okIeBar" not in anon.get("/about?edit=1").get_data(as_text=True)
+    assert 'class="ok-ie"' not in anon.get("/about").get_data(as_text=True)
+
+    page = c.get("/about?edit=1").get_data(as_text=True)
+    assert "okIeBar" in page
+    assert page.count('class="ok-ie"') == 20
+    # and the public HTML stays clean when the flag is absent
+    assert 'class="ok-ie"' not in c.get("/about").get_data(as_text=True)
+
+    hdr = {"Content-Type": "application/json", "X-CSRF-Token": csrf(c, "/about")}
+    try:
+        r = c.post("/admin/inline-save", headers=hdr,
+                   data=json.dumps({"key": "about_hero_heading", "value": "Edited Inline"}))
+        assert r.status_code == 200
+        assert "Edited Inline" in anon.get("/about").get_data(as_text=True)
+
+        # the endpoint must not become a way to write arbitrary settings rows
+        bad = c.post("/admin/inline-save", headers=hdr,
+                     data=json.dumps({"key": "not_a_field", "value": "x"}))
+        assert bad.status_code == 400
+
+        # an anonymous post is turned away and writes nothing
+        anon.post("/admin/inline-save",
+                  headers={"Content-Type": "application/json",
+                           "X-CSRF-Token": csrf(anon, "/about")},
+                  data=json.dumps({"key": "about_hero_heading", "value": "HACKED"}))
+        assert "HACKED" not in anon.get("/about").get_data(as_text=True)
+    finally:
+        with app.app_context():
+            SiteSetting.query.filter_by(key="about_hero_heading").delete()
+            db.session.commit()

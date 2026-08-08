@@ -1,0 +1,169 @@
+{% extends "admin/base.html" %}
+{% block title %}Theme, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="d-flex flex-wrap align-items-end justify-content-between ok-gap-3 ok-mb-5">
+  <div>
+    <h2 class="ok-h2 mb-1">Theme</h2>
+    <p class="text-muted-warm ok-fs-sm">
+      The brand palette, type and corner shape for the whole public website.
+      Leave a field empty to keep the built-in value.
+    </p>
+  </div>
+  <form method="post" action="/admin/theme/reset"
+        onsubmit="return confirm('Reset every theme value back to the built-in design?')">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button class="btn btn-secondary btn-sm">Reset to built-in</button>
+  </form>
+</div>
+
+<form method="post" action="/admin/theme" id="themeForm">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+  <div class="ok-grid ok-grid-lg-2 ok-gap-5">
+
+    <!-- ── controls ─────────────────────────────────────────────── -->
+    <div class="ok-stack-4">
+      {% for key, label, prop, kind, default, help in tokens %}
+      <div class="ok-card ok-p-3">
+        <div class="d-flex align-items-center justify-content-between ok-gap-3">
+          <div class="ok-min-w-0">
+            <label class="d-block fw-semibold ok-fs-sm" for="t-{{ key }}">{{ label }}</label>
+            <p class="ok-fs-xs text-muted-warm mt-1">{{ help }}</p>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            {% if kind == 'color' %}
+            <input type="color" id="t-{{ key }}-pick" value="{{ values.get(key) or default }}"
+                   data-sync="t-{{ key }}" class="ok-w-10 ok-h-10 ok-rounded-lg border ok-bc-varokline ok-pointer"
+                   aria-label="{{ label }} colour picker">
+            <input type="text" id="t-{{ key }}" name="{{ key }}" value="{{ values.get(key) or '' }}"
+                   placeholder="{{ default }}" spellcheck="false"
+                   class="ok-input ok-fs-sm ok-w-28 text-center" data-token="{{ prop }}">
+
+            {% elif kind == 'px' %}
+            <input type="range" min="0" max="32" step="1" id="t-{{ key }}-range"
+                   value="{{ values.get(key) or default }}" data-sync="t-{{ key }}"
+                   class="ok-w-28" aria-label="{{ label }} slider">
+            <input type="number" id="t-{{ key }}" name="{{ key }}" min="0" max="32"
+                   value="{{ values.get(key) or '' }}" placeholder="{{ default }}"
+                   class="ok-input ok-fs-sm ok-w-16 text-center" data-token="{{ prop }}" data-unit="px">
+
+            {% elif kind == 'font' %}
+            <select id="t-{{ key }}" name="{{ key }}" class="ok-input ok-select ok-fs-sm ok-w-56" data-token="{{ prop }}">
+              <option value="">Built-in ({{ default.split(',')[0].replace("'", '') }})</option>
+              {% for val, name in fonts %}
+              <option value="{{ val }}" {{ 'selected' if values.get(key) == val }}>{{ name }}</option>
+              {% endfor %}
+            </select>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-primary">Save theme</button>
+        <span class="ok-fs-xs text-muted-warm">Applies to every public page immediately.</span>
+      </div>
+    </div>
+
+    <!-- ── live preview ─────────────────────────────────────────── -->
+    <div>
+      <div class="ok-card ok-p-3 position-sticky ok-top-1rem">
+        <div class="d-flex align-items-center justify-content-between ok-mb-3">
+          <b class="ok-fs-sm">Live preview</b>
+          <span class="ok-fs-xs text-muted-warm">updates as you type</span>
+        </div>
+
+        {# Scoped to #themePreview so the admin's own chrome is never repainted #}
+        <div id="themePreview" class="ok-rounded-xl overflow-hidden border ok-bc-varokline">
+          <div class="tp-hero ok-p-5">
+            <div class="tp-eyebrow ok-fs-xs fw-bold text-uppercase ok-ls-wide">Preview</div>
+            <div class="tp-h1 ok-mt-1">Real smashed burgers</div>
+            <p class="tp-body ok-fs-sm ok-mt-2">
+              This is body copy in the body font and body colour.
+            </p>
+            <div class="d-flex gap-2 ok-mt-3">
+              <span class="tp-btn">Order now</span>
+              <span class="tp-btn tp-btn-dark">See the menu</span>
+            </div>
+          </div>
+          <div class="tp-band ok-p-5">
+            <div class="tp-card ok-p-3">
+              <div class="tp-h3">A card</div>
+              <p class="tp-body ok-fs-xs ok-mt-1">Card body text sits on the card background.</p>
+              <div class="tp-field ok-mt-3">A form field</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="ok-fs-xs text-muted-warm ok-mt-3">
+          The preview uses the same custom properties the site does, so what you see
+          here is what the pages will use.
+        </p>
+      </div>
+    </div>
+  </div>
+</form>
+
+<style>
+  /* Preview chrome only — reads the same custom properties the site reads. */
+  #themePreview{
+    --ok-yellow:#FFC72C; --ok-amber:#E0A200; --ok-ink:#0E0E0E;
+    --ok-lux-gray:#8A8480; --ok-warm-white:#FCFAF6; --ok-beige:#F3ECE1;
+    --ok-hairline:#E3E1DE; --r-control:8px; --r-card:16px;
+    --ok-font-display:'Poppins','Inter',sans-serif;
+    --ok-font-body:'Quicksand',sans-serif;
+    font-family:var(--ok-font-body);
+  }
+  #themePreview .tp-hero{ background:var(--ok-ink); }
+  #themePreview .tp-eyebrow{ color:var(--ok-yellow); font-family:var(--ok-font-body); }
+  #themePreview .tp-h1{ font-family:var(--ok-font-display); font-weight:700; font-size:1.5rem; color:#fff; line-height:1.1; }
+  #themePreview .tp-hero .tp-body{ color:rgba(255,255,255,.72); }
+  #themePreview .tp-btn{ display:inline-block; background:var(--ok-yellow); color:var(--ok-ink);
+    font-family:var(--ok-font-body); font-weight:700; font-size:.8rem; padding:.5rem 1rem;
+    border-radius:var(--r-control); }
+  #themePreview .tp-btn-dark{ background:transparent; color:#fff; border:1px solid rgba(255,255,255,.45); }
+  #themePreview .tp-band{ background:var(--ok-warm-white); }
+  #themePreview .tp-card{ background:#fff; border:1px solid var(--ok-hairline);
+    border-radius:var(--r-card); }
+  #themePreview .tp-h3{ font-family:var(--ok-font-display); font-weight:700; font-size:1rem; color:var(--ok-ink); }
+  #themePreview .tp-body{ color:var(--ok-lux-gray); font-family:var(--ok-font-body); }
+  #themePreview .tp-field{ background:var(--ok-beige); border:1px solid var(--ok-hairline);
+    border-radius:var(--r-control); padding:.5rem .75rem; font-size:.8rem; color:var(--ok-lux-gray); }
+</style>
+
+<script>
+(function () {
+  var preview = document.getElementById("themePreview");
+  var form = document.getElementById("themeForm");
+  if (!preview || !form) return;
+
+  // Repaint the preview from whatever the inputs currently hold. A blank input
+  // means "built-in", so its property is removed rather than set to "".
+  function paint() {
+    form.querySelectorAll("[data-token]").forEach(function (el) {
+      var prop = el.getAttribute("data-token");
+      var val = (el.value || "").trim();
+      if (!val) { preview.style.removeProperty(prop); return; }
+      if (el.getAttribute("data-unit") === "px") val += "px";
+      preview.style.setProperty(prop, val);
+    });
+  }
+
+  // Colour swatch <-> hex box, and slider <-> number box, stay in step.
+  form.querySelectorAll("[data-sync]").forEach(function (src) {
+    var target = document.getElementById(src.getAttribute("data-sync"));
+    if (!target) return;
+    src.addEventListener("input", function () { target.value = src.value; paint(); });
+    target.addEventListener("input", function () {
+      if (target.value.trim()) src.value = target.value.trim();
+      paint();
+    });
+  });
+  form.addEventListener("input", paint);
+  paint();
+})();
+</script>
+{% endblock %}

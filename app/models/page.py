@@ -337,3 +337,94 @@ def home_sections_ordered():
             if r.key in registry_keys or is_custom_key(r.key)]
     rows.sort(key=lambda r: (r.sort_order, r.id))
     return rows
+
+
+# ── Section styling for the inner pages ─────────────────────────────────
+# Discovered from the templates: every top-level <section> is wrapped in the
+# same .pb-sec shell the home page uses, so the Visual Editor can restyle any
+# of them. `page` matches PageSection.page; `key` matches PageSection.key.
+INNER_PAGES = [
+    {"page": 'about', "label": 'About', "url": '/about', "sections": [
+        {"key": '1_hero', "label": '1. Hero'},
+        {"key": '2_as_seen_in', "label": '2. As Seen In'},
+        {"key": 'section_3', "label": 'Section 3'},
+        {"key": '4_two_feature_cards', "label": '4. Two Feature Cards'},
+        {"key": 'section_5', "label": 'Section 5'},
+        {"key": '6_full_bleed_band_overlapping_card', "label": '6. Full-Bleed Band + Overlapping Card'},
+        {"key": 'section_7', "label": 'Section 7'},
+        {"key": '8_what_locals_have_to_say', "label": '8. What Locals Have To Say'},
+        {"key": '9_instagram', "label": '9. Instagram'},
+        {"key": '10_closing_cta', "label": '10. Closing Cta'},
+    ]},
+    {"page": 'catering', "label": 'Catering', "url": '/catering', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'what_we_cater', "label": 'What We Cater'},
+        {"key": 'packages', "label": 'Packages'},
+        {"key": 'enquiry_form', "label": 'Enquiry Form'},
+    ]},
+    {"page": 'careers', "label": 'Careers', "url": '/careers', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'why_work_here', "label": 'Why Work Here'},
+        {"key": 'open_roles', "label": 'Open Roles'},
+        {"key": 'application_form', "label": 'Application Form'},
+    ]},
+    {"page": 'faq', "label": 'Faq', "url": '/faq', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'section_2', "label": 'Section 2'},
+        {"key": 'section_3', "label": 'Section 3'},
+    ]},
+    {"page": 'rewards', "label": 'Rewards', "url": '/rewards', "sections": [
+        {"key": 'hero_points_card', "label": 'Hero + Points Card'},
+        {"key": 'section_2', "label": 'Section 2'},
+        {"key": 'membership_tiers', "label": 'Membership Tiers'},
+        {"key": 'referral', "label": 'Referral'},
+        {"key": 'closing_faq_mini', "label": 'Closing Faq Mini'},
+    ]},
+    {"page": 'gift-cards', "label": 'Gift Cards', "url": '/gift-cards', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'builder_preview', "label": 'Builder + Preview'},
+        {"key": 'check_balance', "label": 'Check Balance'},
+        {"key": 'how_it_works', "label": 'How It Works'},
+        {"key": 'corporate_bulk_banner', "label": 'Corporate / Bulk Banner'},
+    ]},
+    {"page": 'deals', "label": 'Deals', "url": '/deals', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'promo_code_entry', "label": 'Promo-Code Entry'},
+        {"key": 'deal_grid', "label": 'Deal Grid'},
+        {"key": 'terms_note', "label": 'Terms Note'},
+    ]},
+    {"page": 'news', "label": 'News', "url": '/news', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'featured_post', "label": 'Featured Post'},
+        {"key": 'post_grid', "label": 'Post Grid'},
+        {"key": 'closing_cta', "label": 'Closing Cta'},
+    ]},
+    {"page": 'contact', "label": 'Contact', "url": '/contact', "sections": [
+        {"key": 'hero', "label": 'Hero'},
+        {"key": 'section_2', "label": 'Section 2'},
+        {"key": 'section_3', "label": 'Section 3'},
+    ]},
+]
+
+INNER_PAGE_BY_KEY = {p["page"]: p for p in INNER_PAGES}
+
+
+def inner_sections(page):
+    """The section list for one page, each merged with its saved config."""
+    spec = INNER_PAGE_BY_KEY.get(page)
+    if not spec:
+        return []
+    rows = {r.key: r for r in PageSection.query.filter_by(page=page).all()}
+    out = []
+    for s in spec["sections"]:
+        row = rows.get(s["key"])
+        out.append({"key": s["key"], "label": s["label"],
+                    "config": (row.config if row else None) or {},
+                    "id": row.id if row else None})
+    return out
+
+
+def inner_section_config(page, key):
+    """Saved style config for one section, or {} — used by pb_page_style()."""
+    row = PageSection.query.filter_by(page=page, key=key).first()
+    return (row.config if row else None) or {}

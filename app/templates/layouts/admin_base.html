@@ -80,6 +80,8 @@
         {{ grouphead('Setup') }}
         <div class="sb-group-body"><div class="ok-stack-05">
           {{ navlink('/admin/settings', 'Settings', 'gear') }}
+          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Theme', 'palette') }}{% endif %}
+          {{ navlink('/admin/design', 'Page Design', 'swatchbook') }}
           {{ navlink('/admin/canvas', 'Visual Editor', 'wand-magic-sparkles') }}
           {{ navlink('/admin/builder', 'Web Pages', 'pen-ruler') }}
           {{ navlink('/admin/page-builder', 'Page Builder', 'table-cells-large') }}

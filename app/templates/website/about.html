@@ -7,17 +7,17 @@
    about_values_heading, about_team_heading, about_cta_heading. #}
 
 <!-- ============ 1. HERO ============ -->
-<section class="ok-abt-hero position-relative overflow-hidden">
+{% set _s = pb_page_style('about', '1_hero') %}<div class="pb-sec" data-page="about" data-section="1_hero" data-label="1. Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-abt-hero position-relative overflow-hidden">
   <img src="{{ site.get('about_hero_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
   <div class="ok-abt-hero-veil"></div>
   <div class="ok-container position-relative text-center">
     <h1 class="ok-abt-hero-h">{{ pc('about_hero_heading') }}</h1>
     <span class="ok-squiggle ok-squiggle--light" aria-hidden="true"></span>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 2. AS SEEN IN ============ -->
-<section class="ok-press d-none">
+{% set _s = pb_page_style('about', '2_as_seen_in') %}<div class="pb-sec" data-page="about" data-section="2_as_seen_in" data-label="2. As Seen In"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-press d-none">
   <div class="ok-container text-center">
     <div class="ok-press-label">As seen in</div>
     <div class="ok-press-row">
@@ -26,10 +26,10 @@
       {% endfor %}
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 3. STORY (video left, copy right) ============ -->
-<section class="ok-band ok-band--white">
+{% set _s = pb_page_style('about', 'section_3') %}<div class="pb-sec" data-page="about" data-section="section_3" data-label="Section 3"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     {# Video slot. Set `about_video` in site settings to an .mp4 or a
        YouTube/Vimeo link. Until one is set the photo is shown, so the
@@ -70,10 +70,10 @@
       <p class="ok-abt-body ok-mt-5">{{ pc('about_hero_text') }}</p>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 4. TWO FEATURE CARDS ============ -->
-<section class="ok-band ok-band--warm">
+{% set _s = pb_page_style('about', '4_two_feature_cards') %}<div class="pb-sec" data-page="about" data-section="4_two_feature_cards" data-label="4. Two Feature Cards"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--warm">
   <div class="ok-container">
     <div class="ok-grid ok-grid-md-2 ok-gap-8">
       <article class="ok-card overflow-hidden d-flex flex-column">
@@ -96,12 +96,12 @@
       </article>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 5. MEET US AT THE TABLE (image left, copy right) ============ -->
 {# Same shape and type scale as "How it all started" below: container-width
    two-column band, uppercase heading, contained image. #}
-<section class="ok-band ok-band--white">
+{% set _s = pb_page_style('about', 'section_5') %}<div class="pb-sec" data-page="about" data-section="section_5" data-label="Section 5"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     <div class="ok-abt-frame">
       <img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
@@ -113,10 +113,10 @@
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 6. FULL-BLEED BAND + OVERLAPPING CARD ============ -->
-<section class="ok-abt-band position-relative overflow-hidden">
+{% set _s = pb_page_style('about', '6_full_bleed_band_overlapping_card') %}<div class="pb-sec" data-page="about" data-section="6_full_bleed_band_overlapping_card" data-label="6. Full-Bleed Band + Overlapping Card"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-abt-band position-relative overflow-hidden">
   <img src="{{ site.get('catering_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
   <div class="ok-container position-relative">
     <div class="ok-abt-band-card">
@@ -126,10 +126,10 @@
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 7. HOW IT ALL STARTED (copy left, image right) ============ -->
-<section class="ok-band ok-band--white">
+{% set _s = pb_page_style('about', 'section_7') %}<div class="pb-sec" data-page="about" data-section="section_7" data-label="Section 7"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     <div>
       <h2 class="ok-abt-h">{{ pc('about_team_heading') }}</h2>
@@ -141,19 +141,19 @@
       <img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 8. WHAT LOCALS HAVE TO SAY ============ -->
-<section class="ok-band ok-band--white">
+{% set _s = pb_page_style('about', '8_what_locals_have_to_say') %}<div class="pb-sec" data-page="about" data-section="8_what_locals_have_to_say" data-label="8. What Locals Have To Say"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container">
     <h2 class="ok-abt-h text-center ok-mb-10">{{ pc('about_reviews_heading') }}</h2>
     {# same carousel the home page uses, so the two can never drift apart #}
     {% include 'partials/review_cards.html' with context %}
   </div>
-</section>
+</section></div>
 
 <!-- ============ 9. INSTAGRAM ============ -->
-<section class="ok-band ok-band--warm">
+{% set _s = pb_page_style('about', '9_instagram') %}<div class="pb-sec" data-page="about" data-section="9_instagram" data-label="9. Instagram"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--warm">
   <div class="ok-container">
     <h2 class="ok-abt-h text-center ok-mb-8">{{ pc('about_ig_heading') }}</h2>
     <a href="https://instagram.com/oksmashedburger/reels/" target="_blank" rel="noopener" class="d-flex align-items-center ok-gap-3 ok-mb-5 ok-mw-lg mx-auto">
@@ -175,16 +175,16 @@
       {% endfor %}
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ 10. CLOSING CTA ============ -->
-<section class="ok-abt-cta  d-none">
+{% set _s = pb_page_style('about', '10_closing_cta') %}<div class="pb-sec" data-page="about" data-section="10_closing_cta" data-label="10. Closing Cta"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-abt-cta  d-none">
   <div class="ok-container text-center">
     <h2 class="ok-abt-h">{{ pc('about_cta_heading') }}</h2>
     <p class="ok-abt-body ok-mt-3 ok-mw-sm mx-auto">{{ pc('about_cta_text') }}</p>
     <a href="/menu" class="btn btn-primary btn-lg ok-mt-5">Order online</a>
   </div>
-</section>
+</section></div>
 {% endblock %}
 
 {% block scripts %}

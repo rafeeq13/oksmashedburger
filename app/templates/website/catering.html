@@ -3,7 +3,7 @@
 {% block content %}
 
 <!-- ============ HERO ============ -->
-<section class="ok-pagehero">
+{% set _s = pb_page_style('catering', 'hero') %}<div class="pb-sec" data-page="catering" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
   <img src="{{ site.get('catering_hero_img') or site_defaults.get('catering_hero_img') }}" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover">
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
@@ -16,10 +16,10 @@
       </div>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ WHAT WE CATER ============ -->
-<section class="ok-section">
+{% set _s = pb_page_style('catering', 'what_we_cater') %}<div class="pb-sec" data-page="catering" data-section="what_we_cater" data-label="What We Cater"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
       <h2 class="ok-h2">{{ pc('catering_cater_heading') }}</h2>
@@ -49,10 +49,10 @@
       </article>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ PACKAGES ============ -->
-<section class="ok-section bg-cream-40 border-y ok-bc-varokline">
+{% set _s = pb_page_style('catering', 'packages') %}<div class="pb-sec" data-page="catering" data-section="packages" data-label="Packages"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-40 border-y ok-bc-varokline">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
       <h2 class="ok-h2">{{ pc('catering_packages_heading') }}</h2>
@@ -90,10 +90,10 @@
     </div>
     <p class="text-center ok-fs-xs text-muted-warm ok-mt-3">{{ pc('catering_packages_note') }}</p>
   </div>
-</section>
+</section></div>
 
 <!-- ============ ENQUIRY FORM ============ -->
-<section id="catering-enquiry" class="ok-section bg-cream-40 border-top ok-bc-varokline scroll-mt-24">
+{% set _s = pb_page_style('catering', 'enquiry_form') %}<div class="pb-sec" data-page="catering" data-section="enquiry_form" data-label="Enquiry Form"{% if _s %} style="{{ _s }}"{% endif %}><section id="catering-enquiry" class="ok-section bg-cream-40 border-top ok-bc-varokline scroll-mt-24">
   <div class="ok-container">
     <div class="max-w-2xl mx-auto">
       <div class="text-center ok-mb-8">
@@ -141,5 +141,5 @@
       </form>
     </div>
   </div>
-</section>
+</section></div>
 {% endblock %}

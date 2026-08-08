@@ -1,0 +1,84 @@
+{# Inline text editor — rendered only when an admin adds ?edit=1 to a page.
+   Every pc() string is already wrapped in .ok-ie by the context processor;
+   this turns those into contenteditables and saves each on blur. #}
+<div id="okIeBar">
+  <span class="ok-ie-dot"></span>
+  <b>Editing this page</b>
+  <span class="ok-ie-hint">Click any highlighted text to change it. Changes save on their own.</span>
+  <span id="okIeStatus" class="ok-ie-status"></span>
+  <a href="{{ request.path }}" class="ok-ie-exit">Done</a>
+</div>
+
+<style>
+  body{ padding-top:46px; }
+  #okIeBar{
+    position:fixed; inset:0 0 auto 0; z-index:9000; height:46px;
+    display:flex; align-items:center; gap:.75rem; padding:0 1rem;
+    background:#101820; color:#fff; font:600 13px/1 Quicksand, sans-serif;
+    box-shadow:0 1px 0 rgba(255,255,255,.08);
+  }
+  .ok-ie-dot{ width:9px; height:9px; border-radius:50%; background:#FFC72C; flex-shrink:0; }
+  .ok-ie-hint{ font-weight:500; color:rgba(255,255,255,.62); }
+  .ok-ie-status{ margin-left:auto; color:#FFC72C; font-weight:600; }
+  .ok-ie-exit{ background:#FFC72C; color:#101820; text-decoration:none;
+    padding:.45rem .9rem; border-radius:8px; font-weight:700; }
+
+  /* the editable spans: quiet until you go near them */
+  .ok-ie{ outline:1px dashed rgba(255,199,44,.55); outline-offset:2px;
+    border-radius:3px; cursor:text; transition:background-color .12s ease; }
+  .ok-ie:hover{ background:rgba(255,199,44,.16); }
+  .ok-ie[contenteditable="true"]:focus{
+    outline:2px solid #FFC72C; background:rgba(255,199,44,.12); }
+  .ok-ie.ok-ie-saved{ animation:okIeFlash .9s ease; }
+  @keyframes okIeFlash{ 0%{ background:rgba(46,125,50,.30) } 100%{ background:transparent } }
+</style>
+
+<script>
+(function () {
+  var status = document.getElementById("okIeStatus");
+  var timer;
+  function say(msg, ms) {
+    status.textContent = msg;
+    clearTimeout(timer);
+    if (ms) timer = setTimeout(function () { status.textContent = ""; }, ms);
+  }
+
+  document.querySelectorAll(".ok-ie").forEach(function (el) {
+    el.setAttribute("contenteditable", "true");
+    el.setAttribute("spellcheck", "false");
+    var original = el.textContent;
+
+    // Enter commits rather than inserting a newline — these are single strings,
+    // not rich text, and a stray <br> would end up in the saved value.
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+      if (e.key === "Escape") { el.textContent = original; el.blur(); }
+    });
+
+    el.addEventListener("blur", function () {
+      var val = el.textContent.trim();
+      if (val === original.trim()) return;
+      say("Saving…");
+      fetch("/admin/inline-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
+        body: JSON.stringify({ key: el.getAttribute("data-pc"), value: val })
+      })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function () {
+          original = val;
+          el.classList.remove("ok-ie-saved");
+          void el.offsetWidth;                 // restart the flash animation
+          el.classList.add("ok-ie-saved");
+          say("Saved", 1600);
+        })
+        .catch(function (err) {
+          el.textContent = original;           // never leave a lie on screen
+          say("Could not save (" + err + ")", 4000);
+        });
+    });
+  });
+
+  say(document.querySelectorAll(".ok-ie").length + " editable areas", 2600);
+})();
+</script>

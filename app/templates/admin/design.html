@@ -1,0 +1,156 @@
+{% extends "admin/base.html" %}
+{% block title %}Page Design, {{ brand_name }}{% endblock %}
+
+{% macro control(f, cfg) %}
+  {% set key, label, kind = f[0], f[1], f[2] %}
+  {% set val = cfg.get(key) or '' %}
+  <label class="d-block">
+    <span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">{{ label }}</span>
+    {% if kind == 'color' %}
+    <span class="d-flex align-items-center gap-1">
+      <input type="color" value="{{ val or '#ffffff' }}" data-sync="{{ key }}"
+             class="ok-w-8 ok-h-8 ok-rounded-lg border ok-bc-varokline ok-pointer flex-shrink-0"
+             aria-label="{{ label }} picker">
+      <input type="text" name="{{ key }}" value="{{ val }}" placeholder="default"
+             spellcheck="false" class="ok-input ok-fs-xs w-100 text-center">
+    </span>
+    {% elif kind == 'px' %}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="200"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'opacity' %}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="1" step="0.05"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'align' %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      <option value="">Default</option>
+      {% for a in ['left', 'center', 'right'] %}
+      <option value="{{ a }}" {{ 'selected' if val == a }}>{{ a|capitalize }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+  </label>
+{% endmacro %}
+
+{% block admin %}
+<div class="d-flex flex-wrap align-items-end justify-content-between ok-gap-3 ok-mb-4">
+  <div>
+    <h2 class="ok-h2 mb-1">Page design</h2>
+    <p class="text-muted-warm ok-fs-sm">
+      Restyle any section on any page — background, colours, spacing, cards.
+      Leave a box empty to keep the built-in design.
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ spec.url }}?edit=1" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-pen"></i> Edit text on the page
+    </a>
+    <a href="{{ spec.url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Open page
+    </a>
+    <form method="post" action="/admin/design/{{ page }}/reset-all"
+          onsubmit="return confirm('Reset every section on this page to the built-in design?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="btn btn-secondary btn-sm">Reset page</button>
+    </form>
+  </div>
+</div>
+
+<!-- page picker -->
+<div class="d-flex flex-wrap gap-2 ok-mb-5">
+  {% for p in pages %}
+  <a href="/admin/design?page={{ p.page }}"
+     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border
+            {{ 'bg-ink text-white border-ink' if p.page == page else 'bg-white text-ink border-ink-10 ok-hov-border-ink-40' }}">
+    {{ p.label }}
+    <span class="ms-1 ok-fs-xs {{ 'text-w-60' if p.page == page else 'text-muted-warm' }}">{{ p.sections|length }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="ok-grid ok-grid-lg-2 ok-gap-5">
+  <!-- ── section list ─────────────────────────────────────────── -->
+  <div class="ok-stack-4">
+    {% for s in sections %}
+    <article class="ok-card ok-p-3" id="s-{{ s.key }}">
+      <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mb-3">
+        <div class="d-flex align-items-center gap-2 ok-min-w-0">
+          <span class="badge badge-soft">{{ loop.index }}</span>
+          <b class="font-display ok-fs-sm text-truncate">{{ s.label }}</b>
+          {% if styled.get(s.key) %}<span class="badge badge-yellow">Restyled</span>{% endif %}
+        </div>
+        {% if styled.get(s.key) %}
+        <form method="post" action="/admin/design/{{ page }}/{{ s.key }}/reset">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="btn btn-secondary btn-sm">Reset</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <form method="post" action="/admin/design/{{ page }}/{{ s.key }}"
+            class="ok-grid ok-grid-sm-3 ok-gap-3 ok-design-form">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% for f in fields %}{{ control(f, s.config) }}{% endfor %}
+        <div class="ok-col-span-sm-3"><button class="btn btn-primary btn-sm">Save section</button></div>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+
+  <!-- ── live page preview ────────────────────────────────────── -->
+  <div>
+    <div class="ok-card ok-p-3 position-sticky ok-top-1rem">
+      <div class="d-flex align-items-center justify-content-between ok-mb-3">
+        <b class="ok-fs-sm">{{ spec.label }} preview</b>
+        <button type="button" id="reloadPreview" class="btn btn-secondary btn-sm">Refresh</button>
+      </div>
+      {# scaled down so a full desktop page fits in the panel #}
+      <div class="ok-design-frame">
+        <iframe id="designPreview" src="{{ spec.url }}" title="{{ spec.label }} preview"></iframe>
+      </div>
+      <p class="ok-fs-xs text-muted-warm ok-mt-3">
+        Save a section, then Refresh to see it. The preview is the real page at 1280px wide,
+        scaled to fit.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* A desktop page shown inside a narrow admin column: render it at full width
+     and scale the whole frame, so the layout is the real one rather than the
+     mobile breakpoint. */
+  .ok-design-frame{
+    position: relative;
+    width: 100%;
+    height: 620px;
+    overflow: hidden;
+    border: 1px solid var(--ok-line, #e6e3df);
+    border-radius: 12px;
+    background: #fff;
+  }
+  .ok-design-frame iframe{
+    width: 1280px;
+    height: 1900px;
+    border: 0;
+    transform: scale(.42);
+    transform-origin: 0 0;
+  }
+  .ok-design-form input[type="color"]{ padding: 0; }
+</style>
+
+<script>
+  // colour swatch keeps the hex box in step
+  document.querySelectorAll("[data-sync]").forEach(function (pick) {
+    var box = pick.parentElement.querySelector('input[type="text"]');
+    if (box) pick.addEventListener("input", function () { box.value = pick.value; });
+  });
+  var btn = document.getElementById("reloadPreview");
+  var frame = document.getElementById("designPreview");
+  if (btn && frame) {
+    btn.addEventListener("click", function () {
+      // cache-bust so a just-saved style is definitely picked up
+      frame.src = frame.src.split("?")[0] + "?_=" + (frame.contentWindow ? 1 : 0) + Math.floor(performance.now());
+    });
+  }
+</script>
+{% endblock %}

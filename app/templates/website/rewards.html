@@ -3,7 +3,7 @@
 {% block title %}OK Rewards, OK Smashed Burger{% endblock %}
 {% block content %}
     <!-- ============ HERO + POINTS CARD ============ -->
-    <section class="ok-pagehero">
+    {% set _s = pb_page_style('rewards', 'hero_points_card') %}<div class="pb-sec" data-page="rewards" data-section="hero_points_card" data-label="Hero + Points Card"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
         {% if site.get('rewards_hero_img') %}<img src="{{ site.get('rewards_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="OK Rewards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
       </div>
@@ -62,10 +62,10 @@
           </div>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ TABS: EARN / REDEEM / HISTORY ============ -->
-    <section class="ok-section">
+    {% set _s = pb_page_style('rewards', 'section_2') %}<div class="pb-sec" data-page="rewards" data-section="section_2" data-label="Section 2"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
       <div class="ok-container" data-tab-group>
         <div class="d-flex align-items-end justify-content-between flex-wrap ok-gap-3 ok-mb-3">
           <div><h2 class="ok-h2">{{ pc('rewards_earn_heading') }}</h2></div>
@@ -239,10 +239,10 @@
           </div>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ MEMBERSHIP TIERS ============ -->
-    <section class="ok-section bg-cream-40">
+    {% set _s = pb_page_style('rewards', 'membership_tiers') %}<div class="pb-sec" data-page="rewards" data-section="membership_tiers" data-label="Membership Tiers"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-40">
       <div class="ok-container">
         <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ pc('rewards_tiers_heading') }}</h2>
           <p class="text-muted-warm mt-2 max-w-xl mx-auto">{{ pc('rewards_tiers_text') }}</p>
@@ -275,10 +275,10 @@
           {% endfor %}
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ REFERRAL ============ -->
-    <section class="ok-section">
+    {% set _s = pb_page_style('rewards', 'referral') %}<div class="pb-sec" data-page="rewards" data-section="referral" data-label="Referral"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
       <div class="ok-container">
         <div class="ok-card bg-ink text-white overflow-hidden position-relative">
           <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
@@ -311,10 +311,10 @@
           </div>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ CLOSING FAQ MINI ============ -->
-    <section class="ok-section bg-cream-40">
+    {% set _s = pb_page_style('rewards', 'closing_faq_mini') %}<div class="pb-sec" data-page="rewards" data-section="closing_faq_mini" data-label="Closing Faq Mini"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-40">
       <div class="ok-container max-w-3xl">
         <div class="text-center ok-mb-8"><h2 class="ok-h2">{{ pc('rewards_faq_heading') }}</h2></div>
         <div class="ok-card ok-px-3">
@@ -326,5 +326,5 @@
             </div>
             {% endfor %}
           </div>
-    </section>
+    </section></div>
 {% endblock %}

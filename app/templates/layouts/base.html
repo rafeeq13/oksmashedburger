@@ -20,6 +20,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/utils.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/generated.css') }}">
+
+  {# Client's theme overrides, emitted after every stylesheet so they win on
+     cascade order alone. Empty unless something was changed in Admin > Theme. #}
+  {% set _theme = theme_css() %}{% if _theme %}<style id="ok-theme">{{ _theme|safe }}</style>{% endif %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/radius.css') }}">
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
@@ -53,6 +57,7 @@
   {% include "partials/flash.html" %}
 
   <div class="ok-veil" data-veil aria-hidden="true"></div>
+  {% if inline_edit %}{% include "partials/inline_editor.html" %}{% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

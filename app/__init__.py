@@ -113,6 +113,18 @@ def create_app(config_object=None):
 
     app.jinja_env.globals["pb_section_style"] = pb_section_style
 
+    def pb_page_style(page, key):
+        """Inline style for an inner-page section. Same contract as
+        pb_section_style, just looked up by (page, key) instead of being
+        handed a config — the templates have no row object to pass."""
+        from .models.page import inner_section_config
+        try:
+            return pb_section_style(inner_section_config(page, key))
+        except Exception:
+            return ""
+
+    app.jinja_env.globals["pb_page_style"] = pb_page_style
+
     def pb_btn_style(cfg):
         cfg = cfg or {}
         sz = cfg.get("btn_size")
@@ -151,6 +163,10 @@ def create_app(config_object=None):
     # Falls back to the built-in defaults until the client imports a list.
     from .models.content import content_list, testimonials_feed, tier_status
     app.jinja_env.globals["content_list"] = content_list
+
+    # Client-editable brand palette / type / radius (Admin > Theme).
+    from .models.theme import theme_css
+    app.jinja_env.globals["theme_css"] = theme_css
     app.jinja_env.globals["testimonials_feed"] = testimonials_feed
     app.jinja_env.globals["tier_status"] = tier_status
 
@@ -175,8 +191,27 @@ def create_app(config_object=None):
         # what the page actually shows (About's had drifted on 5 of 6 fields).
         pc_defaults = page_content_defaults(app.config["BRAND_NAME"])
 
-        def pc(key, fallback=""):
+        def pc_attr(key, fallback=""):
+            """Plain string — for use inside an HTML attribute, where a
+            wrapper element would corrupt the markup."""
             return site.get(key) or pc_defaults.get(key) or fallback
+
+        # Inline editing: an admin visiting any page with ?edit=1 gets every
+        # pc() string wrapped in a tagged span, which the editor turns into a
+        # contenteditable. Ordinary visitors get the bare string, so the public
+        # HTML is byte-identical to before.
+        _u = current_user()
+        _inline = (bool(request.args.get("edit"))
+                   and _u is not None and _u.role is not None
+                   and _u.role.name in ("super_admin", "franchise_owner", "store_manager"))
+
+        def pc(key, fallback=""):
+            val = site.get(key) or pc_defaults.get(key) or fallback
+            if not _inline:
+                return val
+            from markupsafe import Markup, escape
+            return Markup('<span class="ok-ie" data-pc="%s" title="Click to edit">%s</span>'
+                          % (escape(key), escape(val)))
         more_children = [
             {"label": "Rewards", "href": "/rewards"},
             {"label": "Gift Cards", "href": "/gift-cards"},
@@ -190,6 +225,8 @@ def create_app(config_object=None):
             "brand_name": app.config["BRAND_NAME"],
             "site": site,
             "pc": pc,
+            "pc_attr": pc_attr,
+            "inline_edit": _inline,
             "site_defaults": SITE_IMAGE_DEFAULTS,
             "nav_links": [
                 {"label": "Menu", "href": "/menu", "hot": False},

@@ -2,7 +2,7 @@
 {% block title %}Deals & Offers, OK Smashed Burger{% endblock %}
 {% block content %}
     <!-- ============ HERO BANNER (jet) ============ -->
-    <section class="ok-pagehero">
+    {% set _s = pb_page_style('deals', 'hero') %}<div class="pb-sec" data-page="deals" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
         {% if site.get('deals_hero_img') %}<img src="{{ site.get('deals_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Deals banner" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
       </div>
@@ -19,10 +19,10 @@
           </div>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ PROMO-CODE ENTRY ============ -->
-    <section class="bg-yellow">
+    {% set _s = pb_page_style('deals', 'promo_code_entry') %}<div class="pb-sec" data-page="deals" data-section="promo_code_entry" data-label="Promo-Code Entry"{% if _s %} style="{{ _s }}"{% endif %}><section class="bg-yellow">
       <div class="ok-container ok-py-5 d-flex flex-column flex-sm-row align-items-center ok-gap-3 justify-content-between">
         <div class="d-flex align-items-center gap-2 fw-semibold text-ink">
           <span class="ok-fs-xl"><i class="fa-solid fa-tag"></i></span> Have a promo code? Apply it before you order.
@@ -33,10 +33,10 @@
           <button class="btn ok-btn-onyellow">Apply code</button>
         </form>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ DEAL GRID ============ -->
-    <section class="ok-section">
+    {% set _s = pb_page_style('deals', 'deal_grid') %}<div class="pb-sec" data-page="deals" data-section="deal_grid" data-label="Deal Grid"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
       <div class="ok-container">
         <div class="d-flex align-items-end justify-content-between ok-mb-3">
           <div><h2 class="ok-h2">{{ pc('deals_list_heading') }}</h2></div>
@@ -77,10 +77,10 @@
         <div class="ok-card ok-p-10 text-center text-muted-warm">{{ pc('deals_empty_text') }}</div>
         {% endif %}
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ TERMS NOTE ============ -->
-    <section class="ok-pb-14">
+    {% set _s = pb_page_style('deals', 'terms_note') %}<div class="pb-sec" data-page="deals" data-section="terms_note" data-label="Terms Note"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pb-14">
       <div class="ok-container">
         <div class="ok-card bg-cream-40 ok-p-3 text-center">
           <p class="ok-fs-sm text-muted-warm">One offer per order. Deals cannot be combined and are available at participating locations for a limited time.
@@ -88,5 +88,5 @@
           </p>
         </div>
       </div>
-    </section>
+    </section></div>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% block title %}Gift Cards, OK Smashed Burger{% endblock %}
 {% block content %}
     <!-- ============ HERO ============ -->
-    <section class="ok-pagehero">
+    {% set _s = pb_page_style('gift-cards', 'hero') %}<div class="pb-sec" data-page="gift-cards" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
         {% if site.get('giftcards_hero_img') %}<img src="{{ site.get('giftcards_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Gift Cards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
       </div>
@@ -15,10 +15,10 @@
         <p class="text-w-80 ok-fs-lg ok-mb-3 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('giftcards_hero_text') }}</p>
         <p class="ok-fs-sm text-w-55" data-reveal="up" data-reveal-delay="0.2">{{ pc('giftcards_hero_note') }}</p>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ BUILDER + PREVIEW ============ -->
-    <section class="ok-section">
+    {% set _s = pb_page_style('gift-cards', 'builder_preview') %}<div class="pb-sec" data-page="gift-cards" data-section="builder_preview" data-label="Builder + Preview"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
       <div class="ok-container ok-grid ok-grid-lg-2 ok-gap-8 ok-gap-3rem-lg align-items-start">
 
         <!-- ---- LEFT: builder form ---- -->
@@ -155,10 +155,10 @@
           <p class="ok-hint text-center ok-mt-3">This preview updates to match your choices in the final product.</p>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ CHECK BALANCE ============ -->
-    <section class="ok-section bg-cream-40">
+    {% set _s = pb_page_style('gift-cards', 'check_balance') %}<div class="pb-sec" data-page="gift-cards" data-section="check_balance" data-label="Check Balance"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-40">
       <div class="ok-container max-w-2xl">
         <div class="text-center ok-mb-3"><h2 class="ok-h2">Check your balance</h2></div>
         <div class="ok-card ok-p-3 ok-paddin-2rem-md">
@@ -178,10 +178,10 @@
           <p class="ok-hint ok-mt-3">{{ pc('giftcards_balance_text') }}</p>
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ HOW IT WORKS ============ -->
-    <section class="ok-section d-none">
+    {% set _s = pb_page_style('gift-cards', 'how_it_works') %}<div class="pb-sec" data-page="gift-cards" data-section="how_it_works" data-label="How It Works"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section d-none">
       <div class="ok-container">
         <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ pc('giftcards_how_heading') }}</h2></div>
         <div class="ok-grid ok-grid-md-3 ok-gap-3">
@@ -195,10 +195,10 @@
           {% endfor %}
         </div>
       </div>
-    </section>
+    </section></div>
 
     <!-- ============ CORPORATE / BULK BANNER ============ -->
-    <section class="ok-section pt-0 d-none" >
+    {% set _s = pb_page_style('gift-cards', 'corporate_bulk_banner') %}<div class="pb-sec" data-page="gift-cards" data-section="corporate_bulk_banner" data-label="Corporate / Bulk Banner"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section pt-0 d-none" >
       <div class="ok-container">
         <div class="ok-card bg-ink text-white overflow-hidden position-relative">
           <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
@@ -221,5 +221,5 @@
         </div>
         <p class="text-center ok-fs-xs text-muted-warm ok-mt-3 max-w-2xl mx-auto">Gift cards are issued by OK Brands and never expire. Not redeemable for cash except where required by law. See our full <a href="/faq" class="link-underline">gift card terms &amp; conditions</a>.</p>
       </div>
-    </section>
+    </section></div>
 {% endblock %}

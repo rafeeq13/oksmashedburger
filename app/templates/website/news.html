@@ -5,18 +5,18 @@
 {% set posts = content_list('news') %}{# News posts: editable in Admin > Website Content #}
 
 <!-- ============ HERO ============ -->
-<section class="ok-pagehero">
+{% set _s = pb_page_style('news', 'hero') %}<div class="pb-sec" data-page="news" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
   <div class="ok-pagehero-veil"></div>
   <div class="position-absolute -right-24 -top-24 ok-w-96 ok-h-96 rounded-pill bg-yellow-15 blur-3xl" data-float aria-hidden="true"></div>
   <div class="ok-container text-center">
 <h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ pc('news_hero_heading') }}</h1>
     <p class="text-w-80 ok-fs-lg max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('news_hero_text') }}</p>
   </div>
-</section>
+</section></div>
 
 <!-- ============ FEATURED POST ============ -->
 {% set lead = posts[0] %}
-<section class="ok-section">
+{% set _s = pb_page_style('news', 'featured_post') %}<div class="pb-sec" data-page="news" data-section="featured_post" data-label="Featured Post"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
   <div class="ok-container">
     <article class="ok-card ok-card-hover overflow-hidden ok-grid ok-grid-md-2">
       <div class="ok-ar-1610 ok-ar-auto-md bg-cream-40">
@@ -33,10 +33,10 @@
       </div>
     </article>
   </div>
-</section>
+</section></div>
 
 <!-- ============ POST GRID ============ -->
-<section class="ok-section bg-cream-20 border-top ok-bc-varokline">
+{% set _s = pb_page_style('news', 'post_grid') %}<div class="pb-sec" data-page="news" data-section="post_grid" data-label="Post Grid"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-20 border-top ok-bc-varokline">
   <div class="ok-container">
     <div class="d-flex align-items-end justify-content-between ok-gap-3 border-bottom border-ink-80 ok-pb-3 ok-mb-8">
       <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl text-uppercase tracking-tight">More stories</h2>
@@ -61,14 +61,14 @@
       {% endfor %}
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ CLOSING CTA ============ -->
-<section class="ok-section d-none">
+{% set _s = pb_page_style('news', 'closing_cta') %}<div class="pb-sec" data-page="news" data-section="closing_cta" data-label="Closing Cta"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section d-none">
   <div class="ok-container text-center">
     <h2 class="ok-h2 ok-mb-3">{{ pc('news_cta_heading') }}</h2>
     <p class="text-muted-warm ok-mb-3 max-w-lg mx-auto">{{ pc('news_cta_text') }}</p>
     <a href="/menu" class="btn btn-primary btn-lg">Start Your Order</a>
   </div>
-</section>
+</section></div>
 {% endblock %}

@@ -5,7 +5,7 @@
 {% set roles = content_list('jobs') %}{# Job openings: editable in Admin > Website Content #}
 
 <!-- ============ HERO ============ -->
-<section class="ok-pagehero">
+{% set _s = pb_page_style('careers', 'hero') %}<div class="pb-sec" data-page="careers" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
   <img src="{{ site.get('careers_hero_img') or site_defaults.get('careers_hero_img') }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1600&h=760&fit=crop&q=72'" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover">
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
@@ -18,10 +18,10 @@
       </div>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ WHY WORK HERE ============ -->
-<section class="ok-section">
+{% set _s = pb_page_style('careers', 'why_work_here') %}<div class="pb-sec" data-page="careers" data-section="why_work_here" data-label="Why Work Here"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
       <h2 class="ok-h2">{{ pc('careers_why_heading') }}</h2>
@@ -58,10 +58,10 @@
       </article>
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ OPEN ROLES ============ -->
-<section id="open-roles" class="ok-section bg-cream-40 border-y ok-bc-varokline scroll-mt-24">
+{% set _s = pb_page_style('careers', 'open_roles') %}<div class="pb-sec" data-page="careers" data-section="open_roles" data-label="Open Roles"{% if _s %} style="{{ _s }}"{% endif %}><section id="open-roles" class="ok-section bg-cream-40 border-y ok-bc-varokline scroll-mt-24">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
       <h2 class="ok-h2">{{ pc('careers_roles_heading') }}</h2>
@@ -83,10 +83,10 @@
       {% endfor %}
     </div>
   </div>
-</section>
+</section></div>
 
 <!-- ============ APPLICATION FORM ============ -->
-<section id="apply" class="ok-section scroll-mt-24">
+{% set _s = pb_page_style('careers', 'application_form') %}<div class="pb-sec" data-page="careers" data-section="application_form" data-label="Application Form"{% if _s %} style="{{ _s }}"{% endif %}><section id="apply" class="ok-section scroll-mt-24">
   <div class="ok-container">
     <div class="max-w-2xl mx-auto">
       <div class="text-center ok-mb-8">
@@ -179,5 +179,5 @@
       </form>
     </div>
   </div>
-</section>
+</section></div>
 {% endblock %}
