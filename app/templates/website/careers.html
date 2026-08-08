@@ -10,8 +10,8 @@
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
     <div class="max-w-2xl mx-auto text-center">
-<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('careers_hero_heading') or 'Join our team.' }}</h1>
-      <p class="text-w-85 ok-fs-lg ok-mb-8 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('careers_hero_text') or 'Grill cooks, shift leads, drivers and managers. If you love good food and moving fast, we want to meet you. No restaurant experience required.' }}</p>
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ pc('careers_hero_heading') }}</h1>
+      <p class="text-w-85 ok-fs-lg ok-mb-8 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('careers_hero_text') }}</p>
       <div class="d-flex flex-nowrap gap-2 ok-gap-075rem-sm justify-content-center" data-reveal="up" data-reveal-delay="0.2">
         <a href="#open-roles" class="btn btn-primary btn-lg">See open roles</a>
         <a href="#apply" class="ok-btn-outline ok-btn-outline--light">Apply now</a>
@@ -24,29 +24,37 @@
 <section class="ok-section">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
-      <h2 class="ok-h2">{{ site.get('careers_why_heading') or ('Why work at ' ~ brand_name) }}</h2>
-      <p class="text-muted-warm mt-2 max-w-xl mx-auto">We are a small, growing crew. That means real training, real hours and a real path to running your own kitchen.</p>
+      <h2 class="ok-h2">{{ pc('careers_why_heading') }}</h2>
+      <p class="text-muted-warm mt-2 max-w-xl mx-auto">{{ pc('careers_why_text') }}</p>
     </div>
     <div class="ok-grid ok-grid-sm-2 ok-grid-lg-4 ok-gap-5">
-      <article class="ok-card ok-card-hover ok-p-3 text-center">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-sack-dollar icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Fair pay, paid weekly</h3>
-        <p class="ok-fs-sm text-muted-warm">Above-minimum starting rates, tips shared across the whole crew.</p>
+      <article class="ok-card ok-card-hover ok-p-3">
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-sack-dollar icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('careers_perk1_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('careers_perk1_text') }}</p>
       </article>
-      <article class="ok-card ok-card-hover ok-p-3 text-center">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-calendar-check icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Flexible shifts</h3>
-        <p class="ok-fs-sm text-muted-warm">Schedules posted two weeks ahead, built around school and family.</p>
+      <article class="ok-card ok-card-hover ok-p-3">
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-calendar-check icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('careers_perk2_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('careers_perk2_text') }}</p>
       </article>
-      <article class="ok-card ok-card-hover ok-p-3 text-center">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-graduation-cap icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Train and grow</h3>
-        <p class="ok-fs-sm text-muted-warm">Most of our shift leads started on the griddle with zero experience.</p>
+      <article class="ok-card ok-card-hover ok-p-3">
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-graduation-cap icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('careers_perk3_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('careers_perk3_text') }}</p>
       </article>
-      <article class="ok-card ok-card-hover ok-p-3 text-center">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl mx-auto ok-mb-3"><i class="fa-solid fa-burger icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Free shift meal</h3>
-        <p class="ok-fs-sm text-muted-warm">A burger on us every shift, plus a discount on your days off.</p>
+      <article class="ok-card ok-card-hover ok-p-3">
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-burger icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('careers_perk4_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('careers_perk4_text') }}</p>
       </article>
     </div>
   </div>
@@ -56,7 +64,7 @@
 <section id="open-roles" class="ok-section bg-cream-40 border-y ok-bc-varokline scroll-mt-24">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
-      <h2 class="ok-h2">{{ site.get('careers_roles_heading') or 'Open roles' }}</h2>
+      <h2 class="ok-h2">{{ pc('careers_roles_heading') }}</h2>
       <p class="text-muted-warm mt-2">{{ roles|length }} positions open right now.</p>
     </div>
     <div class="max-w-3xl mx-auto ok-card divide-y ok-divide-y">
@@ -82,8 +90,8 @@
   <div class="ok-container">
     <div class="max-w-2xl mx-auto">
       <div class="text-center ok-mb-8">
-        <h2 class="ok-h2">{{ site.get('careers_apply_heading') or 'Apply now' }}</h2>
-        <p class="text-muted-warm mt-2">Send us a note. No CV required for kitchen and counter roles, just tell us about yourself.</p>
+        <h2 class="ok-h2">{{ pc('careers_apply_heading') }}</h2>
+        <p class="text-muted-warm mt-2">{{ pc('careers_apply_text') }}</p>
       </div>
       <form method="post" action="/contact" class="ok-card ok-p-3 ok-paddin-2rem-md ok-grid ok-grid-sm-2 ok-gap-3">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">

@@ -11,7 +11,7 @@
   <img src="{{ site.get('about_hero_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
   <div class="ok-abt-hero-veil"></div>
   <div class="ok-container position-relative text-center">
-    <h1 class="ok-abt-hero-h">{{ site.get('about_hero_heading') or 'About Us' }}</h1>
+    <h1 class="ok-abt-hero-h">{{ pc('about_hero_heading') }}</h1>
     <span class="ok-squiggle ok-squiggle--light" aria-hidden="true"></span>
   </div>
 </section>
@@ -66,8 +66,8 @@
       {% endif %}
     </div>
     <div>
-      <h2 class="ok-abt-h">{{ site.get('about_story_heading') or 'Start the day off right with one of our delicious smash burgers' }}</h2>
-      <p class="ok-abt-body ok-mt-5">{{ site.get('about_hero_text') or (brand_name ~ ' is a fast-casual smash-burger concept built on a simple belief: people deserve something better. Quality ingredients, made from scratch, freshly cooked, handcrafted, consistent, and served with a smile.') }}</p>
+      <h2 class="ok-abt-h">{{ pc('about_story_heading') }}</h2>
+      <p class="ok-abt-body ok-mt-5">{{ pc('about_hero_text') }}</p>
     </div>
   </div>
 </section>
@@ -81,8 +81,8 @@
           <img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
         </div>
         <div class="ok-card-body">
-          <h3 class="ok-abt-cardh">Cooked Fresh And From Scratch</h3>
-          <p class="ok-abt-body-sm ok-mt-3">We're passionate about the quality and consistency of our food, which is why we cook everything fresh and from scratch. We make our sauces in-house, hand-form every patty, toast our own buns, and never let a burger sit.</p>
+          <h3 class="ok-abt-cardh">{{ pc('about_card1_heading') }}</h3>
+          <p class="ok-abt-body-sm ok-mt-3">{{ pc('about_card1_text') }}</p>
         </div>
       </article>
       <article class="ok-card overflow-hidden d-flex flex-column">
@@ -90,8 +90,8 @@
           <img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
         </div>
         <div class="ok-card-body">
-          <h3 class="ok-abt-cardh">Community Focused And Locally-sourced</h3>
-          <p class="ok-abt-body-sm ok-mt-3">We love the communities we're in, so much that we source our ingredients from local businesses: our beef, our produce and our bakery buns all come from partners right here in Philadelphia.</p>
+          <h3 class="ok-abt-cardh">{{ pc('about_card2_heading') }}</h3>
+          <p class="ok-abt-body-sm ok-mt-3">{{ pc('about_card2_text') }}</p>
         </div>
       </article>
     </div>
@@ -107,9 +107,9 @@
       <img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">
     </div>
     <div>
-      <h2 class="ok-abt-h">Meet Us At The Table</h2>
-      <p class="ok-abt-body ok-mt-5">We'll be playing upbeat music to set the vibes, pouring hand-spun shakes, cold-pressed lemonade and fresh soda.</p>
-      <p class="ok-abt-body ok-mt-3">We're excited to be able to start your day off right and we hope to serve you soon!</p>
+      <h2 class="ok-abt-h">{{ pc('about_table_heading') }}</h2>
+      <p class="ok-abt-body ok-mt-5">{{ pc('about_table_text') }}</p>
+      <p class="ok-abt-body ok-mt-3">{{ pc('about_table_text2') }}</p>
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
   </div>
@@ -120,9 +120,9 @@
   <img src="{{ site.get('catering_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
   <div class="ok-container position-relative">
     <div class="ok-abt-band-card">
-      <h2 class="ok-abt-h">{{ site.get('about_values_heading') or 'Different smashes for different folks' }}</h2>
+      <h2 class="ok-abt-h">{{ pc('about_values_heading') }}</h2>
       <span class="ok-squiggle ok-squiggle--left" aria-hidden="true"></span>
-      <p class="ok-abt-body ok-mt-3">We are the lunch crowd, the late-night crew, the family Fridays and the game-day groups, serving different smashes for different folks.</p>
+      <p class="ok-abt-body ok-mt-3">{{ pc('about_values_text') }}</p>
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
   </div>
@@ -132,9 +132,9 @@
 <section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     <div>
-      <h2 class="ok-abt-h">{{ site.get('about_team_heading') or 'How it all started' }}</h2>
-      <p class="ok-abt-body ok-mt-5">In 2021, two friends set up a single flat-top in a Fishtown pop-up with one idea: press a ball of fresh beef hard onto a screaming-hot griddle, let the edges lace and caramelize, and serve it before it ever had a chance to cool down. The line went around the block by week two.</p>
-      <p class="ok-abt-body ok-mt-3">Four neighborhood kitchens later, nothing about the craft has changed. What's new is the tech that gets it to you faster: live tracking, easy reorders and rewards on every bite.</p>
+      <h2 class="ok-abt-h">{{ pc('about_team_heading') }}</h2>
+      <p class="ok-abt-body ok-mt-5">{{ pc('about_team_text') }}</p>
+      <p class="ok-abt-body ok-mt-3">{{ pc('about_team_text2') }}</p>
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
     <div class="ok-abt-tilt">
@@ -144,45 +144,23 @@
 </section>
 
 <!-- ============ 8. WHAT LOCALS HAVE TO SAY ============ -->
-{% set avatar_colors = ['#4285F4','#E0A200','#06C167','#D32323','#7C3AED'] %}
-{% set reviews = content_list('testimonials') %}{# Customer reviews: editable in Admin > Website Content #}
 <section class="ok-band ok-band--white">
   <div class="ok-container">
-    <h2 class="ok-abt-h text-center">What locals have to say</h2>
-    <div class="position-relative ok-mt-10">
-      <button type="button" onclick="document.getElementById('abtReviews').scrollBy({left:-320,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -left-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border border-hairline" aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
-      <div id="abtReviews" class="ok-edgefade d-flex ok-gap-5 overflow-x-auto hide-scrollbar snap-x py-2">
-        {% for r in reviews %}
-        <article class="ok-card d-flex flex-column ok-abt-review snap-start">
-          <div class="ok-card-body">
-            <div class="d-flex align-items-center ok-gap-25 ok-mb-3">
-              <span class="ok-w-9 ok-h-9 rounded-pill ok-grid ok-place-center text-white fw-bold flex-shrink-0" style="background:{{ avatar_colors[loop.index0 % avatar_colors|length] }}">{{ r.name[0] }}</span>
-              <span class="ok-min-w-0 flex-grow-1">
-                <span class="d-block fw-bold ok-fs-sm ok-lh-tight text-truncate">{{ r.name }}</span>
-                <span class="d-block ok-fs-xs text-muted-warm">{{ r.when }}</span>
-              </span>
-              <i class="fa-brands fa-google text-muted-warm"></i>
-            </div>
-            <div class="d-flex ok-gap-05 ok-stars ok-fs-sm ok-mb-3">{% for i in range(5) %}{% if r.stars >= i+1 %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star text-muted-warm-40"></i>{% endif %}{% endfor %}</div>
-            <p class="ok-abt-body-sm ok-clamp-5">{{ r.text }}</p>
-          </div>
-        </article>
-        {% endfor %}
-      </div>
-      <button type="button" onclick="document.getElementById('abtReviews').scrollBy({left:320,behavior:'smooth'})" class="ok-iconbtn d-none d-md-grid position-absolute -right-5 top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border border-hairline" aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
-    </div>
+    <h2 class="ok-abt-h text-center ok-mb-10">{{ pc('about_reviews_heading') }}</h2>
+    {# same carousel the home page uses, so the two can never drift apart #}
+    {% include 'partials/review_cards.html' with context %}
   </div>
 </section>
 
 <!-- ============ 9. INSTAGRAM ============ -->
 <section class="ok-band ok-band--warm">
   <div class="ok-container">
-    <h2 class="ok-abt-h text-center ok-mb-8">Follow us on Instagram</h2>
+    <h2 class="ok-abt-h text-center ok-mb-8">{{ pc('about_ig_heading') }}</h2>
     <a href="https://instagram.com/oksmashedburger/reels/" target="_blank" rel="noopener" class="d-flex align-items-center ok-gap-3 ok-mb-5 ok-mw-lg mx-auto">
       <span class="ok-w-12 ok-h-12 rounded-pill bg-white ok-grid ok-place-center ok-p-25 flex-shrink-0 ok-shadow-md"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="" class="ok-contain"></span>
       <span class="ok-min-w-0">
         <span class="d-block fw-bold">oksmashedburger</span>
-        <span class="d-block ok-abt-body-sm text-truncate">Real smashed burgers, fast · Philadelphia · Find your nearest location</span>
+        <span class="d-block ok-abt-body-sm text-truncate">{{ pc('about_ig_tagline') }}</span>
       </span>
     </a>
     <div class="ok-cardgrid ok-cardgrid--4 ok-mw-lg mx-auto">
@@ -202,8 +180,8 @@
 <!-- ============ 10. CLOSING CTA ============ -->
 <section class="ok-abt-cta  d-none">
   <div class="ok-container text-center">
-    <h2 class="ok-abt-h">{{ site.get('about_cta_heading') or 'Hungry yet?' }}</h2>
-    <p class="ok-abt-body ok-mt-3 ok-mw-sm mx-auto">Pick your kitchen, build your order and we'll smash it fresh.</p>
+    <h2 class="ok-abt-h">{{ pc('about_cta_heading') }}</h2>
+    <p class="ok-abt-body ok-mt-3 ok-mw-sm mx-auto">{{ pc('about_cta_text') }}</p>
     <a href="/menu" class="btn btn-primary btn-lg ok-mt-5">Order online</a>
   </div>
 </section>

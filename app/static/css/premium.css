@@ -474,7 +474,8 @@ p {
 .ok-card-hover:hover {
   transform: translateY(-6px);
   box-shadow: var(--sh-4);
-  border-color: rgba(224, 162, 0, .35);
+  /* border-color: rgba(224, 162, 0, .35); */
+  background-color: #FFD502;
 }
 
 .ok-card-hover:active {
@@ -1036,7 +1037,7 @@ input[type="radio"] {
 }
 
 .ok-stars {
-  color: var(--ok-yellow);
+  color: #fff;
 }
 
 .ok-rating-score {
@@ -1707,7 +1708,7 @@ html.ok-loading {
 .ok-card-text {
   font-size: .9rem;
   line-height: 1.6;
-  color: var(--ok-lux-gray);
+  color: #000;
   margin-top: .4rem;
 }
 
@@ -1739,7 +1740,7 @@ html.ok-loading {
   gap: .5rem;
   margin-top: 1.1rem;
   font-size: .68rem;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: .16em;
   color: var(--ok-ink);
@@ -1853,7 +1854,43 @@ html.ok-loading {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .2s ease;
+  /* in fast so the panel is already visible while it travels, out slow enough
+     that it is still on screen for the whole exit */
+  transition: opacity .16s ease;
+}
+.ok-modal.is-closing { transition: opacity .4s ease .06s; }
+
+/* Every popup enters from the LEFT and leaves to the RIGHT. The panel is the
+   modal's only child, so it carries the movement while the wrapper handles the
+   fade. `.is-closing` is what makes the exit go the other way — without it the
+   panel would just retrace its entrance. app.js (showModal) sets both. */
+/* The panel does NOT fade — only the wrapper does, and quickly — so what you
+   actually see is the travel. Fading the panel as well washed the slide out
+   into "it just appeared". */
+.ok-modal > * {
+  transform: translateX(-110vw);
+  transition: transform .45s cubic-bezier(.16, .84, .30, 1);
+  will-change: transform;
+}
+
+.ok-modal.is-open > * {
+  transform: translateX(0);
+}
+
+/* leaving: straight out to the right, not back the way it came */
+.ok-modal.is-closing > * {
+  transform: translateX(110vw);
+  transition: transform .4s cubic-bezier(.5, 0, .9, .4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .ok-modal > *,
+  .ok-modal.is-open > *,
+  .ok-modal.is-closing > * {
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Modal hero image: cancels the modal body's 1.5rem padding on the top and
@@ -3043,6 +3080,16 @@ button:focus, button:focus-visible,
 }
 .ok-caro-prev{ left: -1.25rem; }
 .ok-caro-next{ right: -1.25rem; }
+/* Keep the arrows clear of the cards at EVERY width. Nudging the buttons
+   further out only works on a wide screen, so the row reserves the space
+   instead — the first card can then never sit under the previous button. */
+.ok-caro--gutter > [id]{
+  padding-inline: 2.5rem;
+  scroll-padding-inline: 2.5rem;
+}
+@media (max-width: 767.98px){
+  .ok-caro--gutter > [id]{ padding-inline: 1.75rem; scroll-padding-inline: 1.75rem; }
+}
 @media (max-width: 767.98px){
   .ok-carobtn{ width: 2.25rem; height: 2.25rem; }
   .ok-caro-prev{ left: -.25rem; }
@@ -3138,3 +3185,325 @@ button:focus, button:focus-visible,
    opening hours sitting next to it. */
 .ok-status-closed{ color: var(--ok-red, #C62828) !important; }
 .ok-status-rest{ color: var(--ok-yellow) !important; }
+
+/* =========================================================
+   LOCATION CARD  (home "Locations near you")
+   Map on top, detail rows split by hairlines, one full-bleed
+   dark action bar. Its own component rather than .ok-card so
+   the site-wide card hover flood does not wash over the bar.
+   ========================================================= */
+.ok-loccard{
+  display:flex; flex-direction:column;
+  background:#fff;
+  border:1px solid var(--ok-line);
+  border-radius:1rem;
+  overflow:hidden;
+  box-shadow:0 4px 20px rgba(20,20,20,.06);
+  transition:transform var(--t-mid,.18s) var(--e-out,ease),
+             box-shadow var(--t-mid,.18s) var(--e-out,ease);
+}
+.ok-loccard:hover{ transform:translateY(-6px); box-shadow:var(--sh-4,0 18px 40px rgba(20,20,20,.14)); }
+
+.ok-loccard-map{
+  position:relative;
+  aspect-ratio:4/3;
+  background:var(--ok-beige,#f6f2ea);
+}
+.ok-loccard-map iframe{ width:100%; height:100%; border:0; display:block; }
+.ok-loccard-badge{
+  position:absolute; top:.85rem; left:.85rem; z-index:2;
+  display:inline-flex; align-items:center; gap:.4rem;
+  background:#fff; color:var(--ok-green);
+  font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+  padding:.34rem .7rem; border-radius:9999px;
+  box-shadow:0 2px 10px rgba(20,20,20,.18);
+}
+.ok-loccard-badge .status-dot{ background:var(--ok-green); }
+
+.ok-loccard-body{ padding:1.4rem 1.5rem .25rem; flex:1 1 auto; }
+.ok-loccard-title{
+  font-family:'Poppins',sans-serif; font-weight:600;
+  font-size:1.3rem; line-height:1.2; letter-spacing:-.015em;
+  color:var(--ok-jet); margin:0 0 .35rem;
+}
+
+/* one hairline BETWEEN rows, never above the first or below the last */
+.ok-loccard-rows{ list-style:none; margin:0; padding:0; }
+.ok-loccard-rows li{
+  display:flex; align-items:flex-start; gap:.85rem;
+  padding:.95rem 0;
+  font-size:.95rem; line-height:1.45;
+  color:var(--ok-jet);
+}
+.ok-loccard-rows li + li{ border-top:1px solid var(--ok-line); }
+.ok-loccard-rows i{
+  width:1.1rem; flex-shrink:0; margin-top:.15rem;
+  text-align:center; color:var(--ok-jet); font-size:1rem;
+}
+.ok-loccard-rows a{ color:inherit; }
+.ok-loccard-rows a:hover{ color:var(--ok-amber); }
+
+.ok-loccard-cta{
+  margin-top:auto;
+  display:flex; align-items:center; justify-content:center; gap:.6rem;
+  background:var(--ok-jet); color:#fff;
+  font-weight:800; font-size:.82rem; letter-spacing:.12em; text-transform:uppercase;
+  padding:1.05rem 1rem;
+  transition:background var(--t-fast,.15s) var(--e-out,ease), color var(--t-fast,.15s) var(--e-out,ease);
+}
+.ok-loccard-cta:hover{ background:var(--ok-yellow); color:var(--ok-jet); }
+.ok-loccard-cta i{ transition:transform var(--t-fast,.15s) var(--e-out,ease); }
+.ok-loccard-cta:hover i{ transform:translateX(4px); }
+
+@media (max-width:575px){
+  .ok-loccard-body{ padding:1.15rem 1.15rem .25rem; }
+  .ok-loccard-title{ font-size:1.15rem; }
+}
+
+/* =========================================================
+   GOOGLE-STYLE REVIEW CARD  (home "What locals have to say")
+   Deliberately NOT the brand card: this is meant to read as a
+   Google reviews widget, so it keeps Google's own palette,
+   Roboto/Arial type and grey surface rather than ours.
+   ========================================================= */
+.ok-gcard{
+  --g-blue:#1a73e8;
+  --g-grey:#70757a;
+  --g-ink:#202124;
+  --g-star:#fb8c00;
+  --g-star-off:#dadce0;
+  width:21.25rem; flex:0 0 21.25rem;
+  background:#f8f8f8;
+  border-radius:4px;
+  padding:1.25rem 1.15rem 1.35rem;
+  font-family:Roboto,Arial,Helvetica,sans-serif;
+  display:flex; flex-direction:column;
+}
+
+.ok-gcard-head{ display:flex; align-items:flex-start; gap:.85rem; }
+.ok-gcard-avatar{
+  position:relative; width:3rem; height:3rem; flex-shrink:0;
+  border-radius:9999px; display:grid; place-items:center;
+  color:#fff; font-weight:500; font-size:1.35rem; line-height:1;
+  background:#5f6cb4; overflow:visible;
+}
+.ok-gcard-avatar img{ width:100%; height:100%; border-radius:9999px; object-fit:cover; display:block; }
+/* the little orange "local guide" pip Google stamps on the avatar */
+.ok-gcard-avatar::after{
+  content:"\f005";                       /* fa-star */
+  font-family:"Font Awesome 6 Free"; font-weight:900;
+  position:absolute; right:-1px; bottom:-1px;
+  width:1.1rem; height:1.1rem; border-radius:9999px;
+  background:#f57c00; color:#fff;
+  font-size:.5rem; display:grid; place-items:center;
+  border:2px solid #f8f8f8;
+}
+.ok-gcard-who{ min-width:0; flex:1 1 auto; padding-top:.1rem; }
+.ok-gcard-name{
+  color:var(--g-blue); font-weight:700; font-size:.95rem; line-height:1.3;
+  margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.ok-gcard-when{ color:var(--g-grey); font-size:.875rem; line-height:1.4; margin-top:.15rem; }
+.ok-gcard-g{ flex-shrink:0; width:1.35rem; height:1.35rem; margin-top:.1rem; }
+
+.ok-gcard-stars{ display:flex; gap:1px; margin:.9rem 0 .55rem; font-size:1.1rem; line-height:1; }
+.ok-gcard-stars .on{ color:var(--g-star); }
+.ok-gcard-stars .off{ color:var(--g-star-off); }
+
+/* fixed height + its own scrollbar, exactly like the widget */
+.ok-gcard-text{
+  color:var(--g-ink); font-size:1rem; line-height:1.55;
+  margin:0; max-height:7.5rem; overflow-y:auto; padding-right:.7rem;
+  scrollbar-width:thin; scrollbar-color:#bdbdbd #efefef;
+}
+.ok-gcard-text::-webkit-scrollbar{ width:7px; }
+.ok-gcard-text::-webkit-scrollbar-track{ background:#efefef; }
+.ok-gcard-text::-webkit-scrollbar-thumb{ background:#bdbdbd; }
+
+@media (max-width:575px){
+  .ok-gcard{ width:17.5rem; flex-basis:17.5rem; }
+}
+
+/* =========================================================
+   CLIENT REFERENCE TWEAKS (2026-08-06)
+   Kept together and last so they are easy to review or drop.
+   ========================================================= */
+
+/* Hero CTAs (home hero AND the inner-page heroes): white on hover, black
+   label. Scoped to the heroes so the site-wide .btn-primary hover
+   (black on white) is untouched. */
+.ok-hero-cta .btn.btn-primary:hover,
+.ok-hero-cta .btn.btn-primary:focus,
+.ok-hero-cta .btn.btn-primary:focus-visible,
+.ok-hero-cta .btn.btn-primary:active,
+.ok-pagehero .btn.btn-primary:hover,
+.ok-pagehero .btn.btn-primary:focus,
+.ok-pagehero .btn.btn-primary:focus-visible,
+.ok-pagehero .btn.btn-primary:active,
+.ok-hero .btn.btn-primary:hover,
+.ok-hero .btn.btn-primary:focus,
+.ok-hero .btn.btn-primary:focus-visible,
+.ok-hero .btn.btn-primary:active{
+  background:#fff !important;
+  background-color:#fff !important;
+  color:var(--ok-jet) !important;
+  border-color:#fff !important;
+}
+
+/* Google / Yelp ratings: the pill chrome goes, the label and stars stay.
+   Only the background, border and blur are removed — spacing is kept so the
+   two still read as two separate ratings. */
+.ok-rating-pill,
+.ok-rating-pill:hover{
+  background:none !important;
+  border:0 !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  padding-inline:0 !important;
+  transform:none !important;
+}
+.ok-hero-ratings{ gap:1.75rem !important; }
+
+/* Deals cards: body copy reads black, and the green "no code needed" line
+   flips to white on hover so it stays legible over the card's hover fill. */
+.ok-dealcard .ok-fs-sm,
+.ok-dealcard .ok-fs-xs,
+.ok-dealcard p,
+.ok-dealcard h3{ color:#000 !important; }
+.ok-dealcard .ok-deal-nocode{ color:var(--ok-green) !important; }
+.ok-dealcard:hover .ok-deal-nocode,
+.ok-dealcard:hover .ok-deal-nocode i{ color:#fff !important; }
+
+/* ---------------------------------------------------------
+   ALL TEXT IS BLACK (client, 2026-08-06)
+
+   Done through the COLOUR TOKENS, not a blanket element sweep.
+   The sweep version had to repaint every h/p/span/label and then
+   undo itself on the hero, the ink bands, the footer, dark cards
+   and every active pill — and each new exception broke an older
+   one. Recolouring the two greys instead means white-on-dark
+   markup (.text-white, .text-w-*, .bg-ink pills) is never touched
+   and needs no exception at all.
+   --------------------------------------------------------- */
+:root{
+  --ok-jet:#000;          /* was #141414 — headings, body, ink surfaces */
+  --ok-ink:#000;          /* was #0E0E0E — the premium heading colour */
+  --ok-slate:#000;        /* was #6B6B6B — muted copy */
+  --ok-lux-gray:#000;     /* was #8A8480 — premium muted copy */
+}
+
+/* the few classes that hard-code a grey instead of using a token */
+.text-muted-warm, .text-muted, .text-secondary, .text-body-secondary,
+.text-muted-warm-40, .text-muted-warm-50, .text-muted-warm-60, .text-muted-warm-70,
+.text-ink-70, .text-ink-75, .text-ink-80,
+.ok-hint, .ok-lead, .ok-card-text, .ok-abt-body, .ok-abt-body-sm{
+  color:#000 !important;
+}
+
+/* Icons follow the text on a light surface. On a dark one they keep the brand
+   accent, which is the only thing that reads there. */
+.ok-card i.text-gold, .ok-card i.text-yellow,
+.ok-card .ok-i.text-gold, .ok-card .ok-i.text-yellow,
+label i.text-gold, label i.text-yellow,
+.ok-band--white i.text-gold, .ok-band--warm i.text-gold,
+.ok-band--white i.text-yellow, .ok-band--warm i.text-yellow{
+  color:#000 !important;
+}
+.bg-ink i, .bg-jet i, .ok-pagehero i, .ok-hero i, .ok-footer i,
+.bg-ink .ok-i, .bg-jet .ok-i, .ok-pagehero .ok-i, .ok-hero .ok-i, .ok-footer .ok-i{
+  color:inherit !important;
+}
+
+/* Deals cards: the green "no code needed" line flips to white on hover so it
+   stays legible over the card's hover fill. */
+.ok-deal-nocode{ color:var(--ok-green) !important; }
+.ok-dealcard:hover .ok-deal-nocode,
+.ok-dealcard:hover .ok-deal-nocode i{ color:#fff !important; }
+
+/* A selected chip is a dark pill; style.css already gives it white text, this
+   just guarantees the icon inside comes along. */
+.chip.is-active *, .chip:has(input:checked) *{ color:#fff !important; }
+
+/* A heading inside a box the markup already marked `.text-white` must inherit
+   that white. `.ok-h2` and friends set an explicit colour, which now resolves
+   to #000 and beat the inherited white on the dark rewards/gift-card panels. */
+.text-white :is(h1,h2,h3,h4,h5,h6),
+.text-white :is(.ok-display,.ok-h1,.ok-h2,.ok-h3,.ok-title,.ok-card-title){
+  color:inherit !important;
+}
+
+/* Deals cards: the CTA is outlined, not filled — white with a black border and
+   black label, inverting to black-on-white text on hover. Scoped to the deal
+   card so the brand's yellow .btn-primary is untouched everywhere else. */
+.ok-dealcard .btn.btn-primary{
+  background:#fff !important;
+  background-color:#fff !important;
+  color:#000 !important;
+  border:1.5px solid #000 !important;
+  box-shadow:none !important;
+}
+.ok-dealcard .btn.btn-primary:hover,
+.ok-dealcard .btn.btn-primary:focus,
+.ok-dealcard .btn.btn-primary:focus-visible,
+.ok-dealcard .btn.btn-primary:active{
+  background:#000 !important;
+  background-color:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+}
+
+/* =========================================================
+   LOCATIONS PAGE ROW
+   The whole card used to flood on hover; the client wants only
+   the details column (the RIGHT half on md+) to take the fill,
+   and the actions to read as plain links.
+   ========================================================= */
+.ok-locrow{
+  transition:box-shadow var(--t-mid,.18s) var(--e-out,ease);
+}
+.ok-locrow:hover{
+  background:#fff !important;          /* never the whole card */
+  box-shadow:var(--sh-4,0 18px 40px rgba(20,20,20,.14));
+}
+.ok-locinfo{ transition:background-color var(--t-mid,.18s) var(--e-out,ease); }
+.ok-locrow:hover .ok-locinfo{ background:var(--ok-yellow); }
+
+/* actions: no chrome, underline on hover */
+.ok-loclink{
+  background:none !important;
+  border:0 !important;
+  padding:0 !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  font-weight:700;
+  font-size:.95rem;
+  color:#000 !important;
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  text-decoration:none;
+  cursor:pointer;
+  transition:none;
+}
+.ok-loclink:hover,
+.ok-loclink:focus-visible{
+  text-decoration:underline;
+  text-underline-offset:3px;
+  background:none !important;
+  transform:none !important;
+}
+
+/* On hover the details column fills with brand yellow, so everything inside it
+   has to go black — the status line is amber/red/green and disappears on that
+   fill otherwise. */
+.ok-locrow:hover .ok-locinfo,
+.ok-locrow:hover .ok-locinfo *{
+  color:#000 !important;
+}
+
+/* Store status line: the WORD carries the warning (red), the detail beside it
+   is just detail. It was brand yellow, which is unreadable on the white store
+   cards in the location picker — black keeps the two apart and stays legible.
+   On the locations page the row's yellow hover fill already blacks everything
+   in that column, so this holds there too. */
+.ok-status-rest{ color:#000 !important; }

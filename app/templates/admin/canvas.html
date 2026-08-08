@@ -2,55 +2,55 @@
 {% block title %}Visual Editor, {{ brand_name }}{% endblock %}
 
 {% block admin %}
-<div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-  <div class="min-w-0">
-    <h2 class="ok-h2 leading-tight">Visual editor</h2>
-    <p class="text-slate text-xs">Drag layers to reorder, click a section to restyle it live, use the eye to hide/show, and add new sections.</p>
-    <p class="text-xs mt-1 flex items-center gap-1.5 flex-wrap"><i class="fa-solid fa-wand-magic-sparkles text-okamber"></i> Need to edit <b>every</b> text, card, button &amp; link and drag any element?
-      <form method="post" action="/admin/builder/new-home{{ qs }}" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline font-semibold">Edit the home in the full drag-drop builder →</button></form></p>
+<div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3 ok-mb-3">
+  <div class="ok-min-w-0">
+    <h2 class="ok-h2 ok-lh-tight">Visual editor</h2>
+    <p class="text-muted-warm ok-fs-xs">Drag layers to reorder, click a section to restyle it live, use the eye to hide/show, and add new sections.</p>
+    <p class="ok-fs-xs mt-1 d-flex align-items-center ok-gap-15 flex-wrap"><i class="fa-solid fa-wand-magic-sparkles text-gold"></i> Need to edit <b>every</b> text, card, button &amp; link and drag any element?
+      <form method="post" action="/admin/builder/new-home{{ qs }}" class="d-inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline fw-semibold">Edit the home in the full drag-drop builder →</button></form></p>
   </div>
-  <div class="flex items-center gap-2 shrink-0">
-    <span id="cvStatus" class="text-xs text-slate"></span>
-    <div class="relative">
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
+    <span id="cvStatus" class="ok-fs-xs text-muted-warm"></span>
+    <div class="position-relative">
       <button id="cvAddBtn" type="button" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plus"></i> Add section</button>
-      <div id="cvAddMenu" class="hidden absolute right-0 mt-1 w-52 bg-white border border-[var(--ok-line)] rounded-lg shadow-xl z-30 py-1">
-        <button type="button" data-add="banner" class="cv-addopt"><i class="fa-solid fa-bullhorn w-4 text-slate"></i> Announcement bar</button>
-        <button type="button" data-add="content" class="cv-addopt"><i class="fa-solid fa-align-center w-4 text-slate"></i> Text block</button>
-        <button type="button" data-add="image" class="cv-addopt"><i class="fa-solid fa-image w-4 text-slate"></i> Image + text</button>
+      <div id="cvAddMenu" class="d-none position-absolute end-0 mt-1 ok-w-52 bg-white border ok-bc-varokline ok-rounded-lg ok-shadow-xl ok-z-30 py-1">
+        <button type="button" data-add="banner" class="cv-addopt"><i class="fa-solid fa-bullhorn ok-w-4 text-muted-warm"></i> Announcement bar</button>
+        <button type="button" data-add="content" class="cv-addopt"><i class="fa-solid fa-align-center ok-w-4 text-muted-warm"></i> Text block</button>
+        <button type="button" data-add="image" class="cv-addopt"><i class="fa-solid fa-image ok-w-4 text-muted-warm"></i> Image + text</button>
       </div>
     </div>
     <button id="cvSave" type="button" class="btn btn-primary btn-sm"><i class="fa-solid fa-floppy-disk"></i> Save</button>
   </div>
 </div>
 
-<div class="flex flex-col lg:flex-row gap-3" style="height:80vh; min-height:460px">
+<div class="d-flex flex-column flex-lg-row ok-gap-3" style="height:80vh; min-height:460px">
   <!-- Layers -->
-  <div class="w-full lg:w-60 shrink-0 rounded-xl border border-[var(--ok-line)] bg-white overflow-y-auto">
-    <div class="px-3 py-2 border-b border-[var(--ok-line)] text-[.65rem] font-bold uppercase tracking-wide text-slate">Sections</div>
-    <div id="cvLayers" class="p-2 space-y-1">
+  <div class="w-100 ok-w-lg-60 flex-shrink-0 ok-rounded-xl border ok-bc-varokline bg-white overflow-y-auto">
+    <div class="ok-px-3 py-2 border-bottom ok-bc-varokline ok-fs-65rem fw-bold text-uppercase ok-ls-wide text-muted-warm">Sections</div>
+    <div id="cvLayers" class="p-2 ok-stack-1">
       {% for s in state %}
-      <div class="cv-layer flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer select-none {% if not s.enabled %}cv-off{% endif %}" draggable="true" data-key="{{ s.key }}" data-sid="{{ s.sid }}" data-custom="{{ 1 if s.custom else 0 }}">
-        <i class="fa-solid fa-grip-vertical text-slate/40 text-xs shrink-0"></i>
-        <span class="flex-1 min-w-0 text-sm font-medium truncate">{{ s.label }}</span>
-        <button type="button" class="cv-eye w-6 h-6 grid place-items-center rounded text-slate shrink-0" title="Hide / show on the website"><i class="fa-solid fa-{{ 'eye' if s.enabled else 'eye-slash' }}"></i></button>
-        {% if s.custom %}<button type="button" class="cv-del w-6 h-6 grid place-items-center rounded text-okred shrink-0" title="Delete"><i class="fa-solid fa-trash text-xs"></i></button>{% endif %}
+      <div class="cv-layer d-flex align-items-center gap-2 px-2 py-2 ok-rounded-lg ok-pointer ok-nodrag {% if not s.enabled %}cv-off{% endif %}" draggable="true" data-key="{{ s.key }}" data-sid="{{ s.sid }}" data-custom="{{ 1 if s.custom else 0 }}">
+        <i class="fa-solid fa-grip-vertical text-muted-warm-40 ok-fs-xs flex-shrink-0"></i>
+        <span class="ok-flex-1 ok-min-w-0 ok-fs-sm fw-medium text-truncate">{{ s.label }}</span>
+        <button type="button" class="cv-eye ok-w-6 ok-h-6 ok-grid ok-place-center ok-rounded text-muted-warm flex-shrink-0" title="Hide / show on the website"><i class="fa-solid fa-{{ 'eye' if s.enabled else 'eye-slash' }}"></i></button>
+        {% if s.custom %}<button type="button" class="cv-del ok-w-6 ok-h-6 ok-grid ok-place-center ok-rounded text-ok-red flex-shrink-0" title="Delete"><i class="fa-solid fa-trash ok-fs-xs"></i></button>{% endif %}
       </div>
       {% endfor %}
     </div>
   </div>
 
   <!-- Canvas -->
-  <div class="flex-1 min-w-0 rounded-xl overflow-hidden border border-[var(--ok-line)] bg-white">
-    <iframe id="cvFrame" src="/?pbedit=1" class="w-full h-full block bg-white" title="Home canvas"></iframe>
+  <div class="ok-flex-1 ok-min-w-0 ok-rounded-xl overflow-hidden border ok-bc-varokline bg-white">
+    <iframe id="cvFrame" src="/?pbedit=1" class="w-100 h-100 d-block bg-white" title="Home canvas"></iframe>
   </div>
 
   <!-- Inspector -->
-  <aside class="w-full lg:w-80 shrink-0 rounded-xl border border-[var(--ok-line)] bg-white overflow-y-auto">
-    <div id="cvEmpty" class="p-8 text-center text-slate text-sm">
-      <i class="fa-solid fa-arrow-pointer text-3xl mb-3 block text-slate/40"></i>
+  <aside class="w-100 ok-w-lg-80 flex-shrink-0 ok-rounded-xl border ok-bc-varokline bg-white overflow-y-auto">
+    <div id="cvEmpty" class="ok-p-8 text-center text-muted-warm ok-fs-sm">
+      <i class="fa-solid fa-arrow-pointer ok-fs-3xl ok-mb-3 d-block text-muted-warm-40"></i>
       Select a section (layer or on the page) to edit its style and text.
     </div>
-    <div id="cvPanel" class="hidden"></div>
+    <div id="cvPanel" class="d-none"></div>
   </aside>
 </div>
 
@@ -78,7 +78,7 @@
   var layers = document.getElementById('cvLayers');
   var doc = null, selKey = null, dragCard = null;
 
-  function status(t, warn) { statusEl.textContent = t || ''; statusEl.className = 'text-xs ' + (warn ? 'text-okred' : 'text-slate'); }
+  function status(t, warn) { statusEl.textContent = t || ''; statusEl.className = 'ok-fs-xs ' + (warn ? 'text-ok-red' : 'text-muted-warm'); }
   function markDirty() { status('Unsaved changes', true); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
   function sel(k) { return doc ? doc.querySelector('.pb-sec[data-section="' + k + '"]') : null; }
@@ -169,66 +169,66 @@
   }
   function seg(label, key, opts) {
     var cur = byKey[selKey].config[key] || '';
-    return '<div><span class="text-xs text-slate">' + label + '</span><div class="flex gap-1 mt-1">' +
-      opts.map(function (o) { return '<button type="button" data-set="' + key + '" data-val="' + o[0] + '" class="flex-1 py-1.5 rounded-lg border text-sm ' + (cur === o[0] ? 'border-okyellow bg-okyellow/10' : 'border-[var(--ok-line)]') + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
+    return '<div><span class="ok-fs-xs text-muted-warm">' + label + '</span><div class="d-flex gap-1 mt-1">' +
+      opts.map(function (o) { return '<button type="button" data-set="' + key + '" data-val="' + o[0] + '" class="ok-flex-1 ok-py-15 ok-rounded-lg border ok-fs-sm ' + (cur === o[0] ? 'border-yellow bg-yellow-10' : 'ok-bc-varokline') + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
   }
 
   function colorRow(label, ctl, cur, dflt) {
-    return '<div class="flex items-center justify-between gap-2"><span class="text-xs text-slate">' + label + '</span>'
-      + '<span class="flex items-center gap-1"><input type="color" data-ctl="' + ctl + '" value="' + (cur || dflt) + '" class="w-8 h-7 rounded border border-[var(--ok-line)] p-0.5 bg-white cursor-pointer">'
-      + '<button type="button" data-reset="' + ctl + '" class="text-xs text-slate hover:text-okred px-1" title="Reset">&times;</button></span></div>';
+    return '<div class="d-flex align-items-center justify-content-between gap-2"><span class="ok-fs-xs text-muted-warm">' + label + '</span>'
+      + '<span class="d-flex align-items-center gap-1"><input type="color" data-ctl="' + ctl + '" value="' + (cur || dflt) + '" class="ok-w-8 ok-h-7 ok-rounded border ok-bc-varokline ok-p-05 bg-white ok-pointer">'
+      + '<button type="button" data-reset="' + ctl + '" class="ok-fs-xs text-muted-warm ok-hov-text-red px-1" title="Reset">&times;</button></span></div>';
   }
 
   function renderPanel(key) {
     var s = byKey[key], c = s.config;
-    empty.classList.add('hidden'); panel.classList.remove('hidden');
-    var h = '<div class="p-4 space-y-4">';
-    h += '<div class="flex items-center justify-between gap-2 pb-3 border-b border-[var(--ok-line)]"><div class="font-display font-bold leading-tight">' + esc(s.label) + (s.custom ? ' <span class="text-[.55rem] uppercase bg-okyellow/20 text-okamber px-1.5 py-0.5 rounded align-middle">Custom</span>' : '') + '</div>'
-      + '<button type="button" data-enable class="text-xs px-2 py-1 rounded-lg ' + (s.enabled ? 'bg-okgreen/15 text-okgreen' : 'bg-gray-200 text-slate') + '">' + (s.enabled ? 'Visible' : 'Hidden') + '</button></div>';
-    h += '<div class="space-y-2.5"><div class="ok-label !text-[.65rem]">Style</div>';
+    empty.classList.add('d-none'); panel.classList.remove('d-none');
+    var h = '<div class="p-3 ok-stack-4">';
+    h += '<div class="d-flex align-items-center justify-content-between gap-2 ok-pb-3 border-bottom ok-bc-varokline"><div class="font-display fw-bold ok-lh-tight">' + esc(s.label) + (s.custom ? ' <span class="ok-fs-55rem text-uppercase bg-yellow-20 text-gold ok-px-15 ok-py-05 ok-rounded align-middle">Custom</span>' : '') + '</div>'
+      + '<button type="button" data-enable class="ok-fs-xs px-2 py-1 ok-rounded-lg ' + (s.enabled ? 'bg-ok-green-15 text-ok-green' : 'bg-gray-200 text-muted-warm') + '">' + (s.enabled ? 'Visible' : 'Hidden') + '</button></div>';
+    h += '<div class="ok-stack-25"><div class="ok-label ok-fs-65rem">Style</div>';
     h += colorRow('Background', 'style_bg', c.style_bg, '#ffffff');
     h += colorRow('Heading color', 'style_hcolor', c.style_hcolor, '#141414');
     h += colorRow('Text color', 'style_tcolor', c.style_tcolor, '#6b6b6b');
-    h += '<div><span class="text-xs text-slate">Heading font</span><select data-ctl="style_font" class="ok-input py-1.5 text-sm mt-1">';
+    h += '<div><span class="ok-fs-xs text-muted-warm">Heading font</span><select data-ctl="style_font" class="ok-input ok-py-15 ok-fs-sm mt-1">';
     FONTS.forEach(function (f) { h += '<option value="' + esc(f[0]) + '"' + (c.style_font === f[0] ? ' selected' : '') + '>' + esc(f[1]) + '</option>'; });
     h += '</select></div>';
-    h += '<div><span class="text-xs text-slate">Overlay darkness</span><input type="range" min="0" max="1" step="0.05" data-ctl="style_overlay" value="' + (c.style_overlay != null && c.style_overlay !== '' ? c.style_overlay : '0.35') + '" class="w-full accent-okyellow"></div>';
-    h += '<div class="grid grid-cols-2 gap-2"><div><span class="text-xs text-slate">Top pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pt" value="' + (c.style_pt || 0) + '" class="w-full accent-okyellow"></div><div><span class="text-xs text-slate">Bottom pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pb" value="' + (c.style_pb || 0) + '" class="w-full accent-okyellow"></div></div>';
-    h += '<div><span class="text-xs text-slate">Text align</span><div class="flex gap-1 mt-1">' + ['left', 'center', 'right'].map(function (a) { return '<button type="button" data-align="' + a + '" class="flex-1 py-1.5 rounded-lg border text-sm ' + (c.style_align === a ? 'border-okyellow bg-okyellow/10' : 'border-[var(--ok-line)]') + '"><i class="fa-solid fa-align-' + a + '"></i></button>'; }).join('') + '</div></div></div>';
+    h += '<div><span class="ok-fs-xs text-muted-warm">Overlay darkness</span><input type="range" min="0" max="1" step="0.05" data-ctl="style_overlay" value="' + (c.style_overlay != null && c.style_overlay !== '' ? c.style_overlay : '0.35') + '" class="w-100 ok-accent-yellow"></div>';
+    h += '<div class="ok-grid ok-grid-2 gap-2"><div><span class="ok-fs-xs text-muted-warm">Top pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pt" value="' + (c.style_pt || 0) + '" class="w-100 ok-accent-yellow"></div><div><span class="ok-fs-xs text-muted-warm">Bottom pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pb" value="' + (c.style_pb || 0) + '" class="w-100 ok-accent-yellow"></div></div>';
+    h += '<div><span class="ok-fs-xs text-muted-warm">Text align</span><div class="d-flex gap-1 mt-1">' + ['left', 'center', 'right'].map(function (a) { return '<button type="button" data-align="' + a + '" class="ok-flex-1 ok-py-15 ok-rounded-lg border ok-fs-sm ' + (c.style_align === a ? 'border-yellow bg-yellow-10' : 'ok-bc-varokline') + '"><i class="fa-solid fa-align-' + a + '"></i></button>'; }).join('') + '</div></div></div>';
     // Card controls, only for sections that actually contain cards.
     var secEl = sel(key);
     if (secEl && secEl.querySelector('.ok-card')) {
-      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Cards</div>';
+      h += '<div class="ok-stack-25 pt-2 border-top ok-bc-varokline"><div class="ok-label ok-fs-65rem">Cards</div>';
       h += colorRow('Card background', 'style_cardbg', c.style_cardbg, '#ffffff');
       h += colorRow('Card border', 'style_cardborder', c.style_cardborder, '#ececec');
       h += colorRow('Card heading', 'style_cardhead', c.style_cardhead, '#141414');
       h += colorRow('Card text', 'style_cardtext', c.style_cardtext, '#6b6b6b');
-      h += '<div><span class="text-xs text-slate">Card corner radius</span><input type="range" min="0" max="40" step="2" data-ctl="style_cardradius" value="' + (c.style_cardradius != null && c.style_cardradius !== '' ? c.style_cardradius : 20) + '" class="w-full accent-okyellow"></div>';
+      h += '<div><span class="ok-fs-xs text-muted-warm">Card corner radius</span><input type="range" min="0" max="40" step="2" data-ctl="style_cardradius" value="' + (c.style_cardradius != null && c.style_cardradius !== '' ? c.style_cardradius : 20) + '" class="w-100 ok-accent-yellow"></div>';
       h += '<p class="ok-hint">Applies to every card in this section.</p></div>';
     }
     // Element controls (button / image) — only if the section has them.
     var hasBtn = secEl && secEl.querySelector('[data-el="btn"]');
     var hasImg = secEl && secEl.querySelector('[data-el="img"]');
     if (hasBtn || hasImg) {
-      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Elements</div>';
+      h += '<div class="ok-stack-25 pt-2 border-top ok-bc-varokline"><div class="ok-label ok-fs-65rem">Elements</div>';
       if (hasBtn) {
         h += seg('Button align', 'btn_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);
         h += seg('Button size', 'btn_size', [['sm', 'S'], ['', 'M'], ['lg', 'L']]);
       }
       if (hasImg) {
         h += seg('Image align', 'img_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);
-        h += '<div><span class="text-xs text-slate">Image width</span><input type="range" min="20" max="100" step="5" data-ctl="img_w" value="' + (c.img_w || 100) + '" class="w-full accent-okyellow"></div>';
+        h += '<div><span class="ok-fs-xs text-muted-warm">Image width</span><input type="range" min="20" max="100" step="5" data-ctl="img_w" value="' + (c.img_w || 100) + '" class="w-100 ok-accent-yellow"></div>';
       }
       h += '</div>';
     }
     if (s.fields && s.fields.length) {
-      h += '<div class="space-y-2.5 pt-2 border-t border-[var(--ok-line)]"><div class="ok-label !text-[.65rem]">Content</div>';
+      h += '<div class="ok-stack-25 pt-2 border-top ok-bc-varokline"><div class="ok-label ok-fs-65rem">Content</div>';
       s.fields.forEach(function (f) {
-        h += '<div><label class="text-xs text-slate">' + esc(f.label) + '</label><input data-content="' + esc(f.key) + '" data-default="' + esc(f.default) + '" value="' + esc(c[f.key] != null ? c[f.key] : f.default) + '" placeholder="' + esc(f.default) + '" class="ok-input py-1.5 text-sm"></div>';
+        h += '<div><label class="ok-fs-xs text-muted-warm">' + esc(f.label) + '</label><input data-content="' + esc(f.key) + '" data-default="' + esc(f.default) + '" value="' + esc(c[f.key] != null ? c[f.key] : f.default) + '" placeholder="' + esc(f.default) + '" class="ok-input ok-py-15 ok-fs-sm"></div>';
       });
       h += '<p class="ok-hint">Text changes appear after Save.</p></div>';
     }
-    if (s.custom) h += '<div class="pt-2 border-t border-[var(--ok-line)]"><button type="button" data-del2 class="btn btn-sm w-full !bg-okred/10 !text-okred"><i class="fa-solid fa-trash"></i> Delete section</button></div>';
+    if (s.custom) h += '<div class="pt-2 border-top ok-bc-varokline"><button type="button" data-del2 class="btn btn-sm w-100 bg-ok-red-10 text-ok-red"><i class="fa-solid fa-trash"></i> Delete section</button></div>';
     h += '</div>';
     panel.innerHTML = h;
   }
@@ -270,8 +270,8 @@
 
   /* ---- add menu ---- */
   var addBtn = document.getElementById('cvAddBtn'), addMenu = document.getElementById('cvAddMenu');
-  addBtn.addEventListener('click', function (e) { e.stopPropagation(); addMenu.classList.toggle('hidden'); });
-  document.addEventListener('click', function () { addMenu.classList.add('hidden'); });
+  addBtn.addEventListener('click', function (e) { e.stopPropagation(); addMenu.classList.toggle('d-none'); });
+  document.addEventListener('click', function () { addMenu.classList.add('d-none'); });
   addMenu.addEventListener('click', function (e) { var b = e.target.closest('[data-add]'); if (b) serverAction('/admin/page-builder/add', { type: b.dataset.add }); });
 
   /* ---- save + server actions ---- */

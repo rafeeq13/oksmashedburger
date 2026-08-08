@@ -11,8 +11,8 @@
       <div class="position-absolute -right-24 -top-24 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
       <div class="ok-container ok-grid ok-grid-lg-2 ok-gap-5 align-items-center">
         <div>
-<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('rewards_hero_heading') or 'Every bite earns you free food.' }}</h1>
-          <p class="text-w-80 ok-fs-lg ok-mb-8 max-w-md ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('rewards_hero_text') or 'Rack up points on every order and cash them in for burgers, sides and shakes. Plus birthday treats, referral bonuses and members-only deals.' }}</p>
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ pc('rewards_hero_heading') }}</h1>
+          <p class="text-w-80 ok-fs-lg ok-mb-8 max-w-md ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('rewards_hero_text') }}</p>
           <div class="d-flex flex-wrap ok-gap-3" data-reveal="up" data-reveal-delay="0.2">
             <a href="/menu" class="btn btn-primary btn-lg">Order &amp; Earn</a>
             <a href="#redeem" class="ok-btn-outline ok-btn-outline--light">Browse Rewards</a>
@@ -68,7 +68,7 @@
     <section class="ok-section">
       <div class="ok-container" data-tab-group>
         <div class="d-flex align-items-end justify-content-between flex-wrap ok-gap-3 ok-mb-3">
-          <div><h2 class="ok-h2">{{ site.get('rewards_earn_heading') or 'Earn & redeem' }}</h2></div>
+          <div><h2 class="ok-h2">{{ pc('rewards_earn_heading') }}</h2></div>
           <!-- tab buttons -->
           <div class="d-flex gap-2 p-1 rounded-pill bg-cream-70">
             <button data-tab="earn" class="chip is-active border-0 bg-transparent">Earn</button>
@@ -92,8 +92,8 @@
             </article>
             {% endfor %}
             <article class="ok-card ok-card-hover ok-p-3 bg-ink text-white d-flex flex-column justify-content-center">
-              <h3 class="font-display fw-bold ok-fs-lg mb-1">Ready to stack points?</h3>
-              <p class="ok-fs-sm text-w-70 ok-mb-3">Start an order now and watch your balance grow.</p>
+              <h3 class="font-display fw-bold ok-fs-lg mb-1">{{ pc('rewards_stack_heading') }}</h3>
+              <p class="ok-fs-sm text-w-70 ok-mb-3">{{ pc('rewards_stack_text') }}</p>
               <a href="/menu" class="btn btn-primary btn-sm align-self-start">Start Your Order</a>
             </article>
           </div>
@@ -244,8 +244,8 @@
     <!-- ============ MEMBERSHIP TIERS ============ -->
     <section class="ok-section bg-cream-40">
       <div class="ok-container">
-        <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ site.get('rewards_tiers_heading') or 'Membership tiers' }}</h2>
-          <p class="text-muted-warm mt-2 max-w-xl mx-auto">The more you order, the more you unlock. Tiers are based on points earned in a calendar year.</p>
+        <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ pc('rewards_tiers_heading') }}</h2>
+          <p class="text-muted-warm mt-2 max-w-xl mx-auto">{{ pc('rewards_tiers_text') }}</p>
         </div>
         <div class="ok-grid ok-grid-md-3 ok-gap-5 align-items-stretch">
           {# Membership tiers — editable in Admin > Website Content.
@@ -284,8 +284,8 @@
           <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
           <div class="position-relative ok-p-8 ok-paddin-3rem-md ok-grid ok-grid-md-2 ok-gap-8 align-items-center">
             <div>
-              <h2 class="ok-h2 ok-mb-3">Give $5, get $5</h2>
-              <p class="text-w-70 ok-mb-5 max-w-md">Share your personal code. When a friend places their first order, they get $5 off, and you get $5 too. No limit on how many friends you invite.</p>
+              <h2 class="ok-h2 ok-mb-3">{{ pc('rewards_referral_heading') }}</h2>
+              <p class="text-w-70 ok-mb-5 max-w-md">{{ pc('rewards_referral_text') }}</p>
 
               <label class="ok-label !text-white/80">Your referral code</label>
               <div class="d-flex gap-2 ok-mb-3">
@@ -316,7 +316,7 @@
     <!-- ============ CLOSING FAQ MINI ============ -->
     <section class="ok-section bg-cream-40">
       <div class="ok-container max-w-3xl">
-        <div class="text-center ok-mb-8"><h2 class="ok-h2">{{ site.get('rewards_faq_heading') or 'Rewards FAQ' }}</h2></div>
+        <div class="text-center ok-mb-8"><h2 class="ok-h2">{{ pc('rewards_faq_heading') }}</h2></div>
         <div class="ok-card ok-px-3">
           {# Rewards FAQ — editable in Admin > Website Content #}
             {% for f in content_list('rewards_faq') %}

@@ -8,22 +8,24 @@
       <span class="ok-squiggle" aria-hidden="true"></span>
     </div>
 
-    <div class="ok-cardgrid ok-cardgrid--center" data-reveal-stagger>
-      {% for s in all_stores %}
-      <div class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
-        <div class="ok-media ok-ratio bg-cream-40 !rounded-none">
-          <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35 ok-ungray ok-tr-filter duration-500" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
-          {% if s.open_now %}<span class="badge badge-green position-absolute top-3 left-3 ok-z-10"><span class="status-dot bg-ok-green"></span> Open now</span>{% endif %}
+    {# Only the first three: one clean row. The rest live behind the
+       "See all locations" button below. #}
+    <div class="ok-cardgrid ok-cardgrid--3" data-reveal-stagger>
+      {% for s in all_stores[:3] %}
+      <div class="ok-loccard">
+        <div class="ok-loccard-map">
+          <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
+          {% if s.open_now %}<span class="ok-loccard-badge"><span class="status-dot"></span> Open now</span>{% endif %}
         </div>
-        <div class="ok-card-body">
-          <h3 class="ok-card-title ok-mb-3">{{ s.name }}, {{ s.state }}</h3>
-          <ul class="ok-stack-25 ok-fs-sm text-muted-warm">
-            <li class="d-flex ok-gap-3"><i class="fa-solid fa-location-dot text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><span>{{ s.full_address }}</span></li>
-            <li class="d-flex ok-gap-3"><i class="fa-solid fa-clock text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><span>Today {{ s.today_hours }}</span></li>
-            {% if s.phone %}<li class="d-flex ok-gap-3"><i class="fa-solid fa-phone text-gold ok-mt-05 ok-w-4 text-center flex-shrink-0"></i><a href="tel:{{ s.phone }}" class="link-underline">{{ s.phone }}</a></li>{% endif %}
+        <div class="ok-loccard-body">
+          <h3 class="ok-loccard-title">{{ s.name }}, {{ s.state }}</h3>
+          <ul class="ok-loccard-rows">
+            <li><i class="fa-solid fa-location-dot"></i><span>{{ s.full_address }}</span></li>
+            <li><i class="fa-solid fa-clock"></i><span>Today {{ s.today_hours }}</span></li>
+            {% if s.phone %}<li><i class="fa-solid fa-phone"></i><a href="tel:{{ s.phone }}">{{ s.phone }}</a></li>{% endif %}
           </ul>
-          <a href="/set-location/{{ s.slug }}?next=/menu" class="ok-more ok-arrow ok-card-foot">See menu <i class="fa-solid fa-arrow-right"></i></a>
         </div>
+        <a href="/set-location/{{ s.slug }}?next=/menu" class="ok-loccard-cta">See more <i class="fa-solid fa-arrow-right"></i></a>
       </div>
       {% endfor %}
     </div>

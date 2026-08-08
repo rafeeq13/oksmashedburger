@@ -10,10 +10,10 @@
       <div class="position-absolute -left-24 -top-24 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
       <div class="ok-container text-center">
 <h1 class="ok-display ok-mb-5 max-w-2xl mx-auto" data-reveal="up" data-reveal-delay="0.08">
-          {{ site.get('giftcards_hero_heading') or 'Give the gift of a smash' }} <span class="text-nowrap"><i class="fa-solid fa-burger"></i></span>
+          {{ pc('giftcards_hero_heading') }} <span class="text-nowrap"><i class="fa-solid fa-burger"></i></span>
         </h1>
-        <p class="text-w-80 ok-fs-lg ok-mb-3 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('giftcards_hero_text') or 'Delivered instantly by email or scheduled for the perfect moment. Any amount, redeemable on everything we make.' }}</p>
-        <p class="ok-fs-sm text-w-55" data-reveal="up" data-reveal-delay="0.2">Never expires · Redeemable online &amp; in-store · Delivered in seconds</p>
+        <p class="text-w-80 ok-fs-lg ok-mb-3 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('giftcards_hero_text') }}</p>
+        <p class="ok-fs-sm text-w-55" data-reveal="up" data-reveal-delay="0.2">{{ pc('giftcards_hero_note') }}</p>
       </div>
     </section>
 
@@ -24,7 +24,7 @@
         <!-- ---- LEFT: builder form ---- -->
         <form method="post" action="/gift-cards/buy" class="ok-card ok-p-3 ok-paddin-2rem-md">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <h2 class="ok-h2 ok-fs-2xl ok-mb-3">{{ site.get('giftcards_build_heading') or 'Build your gift card' }}</h2>
+          <h2 class="ok-h2 ok-fs-2xl ok-mb-3">{{ pc('giftcards_build_heading') }}</h2>
 
           <!-- design -->
           <label class="ok-label">1 · Choose a design</label>
@@ -175,7 +175,7 @@
             </div>
             <a href="/menu" class="btn btn-primary btn-sm">Spend it <i class="fa-solid fa-arrow-right"></i></a>
           </div>
-          <p class="ok-hint ok-mt-3">Enter the 12-digit code from your gift card email to see the remaining balance.</p>
+          <p class="ok-hint ok-mt-3">{{ pc('giftcards_balance_text') }}</p>
         </div>
       </div>
     </section>
@@ -183,7 +183,7 @@
     <!-- ============ HOW IT WORKS ============ -->
     <section class="ok-section d-none">
       <div class="ok-container">
-        <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ site.get('giftcards_how_heading') or 'How it works' }}</h2></div>
+        <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ pc('giftcards_how_heading') }}</h2></div>
         <div class="ok-grid ok-grid-md-3 ok-gap-3">
           <div class="text-center">
             {# How it works — editable in Admin > Website Content #}
@@ -204,8 +204,8 @@
           <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
           <div class="position-relative ok-p-8 ok-paddin-3rem-md ok-grid ok-grid-md-2 ok-gap-3 align-items-center">
             <div>
-              <h2 class="ok-h2 ok-mb-3">{{ site.get('giftcards_corporate_heading') or 'Corporate & bulk gift cards' }}</h2>
-              <p class="text-w-70 ok-mb-5 max-w-md">Reward your team or thank your clients. Order gift cards in bulk with custom branding, volume discounts and a single invoice. Our team will help you set it up.</p>
+              <h2 class="ok-h2 ok-mb-3">{{ pc('giftcards_corporate_heading') }}</h2>
+              <p class="text-w-70 ok-mb-5 max-w-md">{{ pc('giftcards_corporate_text') }}</p>
               <div class="d-flex flex-wrap ok-gap-3">
                 <a href="/contact" class="btn btn-primary">Talk to our team</a>
                 <a href="/faq" class="btn btn-secondary !bg-transparent !text-white !border-white">Learn more</a>

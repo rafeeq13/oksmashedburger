@@ -3,45 +3,45 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Site images</h2>
-<p class="text-slate text-sm mb-5">Set the pictures shown in each storefront section. Paste an image URL <b>or</b> upload a file. Clear a field and save to revert to the built-in default. Recommended: landscape JPG/PNG/WEBP, at least 1200px wide.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Set the pictures shown in each storefront section. Paste an image URL <b>or</b> upload a file. Clear a field and save to revert to the built-in default. Recommended: landscape JPG/PNG/WEBP, at least 1200px wide.</p>
 
-<form method="post" action="/admin/site-images{{ qs }}" enctype="multipart/form-data" class="space-y-6">
+<form method="post" action="/admin/site-images{{ qs }}" enctype="multipart/form-data" class="ok-stack-6">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
   {% for title, slots in groups %}
-  <section class="ok-card p-5">
-    <h3 class="font-display font-bold text-lg mb-4">{{ title }}</h3>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <section class="ok-card ok-p-5">
+    <h3 class="font-display fw-bold ok-fs-lg mb-3">{{ title }}</h3>
+    <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 gap-3">
       {% for key, label in slots %}
       {% set shown = current.get(key) or site_defaults.get(key) %}
-      <div class="rounded-xl border border-[var(--ok-line)] p-3">
-        <div class="text-xs font-semibold text-slate mb-2">{{ label }}</div>
-        <div class="relative aspect-[16/10] rounded-lg overflow-hidden bg-softyellow/40 mb-2 grid place-items-center">
+      <div class="ok-rounded-xl border ok-bc-varokline ok-p-3">
+        <div class="ok-fs-xs fw-semibold text-muted-warm mb-2">{{ label }}</div>
+        <div class="position-relative ok-ar-1610 ok-rounded-lg overflow-hidden bg-cream-40 mb-2 ok-grid ok-place-center">
           {% if shown %}
-          <img src="{{ shown }}" alt="{{ label }}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <span class="hidden absolute inset-0 items-center justify-center text-xs text-slate">Image unavailable</span>
+          <img src="{{ shown }}" alt="{{ label }}" class="w-100 h-100 ok-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span class="d-none position-absolute ok-fill align-items-center justify-content-center ok-fs-xs text-muted-warm">Image unavailable</span>
           {% else %}
-          <span class="text-xs text-slate text-center px-2">Styled placeholder<br><span class="text-[.62rem]">Add an image to replace it</span></span>
+          <span class="ok-fs-xs text-muted-warm text-center px-2">Styled placeholder<br><span class="ok-fs-62rem">Add an image to replace it</span></span>
           {% endif %}
           {% if current.get(key) %}
-          <span class="absolute top-1.5 left-1.5 text-[.6rem] font-semibold px-1.5 py-0.5 rounded bg-okgreen/20 text-okgreen">Custom image</span>
+          <span class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-ok-green-20 text-ok-green">Custom image</span>
           {% elif site_defaults.get(key) %}
-          <span class="absolute top-1.5 left-1.5 text-[.6rem] font-semibold px-1.5 py-0.5 rounded bg-black/50 text-white">Current default</span>
+          <span class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-black-50 text-white">Current default</span>
           {% else %}
-          <span class="absolute top-1.5 left-1.5 text-[.6rem] font-semibold px-1.5 py-0.5 rounded bg-okamber/90 text-white">Placeholder</span>
+          <span class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-amber-90 text-white">Placeholder</span>
           {% endif %}
         </div>
-        <input name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… image URL" class="ok-input py-1.5 text-sm mb-1.5">
-        <input name="{{ key }}_file" type="file" accept="{{ 'video/mp4,video/webm' if key.endswith('_video') else 'image/*' }}" class="ok-input py-1 text-xs">
+        <input name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… image URL" class="ok-input ok-py-15 ok-fs-sm ok-mb-15">
+        <input name="{{ key }}_file" type="file" accept="{{ 'video/mp4,video/webm' if key.endswith('_video') else 'image/*' }}" class="ok-input py-1 ok-fs-xs">
       </div>
       {% endfor %}
     </div>
   </section>
   {% endfor %}
 
-  <div class="sticky bottom-0 bg-[#f4f5f7] py-3 -mx-4 px-4 border-t border-[var(--ok-line)]">
+  <div class="position-sticky bottom-0 ok-bgc-f4f5f7 ok-py-3 -mx-4 px-3 border-top ok-bc-varokline">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save all images</button>
-    <a href="/" target="_blank" rel="noopener" class="link-underline text-sm ml-3">Preview site <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <a href="/" target="_blank" rel="noopener" class="link-underline ok-fs-sm ok-ml-3">Preview site <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
   </div>
 </form>
 {% endblock %}

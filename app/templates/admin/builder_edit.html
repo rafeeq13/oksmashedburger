@@ -18,21 +18,21 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex items-center gap-3 px-4 h-13 py-2 border-b border-[var(--ok-line)] bg-white">
-  <a href="/admin/builder{{ qs }}" class="text-sm text-slate hover:text-jet shrink-0"><i class="fa-solid fa-arrow-left"></i> Pages</a>
-  <div class="min-w-0">
-    <div class="font-display font-bold text-sm truncate">{{ page.title }}{% if page.is_home %} <span class="badge badge-yellow align-middle">Home</span>{% endif %}</div>
-    <a href="{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}" target="_blank" rel="noopener" class="text-[.7rem] text-slate link-underline">{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}</a>
+<div class="d-flex align-items-center ok-gap-3 px-3 py-2 border-bottom ok-bc-varokline bg-white">
+  <a href="/admin/builder{{ qs }}" class="ok-fs-sm text-muted-warm ok-hov-text-ink flex-shrink-0"><i class="fa-solid fa-arrow-left"></i> Pages</a>
+  <div class="ok-min-w-0">
+    <div class="font-display fw-bold ok-fs-sm text-truncate">{{ page.title }}{% if page.is_home %} <span class="badge badge-yellow align-middle">Home</span>{% endif %}</div>
+    <a href="{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}" target="_blank" rel="noopener" class="ok-fs-7rem text-muted-warm link-underline">{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}</a>
   </div>
-  <div class="mx-auto flex items-center gap-1 shrink-0">
-    <select id="devSel" class="ok-input py-1 text-xs w-24" title="Screen size"><option value="Desktop">Desktop</option><option value="Tablet">Tablet</option><option value="Mobile">Mobile</option></select>
+  <div class="mx-auto d-flex align-items-center gap-1 flex-shrink-0">
+    <select id="devSel" class="ok-input py-1 ok-fs-xs ok-w-24" title="Screen size"><option value="Desktop">Desktop</option><option value="Tablet">Tablet</option><option value="Mobile">Mobile</option></select>
     <button type="button" data-cmd="core:undo" class="cvbtn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
     <button type="button" data-cmd="core:redo" class="cvbtn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
     <button type="button" data-cmd="core:component-outline" class="cvbtn" title="Toggle borders"><i class="fa-solid fa-border-all"></i></button>
     <button type="button" data-cmd="preview" data-toggle="1" class="cvbtn" title="Preview"><i class="fa-solid fa-eye"></i></button>
     <button type="button" data-cmd="fullscreen" data-toggle="1" class="cvbtn" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
   </div>
-  <div class="flex items-center gap-2 shrink-0">
+  <div class="d-flex align-items-center gap-2 flex-shrink-0">
     <button type="button" id="codeBtn" class="btn btn-secondary btn-sm" title="View / edit code"><i class="fa-solid fa-code"></i></button>
     <button type="button" id="pgSettingsBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-gear"></i> Settings</button>
     <a href="{{ '/' if page.is_home else (page.override_path or '/p/' ~ page.slug) }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
@@ -41,19 +41,19 @@
 </div>
 
 <!-- Code editor modal -->
-<div id="codeModal" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ok-line)]">
-      <span class="font-display font-bold">Edit code</span>
-      <button type="button" id="codeClose" class="text-slate hover:text-jet"><i class="fa-solid fa-xmark text-lg"></i></button>
+<div id="codeModal" class="ok-modal position-fixed ok-fill ok-z-60 bg-black-50 d-flex align-items-center justify-content-center p-3">
+  <div class="bg-white ok-rounded-xl w-100 ok-maxw-3xl ok-maxh-85vh d-flex flex-column overflow-hidden">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom ok-bc-varokline">
+      <span class="font-display fw-bold">Edit code</span>
+      <button type="button" id="codeClose" class="text-muted-warm ok-hov-text-ink"><i class="fa-solid fa-xmark ok-fs-lg"></i></button>
     </div>
-    <div class="p-4 space-y-3 overflow-y-auto">
-      <div><label class="ok-label !text-xs">HTML</label><textarea id="codeHtml" rows="10" class="ok-input text-xs font-mono" spellcheck="false"></textarea></div>
-      <div><label class="ok-label !text-xs">CSS</label><textarea id="codeCss" rows="6" class="ok-input text-xs font-mono" spellcheck="false"></textarea></div>
+    <div class="p-3 ok-stack-3 overflow-y-auto">
+      <div><label class="ok-label ok-fs-xs">HTML</label><textarea id="codeHtml" rows="10" class="ok-input ok-fs-xs font-monospace" spellcheck="false"></textarea></div>
+      <div><label class="ok-label ok-fs-xs">CSS</label><textarea id="codeCss" rows="6" class="ok-input ok-fs-xs font-monospace" spellcheck="false"></textarea></div>
     </div>
-    <div class="px-4 py-3 border-t border-[var(--ok-line)] flex items-center justify-between gap-2">
-      <a href="/admin/builder/{{ page.id }}/code{{ qs }}" class="link-underline text-sm"><i class="fa-solid fa-up-right-from-square"></i> Full code editor</a>
-      <div class="flex gap-2">
+    <div class="px-3 ok-py-3 border-top ok-bc-varokline d-flex align-items-center justify-content-between gap-2">
+      <a href="/admin/builder/{{ page.id }}/code{{ qs }}" class="link-underline ok-fs-sm"><i class="fa-solid fa-up-right-from-square"></i> Full code editor</a>
+      <div class="d-flex gap-2">
         <button type="button" id="codeCancel" class="btn btn-secondary btn-sm">Cancel</button>
         <button type="button" id="codeApply" class="btn btn-primary btn-sm">Apply to canvas</button>
       </div>
@@ -62,60 +62,60 @@
 </div>
 
 <!-- Embed / custom-code widget modal -->
-<div id="embedModal" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
-    <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ok-line)]">
-      <span class="font-display font-bold">Custom code / embed</span>
-      <button type="button" id="embedClose" class="text-slate hover:text-jet"><i class="fa-solid fa-xmark text-lg"></i></button>
+<div id="embedModal" class="ok-modal position-fixed ok-fill ok-z-60 bg-black-50 d-flex align-items-center justify-content-center p-3">
+  <div class="bg-white ok-rounded-xl w-100 ok-maxw-2xl ok-maxh-85vh d-flex flex-column overflow-hidden">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom ok-bc-varokline">
+      <span class="font-display fw-bold">Custom code / embed</span>
+      <button type="button" id="embedClose" class="text-muted-warm ok-hov-text-ink"><i class="fa-solid fa-xmark ok-fs-lg"></i></button>
     </div>
-    <div class="p-4">
+    <div class="p-3">
       <p class="ok-hint mb-2">Paste any HTML, embed snippet (YouTube, maps, widgets) or &lt;script&gt;. It renders live on the published page.</p>
-      <textarea id="embedCode" rows="12" class="ok-input text-xs font-mono" spellcheck="false" placeholder="&lt;iframe src=…&gt;&lt;/iframe&gt;  or  &lt;div&gt;…&lt;/div&gt;  or  &lt;script&gt;…&lt;/script&gt;"></textarea>
+      <textarea id="embedCode" rows="12" class="ok-input ok-fs-xs font-monospace" spellcheck="false" placeholder="&lt;iframe src=…&gt;&lt;/iframe&gt;  or  &lt;div&gt;…&lt;/div&gt;  or  &lt;script&gt;…&lt;/script&gt;"></textarea>
     </div>
-    <div class="px-4 py-3 border-t border-[var(--ok-line)] flex justify-end gap-2">
+    <div class="px-3 ok-py-3 border-top ok-bc-varokline d-flex justify-content-end gap-2">
       <button type="button" id="embedCancel" class="btn btn-secondary btn-sm">Cancel</button>
       <button type="button" id="embedApply" class="btn btn-primary btn-sm">Apply</button>
     </div>
   </div>
 </div>
 
-<form method="post" action="/admin/builder/{{ page.id }}/meta{{ qs }}" id="pgSettings" class="hidden border-b border-[var(--ok-line)] bg-[#fafafa] px-4 py-3">
+<form method="post" action="/admin/builder/{{ page.id }}/meta{{ qs }}" id="pgSettings" class="d-none border-bottom ok-bc-varokline ok-bgc-fafafa px-3 ok-py-3">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <div class="flex flex-wrap items-end gap-3">
-    <div><label class="ok-label !text-xs">Title</label><input name="title" value="{{ page.title }}" class="ok-input py-1.5 text-sm w-56"></div>
-    <div><label class="ok-label !text-xs">URL slug (/p/…)</label><input name="slug" value="{{ page.slug }}" class="ok-input py-1.5 text-sm w-48"></div>
-    <label class="flex items-center gap-2 text-sm mb-1.5"><input type="checkbox" name="published" {% if page.published %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Published</label>
-    <label class="flex items-center gap-2 text-sm mb-1.5"><input type="checkbox" name="show_in_nav" {% if page.show_in_nav %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Show in site menu</label>
-    <label class="flex items-center gap-2 text-sm mb-1.5" title="Serve at /"><input type="checkbox" name="is_home" {% if page.is_home %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Use as home page (/)</label>
-    {% if page.override_path %}<label class="flex items-center gap-2 text-sm mb-1.5 text-okred" title="Restore the original built-in page"><input type="checkbox" name="detach_override" class="w-4 h-4 accent-okred"> Stop replacing {{ page.override_path }} (restore original)</label>{% endif %}
+  <div class="d-flex flex-wrap align-items-end ok-gap-3">
+    <div><label class="ok-label ok-fs-xs">Title</label><input name="title" value="{{ page.title }}" class="ok-input ok-py-15 ok-fs-sm ok-w-56"></div>
+    <div><label class="ok-label ok-fs-xs">URL slug (/p/…)</label><input name="slug" value="{{ page.slug }}" class="ok-input ok-py-15 ok-fs-sm ok-w-48"></div>
+    <label class="d-flex align-items-center gap-2 ok-fs-sm ok-mb-15"><input type="checkbox" name="published" {% if page.published %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Published</label>
+    <label class="d-flex align-items-center gap-2 ok-fs-sm ok-mb-15"><input type="checkbox" name="show_in_nav" {% if page.show_in_nav %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Show in site menu</label>
+    <label class="d-flex align-items-center gap-2 ok-fs-sm ok-mb-15" title="Serve at /"><input type="checkbox" name="is_home" {% if page.is_home %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Use as home page (/)</label>
+    {% if page.override_path %}<label class="d-flex align-items-center gap-2 ok-fs-sm ok-mb-15 text-ok-red" title="Restore the original built-in page"><input type="checkbox" name="detach_override" class="ok-w-4 ok-h-4 ok-accent-red"> Stop replacing {{ page.override_path }} (restore original)</label>{% endif %}
   </div>
-  <div class="grid sm:grid-cols-2 gap-3 mt-3">
-    <div><label class="ok-label !text-xs">SEO title</label><input name="meta_title" value="{{ page.meta_title or '' }}" placeholder="{{ page.title }}" class="ok-input py-1.5 text-sm"></div>
-    <div><label class="ok-label !text-xs">SEO description</label><input name="meta_description" value="{{ page.meta_description or '' }}" placeholder="Short summary for search engines" class="ok-input py-1.5 text-sm"></div>
-    <div class="sm:col-span-2"><label class="ok-label !text-xs">Custom head code <span class="text-slate font-normal">(meta / CSS / JS)</span></label><textarea name="head_code" rows="2" placeholder="&lt;style&gt;…&lt;/style&gt; or &lt;script&gt;…&lt;/script&gt;" class="ok-input py-1.5 text-xs font-mono">{{ page.head_code or '' }}</textarea></div>
+  <div class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mt-3">
+    <div><label class="ok-label ok-fs-xs">SEO title</label><input name="meta_title" value="{{ page.meta_title or '' }}" placeholder="{{ page.title }}" class="ok-input ok-py-15 ok-fs-sm"></div>
+    <div><label class="ok-label ok-fs-xs">SEO description</label><input name="meta_description" value="{{ page.meta_description or '' }}" placeholder="Short summary for search engines" class="ok-input ok-py-15 ok-fs-sm"></div>
+    <div class="ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Custom head code <span class="text-muted-warm fw-normal">(meta / CSS / JS)</span></label><textarea name="head_code" rows="2" placeholder="&lt;style&gt;…&lt;/style&gt; or &lt;script&gt;…&lt;/script&gt;" class="ok-input ok-py-15 ok-fs-xs font-monospace">{{ page.head_code or '' }}</textarea></div>
   </div>
-  <div class="mt-3"><button class="btn btn-primary btn-sm">Save settings</button></div>
+  <div class="ok-mt-3"><button class="btn btn-primary btn-sm">Save settings</button></div>
 </form>
 
-<div id="bWrap" class="flex">
+<div id="bWrap" class="d-flex">
   <!-- Blocks -->
-  <div class="w-56 shrink-0 border-r border-[var(--ok-line)] bg-white overflow-y-auto">
-    <div class="px-3 py-2 text-[.65rem] font-bold uppercase tracking-wide text-slate border-b border-[var(--ok-line)]">Drag blocks in</div>
+  <div class="ok-w-56 flex-shrink-0 border-end ok-bc-varokline bg-white overflow-y-auto">
+    <div class="ok-px-3 py-2 ok-fs-65rem fw-bold text-uppercase ok-ls-wide text-muted-warm border-bottom ok-bc-varokline">Drag blocks in</div>
     <div id="bBlocks"></div>
   </div>
   <!-- Canvas -->
-  <div id="gjs" class="flex-1 min-w-0"></div>
+  <div id="gjs" class="ok-flex-1 ok-min-w-0"></div>
   <!-- Right: style / traits / layers -->
-  <div class="w-72 shrink-0 border-l border-[var(--ok-line)] bg-white flex flex-col">
-    <div class="flex border-b border-[var(--ok-line)]">
+  <div class="ok-w-72 flex-shrink-0 border-start ok-bc-varokline bg-white d-flex flex-column">
+    <div class="d-flex border-bottom ok-bc-varokline">
       <button type="button" class="b-tab on" data-tab="style">Style</button>
       <button type="button" class="b-tab" data-tab="traits">Settings</button>
       <button type="button" class="b-tab" data-tab="layers">Layers</button>
     </div>
-    <div class="flex-1 overflow-y-auto">
+    <div class="ok-flex-1 overflow-y-auto">
       <div data-pane="style"><div id="bSelectors" class="px-2 pt-2"></div><div id="bStyles"></div></div>
-      <div data-pane="traits" class="hidden"><div id="bTraits" class="p-2"></div></div>
-      <div data-pane="layers" class="hidden"><div id="bLayers"></div></div>
+      <div data-pane="traits" class="d-none"><div id="bTraits" class="p-2"></div></div>
+      <div data-pane="layers" class="d-none"><div id="bLayers"></div></div>
     </div>
   </div>
 </div>
@@ -127,7 +127,7 @@
 <script src="{{ url_for('static', filename='vendor/grapesjs/plugin-forms.min.js') }}"></script>
 <script>
 (function () {
-  document.getElementById('pgSettingsBtn').addEventListener('click', function () { document.getElementById('pgSettings').classList.toggle('hidden'); });
+  document.getElementById('pgSettingsBtn').addEventListener('click', function () { document.getElementById('pgSettings').classList.toggle('d-none'); });
   if (typeof grapesjs === 'undefined') { document.getElementById('gjs').innerHTML = '<div style="padding:2rem;color:#C62828">Builder failed to load.</div>'; return; }
   // Vendored plugin globals (blocks-basic registers itself as "gjs-blocks-basic").
   var pBasic = window['gjs-blocks-basic'];
@@ -196,7 +196,7 @@
   document.querySelectorAll('.b-tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.b-tab').forEach(function (x) { x.classList.toggle('on', x === t); });
-      document.querySelectorAll('[data-pane]').forEach(function (p) { p.classList.toggle('hidden', p.dataset.pane !== t.dataset.tab); });
+      document.querySelectorAll('[data-pane]').forEach(function (p) { p.classList.toggle('d-none', p.dataset.pane !== t.dataset.tab); });
     });
   });
 
@@ -236,8 +236,9 @@
   var embedModal = document.getElementById('embedModal');
   var embedTA = document.getElementById('embedCode');
   var embedTarget = null;
-  function openEmbed(model) { embedTarget = model; embedTA.value = model.get('code') || ''; embedModal.classList.remove('hidden'); embedTA.focus(); }
-  function closeEmbed() { embedModal.classList.add('hidden'); embedTarget = null; }
+  function popup(el, open) { if (window.OK && OK.showModal) OK.showModal(el, null, open); else el.classList.toggle('d-none', !open); }
+  function openEmbed(model) { embedTarget = model; embedTA.value = model.get('code') || ''; popup(embedModal, true); embedTA.focus(); }
+  function closeEmbed() { popup(embedModal, false); embedTarget = null; }
   editor.DomComponents.addType('embed', {
     isComponent: function (el) { if (el.getAttribute && el.getAttribute('data-embed') != null) return { type: 'embed' }; },
     model: {
@@ -312,11 +313,11 @@
 
   // Code editor modal
   var codeModal = document.getElementById('codeModal');
-  function closeCode() { codeModal.classList.add('hidden'); }
+  function closeCode() { popup(codeModal, false); }
   document.getElementById('codeBtn').addEventListener('click', function () {
     document.getElementById('codeHtml').value = editor.getHtml();
     document.getElementById('codeCss').value = editor.getCss();
-    codeModal.classList.remove('hidden');
+    popup(codeModal, true);
   });
   document.getElementById('codeClose').addEventListener('click', closeCode);
   document.getElementById('codeCancel').addEventListener('click', closeCode);

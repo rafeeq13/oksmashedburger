@@ -1,6 +1,6 @@
 """Application factory — OK Smashed Burger platform (modular monolith)."""
 import os
-from flask import Flask, session
+from flask import Flask, render_template, request, session
 
 from .config import get_config
 from .extensions import db, migrate, jwt, limiter
@@ -166,8 +166,17 @@ def create_app(config_object=None):
         user = current_user()
         favorite_ids = {f.product_id for f in user.favorites} if user else set()
         from .models.site import SiteSetting, SITE_IMAGE_DEFAULTS
-        from .models.page import BuilderPage
+        from .models.page import BuilderPage, page_content_defaults
         site = {s.key: s.value for s in SiteSetting.query.all() if s.value}
+
+        # Admin-editable page copy. Templates call pc('key') instead of
+        # repeating the default inline: the default then lives ONLY in
+        # PAGE_CONTENT, so the admin screen can never pre-fill text that is not
+        # what the page actually shows (About's had drifted on 5 of 6 fields).
+        pc_defaults = page_content_defaults(app.config["BRAND_NAME"])
+
+        def pc(key, fallback=""):
+            return site.get(key) or pc_defaults.get(key) or fallback
         more_children = [
             {"label": "Rewards", "href": "/rewards"},
             {"label": "Gift Cards", "href": "/gift-cards"},
@@ -180,6 +189,7 @@ def create_app(config_object=None):
         return {
             "brand_name": app.config["BRAND_NAME"],
             "site": site,
+            "pc": pc,
             "site_defaults": SITE_IMAGE_DEFAULTS,
             "nav_links": [
                 {"label": "Menu", "href": "/menu", "hot": False},
@@ -216,5 +226,37 @@ def create_app(config_object=None):
     @app.get("/healthz")
     def healthz():
         return {"status": "ok"}
+
+    # ── Error pages ─────────────────────────────────────────────
+    # Without these a mistyped URL or a dead link showed Werkzeug's bare
+    # "Not Found" page: no header, no way back into the site.
+    ERRORS = {
+        400: ("That request didn't look right",
+              "Something in the form or link was malformed. Try again from the page you came from."),
+        403: ("You don't have access to that",
+              "That area needs a different account. Sign in with the right one, or head back to the menu."),
+        404: ("We couldn't find that page",
+              "The link may be old, or the page may have moved. Everything else is still where you left it."),
+        413: ("That file was too large",
+              "Pick a smaller image and upload it again."),
+        429: ("Slow down a moment",
+              "Too many requests in a short time. Wait a few seconds and try again."),
+        500: ("Something went wrong on our side",
+              "The team has been notified. Please try again in a moment."),
+    }
+
+    def _render_error(code):
+        heading, message = ERRORS[code]
+        # An API/JSON caller should not be handed an HTML page.
+        if request.path.startswith("/api/") or request.accept_mimetypes.best == "application/json":
+            return {"error": heading, "code": code}, code
+        try:
+            return render_template("errors/error.html", code=code,
+                                   heading=heading, message=message), code
+        except Exception:            # a broken template must not mask the real error
+            return heading, code
+
+    for _code in ERRORS:
+        app.register_error_handler(_code, lambda e, c=_code: _render_error(c))
 
     return app

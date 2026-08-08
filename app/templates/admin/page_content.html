@@ -1,33 +1,126 @@
 {% extends "admin/base.html" %}
 {% block title %}Page Content, {{ brand_name }}{% endblock %}
 
-{% block admin %}
-<h2 class="ok-h2 mb-1">Page content</h2>
-<p class="text-slate text-sm mb-5">Edit the headline copy of each storefront page. Fields are pre-filled with the current text, clear a field to fall back to the built-in default. The home page is managed in the <a href="/admin/page-builder{{ qs }}" class="link-underline font-semibold">Page Builder</a>; pictures in <a href="/admin/site-images{{ qs }}" class="link-underline font-semibold">Site Images</a>.</p>
+{% block head_extra %}
+<style>
+  /* the jump list has to clear the sticky admin top bar */
+  .pcnav{ position:sticky; top:4.5rem; max-height:calc(100vh - 7rem); overflow-y:auto; }
+  .pcnav a{ display:block; padding:.45rem .7rem; border-radius:.55rem; font-size:.85rem;
+    font-weight:600; color:var(--ok-slate); }
+  .pcnav a:hover{ background:rgba(20,20,20,.05); color:var(--ok-jet); }
+  .pc-sec{ scroll-margin-top:5.5rem; }
+  .pc-field.is-changed > .ok-label::after{
+    content:"edited"; margin-left:.5rem; font-size:.6rem; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ok-amber); }
+</style>
+{% endblock %}
 
-<form method="post" action="/admin/page-content{{ qs }}" class="space-y-5">
+{% block admin %}
+<div class="d-flex flex-wrap align-items-start justify-content-between ok-gap-3 mb-1">
+  <h2 class="ok-h2">Page content</h2>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="/admin/site-images{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-image"></i> Pictures</a>
+    <a href="/admin/page-builder{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Home page</a>
+    <a href="/admin/builder{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen-ruler"></i> Redesign a page</a>
+  </div>
+</div>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Every headline and paragraph on the storefront pages. Fields are pre-filled with the text the page is showing right now, clear one to fall back to the built-in wording. Pictures live in <a href="/admin/site-images{{ qs }}" class="link-underline fw-semibold">Site Images</a>, the home page in the <a href="/admin/page-builder{{ qs }}" class="link-underline fw-semibold">Page Builder</a>.</p>
+
+<form method="post" action="/admin/page-content{{ qs }}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  {% for p in pages %}
-  <section class="ok-card p-5">
-    <div class="flex items-center justify-between gap-3 mb-4">
-      <h3 class="font-display font-bold text-lg">{{ p.label }}</h3>
-      <a href="{{ p.url }}" target="_blank" rel="noopener" class="link-underline text-xs shrink-0">View page <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-    </div>
-    <div class="grid gap-3">
-      {% for key, label, default in p.fields %}
-      {% set _def = defaults.get(key, default) %}
-      <div>
-        <label class="ok-label !text-xs">{{ label }}</label>
-        <input name="{{ key }}" value="{{ current.get(key) or _def }}" placeholder="{{ _def }}" class="ok-input py-2 text-sm">
+  <div class="ok-grid ok-grid-lg-4 ok-gap-5 align-items-start">
+    <!-- jump list + search -->
+    <aside class="d-none d-lg-block pcnav">
+      <div class="ok-card ok-p-3">
+        <label class="ok-label ok-fs-xs">Find a field</label>
+        <input id="pcFilter" type="search" placeholder="e.g. hero, catering…" autocomplete="off"
+               class="ok-input ok-py-15 ok-fs-sm ok-mb-3">
+        <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm ok-px-3 ok-mb-15">Pages</div>
+        {% for p in pages %}
+        <a href="#pc-{{ p.key }}">{{ p.label }} <span class="text-muted-warm-50 fw-normal">({{ p.fields|length }})</span></a>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
-  </section>
-  {% endfor %}
+    </aside>
 
-  <div class="sticky bottom-0 bg-[#f4f5f7] py-3 -mx-4 px-4 border-t border-[var(--ok-line)]">
+    <div class="ok-col-span-lg-3 ok-stack-5">
+      {% for p in pages %}
+      <section id="pc-{{ p.key }}" class="ok-card ok-p-5 pc-sec" data-pc-page data-label="{{ p.label|lower }}">
+        <div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3 mb-3 pb-3 border-bottom ok-bc-varokline">
+          <div class="ok-min-w-0">
+            <h3 class="font-display fw-bold ok-fs-lg">{{ p.label }}</h3>
+            <div class="ok-fs-xs text-muted-warm">{{ p.url }} · {{ p.fields|length }} fields</div>
+          </div>
+          <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+            <a href="{{ p.url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">View <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            {% if p.url in overridable %}
+            <form method="post" action="/admin/builder/new{{ qs }}" class="d-inline">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <input type="hidden" name="override" value="{{ p.url }}">
+              <input type="hidden" name="title" value="{{ p.label }}">
+              <button class="btn btn-secondary btn-sm" title="Rebuild this page in the drag-drop builder"><i class="fa-solid fa-pen-ruler"></i> Redesign</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="ok-grid ok-grid-md-2 ok-gap-3">
+          {% for f in p.fields %}
+          {% set key = f[0] %}{% set label = f[1] %}
+          {% set kind = f[3] if f|length > 3 else 'text' %}
+          {% set _def = defaults.get(key, f[2]) %}
+          <div class="pc-field{% if kind == 'area' %} ok-col-span-md-2{% endif %}{% if current.get(key) %} is-changed{% endif %}"
+               data-pc-field data-search="{{ (label ~ ' ' ~ key)|lower }}">
+            <label class="ok-label ok-fs-xs" for="f-{{ key }}">{{ label }}</label>
+            {% if kind == 'area' %}
+            <textarea id="f-{{ key }}" name="{{ key }}" rows="3" placeholder="{{ _def }}" class="ok-input py-2 ok-fs-sm">{{ current.get(key) or _def }}</textarea>
+            {% else %}
+            <input id="f-{{ key }}" name="{{ key }}" value="{{ current.get(key) or _def }}" placeholder="{{ _def }}" class="ok-input py-2 ok-fs-sm">
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+
+      <div id="pcNoHits" class="ok-card ok-p-8 text-center text-muted-warm d-none">
+        <i class="fa-solid fa-magnifying-glass ok-fs-2xl ok-mb-3 d-block text-muted-warm-40"></i>
+        Nothing matches that search.
+      </div>
+    </div>
+  </div>
+
+  <div class="position-sticky bottom-0 ok-bgc-f4f5f7 ok-py-3 -mx-4 px-3 border-top ok-bc-varokline ok-mt-5 d-flex flex-wrap align-items-center ok-gap-3">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save page content</button>
+    <span class="ok-fs-xs text-muted-warm">Clearing a field restores the built-in wording.</span>
   </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  // Live filter over both the field list and the page sections.
+  var q = document.getElementById('pcFilter');
+  if (!q) return;
+  var fields = document.querySelectorAll('[data-pc-field]');
+  var pages = document.querySelectorAll('[data-pc-page]');
+  var none = document.getElementById('pcNoHits');
+  q.addEventListener('input', function () {
+    var v = q.value.trim().toLowerCase();
+    fields.forEach(function (f) {
+      f.style.display = !v || f.dataset.search.indexOf(v) !== -1 ? '' : 'none';
+    });
+    var shown = 0;
+    pages.forEach(function (p) {
+      var any = Array.prototype.some.call(p.querySelectorAll('[data-pc-field]'),
+        function (f) { return f.style.display !== 'none'; });
+      var hit = any || (!!v && p.dataset.label.indexOf(v) !== -1);
+      p.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    if (none) none.classList.toggle('d-none', shown !== 0);
+  });
+})();
+</script>
 {% endblock %}

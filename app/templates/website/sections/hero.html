@@ -30,7 +30,7 @@
 
           <div class="ok-hero-ratings d-none d-sm-flex align-items-center justify-content-center gap-2" data-hero-rating>
             <span class="ok-rating-pill">Google
-              <span class="ok-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></span>
+              <span class="ok-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
               <span class="ok-rating-score">4.4</span>
             </span>
             <span class="ok-rating-pill">Yelp
@@ -41,11 +41,6 @@
         </div>
       </div>
     {% endfor %}
-    </div>
-
-    <!-- slide indicators -->
-    <div class="ok-dots" data-hero-dots aria-hidden="true">
-      {% for s in hero_slides %}<span class="ok-dot{% if loop.first %} is-active{% endif %}"></span>{% endfor %}
     </div>
 
     <!-- scroll cue -->

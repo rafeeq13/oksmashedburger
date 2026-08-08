@@ -110,6 +110,9 @@ WH_RE = re.compile(r"^([wh])-(\d+)$")
 SPACEY_RE = re.compile(r"^space-y-(\d+(?:\.\d)?)$")
 TEXTSIZE_RE = re.compile(r"^text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl)$")
 COLOR_OP_RE = re.compile(r"^([a-z-]+)/(\d+)$")
+# What a CSS class name can look like. Anything else in a class attribute is
+# code (a JS concat, a Jinja fragment) and must survive the de-duplication pass.
+CLASSNAME_RE = re.compile(r"^!?[A-Za-z][A-Za-z0-9_:./\[\]%-]*$")
 
 unmapped = Counter()
 
@@ -199,9 +202,14 @@ def convert_class_attr(value):
             continue
         new = convert_token(bare, bp)
         out.append(new if new else tok)
-    # de-duplicate, keep order
+    # De-duplicate, keep order. Only real class names are ever dropped: a
+    # `class="..."` can also be a JS/Jinja expression building the value, where
+    # `'` and `+` legitimately repeat and removing a repeat corrupts the code.
     seen, final = set(), []
     for t in out:
+        if not CLASSNAME_RE.match(t):
+            final.append(t)
+            continue
         if t not in seen:
             seen.add(t)
             final.append(t)

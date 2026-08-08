@@ -129,6 +129,10 @@
         }
       });
       if (!name || !document.getElementById("i-" + name)) return;
+      // Stars stay on Font Awesome. Lucide draws them stroke-only, so every
+      // rating on the site rendered as a hollow outline instead of a solid
+      // star. FA's fa-solid star is a filled shape, fa-regular the outline.
+      if (name.indexOf("star") === 0) return;
       var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("class", "ok-i " + el.className.replace(/fa-[a-z0-9-]+/g, "").trim());
       svg.setAttribute("aria-hidden", "true");
@@ -212,23 +216,54 @@
       .catch(function () {});
   }
 
+  /* ---------- shared popup show/hide ----------
+     Every popup enters from the LEFT and leaves to the RIGHT. The direction
+     cannot come from CSS alone: on close the panel would simply run back the
+     way it came in, so the exit needs its own `.is-closing` state that is
+     cleared once the transition has finished. */
+  var MODAL_EXIT_MS = 430;      // must outlast the .4s exit transition
+  function showModal(m, b, open) {
+    if (!m) return;
+    if ((m.style.visibility === "visible") !== open) lockScroll(open);
+    if (open) {
+      if (m._okHideT) { clearTimeout(m._okHideT); m._okHideT = null; }
+      m.classList.remove("is-closing");
+      m.style.visibility = "visible";
+      m.style.pointerEvents = "auto";
+      // TWO frames later: one rAF still lands in the same paint on some
+      // machines, and the enter then jumps straight to the open state with no
+      // visible travel. The second frame guarantees a painted "closed" state
+      // to animate FROM.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          m.style.opacity = "1";
+          m.classList.add("is-open");
+        });
+      });
+    } else {
+      m.classList.remove("is-open");
+      m.classList.add("is-closing");
+      m.style.opacity = "0";
+      m.style.pointerEvents = "none";
+      m._okHideT = setTimeout(function () {
+        m.style.visibility = "hidden";
+        m.classList.remove("is-closing");
+        m._okHideT = null;
+      }, MODAL_EXIT_MS);
+    }
+    if (b) b.classList.toggle("is-open", open);
+  }
+
   function openLocation(open) {
     var m = document.getElementById("locModal"), b = document.getElementById("locBackdrop");
     if (!m) return;
     if (open && typeof locStep === "function") locStep(1);  // always start at "find a store"
     if (open && _storeSlug) highlightStore(_storeSlug);      // reflect the current choice
-    if ((m.style.visibility === "visible") !== open) lockScroll(open);
-    m.style.visibility = open ? "visible" : "hidden";
-    m.style.opacity = open ? "1" : "0"; m.style.pointerEvents = open ? "auto" : "none";
-    if (b) b.classList.toggle("is-open", open);
+    showModal(m, b, open);
   }
   function openItem(open) {
     var m = document.getElementById("itemModal"), b = document.getElementById("itemBackdrop");
-    if (!m) return;
-    if ((m.style.visibility === "visible") !== open) lockScroll(open);
-    m.style.visibility = open ? "visible" : "hidden";
-    m.style.opacity = open ? "1" : "0"; m.style.pointerEvents = open ? "auto" : "none";
-    if (b) b.classList.toggle("is-open", open);
+    showModal(m, b, open);
   }
   function loadItem(slug) {
     var body = document.querySelector("#itemModal [data-item-body]");
@@ -274,8 +309,11 @@
     var m = document.getElementById("locModal"); if (!m) return;
     var view = m.querySelector("[data-loc-typeview]"), panel = m.querySelector("[data-loc-schedpanel]");
     if (!view || !panel) return;
-    view.classList.toggle("hidden", on);
-    panel.classList.toggle("hidden", !on);
+    // d-none, not "hidden": the panel is marked up with Bootstrap's class and
+    // .hidden is defined nowhere, so this toggle used to do nothing at all and
+    // the Schedule sub-panel never opened.
+    view.classList.toggle("d-none", on);
+    panel.classList.toggle("d-none", !on);
     panel.querySelectorAll("[data-loc-schedinput]").forEach(function (i) { i.disabled = !on; });
   }
   function locStep(n) {
@@ -401,8 +439,6 @@
       });
       if (msEmpty) msEmpty.classList.toggle("d-none", shown !== 0);
       if (msEcho) msEcho.textContent = q ? '"' + q + '"' : "";
-      // the sticky category bar would otherwise scroll-spy onto hidden sections
-      if (catbar) catbar.classList.toggle("is-filtered", !!q);
     }
 
     if (msInput) {
@@ -726,5 +762,5 @@
     else start();
   })();
 
-  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, openItemModal: function (slug) { loadItem(slug); } };
+  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, openItemModal: function (slug) { loadItem(slug); }, showModal: showModal };
 })();

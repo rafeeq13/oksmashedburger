@@ -1,0 +1,242 @@
+/* =========================================================
+   OK Smashed Burger — ADMIN LAYER
+   Load order: bootstrap → style → theme → utils → admin → admin-generated
+
+   The admin panel used to run on the Tailwind Play CDN with a brand palette
+   declared in an inline `tailwind.config`. This file replaces that config:
+   every colour, utility and state variant the admin markup relied on and that
+   Bootstrap/utils.css do not already ship is pinned here on the exact same
+   numbers, so removing Tailwind cannot shift a single pixel.
+
+   premium.css is NOT loaded in the admin (it is the storefront's luxury
+   layer), so anything the admin needs from it has to live here.
+   ========================================================= */
+
+html{ scroll-behavior:smooth; }
+
+/* ---------------------------------------------------------
+   1. TYPOGRAPHY PARITY
+   style.css already tones the brand's heavy weights down for
+   the admin. Those rules keyed off Tailwind's class names, so
+   the Bootstrap/ok-* equivalents need the same treatment.
+   Bootstrap's fw-* utilities carry !important, hence ours do.
+   --------------------------------------------------------- */
+/* Tailwind's preflight reset every heading to `font-size:inherit;
+   font-weight:inherit`, so a bare <h3>/<h4> in the admin took its size from the
+   utility classes on it. Bootstrap's reboot instead gives each level its own
+   size and weight, which blew up every unsized heading. Element-level, so any
+   class (.ok-h1/.ok-h2/.ok-h3, .ok-fs-*) still wins. */
+h1,h2,h3,h4,h5,h6{ font-size:inherit; font-weight:inherit; line-height:inherit; }
+
+.admin-ui .fw-bold{ font-weight:600 !important; }
+.admin-ui .ok-fw-800,
+.admin-ui .ok-fw-900{ font-weight:700 !important; }
+
+/* ---------------------------------------------------------
+   2. PALETTE
+   The colours the old tailwind.config declared, plus the
+   opacity steps utils.css does not carry.
+   --------------------------------------------------------- */
+:root{
+  --ok-panel:#16181d;        /* dark surface used by the zones module */
+  --ok-panel-edge:#23262e;
+}
+
+.bg-amber{ background-color:var(--ok-amber) !important; }
+.bg-amber-10{ background-color:rgba(224,162,0,.1) !important; }
+.bg-amber-90{ background-color:rgba(224,162,0,.9) !important; }
+.bg-ink-05{ background-color:rgba(20,20,20,.05) !important; }
+.bg-muted-40{ background-color:rgba(107,107,107,.4) !important; }
+.bg-panel{ background-color:var(--ok-panel) !important; }
+.bg-w-20{ background-color:rgba(255,255,255,.2) !important; }
+.bg-black-20{ background-color:rgba(0,0,0,.2) !important; }
+.bg-black-45{ background-color:rgba(0,0,0,.45) !important; }
+.bg-black-50{ background-color:rgba(0,0,0,.5) !important; }
+.bg-black-55{ background-color:rgba(0,0,0,.55) !important; }
+.bg-black-70{ background-color:rgba(0,0,0,.7) !important; }
+.bg-ok-green-15{ background-color:rgba(46,125,50,.15) !important; }
+.bg-ok-green-20{ background-color:rgba(46,125,50,.2) !important; }
+.bg-ok-red-60{ background-color:rgba(198,40,40,.6) !important; }
+
+.border-ink-05{ border-color:rgba(20,20,20,.05) !important; }
+.border-ink-10{ border-color:rgba(20,20,20,.1) !important; }
+.border-paneledge{ border-color:var(--ok-panel-edge) !important; }
+
+/* The handful of raw Tailwind palette colours the admin reached for.
+   Pinned to Tailwind's own values so nothing changes shade. */
+.bg-gray-200{ background-color:#e5e7eb !important; }
+.bg-gray-300{ background-color:#d1d5db !important; }
+.bg-red-500{ background-color:#ef4444 !important; }
+.bg-amber-50{ background-color:#fffbeb !important; }
+.border-amber-200{ border-color:#fde68a !important; }
+.text-red-400{ color:#f87171 !important; }
+.text-green-400{ color:#4ade80 !important; }
+.text-amber-500{ color:#f59e0b !important; }
+
+/* ---------------------------------------------------------
+   3. STATE VARIANTS
+   Tailwind wrote these inline as hover:/active:/last:. As real
+   classes they read the same in the markup and cost one rule.
+   --------------------------------------------------------- */
+.ok-hov-bg-ink-05:hover{ background-color:rgba(20,20,20,.05); }
+.ok-hov-bg-w-10:hover{ background-color:rgba(255,255,255,.1); }
+.ok-hov-bg-red-10:hover{ background-color:rgba(198,40,40,.1); }
+.ok-hov-text-ink:hover{ color:var(--ok-jet); }
+.ok-hov-text-red:hover{ color:var(--ok-red); }
+.ok-hov-text-white:hover{ color:#fff; }
+.ok-hov-border-yellow:hover{ border-color:var(--ok-yellow); }
+.ok-hov-border-ink-40:hover{ border-color:rgba(20,20,20,.4); }
+.ok-hov-underline:hover{ text-decoration:underline; }
+
+/* `divide-y` + `last:border-0`: a hairline between siblings only. */
+.ok-divide-y > * + *{ border-top:1px solid var(--ok-line); }
+.ok-last-border-0:last-child{ border:0 !important; }
+
+/* ---------------------------------------------------------
+   4. UTILITIES BOOTSTRAP DOES NOT SHIP
+   --------------------------------------------------------- */
+/* Tailwind's `flex-1` is `flex:1 1 0%`; Bootstrap's `flex-grow-1` only sets
+   grow and leaves the basis at `auto`. On a flex row of full-width inputs that
+   difference is the whole layout: every child claims its natural width and the
+   row wraps. Every `flex-grow-1` in the admin came from a `flex-1`, so this is
+   the faithful class. */
+.ok-flex-1{ flex:1 1 0% !important; }
+
+.ok-min-h-0{ min-height:0; }
+.ok-inset-y-0{ top:0; bottom:0; }
+.ok-normal-case{ text-transform:none; }
+.ok-pre-line{ white-space:pre-line; }
+.ok-list-disc{ list-style:disc; padding-left:1.25rem; }
+.ok-border-dashed{ border-style:dashed !important; }
+.ok-blur{ backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.ok-opacity-70{ opacity:.7; }
+.ok-opacity-90{ opacity:.9; }
+.ok-rounded-t-lg{ border-top-left-radius:.5rem; border-top-right-radius:.5rem; }
+.ok-ls-wide{ letter-spacing:.025em; }
+.ok-ring-white{ box-shadow:0 0 0 2px #fff; }
+.ok-transition-colors{ transition:color .15s ease, background-color .15s ease, border-color .15s ease; }
+.ok-transition-transform{ transition:transform .15s ease; }
+.ok-accent-yellow{ accent-color:var(--ok-yellow); }
+.ok-accent-red{ accent-color:var(--ok-red); }
+.ok-grab{ cursor:grab; }
+.ok-grab:active{ cursor:grabbing; }
+.ok-stack-7 > * + *{ margin-top:1.75rem; }
+/* the two axis-gap steps Bootstrap's column-gap / row-gap scale skips */
+.ok-cgap-5{ column-gap:1.25rem; }
+.ok-rgap-3{ row-gap:.75rem; }
+
+/* Tailwind's max-w-* scale. theme.css already owns .ok-mw-* on the
+   storefront's own numbers, so these get their own names. */
+.ok-maxw-md{ max-width:28rem; }
+.ok-maxw-2xl{ max-width:42rem; }
+.ok-maxw-3xl{ max-width:48rem; }
+
+/* Offsets */
+.ok-top-05{ top:.125rem; }   .ok-left-05{ left:.125rem; }
+.ok-top-15{ top:.375rem; }   .ok-left-15{ left:.375rem; }
+.ok-top-4{ top:1rem; }       .ok-left-4{ left:1rem; }
+.ok-right-4{ right:1rem; }   .ok-bottom-4{ bottom:1rem; }
+.ok-left-155{ left:1.55rem; }
+
+/* Grid column spans and responsive overrides.
+   IMPORTANT, deliberately: every Bootstrap utility carries !important, so a
+   responsive override that sits next to one (`p-3 ok-p-lg-6`, `w-100
+   ok-w-lg-60`, `gap-2 ok-gap-sm-3`) is dead without it, whatever the load
+   order. That is what collapsed the Visual Editor's three-panel layout. */
+.ok-col-span-3{ grid-column:span 3/span 3; }
+@media (min-width:640px){
+  .ok-col-span-sm-2{ grid-column:span 2/span 2; }
+  .ok-col-span-sm-4{ grid-column:span 4/span 4; }
+  .ok-gap-sm-3{ gap:.75rem !important; }
+}
+@media (min-width:768px){
+  .ok-col-span-md-2{ grid-column:span 2/span 2; }
+  .ok-gap-md-3{ gap:.75rem !important; }
+  .ok-pl-md-4{ padding-left:1rem !important; }
+  .ok-border-start-md{ border-left:1px solid var(--ok-line); }
+  .ok-border-paneledge-md{ border-color:var(--ok-panel-edge); }
+}
+/* Bootstrap's lg is 992px. These two pair with `flex-lg-row` on the same
+   layout, so they have to switch at the same width or the row goes horizontal
+   while all three panels are still 100% wide. */
+@media (min-width:992px){
+  .ok-w-lg-60{ width:15rem !important; }
+  .ok-w-lg-80{ width:20rem !important; }
+}
+@media (min-width:1024px){
+  .ok-col-span-lg-2{ grid-column:span 2/span 2; }
+  .ok-col-span-lg-3{ grid-column:span 3/span 3; }
+  .ok-col-span-lg-4{ grid-column:span 4/span 4; }
+  .ok-col-span-lg-6{ grid-column:span 6/span 6; }
+  .ok-p-lg-6{ padding:1.5rem !important; }
+  .ok-px-lg-6{ padding-left:1.5rem !important; padding-right:1.5rem !important; }
+}
+
+/* Pulsing dot behind the "live" indicator (was animate-ping). */
+.ok-ping{ animation:ok-ping 1s cubic-bezier(0,0,.2,1) infinite; }
+@keyframes ok-ping{ 75%,100%{ transform:scale(2); opacity:0; } }
+
+/* Row being dragged in the page builder. */
+.ok-dragging{ box-shadow:0 0 0 2px var(--ok-yellow); opacity:.7; }
+
+/* ---------------------------------------------------------
+   4b. POPUPS
+   Same left-in / right-out motion the storefront uses. The
+   rules are repeated here because the admin deliberately does
+   not load premium.css. app.js (OK.showModal) drives the
+   classes, so both shells behave identically.
+   --------------------------------------------------------- */
+.ok-modal{ visibility:hidden; opacity:0; pointer-events:none; transition:opacity .16s ease; }
+.ok-modal.is-closing{ transition:opacity .4s ease .06s; }
+.ok-modal > *{
+  transform:translateX(-110vw);
+  transition:transform .45s cubic-bezier(.16,.84,.30,1);
+  will-change:transform;
+}
+.ok-modal.is-open > *{ transform:translateX(0); }
+.ok-modal.is-closing > *{ transform:translateX(110vw); transition:transform .4s cubic-bezier(.5,0,.9,.4); }
+@media (prefers-reduced-motion:reduce){
+  .ok-modal > *, .ok-modal.is-open > *, .ok-modal.is-closing > *{ transform:none; transition:none; }
+}
+
+/* ---------------------------------------------------------
+   5. COMPONENTS
+   Behaviour Tailwind expressed with the `peer` sibling trick,
+   rewritten against the real checkbox so no framework is
+   needed to keep it working.
+   --------------------------------------------------------- */
+
+/* Toggle switch (page builder: show / hide a section) */
+.ok-switch-track{
+  display:inline-block; position:relative; width:2.75rem; height:1.5rem;
+  border-radius:9999px; background:#d1d5db; transition:background-color .15s ease;
+}
+.ok-switch-thumb{
+  position:absolute; top:.125rem; left:.125rem; width:1.25rem; height:1.25rem;
+  border-radius:9999px; background:#fff; transition:transform .15s ease;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.ok-switch input:checked + .ok-switch-track{ background:var(--ok-green); }
+.ok-switch input:checked + .ok-switch-track .ok-switch-thumb{ transform:translateX(1.25rem); }
+
+/* ---------------------------------------------------------
+   6. SHELL
+   The sidebar slide-in used Tailwind's peer-checked: variant
+   against #okNavToggle; it is now driven by the checkbox
+   directly. style.css owns the collapse (icon-rail) states.
+   --------------------------------------------------------- */
+.adm-sidebar{
+  background:linear-gradient(to bottom, #16181f, #101216);
+  transform:translateX(-100%);
+}
+#okNavToggle:checked ~ .adm-sidebar{ transform:translateX(0); }
+
+.adm-backdrop{ display:none; }
+#okNavToggle:checked ~ .adm-backdrop{ display:block; }
+
+@media (min-width:1024px){
+  .adm-sidebar{ transform:none; }
+  .adm-content{ padding-left:16rem; }
+  .adm-backdrop,
+  #okNavToggle:checked ~ .adm-backdrop{ display:none; }
+}

@@ -8,8 +8,8 @@
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
     <div class="max-w-2xl mx-auto text-center">
-<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('catering_hero_heading') or 'Catering for any event.' }}</h1>
-      <p class="text-w-85 ok-fs-lg ok-mb-8 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('catering_hero_text') or 'From team lunches to weekend gatherings, we bring fresh-smashed burgers, loaded sides and crowd-pleasing favorites straight to your event.' }}</p>
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ pc('catering_hero_heading') }}</h1>
+      <p class="text-w-85 ok-fs-lg ok-mb-8 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('catering_hero_text') }}</p>
       <div class="d-flex flex-nowrap gap-2 ok-gap-075rem-sm justify-content-center" data-reveal="up" data-reveal-delay="0.2">
         <a href="#catering-enquiry" class="btn btn-primary btn-lg ok-btn-invert">Request a quote</a>
         <a href="/menu" class="ok-btn-outline ok-btn-outline--light">See the menu</a>
@@ -22,24 +22,30 @@
 <section class="ok-section">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
-      <h2 class="ok-h2">{{ site.get('catering_cater_heading') or 'What we cater' }}</h2>
-      <p class="text-muted-warm mt-2 max-w-xl mx-auto">Every order is smashed fresh the morning of your event and delivered hot, labelled and ready to serve.</p>
+      <h2 class="ok-h2">{{ pc('catering_cater_heading') }}</h2>
+      <p class="text-muted-warm mt-2 max-w-xl mx-auto">{{ pc('catering_cater_text') }}</p>
     </div>
     <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
       <article class="ok-card ok-card-hover ok-p-3">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl ok-mb-3"><i class="fa-solid fa-briefcase icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Office lunches</h3>
-        <p class="ok-fs-sm text-muted-warm">Team meetings, client days and Friday treats. Individually boxed so everyone gets exactly what they ordered.</p>
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-briefcase icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('catering_card1_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('catering_card1_text') }}</p>
       </article>
       <article class="ok-card ok-card-hover ok-p-3">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl ok-mb-3"><i class="fa-solid fa-cake-candles icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Parties &amp; celebrations</h3>
-        <p class="ok-fs-sm text-muted-warm">Birthdays, graduations and backyard get-togethers. Served as build-your-own trays or ready-to-eat boxes.</p>
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-cake-candles icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('catering_card2_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('catering_card2_text') }}</p>
       </article>
       <article class="ok-card ok-card-hover ok-p-3">
-        <div class="ok-w-14 ok-h-14 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl ok-mb-3"><i class="fa-solid fa-football icon-lg"></i></div>
-        <h3 class="font-display fw-bold ok-fs-lg mb-1">Game day &amp; groups</h3>
-        <p class="ok-fs-sm text-muted-warm">Sliders, loaded fries and shareable sides built for a crowd watching the game.</p>
+        <div class="ok-cardicon d-flex align-items-center ok-gap-25 ok-mb-25">
+          <span class="ok-w-11 ok-h-11 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-football icon-lg"></i></span>
+          <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ pc('catering_card3_heading') }}</h3>
+        </div>
+        <p class="ok-fs-sm text-muted-warm">{{ pc('catering_card3_text') }}</p>
       </article>
     </div>
   </div>
@@ -49,8 +55,8 @@
 <section class="ok-section bg-cream-40 border-y ok-bc-varokline">
   <div class="ok-container">
     <div class="text-center ok-mb-10">
-      <h2 class="ok-h2">{{ site.get('catering_packages_heading') or 'Catering packages' }}</h2>
-      <p class="text-muted-warm mt-2">Pick a package or tell us what you need and we will build one for you.</p>
+      <h2 class="ok-h2">{{ pc('catering_packages_heading') }}</h2>
+      <p class="text-muted-warm mt-2">{{ pc('catering_packages_text') }}</p>
     </div>
     <div class="ok-grid ok-grid-md-3 ok-gap-5 max-w-5xl mx-auto">
       {# Packages live in Admin > Website Content > Catering packages.
@@ -82,7 +88,7 @@
       </article>
       {% endfor %}
     </div>
-    <p class="text-center ok-fs-xs text-muted-warm ok-mt-3">Prices are a guide only. Final quotes depend on headcount, menu and location.</p>
+    <p class="text-center ok-fs-xs text-muted-warm ok-mt-3">{{ pc('catering_packages_note') }}</p>
   </div>
 </section>
 
@@ -91,8 +97,8 @@
   <div class="ok-container">
     <div class="max-w-2xl mx-auto">
       <div class="text-center ok-mb-8">
-        <h2 class="ok-h2">{{ site.get('catering_quote_heading') or 'Request a catering quote' }}</h2>
-        <p class="text-muted-warm mt-2">Tell us about your event and we will get back to you within one business day.</p>
+        <h2 class="ok-h2">{{ pc('catering_quote_heading') }}</h2>
+        <p class="text-muted-warm mt-2">{{ pc('catering_quote_text') }}</p>
       </div>
       <form method="post" action="/contact" class="ok-card ok-p-3 ok-paddin-2rem-md ok-grid ok-grid-sm-2 ok-gap-3">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">

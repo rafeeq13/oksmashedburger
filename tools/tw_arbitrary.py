@@ -16,6 +16,9 @@ ROOTS = ["app/templates/website", "app/templates/menu", "app/templates/cart",
          "app/templates/checkout", "app/templates/pages", "app/templates/stores",
          "app/templates/orders", "app/templates/partials", "app/templates/layouts"]
 OUT = "app/static/css/generated.css"
+# --roots/--out let the admin panel generate its OWN stylesheet. Sharing
+# generated.css would be destructive: this tool rewrites its output file from
+# scratch, so a run scoped to the admin would blank every storefront rule.
 BP = {"sm": "640px", "md": "768px", "lg": "1024px", "xl": "1280px"}
 
 # arbitrary prefix -> (css property, short slug)
@@ -92,6 +95,9 @@ def plain_value(tok):
 
 ARB = re.compile(r"^(-?)([a-z-]+)\[([^\]]+)\]$")
 RESP = re.compile(r"^(sm|md|lg|xl):(.+)$")
+# `bg-black/[0.02]`, `border-white/[0.07]` — an arbitrary *alpha* on a colour.
+ALPHA = re.compile(r"^(bg|text|border)-(black|white)/\[([0-9.]+)\]$")
+BASE_RGB = {"black": "0,0,0", "white": "255,255,255"}
 
 rules = OrderedDict()
 skipped = OrderedDict()
@@ -107,10 +113,22 @@ def decode(value):
     return value.replace("_", " ")
 
 
+def alpha_colour(tok):
+    m = ALPHA.match(tok)
+    if not m:
+        return None
+    prefix, base, a = m.groups()
+    prop = COLOR_PROP[prefix]
+    slug = {"text": "c", "bg": "bgc", "border": "bc"}[prefix]
+    name = "ok-%s-%s%s" % (slug, base[0], slugify(a))
+    rules.setdefault(name, (prop, "rgba(%s,%s)" % (BASE_RGB[base], a)))
+    return name
+
+
 def arbitrary(tok):
     m = ARB.match(tok)
     if not m:
-        return None
+        return alpha_colour(tok)
     neg, prefix, raw = m.groups()
     prefix = prefix.rstrip("-")
     val = decode(raw)
@@ -158,6 +176,9 @@ def convert(tok):
 
 def walk_files():
     for r in ROOTS:
+        if os.path.isfile(r):
+            yield r
+            continue
         for dp, _d, fs in os.walk(r):
             for f in fs:
                 if f.endswith(".html"):
@@ -165,7 +186,13 @@ def walk_files():
 
 
 def main():
+    global ROOTS, OUT
     dry = "--dry" in sys.argv
+    for a in sys.argv[1:]:
+        if a.startswith("--roots="):
+            ROOTS = [r for r in a.split("=", 1)[1].split(",") if r]
+        elif a.startswith("--out="):
+            OUT = a.split("=", 1)[1]
     changed = 0
     for path in walk_files():
         src = io.open(path, encoding="utf-8").read()

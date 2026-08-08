@@ -3,41 +3,41 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Coupons &amp; promotions</h2>
-<p class="text-slate text-sm mb-5">Brand-wide promo codes customers can apply at checkout.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Brand-wide promo codes customers can apply at checkout.</p>
 
-<form method="post" action="/admin/coupons{{ qs }}" class="ok-card p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+<form method="post" action="/admin/coupons{{ qs }}" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <div><label class="ok-label !text-xs">Code</label><input name="code" required class="ok-input py-2 text-sm uppercase" placeholder="SAVE10"></div>
-  <div><label class="ok-label !text-xs">Type</label>
-    <select name="kind" class="ok-select py-2 text-sm">
+  <div><label class="ok-label ok-fs-xs">Code</label><input name="code" required class="ok-input py-2 ok-fs-sm text-uppercase" placeholder="SAVE10"></div>
+  <div><label class="ok-label ok-fs-xs">Type</label>
+    <select name="kind" class="ok-select py-2 ok-fs-sm">
       {% for k in kinds %}<option value="{{ k }}">{{ k.replace('_',' ')|title }}</option>{% endfor %}
     </select>
   </div>
-  <div><label class="ok-label !text-xs">Value ($ or %)</label><input name="value" type="number" step="0.01" class="ok-input py-2 text-sm" placeholder="10"></div>
-  <div><label class="ok-label !text-xs">Min order $</label><input name="min_order" type="number" step="0.01" class="ok-input py-2 text-sm" placeholder="0"></div>
-  <div><label class="ok-label !text-xs">Description</label><input name="description" class="ok-input py-2 text-sm" placeholder="10% off"></div>
-  <label class="flex items-center gap-2 text-sm h-[38px]"><input type="checkbox" name="requires_code" checked class="w-4 h-4 accent-okyellow"> Needs code</label>
-  <div class="lg:col-span-6 sm:col-span-2"><button class="btn btn-primary">Add coupon</button> <span class="text-xs text-slate ml-2">Untick “Needs code” for an automatic deal · set Min order $0 to remove the spend restriction.</span></div>
+  <div><label class="ok-label ok-fs-xs">Value ($ or %)</label><input name="value" type="number" step="0.01" class="ok-input py-2 ok-fs-sm" placeholder="10"></div>
+  <div><label class="ok-label ok-fs-xs">Min order $</label><input name="min_order" type="number" step="0.01" class="ok-input py-2 ok-fs-sm" placeholder="0"></div>
+  <div><label class="ok-label ok-fs-xs">Description</label><input name="description" class="ok-input py-2 ok-fs-sm" placeholder="10% off"></div>
+  <label class="d-flex align-items-center gap-2 ok-fs-sm ok-h-38px"><input type="checkbox" name="requires_code" checked class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>
+  <div class="ok-col-span-lg-6 ok-col-span-sm-2"><button class="btn btn-primary">Add coupon</button> <span class="ok-fs-xs text-muted-warm ms-2">Untick “Needs code” for an automatic deal · set Min order $0 to remove the spend restriction.</span></div>
 </form>
 
-<p class="text-slate text-sm mb-3">Edit any field and hit Save. <b>Needs code</b> off = auto deal (customers order without typing a code). <b>Min order</b> $0 = no restriction.</p>
-<div class="space-y-2">
+<p class="text-muted-warm ok-fs-sm ok-mb-3">Edit any field and hit Save. <b>Needs code</b> off = auto deal (customers order without typing a code). <b>Min order</b> $0 = no restriction.</p>
+<div class="ok-stack-2">
   {% for c in coupons %}
-  <form method="post" action="/admin/coupons/{{ c.id }}/edit{{ qs }}" class="ok-card p-4 flex flex-wrap items-center gap-x-4 gap-y-3{% if not c.active %} opacity-60{% endif %}">
+  <form method="post" action="/admin/coupons/{{ c.id }}/edit{{ qs }}" class="ok-card p-3 d-flex flex-wrap align-items-center column-gap-3 ok-rgap-3{% if not c.active %} ok-opacity-60{% endif %}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <div class="font-bold w-24 shrink-0">{{ c.code }}</div>
-    <div class="text-xs text-slate capitalize w-20 shrink-0">{{ c.kind.replace('_',' ') }}</div>
-    <label class="text-xs text-slate flex items-center gap-1">Value <input name="value" type="number" step="0.01" value="{{ '%.2f'|format(c.value) }}" class="ok-input py-1.5 text-sm w-20"></label>
-    <label class="text-xs text-slate flex items-center gap-1">Min $ <input name="min_order" type="number" step="0.01" value="{{ '%.2f'|format(c.min_order) }}" class="ok-input py-1.5 text-sm w-20"></label>
-    <input name="description" value="{{ c.description or '' }}" class="ok-input py-1.5 text-sm flex-1 min-w-[8rem]" placeholder="Description">
-    <label class="flex items-center gap-1.5 text-xs whitespace-nowrap"><input type="checkbox" name="requires_code" {% if c.requires_code %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Needs code</label>
-    <label class="flex items-center gap-1.5 text-xs whitespace-nowrap"><input type="checkbox" name="active" {% if c.active %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Active</label>
-    <span class="text-xs text-slate whitespace-nowrap">Used {{ c.used_count }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</span>
-    <button class="btn btn-secondary btn-sm shrink-0">Save</button>
-    <button formaction="/admin/coupons/{{ c.id }}/delete{{ qs }}" onclick="return confirm('Delete {{ c.code }}?')" class="link-underline text-xs !text-okred shrink-0">Delete</button>
+    <div class="fw-bold ok-w-24 flex-shrink-0">{{ c.code }}</div>
+    <div class="ok-fs-xs text-muted-warm text-capitalize ok-w-20 flex-shrink-0">{{ c.kind.replace('_',' ') }}</div>
+    <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Value <input name="value" type="number" step="0.01" value="{{ '%.2f'|format(c.value) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
+    <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Min $ <input name="min_order" type="number" step="0.01" value="{{ '%.2f'|format(c.min_order) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
+    <input name="description" value="{{ c.description or '' }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-minw-8rem" placeholder="Description">
+    <label class="d-flex align-items-center ok-gap-15 ok-fs-xs text-nowrap"><input type="checkbox" name="requires_code" {% if c.requires_code %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>
+    <label class="d-flex align-items-center ok-gap-15 ok-fs-xs text-nowrap"><input type="checkbox" name="active" {% if c.active %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Active</label>
+    <span class="ok-fs-xs text-muted-warm text-nowrap">Used {{ c.used_count }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</span>
+    <button class="btn btn-secondary btn-sm flex-shrink-0">Save</button>
+    <button formaction="/admin/coupons/{{ c.id }}/delete{{ qs }}" onclick="return confirm('Delete {{ c.code }}?')" class="link-underline ok-fs-xs text-ok-red flex-shrink-0">Delete</button>
   </form>
   {% else %}
-  <div class="ok-card p-8 text-center text-slate">No coupons yet.</div>
+  <div class="ok-card ok-p-8 text-center text-muted-warm">No coupons yet.</div>
   {% endfor %}
 </div>
 {% endblock %}

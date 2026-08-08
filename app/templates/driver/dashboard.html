@@ -1,28 +1,28 @@
 {% extends "layouts/admin_base.html" %}
 {% block title %}Driver, {{ brand_name }}{% endblock %}
 {% block page_title %}{% if driver %}{{ driver.name }}{% else %}Driver{% endif %}{% endblock %}
-{% block topbar_actions %}{% if driver %}<span class="hidden sm:inline text-sm text-slate">{{ driver.vehicle }} · {{ driver.store.name }}</span>{% endif %}{% endblock %}
+{% block topbar_actions %}{% if driver %}<span class="d-none d-sm-inline ok-fs-sm text-muted-warm">{{ driver.vehicle }} · {{ driver.store.name }}</span>{% endif %}{% endblock %}
 
 {% block content %}
-<div class="p-4 lg:p-6">
+<div class="p-3 ok-p-lg-6">
   {% if not driver %}
-  <div class="ok-card p-10 text-center text-slate">This account has no driver profile assigned.</div>
+  <div class="ok-card ok-p-10 text-center text-muted-warm">This account has no driver profile assigned.</div>
   {% else %}
 
-  <h2 class="ok-h2 mb-4">Active deliveries <span class="badge badge-yellow ml-1">{{ active|length }}</span></h2>
-  <div class="grid md:grid-cols-2 gap-4 mb-10">
+  <h2 class="ok-h2 mb-3">Active deliveries <span class="badge badge-yellow ms-1">{{ active|length }}</span></h2>
+  <div class="ok-grid ok-grid-md-2 gap-3 ok-mb-10">
     {% for d in active %}
-    <article class="ok-card p-5">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-display font-bold text-lg">{{ d.order.number }}</span>
-        <span class="badge {% if d.status == 'picked_up' %}badge-yellow{% else %}badge-soft{% endif %} capitalize">{{ d.status.replace('_',' ') }}</span>
+    <article class="ok-card ok-p-5">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="font-display fw-bold ok-fs-lg">{{ d.order.number }}</span>
+        <span class="badge {% if d.status == 'picked_up' %}badge-yellow{% else %}badge-soft{% endif %} text-capitalize">{{ d.status.replace('_',' ') }}</span>
       </div>
-      <p class="text-sm mb-1"><i class="fa-solid fa-location-dot text-okamber"></i> {{ d.order.address or 'No address' }}</p>
-      <p class="text-xs text-slate mb-3">{{ d.order.customer_name }}{% if d.order.customer_phone %} · {{ d.order.customer_phone }}{% endif %}</p>
-      <ul class="text-sm text-slate mb-4 space-y-0.5">
+      <p class="ok-fs-sm mb-1"><i class="fa-solid fa-location-dot text-gold"></i> {{ d.order.address or 'No address' }}</p>
+      <p class="ok-fs-xs text-muted-warm ok-mb-3">{{ d.order.customer_name }}{% if d.order.customer_phone %} · {{ d.order.customer_phone }}{% endif %}</p>
+      <ul class="ok-fs-sm text-muted-warm mb-3 ok-stack-05">
         {% for it in d.order.items %}<li>{{ it.qty }}× {{ it.name }}</li>{% endfor %}
       </ul>
-      <div class="flex flex-wrap gap-2">
+      <div class="d-flex flex-wrap gap-2">
         {% if d.order.address %}<a href="https://www.google.com/maps/search/?api=1&query={{ d.order.address|urlencode }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fa-solid fa-location-arrow"></i> Navigate</a>{% endif %}
         {% if d.status == 'assigned' %}
         <form method="post" action="/driver/deliveries/{{ d.id }}/status">
@@ -30,26 +30,26 @@
           <button class="btn btn-dark btn-sm">Mark picked up</button>
         </form>
         {% else %}
-        <form method="post" action="/driver/deliveries/{{ d.id }}/status" class="flex items-center gap-2">
+        <form method="post" action="/driver/deliveries/{{ d.id }}/status" class="d-flex align-items-center gap-2">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="action" value="deliver">
-          <input name="proof" class="ok-input py-1.5 text-sm w-40" placeholder="Proof (e.g. Left at door)">
+          <input name="proof" class="ok-input ok-py-15 ok-fs-sm ok-w-40" placeholder="Proof (e.g. Left at door)">
           <button class="btn btn-primary btn-sm">Delivered</button>
         </form>
         {% endif %}
       </div>
     </article>
     {% else %}
-    <div class="ok-card p-10 text-center text-slate md:col-span-2">No active deliveries right now.</div>
+    <div class="ok-card ok-p-10 text-center text-muted-warm ok-col-span-md-2">No active deliveries right now.</div>
     {% endfor %}
   </div>
 
   {% if done %}
-  <h2 class="ok-h2 mb-4">Recently delivered</h2>
-  <div class="ok-card divide-y divide-[var(--ok-line)]">
+  <h2 class="ok-h2 mb-3">Recently delivered</h2>
+  <div class="ok-card ok-divide-y">
     {% for d in done %}
-    <div class="p-4 flex items-center justify-between text-sm">
+    <div class="p-3 d-flex align-items-center justify-content-between ok-fs-sm">
       <span><b>{{ d.order.number }}</b> · {{ d.order.address or '' }}</span>
-      <span class="text-okgreen font-semibold"><i class="fa-solid fa-circle-check"></i> Delivered</span>
+      <span class="text-ok-green fw-semibold"><i class="fa-solid fa-circle-check"></i> Delivered</span>
     </div>
     {% endfor %}
   </div>

@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ heading }}, {{ brand_name }}{% endblock %}
+{% block description %}{{ message }}{% endblock %}
+
+{% block content %}
+<section class="ok-section">
+  <div class="ok-container text-center ok-maxw-2xl">
+    <div class="ok-eyebrow ok-mb-3">Error {{ code }}</div>
+    <h1 class="ok-display ok-mb-3">{{ heading }}</h1>
+    <p class="ok-lead ok-mb-8">{{ message }}</p>
+
+    <div class="d-flex flex-wrap justify-content-center ok-gap-3 ok-mb-10">
+      <a href="/menu" class="btn btn-primary btn-lg"><i class="fa-solid fa-burger"></i> Start an order</a>
+      <a href="/" class="ok-btn-outline"><i class="fa-solid fa-house"></i> Back home</a>
+    </div>
+
+    <div class="ok-card ok-p-5 text-start">
+      <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm ok-mb-3">Popular pages</div>
+      <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+        {% for href, label, icon in [
+          ('/menu', 'Full menu', 'burger'),
+          ('/locations', 'Find a location', 'location-dot'),
+          ('/deals', 'Deals & offers', 'tag'),
+          ('/tracking', 'Track an order', 'truck'),
+          ('/faq', 'Help & FAQ', 'circle-question'),
+          ('/contact', 'Contact us', 'envelope')] %}
+        <a href="{{ href }}" class="d-flex align-items-center ok-gap-25 ok-p-25 ok-rounded-lg ok-hov-bg-ink-05 ok-transition">
+          <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center text-gold flex-shrink-0"><i class="fa-solid fa-{{ icon }}"></i></span>
+          <span class="fw-semibold">{{ label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -199,10 +199,15 @@
   if (input) { input.min = fmt(new Date()); input.value = fmt(soon); }
 
   function open(o) {
-    modal.style.visibility = o ? "visible" : "hidden";
-    modal.style.opacity = o ? "1" : "0";
-    modal.style.pointerEvents = o ? "auto" : "none";
-    if (backdrop) backdrop.classList.toggle("is-open", o);
+    // same left-in / right-out motion as every other popup
+    if (window.OK && OK.showModal) {
+      OK.showModal(modal, backdrop, o);
+    } else {
+      modal.style.visibility = o ? "visible" : "hidden";
+      modal.style.opacity = o ? "1" : "0";
+      modal.style.pointerEvents = o ? "auto" : "none";
+      if (backdrop) backdrop.classList.toggle("is-open", o);
+    }
     if (o && input) setTimeout(function () { input.focus(); }, 60);
   }
 

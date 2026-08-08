@@ -3,49 +3,49 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Staff</h2>
-<p class="text-slate text-sm mb-5">Managers, kitchen, cashiers and drivers for {{ 'your locations' if can_switch else admin_store.name }}.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Managers, kitchen, cashiers and drivers for {{ 'your locations' if can_switch else admin_store.name }}.</p>
 
 <!-- Add staff -->
-<form method="post" action="/admin/staff{{ qs }}" class="ok-card p-5 mb-6 grid sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+<form method="post" action="/admin/staff{{ qs }}" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <div><label class="ok-label !text-xs">First name</label><input name="first_name" class="ok-input py-2 text-sm" placeholder="Alex"></div>
-  <div><label class="ok-label !text-xs">Last name</label><input name="last_name" class="ok-input py-2 text-sm" placeholder="Rivera"></div>
-  <div class="lg:col-span-2"><label class="ok-label !text-xs">Email</label><input name="email" type="email" required class="ok-input py-2 text-sm" placeholder="alex@oksmashedburger.com"></div>
-  <div><label class="ok-label !text-xs">Role</label>
-    <select name="role" class="ok-select py-2 text-sm">
+  <div><label class="ok-label ok-fs-xs">First name</label><input name="first_name" class="ok-input py-2 ok-fs-sm" placeholder="Alex"></div>
+  <div><label class="ok-label ok-fs-xs">Last name</label><input name="last_name" class="ok-input py-2 ok-fs-sm" placeholder="Rivera"></div>
+  <div class="ok-col-span-lg-2"><label class="ok-label ok-fs-xs">Email</label><input name="email" type="email" required class="ok-input py-2 ok-fs-sm" placeholder="alex@oksmashedburger.com"></div>
+  <div><label class="ok-label ok-fs-xs">Role</label>
+    <select name="role" class="ok-select py-2 ok-fs-sm">
       {% for r in roles %}<option value="{{ r }}">{{ r.replace('_',' ')|title }}</option>{% endfor %}
     </select>
   </div>
   {% if can_switch %}
-  <div><label class="ok-label !text-xs">Store</label>
-    <select name="store" class="ok-select py-2 text-sm">
+  <div><label class="ok-label ok-fs-xs">Store</label>
+    <select name="store" class="ok-select py-2 ok-fs-sm">
       {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
     </select>
   </div>
   {% endif %}
-  <div class="{% if not can_switch %}lg:col-span-2{% endif %}"><label class="ok-label !text-xs">Temp password</label><input name="password" class="ok-input py-2 text-sm" placeholder="changeme123"></div>
-  <div class="sm:col-span-2 lg:col-span-6"><button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add staff member</button></div>
+  <div class="{% if not can_switch %}ok-col-span-lg-2{% endif %}"><label class="ok-label ok-fs-xs">Temp password</label><input name="password" class="ok-input py-2 ok-fs-sm" placeholder="changeme123"></div>
+  <div class="ok-col-span-sm-2 ok-col-span-lg-6"><button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add staff member</button></div>
 </form>
 
 <div class="ok-card overflow-x-auto">
-  <table data-table data-page-size="10" class="w-full text-sm">
-    <thead><tr class="text-left text-slate border-b border-[var(--ok-line)]">
-      <th class="p-3 font-semibold">Name</th><th class="p-3 font-semibold">Email</th><th class="p-3 font-semibold">Role</th><th class="p-3 font-semibold">Store</th><th class="p-3 font-semibold">Status</th><th class="p-3"></th>
+  <table data-table data-page-size="10" class="w-100 ok-fs-sm">
+    <thead><tr class="text-start text-muted-warm border-bottom ok-bc-varokline">
+      <th class="ok-p-3 fw-semibold">Name</th><th class="ok-p-3 fw-semibold">Email</th><th class="ok-p-3 fw-semibold">Role</th><th class="ok-p-3 fw-semibold">Store</th><th class="ok-p-3 fw-semibold">Status</th><th class="ok-p-3"></th>
     </tr></thead>
     <tbody>
       {% for m in members %}
-      <tr class="border-b border-[var(--ok-line)] last:border-0 {% if not m.is_active %}opacity-60{% endif %}">
-        <td class="p-3 font-semibold">{{ m.full_name }}</td>
-        <td class="p-3 text-slate">{{ m.email }}</td>
-        <td class="p-3 capitalize">{{ m.role.name.replace('_',' ') }}</td>
-        <td class="p-3">{{ m.store.name if m.store else '-' }}</td>
-        <td class="p-3">{% if m.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-soft">Disabled</span>{% endif %}</td>
-        <td class="p-3 text-right">
-          <form method="post" action="/admin/staff/{{ m.id }}/toggle{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline text-xs {% if m.is_active %}!text-okred{% endif %}">{{ 'Deactivate' if m.is_active else 'Activate' }}</button></form>
+      <tr class="border-bottom ok-bc-varokline ok-last-border-0 {% if not m.is_active %}ok-opacity-60{% endif %}">
+        <td class="ok-p-3 fw-semibold">{{ m.full_name }}</td>
+        <td class="ok-p-3 text-muted-warm">{{ m.email }}</td>
+        <td class="ok-p-3 text-capitalize">{{ m.role.name.replace('_',' ') }}</td>
+        <td class="ok-p-3">{{ m.store.name if m.store else '-' }}</td>
+        <td class="ok-p-3">{% if m.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-soft">Disabled</span>{% endif %}</td>
+        <td class="ok-p-3 text-end">
+          <form method="post" action="/admin/staff/{{ m.id }}/toggle{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs {% if m.is_active %}text-ok-red{% endif %}">{{ 'Deactivate' if m.is_active else 'Activate' }}</button></form>
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="6" class="p-8 text-center text-slate">No staff yet, add your first team member above.</td></tr>
+      <tr><td colspan="6" class="ok-p-8 text-center text-muted-warm">No staff yet, add your first team member above.</td></tr>
       {% endfor %}
     </tbody>
   </table>

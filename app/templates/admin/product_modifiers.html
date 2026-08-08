@@ -2,75 +2,75 @@
 {% block title %}{{ product.name }} · Modifiers, {{ brand_name }}{% endblock %}
 
 {% block admin %}
-<div class="mb-5"><a href="/admin/menu{{ qs }}" class="link-underline text-sm"><i class="fa-solid fa-arrow-left"></i> Back to menu</a></div>
+<div class="ok-mb-5"><a href="/admin/menu{{ qs }}" class="link-underline ok-fs-sm"><i class="fa-solid fa-arrow-left"></i> Back to menu</a></div>
 
-<div class="flex items-center gap-4 mb-6">
-  <img src="{{ product.image_url }}" alt="" class="w-16 h-16 rounded-xl object-cover shrink-0">
+<div class="d-flex align-items-center gap-3 mb-4">
+  <img src="{{ product.image_url }}" alt="" class="ok-w-16 ok-h-16 ok-rounded-xl ok-cover flex-shrink-0">
   <div>
     <h2 class="ok-h2">{{ product.name }}</h2>
-    <p class="text-slate text-sm">{{ product.category.name }} · base ${{ '%.2f'|format(product.base_price) }}</p>
+    <p class="text-muted-warm ok-fs-sm">{{ product.category.name }} · base ${{ '%.2f'|format(product.base_price) }}</p>
   </div>
 </div>
-<p class="text-slate text-sm mb-6 -mt-2">Modifiers belong to the brand item, so they appear wherever it's on the menu. They show on the item page and carry through cart, checkout and receipts.</p>
+<p class="text-muted-warm ok-fs-sm mb-4 -mt-2">Modifiers belong to the brand item, so they appear wherever it's on the menu. They show on the item page and carry through cart, checkout and receipts.</p>
 
-<div class="grid lg:grid-cols-2 gap-6 items-start">
+<div class="ok-grid ok-grid-lg-2 gap-4 align-items-start">
   <!-- Sizes / variants (single-select) -->
-  <div class="ok-card p-5">
-    <h3 class="font-display font-bold text-lg mb-1">Sizes / variants</h3>
-    <p class="text-xs text-slate mb-4">Single choice, one is the default. The price delta adjusts the base price.</p>
+  <div class="ok-card ok-p-5">
+    <h3 class="font-display fw-bold ok-fs-lg mb-1">Sizes / variants</h3>
+    <p class="ok-fs-xs text-muted-warm mb-3">Single choice, one is the default. The price delta adjusts the base price.</p>
     {% if product.variants %}
-    <div class="divide-y divide-[var(--ok-line)] mb-4">
+    <div class="ok-divide-y mb-3">
       {% for v in product.variants %}
-      <div class="py-2.5 flex items-center gap-3">
-        <div class="flex-1">
-          <span class="font-semibold">{{ v.name }}</span>
-          <span class="text-sm text-slate">{% if v.price_delta and v.price_delta != 0 %}{{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}{% else %}base{% endif %}</span>
+      <div class="ok-py-25 d-flex align-items-center ok-gap-3">
+        <div class="ok-flex-1">
+          <span class="fw-semibold">{{ v.name }}</span>
+          <span class="ok-fs-sm text-muted-warm">{% if v.price_delta and v.price_delta != 0 %}{{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}{% else %}base{% endif %}</span>
         </div>
         {% if v.is_default %}
         <span class="badge badge-yellow">Default</span>
         {% else %}
-        <form method="post" action="/admin/menu/variants/{{ v.id }}/default{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline text-xs">Make default</button></form>
+        <form method="post" action="/admin/menu/variants/{{ v.id }}/default{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs">Make default</button></form>
         {% endif %}
-        <form method="post" action="/admin/menu/variants/{{ v.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline text-xs !text-okred">Delete</button></form>
+        <form method="post" action="/admin/menu/variants/{{ v.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Delete</button></form>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-sm text-slate mb-4">No sizes yet, the item is ordered at its base price.</p>
+    <p class="ok-fs-sm text-muted-warm mb-3">No sizes yet, the item is ordered at its base price.</p>
     {% endif %}
-    <form method="post" action="/admin/menu/{{ product.id }}/variants{{ qs }}" class="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+    <form method="post" action="/admin/menu/{{ product.id }}/variants{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div><label class="ok-label !text-xs">Name</label><input name="name" required class="ok-input py-2 text-sm" placeholder="Double"></div>
-      <div><label class="ok-label !text-xs">Price delta</label><input name="price_delta" type="number" step="0.01" class="ok-input py-2 text-sm w-24" placeholder="0.00"></div>
+      <div><label class="ok-label ok-fs-xs">Name</label><input name="name" required class="ok-input py-2 ok-fs-sm" placeholder="Double"></div>
+      <div><label class="ok-label ok-fs-xs">Price delta</label><input name="price_delta" type="number" step="0.01" class="ok-input py-2 ok-fs-sm ok-w-24" placeholder="0.00"></div>
       <button class="btn btn-primary btn-sm">Add</button>
-      <label class="col-span-3 flex items-center gap-2 text-sm"><input type="checkbox" name="is_default" class="w-4 h-4 accent-okyellow"> Make this the default</label>
+      <label class="ok-col-span-3 d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_default" class="ok-w-4 ok-h-4 ok-accent-yellow"> Make this the default</label>
     </form>
   </div>
 
   <!-- Add-ons (multi-select) -->
-  <div class="ok-card p-5">
-    <h3 class="font-display font-bold text-lg mb-1">Add-ons / extras</h3>
-    <p class="text-xs text-slate mb-4">Optional extras, customers can pick any number; each adds its price.</p>
+  <div class="ok-card ok-p-5">
+    <h3 class="font-display fw-bold ok-fs-lg mb-1">Add-ons / extras</h3>
+    <p class="ok-fs-xs text-muted-warm mb-3">Optional extras, customers can pick any number; each adds its price.</p>
     {% if product.addons %}
-    <div class="divide-y divide-[var(--ok-line)] mb-4">
+    <div class="ok-divide-y mb-3">
       {% for a in product.addons %}
-      <div class="py-2.5 flex items-center gap-3">
-        <div class="flex-1"><span class="font-semibold">{{ a.name }}</span> <span class="text-sm text-slate">+${{ '%.2f'|format(a.price) }}</span></div>
-        <form method="post" action="/admin/menu/addons/{{ a.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline text-xs !text-okred">Delete</button></form>
+      <div class="ok-py-25 d-flex align-items-center ok-gap-3">
+        <div class="ok-flex-1"><span class="fw-semibold">{{ a.name }}</span> <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(a.price) }}</span></div>
+        <form method="post" action="/admin/menu/addons/{{ a.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Delete</button></form>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p class="text-sm text-slate mb-4">No add-ons yet.</p>
+    <p class="ok-fs-sm text-muted-warm mb-3">No add-ons yet.</p>
     {% endif %}
-    <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
+    <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div><label class="ok-label !text-xs">Name</label><input name="name" required class="ok-input py-2 text-sm" placeholder="Add bacon"></div>
-      <div><label class="ok-label !text-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 text-sm w-24" placeholder="1.50"></div>
+      <div><label class="ok-label ok-fs-xs">Name</label><input name="name" required class="ok-input py-2 ok-fs-sm" placeholder="Add bacon"></div>
+      <div><label class="ok-label ok-fs-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 ok-fs-sm ok-w-24" placeholder="1.50"></div>
       <button class="btn btn-primary btn-sm">Add</button>
     </form>
   </div>
 </div>
 
-<div class="mt-6"><a href="/item/{{ product.slug }}" target="_blank" rel="noopener" class="link-underline text-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Preview on the storefront</a></div>
+<div class="mt-4"><a href="/item/{{ product.slug }}" target="_blank" rel="noopener" class="link-underline ok-fs-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Preview on the storefront</a></div>
 {% endblock %}

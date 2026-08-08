@@ -3,78 +3,76 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Home page builder</h2>
-<p class="text-slate text-sm mb-3">Drag the <i class="fa-solid fa-grip-vertical"></i> handle (or use the arrows) to reorder sections, toggle a section on/off, and edit its text, links &amp; background. Add your own custom blocks. Blank fields fall back to the built-in default.</p>
-<p class="text-sm mb-4"><i class="fa-solid fa-image text-slate"></i> Section pictures are managed in <a href="/admin/site-images{{ qs }}" class="link-underline font-semibold">Site Images</a>.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-3">Drag the <i class="fa-solid fa-grip-vertical"></i> handle (or use the arrows) to reorder sections, toggle a section on/off, and edit its text, links &amp; background. Add your own custom blocks. Blank fields fall back to the built-in default.</p>
+<p class="ok-fs-sm mb-3"><i class="fa-solid fa-image text-muted-warm"></i> Section pictures are managed in <a href="/admin/site-images{{ qs }}" class="link-underline fw-semibold">Site Images</a>.</p>
 
 <!-- Live preview -->
-<div class="mb-4 max-w-3xl">
+<div class="mb-3 ok-maxw-3xl">
   <button type="button" id="pbPreviewToggle" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> Show live preview</button>
 </div>
-<div id="pbPreview" class="hidden mb-6 max-w-3xl rounded-xl overflow-hidden border border-[var(--ok-line)] bg-white">
-  <div class="flex items-center justify-between px-3 py-2 border-b border-[var(--ok-line)]">
-    <span class="text-xs font-semibold text-slate">Live preview, home page</span>
-    <button type="button" id="pbPreviewRefresh" class="link-underline text-xs"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+<div id="pbPreview" class="d-none mb-4 ok-maxw-3xl ok-rounded-xl overflow-hidden border ok-bc-varokline bg-white">
+  <div class="d-flex align-items-center justify-content-between ok-px-3 py-2 border-bottom ok-bc-varokline">
+    <span class="ok-fs-xs fw-semibold text-muted-warm">Live preview, home page</span>
+    <button type="button" id="pbPreviewRefresh" class="link-underline ok-fs-xs"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
   </div>
-  <iframe id="pbPreviewFrame" data-src="/" class="w-full block bg-white" style="height:560px" title="Home preview"></iframe>
+  <iframe id="pbPreviewFrame" data-src="/" class="w-100 d-block bg-white" style="height:560px" title="Home preview"></iframe>
 </div>
 
 <form method="post" action="/admin/page-builder{{ qs }}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 
-  <div id="sectionList" class="space-y-3 max-w-3xl">
+  <div id="sectionList" class="ok-stack-3 ok-maxw-3xl">
     {% for s in sections %}
     {% set spec = specs.get(s.key, {}) %}
     {% set cfg = s.config or {} %}
-    <div data-row id="sec-{{ s.key }}" class="ok-card p-0 overflow-hidden transition">
+    <div data-row id="sec-{{ s.key }}" class="ok-card p-0 overflow-hidden ok-transition">
       <input type="hidden" name="order" value="{{ s.key }}">
-      <div class="flex items-center gap-3 p-4">
-        <button type="button" data-handle class="cursor-grab active:cursor-grabbing text-slate/50 px-1 shrink-0" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
-        <div class="flex-1 min-w-0">
-          <div class="font-display font-bold leading-tight truncate flex items-center gap-2">
+      <div class="d-flex align-items-center ok-gap-3 p-3">
+        <button type="button" data-handle class="ok-grab text-muted-warm-50 px-1 flex-shrink-0" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
+        <div class="ok-flex-1 ok-min-w-0">
+          <div class="font-display fw-bold ok-lh-tight text-truncate d-flex align-items-center gap-2">
             {{ s.label }}
-            {% if spec.get('custom') %}<span class="text-[.6rem] font-semibold uppercase tracking-wide bg-okyellow/20 text-okamber px-1.5 py-0.5 rounded">Custom</span>{% endif %}
+            {% if spec.get('custom') %}<span class="ok-fs-6rem fw-semibold text-uppercase ok-ls-wide bg-yellow-20 text-gold ok-px-15 ok-py-05 ok-rounded">Custom</span>{% endif %}
           </div>
-          <div class="text-[.7rem] text-slate uppercase tracking-wide truncate">{{ cfg.get('heading') or s.key }}</div>
+          <div class="ok-fs-7rem text-muted-warm text-uppercase ok-ls-wide text-truncate">{{ cfg.get('heading') or s.key }}</div>
         </div>
 
         <!-- enabled toggle -->
-        <label class="flex items-center gap-2 cursor-pointer select-none shrink-0" title="Show / hide this section">
-          <input type="checkbox" name="enabled_{{ s.key }}" {% if s.enabled %}checked{% endif %} class="peer sr-only">
-          <span class="w-11 h-6 rounded-full bg-gray-300 peer-checked:bg-okgreen relative transition-colors">
-            <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
-          </span>
+        <label class="ok-switch d-flex align-items-center gap-2 ok-pointer ok-nodrag flex-shrink-0" title="Show / hide this section">
+          <input type="checkbox" name="enabled_{{ s.key }}" {% if s.enabled %}checked{% endif %} class="visually-hidden">
+          <span class="ok-switch-track"><span class="ok-switch-thumb"></span></span>
         </label>
 
         <!-- move up/down -->
-        <div class="flex flex-col shrink-0 text-slate">
-          <button type="button" data-up class="w-6 h-5 grid place-items-center rounded hover:bg-black/5" title="Move up"><i class="fa-solid fa-chevron-up text-xs"></i></button>
-          <button type="button" data-down class="w-6 h-5 grid place-items-center rounded hover:bg-black/5" title="Move down"><i class="fa-solid fa-chevron-down text-xs"></i></button>
+        <div class="d-flex flex-column flex-shrink-0 text-muted-warm">
+          <button type="button" data-up class="ok-w-6 ok-h-5 ok-grid ok-place-center ok-rounded ok-hov-bg-ink-05" title="Move up"><i class="fa-solid fa-chevron-up ok-fs-xs"></i></button>
+          <button type="button" data-down class="ok-w-6 ok-h-5 ok-grid ok-place-center ok-rounded ok-hov-bg-ink-05" title="Move down"><i class="fa-solid fa-chevron-down ok-fs-xs"></i></button>
         </div>
 
         {% if spec.get('fields') or spec.get('theme') %}
-        <button type="button" data-edit-toggle class="btn btn-secondary btn-sm shrink-0"><i class="fa-solid fa-pen"></i> Edit</button>
+        <button type="button" data-edit-toggle class="btn btn-secondary btn-sm flex-shrink-0"><i class="fa-solid fa-pen"></i> Edit</button>
         {% endif %}
 
         {% if spec.get('custom') %}
-        <button type="submit" formaction="/admin/page-builder/{{ s.id }}/duplicate{{ qs }}" class="w-8 h-8 grid place-items-center rounded-lg text-slate hover:bg-black/5 shrink-0" title="Duplicate"><i class="fa-solid fa-clone"></i></button>
-        <button type="submit" formaction="/admin/page-builder/{{ s.id }}/delete{{ qs }}" onclick="return confirm('Delete this custom section?')" class="w-8 h-8 grid place-items-center rounded-lg text-okred hover:bg-okred/10 shrink-0" title="Delete"><i class="fa-solid fa-trash"></i></button>
+        <button type="submit" formaction="/admin/page-builder/{{ s.id }}/duplicate{{ qs }}" class="ok-w-8 ok-h-8 ok-grid ok-place-center ok-rounded-lg text-muted-warm ok-hov-bg-ink-05 flex-shrink-0" title="Duplicate"><i class="fa-solid fa-clone"></i></button>
+        <button type="submit" formaction="/admin/page-builder/{{ s.id }}/delete{{ qs }}" onclick="return confirm('Delete this custom section?')" class="ok-w-8 ok-h-8 ok-grid ok-place-center ok-rounded-lg text-ok-red ok-hov-bg-red-10 flex-shrink-0" title="Delete"><i class="fa-solid fa-trash"></i></button>
         {% endif %}
       </div>
 
       {% if spec.get('fields') or spec.get('theme') %}
-      <div data-edit class="hidden border-t border-[var(--ok-line)] p-4 bg-black/[0.02]">
-        <div class="grid sm:grid-cols-2 gap-3">
+      <div data-edit class="d-none border-top ok-bc-varokline p-3 ok-bgc-b002">
+        <div class="ok-grid ok-grid-sm-2 ok-gap-3">
           {% for field, label, default in spec.get('fields', []) %}
           {% set _def = defaults.get(s.key, {}).get(field, '') %}
           <div>
-            <label class="ok-label !text-xs">{{ label }}</label>
-            <input name="f_{{ s.key }}_{{ field }}" value="{{ cfg.get(field) or _def }}" placeholder="{{ _def or ('Custom text' if spec.get('custom') else 'Default') }}" class="ok-input py-2 text-sm">
+            <label class="ok-label ok-fs-xs">{{ label }}</label>
+            <input name="f_{{ s.key }}_{{ field }}" value="{{ cfg.get(field) or _def }}" placeholder="{{ _def or ('Custom text' if spec.get('custom') else 'Default') }}" class="ok-input py-2 ok-fs-sm">
           </div>
           {% endfor %}
           {% if spec.get('theme') %}
           <div>
-            <label class="ok-label !text-xs">Background theme</label>
-            <select name="theme_{{ s.key }}" class="ok-input py-2 text-sm">
+            <label class="ok-label ok-fs-xs">Background theme</label>
+            <select name="theme_{{ s.key }}" class="ok-input py-2 ok-fs-sm">
               {% for tval, tlabel in themes %}<option value="{{ tval }}" {% if cfg.get('theme', 'default') == tval %}selected{% endif %}>{{ tlabel }}</option>{% endfor %}
             </select>
           </div>
@@ -86,13 +84,13 @@
     {% endfor %}
   </div>
 
-  <div class="max-w-3xl mt-3">
-    <button type="submit" formaction="/admin/page-builder/add{{ qs }}" class="w-full border-2 border-dashed border-[var(--ok-line)] rounded-xl py-3 text-sm font-semibold text-slate hover:border-okyellow hover:text-jet transition"><i class="fa-solid fa-plus"></i> Add custom section</button>
+  <div class="ok-maxw-3xl ok-mt-3">
+    <button type="submit" formaction="/admin/page-builder/add{{ qs }}" class="w-100 border-2 ok-border-dashed ok-bc-varokline ok-rounded-xl ok-py-3 ok-fs-sm fw-semibold text-muted-warm ok-hov-border-yellow ok-hov-text-ink ok-transition"><i class="fa-solid fa-plus"></i> Add custom section</button>
   </div>
 
-  <div class="sticky bottom-0 bg-[#f4f5f7] py-3 mt-5 -mx-4 px-4 border-t border-[var(--ok-line)] max-w-3xl">
+  <div class="position-sticky bottom-0 ok-bgc-f4f5f7 ok-py-3 ok-mt-5 -mx-4 px-3 border-top ok-bc-varokline ok-maxw-3xl">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save layout</button>
-    <a href="/" target="_blank" rel="noopener" class="link-underline text-sm ml-3">Open home <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <a href="/" target="_blank" rel="noopener" class="link-underline ok-fs-sm ok-ml-3">Open home <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
   </div>
 </form>
 
@@ -110,10 +108,10 @@
     });
     list.addEventListener('dragstart', function (e) {
       dragEl = e.target.closest('[data-row]');
-      if (dragEl) { e.dataTransfer.effectAllowed = 'move'; dragEl.classList.add('ring-2', 'ring-okyellow', 'opacity-70'); }
+      if (dragEl) { e.dataTransfer.effectAllowed = 'move'; dragEl.classList.add('ok-dragging'); }
     });
     list.addEventListener('dragend', function () {
-      if (dragEl) { dragEl.classList.remove('ring-2', 'ring-okyellow', 'opacity-70'); dragEl.removeAttribute('draggable'); }
+      if (dragEl) { dragEl.classList.remove('ok-dragging'); dragEl.removeAttribute('draggable'); }
       dragEl = null;
     });
     list.addEventListener('dragover', function (e) {
@@ -130,7 +128,7 @@
       if (!row) return;
       if (e.target.closest('[data-up]') && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
       else if (e.target.closest('[data-down]') && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
-      else if (e.target.closest('[data-edit-toggle]')) row.querySelector('[data-edit]').classList.toggle('hidden');
+      else if (e.target.closest('[data-edit-toggle]')) row.querySelector('[data-edit]').classList.toggle('d-none');
     });
   }
 
@@ -140,7 +138,7 @@
   var pvFrame = document.getElementById('pbPreviewFrame');
   if (pvToggle && pv && pvFrame) {
     pvToggle.addEventListener('click', function () {
-      var nowHidden = pv.classList.toggle('hidden');
+      var nowHidden = pv.classList.toggle('d-none');
       if (!nowHidden) {
         if (!pvFrame.getAttribute('src')) pvFrame.setAttribute('src', pvFrame.dataset.src);
         pvToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Hide live preview';

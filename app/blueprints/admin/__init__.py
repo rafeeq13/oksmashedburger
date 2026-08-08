@@ -537,8 +537,13 @@ def page_content():
     store = _admin_store()
     current = {s.key: s.value for s in SiteSetting.query.all() if s.value}
     defaults = page_content_defaults(current_app.config.get("BRAND_NAME", ""))
+    # paths that can also be rebuilt from scratch in the drag-drop builder, so
+    # each page block can offer "Redesign" next to "View"
+    taken = {p.override_path for p in BuilderPage.query.all() if p.override_path}
+    overridable = {o[0] for o in BUILDER_OVERRIDABLE if o[0] not in taken}
     return render_template("admin/page_content.html", pages=PAGE_CONTENT,
-                           current=current, defaults=defaults, **_shell(store))
+                           current=current, defaults=defaults,
+                           overridable=overridable, **_shell(store))
 
 
 @bp.post("/admin/page-content")
@@ -547,7 +552,8 @@ def page_content_save():
     store = _admin_store()
     defaults = page_content_defaults(current_app.config.get("BRAND_NAME", ""))
     for p in PAGE_CONTENT:
-        for key, _label, _default in p["fields"]:
+        for field in p["fields"]:
+            key = field[0]
             val = (request.form.get(key) or "").strip()
             setting = SiteSetting.query.filter_by(key=key).first()
             if val and val != (defaults.get(key) or ""):
@@ -656,7 +662,13 @@ BUILDER_OVERRIDABLE = [
     ("/careers", "Careers", "website/careers.html"),
     ("/faq", "FAQ", "website/faq.html"),
     ("/news", "News", "website/news.html"),
+    ("/deals", "Deals", "website/deals.html"),
+    ("/rewards", "Rewards", "website/rewards.html"),
+    ("/gift-cards", "Gift cards", "website/gift-cards.html"),
 ]
+# /menu and /locations are deliberately NOT here: their content is the live menu
+# and store list, so a rebuilt copy would freeze that data into static HTML.
+# Their headings are editable in Page Content instead.
 
 
 def _extract_page_content(template_name):
@@ -832,9 +844,12 @@ def builder_meta(pid):
             page.slug = new_slug
     page.published = bool(request.form.get("published"))
     page.show_in_nav = bool(request.form.get("show_in_nav"))
-    page.meta_title = (request.form.get("meta_title") or "").strip() or None
-    page.meta_description = (request.form.get("meta_description") or "").strip() or None
-    page.head_code = (request.form.get("head_code") or "").strip() or None
+    # Only overwrite a field the submitted form actually carries. `head_code` is
+    # owned by BOTH this form and the full code editor, so a settings POST that
+    # does not include it (a partial/scripted save) must not wipe it.
+    for field in ("meta_title", "meta_description", "head_code"):
+        if field in request.form:
+            setattr(page, field, (request.form.get(field) or "").strip() or None)
     if request.form.get("detach_override"):
         page.override_path = None       # restore the original storefront page
     make_home = bool(request.form.get("is_home"))

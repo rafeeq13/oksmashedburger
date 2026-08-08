@@ -180,65 +180,128 @@ def next_custom_key():
     return "custom_%d" % n
 
 
-# ── Other storefront pages: editable headline copy (stored as SiteSetting keys,
-#    read by templates via the injected `site` dict → site.get(key) or default) ──
+# ── Other storefront pages: editable copy ────────────────────────────────────
+# Stored as SiteSetting rows and read by the templates through the `pc()` Jinja
+# global, so THIS registry is the single source of truth for the default text.
+# (Templates used to repeat the default inline, and About's had drifted so far
+# that the admin screen pre-filled copy that was nowhere on the page.)
+#
+# A field is (key, label, default) or (key, label, default, "area") when it is
+# long enough to want a textarea in the admin.
 PAGE_CONTENT = [
     {"key": "about", "label": "About", "url": "/about", "fields": [
-        ("about_hero_heading", "Hero heading", "Smashed the right way."),
-        ("about_hero_text", "Hero sub-text", "We started with one griddle, one sauce recipe and one belief: a great smash burger should be fresh, fast and fair. That belief still fires up every OK kitchen across Philadelphia."),
-        ("about_story_heading", "Story section heading", "From a corner griddle to four neighborhood kitchens"),
-        ("about_values_heading", "Values section heading", "What we stand for"),
-        ("about_team_heading", "Team section heading", "Meet the team"),
-        ("about_cta_heading", "Closing CTA heading", "Hungry yet?")]},
+        ("about_hero_heading", "Hero heading", "About Us"),
+        ("about_story_heading", "Intro heading", "Start the day off right with one of our delicious smash burgers"),
+        ("about_hero_text", "Intro paragraph", "{brand} is a fast-casual smash-burger concept built on a simple belief: people deserve something better. Quality ingredients, made from scratch, freshly cooked, handcrafted, consistent, and served with a smile.", "area"),
+        ("about_card1_heading", "Card 1 heading", "Cooked Fresh And From Scratch"),
+        ("about_card1_text", "Card 1 text", "We're passionate about the quality and consistency of our food, which is why we cook everything fresh and from scratch. We make our sauces in-house, hand-form every patty, toast our own buns, and never let a burger sit.", "area"),
+        ("about_card2_heading", "Card 2 heading", "Community Focused And Locally-sourced"),
+        ("about_card2_text", "Card 2 text", "We love the communities we're in, so much that we source our ingredients from local businesses: our beef, our produce and our bakery buns all come from partners right here in Philadelphia.", "area"),
+        ("about_table_heading", "Table section heading", "Meet Us At The Table"),
+        ("about_table_text", "Table paragraph 1", "We'll be playing upbeat music to set the vibes, pouring hand-spun shakes, cold-pressed lemonade and fresh soda.", "area"),
+        ("about_table_text2", "Table paragraph 2", "We're excited to be able to start your day off right and we hope to serve you soon!", "area"),
+        ("about_values_heading", "Band heading", "Different smashes for different folks"),
+        ("about_values_text", "Band paragraph", "We are the lunch crowd, the late-night crew, the family Fridays and the game-day groups, serving different smashes for different folks.", "area"),
+        ("about_team_heading", "Story section heading", "How it all started"),
+        ("about_team_text", "Story paragraph 1", "In 2021, two friends set up a single flat-top in a Fishtown pop-up with one idea: press a ball of fresh beef hard onto a screaming-hot griddle, let the edges lace and caramelize, and serve it before it ever had a chance to cool down. The line went around the block by week two.", "area"),
+        ("about_team_text2", "Story paragraph 2", "Four neighborhood kitchens later, nothing about the craft has changed. What's new is the tech that gets it to you faster: live tracking, easy reorders and rewards on every bite.", "area"),
+        ("about_reviews_heading", "Reviews section heading", "What locals have to say"),
+        ("about_ig_heading", "Instagram heading", "Follow us on Instagram"),
+        ("about_ig_tagline", "Instagram tagline", "Real smashed burgers, fast · Philadelphia · Find your nearest location"),
+        ("about_cta_heading", "Closing CTA heading", "Hungry yet?"),
+        ("about_cta_text", "Closing CTA text", "Pick your kitchen, build your order and we'll smash it fresh.", "area")]},
     {"key": "contact", "label": "Contact", "url": "/contact", "fields": [
         ("contact_hero_heading", "Hero heading", "Get in touch"),
-        ("contact_hero_text", "Hero sub-text", "Questions, catering, franchising or just some love for the OK sauce, we read every message and reply fast."),
-        ("contact_faq_heading", "FAQ teaser heading", "Quick answers, no waiting")]},
+        ("contact_hero_text", "Hero sub-text", "Questions, catering, franchising or just some love for the OK sauce, we read every message and reply fast.", "area"),
+        ("contact_form_heading", "Form heading", "Drop us a line"),
+        ("contact_form_text", "Form sub-text", "Fill out the form and our team will get back to you within one business day.", "area"),
+        ("contact_email_note", "Email card note", "We reply within 1 business day"),
+        ("contact_hq_name", "HQ name", "OK Smashed Burger HQ"),
+        ("contact_hq_address", "HQ address", "1201 Frankford Ave, Philadelphia · 19125"),
+        ("contact_faq_heading", "FAQ teaser heading", "Quick answers, no waiting"),
+        ("contact_faq_text", "FAQ teaser text", "A lot of questions have instant answers in our help center. Jump straight to a topic.", "area")]},
     {"key": "catering", "label": "Catering", "url": "/catering", "fields": [
         ("catering_hero_heading", "Hero heading", "Catering for any event."),
-        ("catering_hero_text", "Hero sub-text", "From team lunches to weekend gatherings, we bring fresh-smashed burgers, loaded sides and crowd-pleasing favorites straight to your event."),
+        ("catering_hero_text", "Hero sub-text", "From team lunches to weekend gatherings, we bring fresh-smashed burgers, loaded sides and crowd-pleasing favorites straight to your event.", "area"),
         ("catering_cater_heading", "What-we-cater heading", "What we cater"),
+        ("catering_cater_text", "What-we-cater sub-text", "Every order is smashed fresh the morning of your event and delivered hot, labelled and ready to serve.", "area"),
+        ("catering_card1_heading", "Card 1 heading", "Office lunches"),
+        ("catering_card1_text", "Card 1 text", "Team meetings, client days and Friday treats. Individually boxed so everyone gets exactly what they ordered.", "area"),
+        ("catering_card2_heading", "Card 2 heading", "Parties & celebrations"),
+        ("catering_card2_text", "Card 2 text", "Birthdays, graduations and backyard get-togethers. Served as build-your-own trays or ready-to-eat boxes.", "area"),
+        ("catering_card3_heading", "Card 3 heading", "Game day & groups"),
+        ("catering_card3_text", "Card 3 text", "Sliders, loaded fries and shareable sides built for a crowd watching the game.", "area"),
         ("catering_packages_heading", "Packages heading", "Catering packages"),
-        # catering_how_heading lived here until the "How catering works" section
-        # was removed from the page; the field had nothing left to drive.
-        ("catering_quote_heading", "Quote form heading", "Request a catering quote")]},
+        ("catering_packages_text", "Packages sub-text", "Pick a package or tell us what you need and we will build one for you.", "area"),
+        ("catering_packages_note", "Packages small print", "Prices are a guide only. Final quotes depend on headcount, menu and location.", "area"),
+        ("catering_quote_heading", "Quote form heading", "Request a catering quote"),
+        ("catering_quote_text", "Quote form sub-text", "Tell us about your event and we will get back to you within one business day.", "area")]},
     {"key": "careers", "label": "Careers", "url": "/careers", "fields": [
         ("careers_hero_heading", "Hero heading", "Join our team."),
-        ("careers_hero_text", "Hero sub-text", "Grill cooks, shift leads, drivers and managers. If you love good food and moving fast, we want to meet you. No restaurant experience required."),
+        ("careers_hero_text", "Hero sub-text", "Grill cooks, shift leads, drivers and managers. If you love good food and moving fast, we want to meet you. No restaurant experience required.", "area"),
         ("careers_why_heading", "Why-work heading", "Why work at {brand}"),
+        ("careers_why_text", "Why-work sub-text", "We are a small, growing crew. That means real training, real hours and a real path to running your own kitchen.", "area"),
+        ("careers_perk1_heading", "Perk 1 heading", "Fair pay, paid weekly"),
+        ("careers_perk1_text", "Perk 1 text", "Above-minimum starting rates, tips shared across the whole crew.", "area"),
+        ("careers_perk2_heading", "Perk 2 heading", "Flexible shifts"),
+        ("careers_perk2_text", "Perk 2 text", "Schedules posted two weeks ahead, built around school and family.", "area"),
+        ("careers_perk3_heading", "Perk 3 heading", "Train and grow"),
+        ("careers_perk3_text", "Perk 3 text", "Most of our shift leads started on the griddle with zero experience.", "area"),
+        ("careers_perk4_heading", "Perk 4 heading", "Free shift meal"),
+        ("careers_perk4_text", "Perk 4 text", "A burger on us every shift, plus a discount on your days off.", "area"),
         ("careers_roles_heading", "Open-roles heading", "Open roles"),
-        ("careers_apply_heading", "Apply form heading", "Apply now")]},
+        ("careers_apply_heading", "Apply form heading", "Apply now"),
+        ("careers_apply_text", "Apply form sub-text", "Send us a note. No CV required for kitchen and counter roles, just tell us about yourself.", "area")]},
     {"key": "faq", "label": "FAQ / Help", "url": "/faq", "fields": [
         ("faq_hero_heading", "Hero heading", "How can we help?"),
-        ("faq_hero_text", "Hero sub-text", "Search our help center or browse the topics below. Most answers are just a tap away."),
+        ("faq_hero_text", "Hero sub-text", "Search our help center or browse the topics below. Most answers are just a tap away.", "area"),
         ("faq_list_heading", "FAQ list heading", "Frequently asked"),
-        ("faq_help_heading", "Still-need-help heading", "Still need help?")]},
+        ("faq_help_heading", "Still-need-help heading", "Still need help?"),
+        ("faq_help_text", "Still-need-help text", "Can't find what you're looking for? Our Philly-based support team is quick, friendly and ready to sort it out.", "area")]},
+    {"key": "news", "label": "News", "url": "/news", "fields": [
+        ("news_hero_heading", "Hero heading", "News & updates."),
+        ("news_hero_text", "Hero sub-text", "New openings, menu drops and everything happening across our Philadelphia kitchens.", "area"),
+        ("news_cta_heading", "Closing CTA heading", "Hungry yet?"),
+        ("news_cta_text", "Closing CTA text", "Fresh-smashed, deal-forward and tracked to your door. Build your order and taste why Philly keeps coming back.", "area")]},
     {"key": "deals", "label": "Deals", "url": "/deals", "fields": [
         ("deals_hero_heading", "Hero heading", "Deals & Offers"),
-        ("deals_hero_text", "Hero sub-text", "Save on smashed favorites. Start an order straight from any deal, most need no code at all."),
-        ("deals_list_heading", "Deals list heading", "All deals")]},
+        ("deals_hero_text", "Hero sub-text", "Save on smashed favorites. Start an order straight from any deal, most need no code at all.", "area"),
+        ("deals_list_heading", "Deals list heading", "All deals"),
+        ("deals_empty_text", "Empty-state text", "No active deals right now, check back soon!")]},
     {"key": "rewards", "label": "Rewards", "url": "/rewards", "fields": [
         ("rewards_hero_heading", "Hero heading", "Every bite earns you free food."),
-        ("rewards_hero_text", "Hero sub-text", "Rack up points on every order and cash them in for burgers, sides and shakes. Plus birthday treats, referral bonuses and members-only deals."),
+        ("rewards_hero_text", "Hero sub-text", "Rack up points on every order and cash them in for burgers, sides and shakes. Plus birthday treats, referral bonuses and members-only deals.", "area"),
         ("rewards_earn_heading", "Earn & redeem heading", "Earn & redeem"),
+        ("rewards_stack_heading", "Stack-points card heading", "Ready to stack points?"),
+        ("rewards_stack_text", "Stack-points card text", "Start an order now and watch your balance grow.", "area"),
         ("rewards_tiers_heading", "Membership tiers heading", "Membership tiers"),
+        ("rewards_tiers_text", "Membership tiers sub-text", "The more you order, the more you unlock. Tiers are based on points earned in a calendar year.", "area"),
+        ("rewards_referral_heading", "Referral heading", "Give $5, get $5"),
+        ("rewards_referral_text", "Referral text", "Share your personal code. When a friend places their first order, they get $5 off, and you get $5 too. No limit on how many friends you invite.", "area"),
         ("rewards_faq_heading", "Rewards FAQ heading", "Rewards FAQ")]},
     {"key": "giftcards", "label": "Gift cards", "url": "/gift-cards", "fields": [
         ("giftcards_hero_heading", "Hero heading", "Give the gift of a smash"),
-        ("giftcards_hero_text", "Hero sub-text", "Delivered instantly by email or scheduled for the perfect moment. Any amount, redeemable on everything we make."),
+        ("giftcards_hero_text", "Hero sub-text", "Delivered instantly by email or scheduled for the perfect moment. Any amount, redeemable on everything we make.", "area"),
+        ("giftcards_hero_note", "Hero small print", "Never expires · Redeemable online & in-store · Delivered in seconds"),
         ("giftcards_build_heading", "Build-card heading", "Build your gift card"),
+        ("giftcards_balance_text", "Balance-check text", "Enter the 12-digit code from your gift card email to see the remaining balance.", "area"),
         ("giftcards_how_heading", "How-it-works heading", "How it works"),
-        ("giftcards_corporate_heading", "Corporate heading", "Corporate & bulk gift cards")]},
+        ("giftcards_corporate_heading", "Corporate heading", "Corporate & bulk gift cards"),
+        ("giftcards_corporate_text", "Corporate text", "Reward your team or thank your clients. Order gift cards in bulk with custom branding, volume discounts and a single invoice. Our team will help you set it up.", "area")]},
+    {"key": "locations", "label": "Locations", "url": "/locations", "fields": [
+        ("locations_hero_heading", "Hero heading", "Find your OK Smashed Burger"),
+        ("locations_search_placeholder", "Search placeholder", "Filter by area, address or ZIP")]},
 ]
 
 
 def page_content_defaults(brand=""):
     """Flat {key: default_text} for every editable page-content field, with
-    {brand} resolved (used for pre-fill and to detect unchanged saves)."""
+    {brand} resolved (used for pre-fill, for `pc()` and to detect unchanged
+    saves so a value equal to the default is never stored as an override)."""
     out = {}
     for p in PAGE_CONTENT:
-        for k, _l, d in p["fields"]:
-            out[k] = (d or "").replace("{brand}", brand)
+        for f in p["fields"]:
+            out[f[0]] = (f[2] or "").replace("{brand}", brand)
     return out
 
 

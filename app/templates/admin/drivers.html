@@ -3,72 +3,72 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Delivery drivers</h2>
-<p class="text-slate text-sm mb-5">
+<p class="text-muted-warm ok-fs-sm ok-mb-5">
   Your own delivery fleet for {{ admin_store.name if admin_store else 'all locations' }}.
   Link a driver to a login and they can use the driver app at <code>/driver</code>.
 </p>
 
-<div class="space-y-4">
+<div class="ok-stack-4">
   {% for d in rows %}
-  <article class="ok-card p-5 {{ '' if d.is_active else 'opacity-60' }}">
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-      <div class="flex items-center gap-2">
-        <span class="w-9 h-9 rounded-full bg-cream grid place-items-center"><i class="fa-solid fa-car"></i></span>
+  <article class="ok-card ok-p-5 {{ '' if d.is_active else 'opacity-60' }}">
+    <div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3 ok-mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center"><i class="fa-solid fa-car"></i></span>
         <div>
           <b class="font-display">{{ d.name }}</b>
-          <div class="text-xs text-slate">{{ trips[d.id] }} deliveries on record</div>
+          <div class="ok-fs-xs text-muted-warm">{{ trips[d.id] }} deliveries on record</div>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="d-flex align-items-center gap-2">
         {% if d.is_online %}<span class="badge badge-green">Online</span>
         {% else %}<span class="badge badge-soft">Offline</span>{% endif %}
         {% if not d.is_active %}<span class="badge badge-red">Inactive</span>{% endif %}
-        <form method="post" action="/admin/drivers/{{ d.id }}/toggle" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="is_online">
+        <form method="post" action="/admin/drivers/{{ d.id }}/toggle" class="d-inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="is_online">
           <button class="btn btn-secondary btn-sm">{{ 'Set offline' if d.is_online else 'Set online' }}</button></form>
-        <form method="post" action="/admin/drivers/{{ d.id }}/toggle" class="inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="is_active">
+        <form method="post" action="/admin/drivers/{{ d.id }}/toggle" class="d-inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="is_active">
           <button class="btn btn-secondary btn-sm">{{ 'Deactivate' if d.is_active else 'Reactivate' }}</button></form>
-        <form method="post" action="/admin/drivers/{{ d.id }}/delete" class="inline" onsubmit="return confirm('Remove {{ d.name }}?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button class="w-8 h-8 grid place-items-center rounded-lg text-ok-red hover:bg-ok-red/10" title="Remove"><i class="fa-solid fa-trash"></i></button></form>
+        <form method="post" action="/admin/drivers/{{ d.id }}/delete" class="d-inline" onsubmit="return confirm('Remove {{ d.name }}?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="ok-w-8 ok-h-8 ok-grid ok-place-center ok-rounded-lg text-ok-red ok-hov-bg-red-10" title="Remove"><i class="fa-solid fa-trash"></i></button></form>
       </div>
     </div>
 
-    <form method="post" action="/admin/drivers/{{ d.id }}/edit" class="grid sm:grid-cols-4 gap-3 items-end">
+    <form method="post" action="/admin/drivers/{{ d.id }}/edit" class="ok-grid ok-grid-sm-4 ok-gap-3 align-items-end">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Name</span>
-        <input name="name" value="{{ d.name }}" class="ok-input w-full text-sm"></label>
-      <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Phone</span>
-        <input name="phone" value="{{ d.phone or '' }}" class="ok-input w-full text-sm"></label>
-      <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Vehicle</span>
-        <input name="vehicle" value="{{ d.vehicle or '' }}" class="ok-input w-full text-sm" placeholder="Honda Civic · XYZ-902"></label>
-      <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Driver login</span>
-        <select name="user_id" class="ok-input w-full text-sm">
+      <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Name</span>
+        <input name="name" value="{{ d.name }}" class="ok-input w-100 ok-fs-sm"></label>
+      <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Phone</span>
+        <input name="phone" value="{{ d.phone or '' }}" class="ok-input w-100 ok-fs-sm"></label>
+      <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Vehicle</span>
+        <input name="vehicle" value="{{ d.vehicle or '' }}" class="ok-input w-100 ok-fs-sm" placeholder="Honda Civic · XYZ-902"></label>
+      <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Driver login</span>
+        <select name="user_id" class="ok-input w-100 ok-fs-sm">
           <option value="">No login</option>
           {% for u in linkable %}<option value="{{ u.id }}" {{ 'selected' if d.user_id == u.id }}>{{ u.email }}</option>{% endfor %}
         </select></label>
-      <div class="sm:col-span-4"><button class="btn btn-primary btn-sm">Save</button></div>
+      <div class="ok-col-span-sm-4"><button class="btn btn-primary btn-sm">Save</button></div>
     </form>
   </article>
   {% else %}
-  <div class="ok-card p-8 text-center text-slate">No drivers yet. Add your first rider below.</div>
+  <div class="ok-card ok-p-8 text-center text-muted-warm">No drivers yet. Add your first rider below.</div>
   {% endfor %}
 </div>
 
-<div class="ok-card p-5 mt-5">
-  <h3 class="font-display font-bold mb-3">Add a driver</h3>
-  <form method="post" action="/admin/drivers" class="grid sm:grid-cols-4 gap-3 items-end">
+<div class="ok-card ok-p-5 ok-mt-5">
+  <h3 class="font-display fw-bold ok-mb-3">Add a driver</h3>
+  <form method="post" action="/admin/drivers" class="ok-grid ok-grid-sm-4 ok-gap-3 align-items-end">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Name</span>
-      <input name="name" required class="ok-input w-full text-sm" placeholder="Casey Wheels"></label>
-    <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Phone</span>
-      <input name="phone" class="ok-input w-full text-sm" placeholder="(215) 555-0177"></label>
-    <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Vehicle</span>
-      <input name="vehicle" class="ok-input w-full text-sm" placeholder="Honda Civic · XYZ-902"></label>
-    <label class="block"><span class="block text-xs font-semibold text-slate mb-1">Driver login</span>
-      <select name="user_id" class="ok-input w-full text-sm">
+    <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Name</span>
+      <input name="name" required class="ok-input w-100 ok-fs-sm" placeholder="Casey Wheels"></label>
+    <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Phone</span>
+      <input name="phone" class="ok-input w-100 ok-fs-sm" placeholder="(215) 555-0177"></label>
+    <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Vehicle</span>
+      <input name="vehicle" class="ok-input w-100 ok-fs-sm" placeholder="Honda Civic · XYZ-902"></label>
+    <label class="d-block"><span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">Driver login</span>
+      <select name="user_id" class="ok-input w-100 ok-fs-sm">
         <option value="">No login</option>
         {% for u in linkable %}<option value="{{ u.id }}">{{ u.email }}</option>{% endfor %}
       </select></label>
-    <div class="sm:col-span-4"><button class="btn btn-primary btn-sm">Add driver</button></div>
+    <div class="ok-col-span-sm-4"><button class="btn btn-primary btn-sm">Add driver</button></div>
   </form>
 </div>
 {% endblock %}

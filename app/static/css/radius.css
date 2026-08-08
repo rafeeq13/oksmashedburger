@@ -1,0 +1,162 @@
+/* =========================================================
+   OK Smashed Burger — CORNER RADIUS
+   Loaded LAST in both shells (storefront and admin).
+
+   The reference design the client signed off on uses one 8px
+   corner everywhere: forms, cards, images, CTAs, panels,
+   modals, tables. This file caps every radius over 8px in one
+   place rather than editing ~30 rules across five stylesheets,
+   so the decision stays reviewable and reversible.
+
+   It must load after utils.css / generated.css — those come
+   later in the chain and would otherwise win.
+
+   WHAT STAYS ROUND (deliberately, a squircle would look broken):
+   the .rounded-pill utility, avatars, status dots, the round
+   carousel/icon buttons, the qty stepper and the admin toggle.
+   ========================================================= */
+
+:root{
+  --ok-radius:8px;
+  /* Bootstrap builds every component radius off these */
+  --bs-border-radius:8px;
+  --bs-border-radius-sm:8px;
+  --bs-border-radius-lg:8px;
+  --bs-border-radius-xl:8px;
+  --bs-border-radius-xxl:8px;
+  --bs-border-radius-2xl:8px;
+  /* our own scale, used by premium.css components */
+  --r-sm:8px;
+  --r-md:8px;
+  --r-lg:8px;
+  --r-xl:8px;
+  --r-2xl:8px;
+}
+
+/* ---- CTAs ---------------------------------------------- */
+.btn,
+.ok-btn-outline,
+.ok-loccard-cta,
+.chip,
+.seg-tab,
+.tbl-pagebtn,
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+  border-radius:var(--ok-radius) !important;
+}
+
+/* ---- forms --------------------------------------------- */
+.ok-input,
+.ok-select,
+.ok-textarea,
+.zinput,
+.form-control,
+.form-select,
+.form-check-input,
+.input-group > .form-control,
+.input-group > .form-select,
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{
+  border-radius:var(--ok-radius) !important;
+}
+
+/* ---- cards, panels, media, popups ----------------------- */
+.ok-card,
+.ok-loccard,
+.ok-gcard,
+.ok-frame,
+.ok-abt-frame,
+.ok-abt-tilt,
+.ok-abt-band-card,
+.ok-toast,
+.ok-tip,
+.dropdown-menu,
+.badge,
+.alert,
+.modal-content,
+.list-group,
+.dt-top,
+.dt-bottom,
+.code-area{
+  border-radius:var(--ok-radius) !important;
+}
+
+/* the utilities that hand out a radius larger than 8px
+   (ok-r-175rem is generated.css's 1.75rem arbitrary value — it dressed the
+   hero glass card and the About image, both of which the client flagged) */
+.ok-rounded-lg, .ok-rounded-xl, .ok-rounded-2xl, .ok-rounded-3xl,
+.ok-r-sm, .ok-r-md, .ok-r-lg, .ok-r-xl, .ok-r-175rem,
+.rounded, .rounded-1, .rounded-2, .rounded-3, .rounded-4, .rounded-5{
+  border-radius:var(--ok-radius) !important;
+}
+
+/* Pill chrome on WIDE elements. `.rounded-pill` itself has to stay a pill —
+   it is what makes every avatar round — so the handful of long pills that the
+   client wants squared off are named here instead. */
+.ok-skip,
+.ok-loccard-badge,
+.search-panel form,
+.menu-search-panel form,
+.menu-search-panel > div,
+[data-open="location"],
+.ok-hero-ratings > *,
+[data-ordertype-group],
+[data-ordertype-group] > *,
+.ok-pagehero .rounded-pill,
+.rounded-pill.bg-cream-70,
+.rounded-pill.bg-cream-70 > *{
+  border-radius:var(--ok-radius) !important;
+}
+.ok-rounded-t-lg{
+  border-radius:var(--ok-radius) var(--ok-radius) 0 0 !important;
+}
+
+/* ---- pictures inside a card ------------------------------
+   A photo at the top of a card must NOT be rounded along its
+   bottom edge: the card body sits directly beneath it and a
+   curve there reads as a gap. The cards already clip their
+   media with overflow:hidden, so the media itself stays
+   square and only the top corners show the card's radius.
+   `.ok-media` is deliberately NOT forced to 8px here — the
+   templates mark it `!rounded-none` on purpose and this file
+   loads last, so forcing it would undo that. */
+.ok-card > .ok-media:first-child,
+.ok-loccard > .ok-loccard-map,
+.ok-media--top{
+  border-radius:var(--ok-radius) var(--ok-radius) 0 0 !important;
+}
+.ok-card > .ok-media:first-child img,
+.ok-card > .ok-media:first-child iframe,
+.ok-loccard-map iframe{
+  border-radius:0 !important;
+}
+/* the dark action bar closes the card, so it owns the bottom corners */
+.ok-loccard-cta{ border-radius:0 0 var(--ok-radius) var(--ok-radius) !important; }
+
+/* ---- STILL ROUND ---------------------------------------- */
+.rounded-circle,
+.status-dot,
+.ok-avatar,
+.ok-gcard-avatar,
+.ok-gcard-avatar img,
+.ok-iconbtn,
+.ok-carobtn,
+.chip-thumb,
+.ok-reel-badge,
+.ok-ripple,
+.qty,
+.tracker-step .dot,
+.ok-switch-track,
+.ok-switch-thumb,
+.spinner-border,
+.form-check-input[type="radio"]{
+  border-radius:9999px !important;
+}
+.ok-gcard-avatar::after{ border-radius:9999px; }
+
+/* Deals cards: the client wants these CTAs square. This has to live here, not
+   in premium.css, because the .btn rule at the top of this file loads last and
+   would otherwise put the 8px back. */
+.ok-dealcard .btn,
+.ok-dealcard .btn.btn-primary{
+  border-radius:0 !important;
+}

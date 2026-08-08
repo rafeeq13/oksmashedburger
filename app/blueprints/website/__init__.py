@@ -19,9 +19,16 @@ _PB_EDIT_ROLES = {"super_admin", "franchise_owner", "store_manager"}
 
 # A builder page can drop live "dynamic section" blocks; on render we replace each
 # <section data-dyn="KEY">…</section> placeholder with the real, data-driven partial.
-_DYN_RE = re.compile(r'''<section\b[^>]*\bdata-dyn=["']([a-zA-Z_]+)["'][^>]*>.*?</section>''',
+# The key pattern allows digits so the Page Builder's own `custom_1`, `custom_2`
+# blocks are dynamic sections too, not unknown keys left as empty placeholders.
+_DYN_RE = re.compile(r'''<section\b[^>]*\bdata-dyn=["']([a-zA-Z0-9_]+)["'][^>]*>.*?</section>''',
                      re.DOTALL | re.IGNORECASE)
 _DYN_SET = set(DYNAMIC_SECTION_KEYS)
+
+# Everything a "pure section page" may contain besides its placeholders: HTML
+# comments and whitespace. Such a page carries no free-form builder content, so
+# the section system (order, show/hide, custom blocks) can own it outright.
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 
 
 def _menu_context():
@@ -34,41 +41,89 @@ def _menu_context():
     return categories, best
 
 
-def expand_dynamic(html):
+def _render_section(row, key, categories, best, style_of):
+    """One home section, wrapped in the same `.pb-sec` shell index.html uses."""
+    cfg = (row.config if row else None) or {}
+    tpl = ("website/sections/custom.html" if key.startswith("custom_")
+           else "website/sections/%s.html" % key)
+    try:
+        inner = render_template(tpl, cfg=cfg, sec=row,
+                                categories=categories, best_sellers=best)
+    except Exception as e:
+        # Swallowing this kept the page up but made a broken section disappear
+        # silently, which is very hard to diagnose. Keep the page up, but say so.
+        current_app.logger.exception("dynamic section %r failed to render: %s", key, e)
+        return ""
+    style = style_of(cfg) if style_of else ""
+    return '<div class="pb-sec" data-section="%s" data-sid="%s" data-label="%s"%s>%s</div>' % (
+        escape(key), escape(str(row.id) if row else ""), escape(row.label if row else key),
+        (' style="%s"' % escape(style)) if style else "", inner)
+
+
+def expand_dynamic(html, home=False, include_hidden=False):
     """Replace dynamic-section placeholders in builder HTML with live partials.
 
     Each expanded block is wrapped in the same `.pb-sec` shell the section-based
     home uses and is rendered with its PageSection config, so text edits and the
     Visual Editor's section/card styling apply here too. Without this the admin
     could save changes in /admin/canvas and see nothing on a builder-served home.
+
+    `home=True` additionally makes the page obey the Page Builder, which is the
+    admin screen that describes the home and nothing else:
+
+      * a section switched off there renders as nothing (it used to render
+        regardless, so hiding a section had no effect at all on the live home),
+      * custom blocks added there are appended, since they are created after the
+        builder page and so have no placeholder in its HTML.
+
+    On any other builder page a live block was dropped in deliberately, so it
+    renders whatever the home's visibility happens to be.
+
+    `include_hidden` keeps hidden sections in for the admin's own edit preview,
+    where they still have to be selectable in order to be switched back on.
     """
-    if not html or "data-dyn" not in html:
-        return html or ""
+    if not html:
+        return ""
     categories, best = _menu_context()
     rows = {s.key: s for s in home_sections_ordered()}
     style_of = current_app.jinja_env.globals.get("pb_section_style")
+    seen = set()
 
     def repl(m):
         key = m.group(1).lower()               # tolerate data-dyn="Hero" etc.
-        if key not in _DYN_SET:
-            return m.group(0)                  # unknown key → leave the block untouched
         row = rows.get(key)
-        cfg = (row.config if row else None) or {}
-        try:
-            inner = render_template("website/sections/%s.html" % key, cfg=cfg,
-                                    categories=categories, best_sellers=best)
-        except Exception as e:
-            # Swallowing this kept the page up but made a broken section
-            # disappear silently, which is very hard to diagnose. Keep the
-            # page up, but say so.
-            current_app.logger.exception("dynamic section %r failed to render: %s", key, e)
-            return ""
-        style = style_of(cfg) if style_of else ""
-        return '<div class="pb-sec" data-section="%s" data-sid="%s" data-label="%s"%s>%s</div>' % (
-            escape(key), escape(str(row.id) if row else ""), escape(row.label if row else key),
-            (' style="%s"' % escape(style)) if style else "", inner)
+        if key not in _DYN_SET and row is None:
+            return m.group(0)                  # unknown key → leave the block untouched
+        seen.add(key)
+        if home and row is not None and not row.enabled and not include_hidden:
+            return ""                          # switched off in the Page Builder
+        return _render_section(row, key, categories, best, style_of)
 
-    return _DYN_RE.sub(repl, html)
+    out = _DYN_RE.sub(repl, html) if "data-dyn" in html else html
+
+    if home:
+        extra = [r for r in rows.values()
+                 if r.key.startswith("custom_") and r.key not in seen
+                 and (r.enabled or include_hidden)]
+        out += "".join(_render_section(r, r.key, categories, best, style_of) for r in extra)
+    return out
+
+
+def _is_pure_section_page(page):
+    """True when a builder page is nothing but dynamic-section placeholders.
+
+    "Edit home page" seeds the builder with one placeholder per home section and
+    no content of its own. Until the admin actually drops a block in, the section
+    system is the only thing describing that page, so it should own it completely
+    — including the order and the sections added or removed since. Rendering the
+    stored placeholder list instead is what made reordering and new custom blocks
+    in the Page Builder look like they did nothing.
+    """
+    if (page.css or "").strip() or (page.head_code or "").strip():
+        return False
+    rest = _DYN_RE.sub("", page.html or "")
+    rest = _HTML_COMMENT_RE.sub("", rest)
+    return not rest.strip()
 
 
 @bp.before_app_request
@@ -89,15 +144,19 @@ def _serve_builder_override():
 
 @bp.get("/")
 def home():
-    # If the admin built a home page in the drag-drop builder, serve that.
-    home_page = BuilderPage.query.filter_by(is_home=True, published=True).first()
-    if home_page:
-        return render_template("website/builder_page.html", page=home_page,
-                               expanded_html=expand_dynamic(home_page.html))
-    # Otherwise the built-in, section-based home.
-    categories, best = _menu_context()
     u = current_user()
     edit_mode = bool(request.args.get("pbedit")) and u and u.role and u.role.name in _PB_EDIT_ROLES
+
+    # If the admin built a home page in the drag-drop builder, serve that — unless
+    # it is still only the seeded section placeholders, in which case the section
+    # system describes the page better than the frozen placeholder list does.
+    home_page = BuilderPage.query.filter_by(is_home=True, published=True).first()
+    if home_page and not _is_pure_section_page(home_page):
+        return render_template("website/builder_page.html", page=home_page,
+                               expanded_html=expand_dynamic(home_page.html, home=True,
+                                                            include_hidden=edit_mode))
+    # The built-in, section-based home.
+    categories, best = _menu_context()
     all_secs = home_sections_ordered()
     home_sections = all_secs if edit_mode else [s for s in all_secs if s.enabled]
     return render_template("website/index.html", best_sellers=best, categories=categories,

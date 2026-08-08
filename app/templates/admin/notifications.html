@@ -3,39 +3,39 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Notifications</h2>
-<p class="text-slate text-sm mb-5">SMS &amp; email this location has sent about its orders, through its own
+<p class="text-muted-warm ok-fs-sm ok-mb-5">SMS &amp; email this location has sent about its orders, through its own
   Twilio / SendGrid integrations. <span class="badge badge-soft">Demo</span> sends are simulated.</p>
 
 <div class="ok-card overflow-x-auto">
-  <table data-table data-page-size="10" class="w-full text-sm">
-    <thead><tr class="text-left text-slate border-b border-[var(--ok-line)]">
-      <th class="p-3 font-semibold">Order</th>
-      <th class="p-3 font-semibold">Event</th>
-      <th class="p-3 font-semibold">Channel</th>
-      <th class="p-3 font-semibold">To</th>
-      <th class="p-3 font-semibold">Message</th>
-      <th class="p-3 font-semibold">Status</th>
+  <table data-table data-page-size="10" class="w-100 ok-fs-sm">
+    <thead><tr class="text-start text-muted-warm border-bottom ok-bc-varokline">
+      <th class="ok-p-3 fw-semibold">Order</th>
+      <th class="ok-p-3 fw-semibold">Event</th>
+      <th class="ok-p-3 fw-semibold">Channel</th>
+      <th class="ok-p-3 fw-semibold">To</th>
+      <th class="ok-p-3 fw-semibold">Message</th>
+      <th class="ok-p-3 fw-semibold">Status</th>
     </tr></thead>
     <tbody>
       {% for n in rows %}
-      <tr class="border-b border-[var(--ok-line)] last:border-0 align-top">
-        <td class="p-3 font-bold whitespace-nowrap">{{ n.order.number if n.order else '-' }}</td>
-        <td class="p-3 capitalize whitespace-nowrap">{{ n.event.replace('_',' ') }}</td>
-        <td class="p-3 whitespace-nowrap">
-          {% if n.channel == 'sms' %}<i class="fa-solid fa-comment-sms text-slate"></i>{% else %}<i class="fa-solid fa-envelope text-slate"></i>{% endif %}
-          <span class="capitalize">{{ n.channel }}</span>
-          <span class="text-slate text-xs">· {{ n.provider }}</span>
+      <tr class="border-bottom ok-bc-varokline ok-last-border-0 align-top">
+        <td class="ok-p-3 fw-bold text-nowrap">{{ n.order.number if n.order else '-' }}</td>
+        <td class="ok-p-3 text-capitalize text-nowrap">{{ n.event.replace('_',' ') }}</td>
+        <td class="ok-p-3 text-nowrap">
+          {% if n.channel == 'sms' %}<i class="fa-solid fa-comment-sms text-muted-warm"></i>{% else %}<i class="fa-solid fa-envelope text-muted-warm"></i>{% endif %}
+          <span class="text-capitalize">{{ n.channel }}</span>
+          <span class="text-muted-warm ok-fs-xs">· {{ n.provider }}</span>
         </td>
-        <td class="p-3 font-mono text-xs whitespace-nowrap">{{ n.recipient }}</td>
-        <td class="p-3 text-slate max-w-md">{% if n.subject %}<b class="text-jet">{{ n.subject }}</b>, {% endif %}{{ n.body }}</td>
-        <td class="p-3 whitespace-nowrap">
+        <td class="ok-p-3 font-monospace ok-fs-xs text-nowrap">{{ n.recipient }}</td>
+        <td class="ok-p-3 text-muted-warm ok-maxw-md">{% if n.subject %}<b class="text-ink">{{ n.subject }}</b>, {% endif %}{{ n.body }}</td>
+        <td class="ok-p-3 text-nowrap">
           {% if n.status == 'simulated' %}<span class="badge badge-soft">Simulated</span>
           {% elif n.status == 'sent' %}<span class="badge badge-green">Sent</span>
           {% else %}<span class="badge badge-soft">{{ n.status|title }}</span>{% endif %}
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="6" class="p-8 text-center text-slate">No notifications yet. Place an order or advance one in the kitchen (KDS) to generate them.</td></tr>
+      <tr><td colspan="6" class="ok-p-8 text-center text-muted-warm">No notifications yet. Place an order or advance one in the kitchen (KDS) to generate them.</td></tr>
       {% endfor %}
     </tbody>
   </table>

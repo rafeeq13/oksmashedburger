@@ -3,11 +3,11 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Delivery &amp; store settings{{ ', ' ~ s.name if s else '' }}</h2>
-<p class="text-slate text-sm mb-5">Delivery zones with radius pricing, general operations and opening hours for this location.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Delivery zones with radius pricing, general operations and opening hours for this location.</p>
 
 <div data-tab-group>
   <!-- ===== Tab bar ===== -->
-  <div class="seg-tabs mb-6">
+  <div class="seg-tabs mb-4">
     <button type="button" data-tab="zones"   class="seg-tab is-active">Delivery Zones</button>
     <button type="button" data-tab="general" class="seg-tab">General Settings</button>
     <button type="button" data-tab="hours"   class="seg-tab">Delivery Hours</button>
@@ -22,23 +22,23 @@
     {% set scale = 150.0 / (maxr if (maxr and maxr > 0) else 5) %}
 
     <!-- Radius map -->
-    <div class="relative rounded-2xl bg-[#0b0f16] border border-white/10 overflow-hidden mb-5" style="min-height:300px">
-      <div class="absolute inset-0 zmap-grid opacity-90"></div>
+    <div class="position-relative ok-rounded-2xl ok-bgc-0b0f16 border border-w-10 overflow-hidden ok-mb-5" style="min-height:300px">
+      <div class="position-absolute ok-fill zmap-grid ok-opacity-90"></div>
 
       <!-- Legend -->
-      <div class="absolute top-4 left-4 z-20 bg-black/45 backdrop-blur rounded-xl px-3.5 py-2.5 space-y-1.5">
+      <div class="position-absolute ok-top-4 ok-left-4 ok-z-20 bg-black-45 ok-blur ok-rounded-xl ok-px-35 ok-py-25 ok-stack-15">
         {% for z in active_zones|sort(attribute='radius_miles') %}
-        <div class="flex items-center gap-2 text-[.78rem] text-white/85 whitespace-nowrap">
-          <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:{{ z.color }}"></span>
-          {{ z.name }} <span class="text-white/55">{{ '%g'|format(z.radius_miles) }} mi</span>
+        <div class="d-flex align-items-center gap-2 ok-fs-78rem text-w-85 text-nowrap">
+          <span class="ok-w-25 ok-h-25 rounded-pill flex-shrink-0" style="background:{{ z.color }}"></span>
+          {{ z.name }} <span class="text-w-55">{{ '%g'|format(z.radius_miles) }} mi</span>
         </div>
         {% else %}
-        <div class="text-[.78rem] text-white/60">No active zones</div>
+        <div class="ok-fs-78rem text-w-60">No active zones</div>
         {% endfor %}
       </div>
 
       <!-- Concentric radius circles -->
-      <svg viewBox="0 0 900 360" class="w-full block relative z-0" style="max-height:360px" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 900 360" class="w-100 d-block position-relative z-0" style="max-height:360px" preserveAspectRatio="xMidYMid meet">
         {% for z in active_zones|sort(attribute='radius_miles', reverse=true) %}
         <circle cx="450" cy="180" r="{{ (z.radius_miles * scale)|round(1) }}"
                 fill="{{ z.color }}" fill-opacity="0.055" stroke="{{ z.color }}" stroke-width="2"></circle>
@@ -46,73 +46,73 @@
       </svg>
 
       <!-- Store pin + label (centred over the circles) -->
-      <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <span class="relative flex h-4 w-4">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60"></span>
-          <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 ring-2 ring-white"></span>
+      <div class="position-absolute ok-fill ok-z-10 d-flex flex-column align-items-center justify-content-center pe-none">
+        <span class="position-relative d-flex ok-h-4 ok-w-4">
+          <span class="ok-ping position-absolute d-inline-flex h-100 w-100 rounded-pill bg-red-500 ok-opacity-60"></span>
+          <span class="position-relative d-inline-flex rounded-pill ok-h-4 ok-w-4 bg-red-500 ok-ring-2 ok-ring-white"></span>
         </span>
         {% if s %}
-        <div class="mt-2 bg-black/70 backdrop-blur rounded-lg px-3 py-1.5 text-center">
-          <div class="text-white text-sm font-semibold leading-tight">{{ s.name }}</div>
-          <div class="text-white/60 text-[.7rem] leading-tight">{{ s.address_line or s.full_address }}</div>
+        <div class="mt-2 bg-black-70 ok-blur ok-rounded-lg ok-px-3 ok-py-15 text-center">
+          <div class="text-white ok-fs-sm fw-semibold ok-lh-tight">{{ s.name }}</div>
+          <div class="text-w-60 ok-fs-7rem ok-lh-tight">{{ s.address_line or s.full_address }}</div>
         </div>
         {% endif %}
       </div>
 
       <!-- Live-map hint -->
-      <div class="absolute bottom-4 right-4 z-20 bg-black/55 backdrop-blur rounded-xl px-3.5 py-2 max-w-[16rem]">
-        <div class="text-white text-[.72rem] font-semibold leading-tight">Google Maps integration</div>
-        <a href="/admin/integrations{{ qs }}" class="text-okyellow text-[.72rem] leading-tight hover:underline">Add API key in Integrations to enable live map</a>
+      <div class="position-absolute ok-bottom-4 ok-right-4 ok-z-20 bg-black-55 ok-blur ok-rounded-xl ok-px-35 py-2 ok-maxw-16rem">
+        <div class="text-white ok-fs-72rem fw-semibold ok-lh-tight">Google Maps integration</div>
+        <a href="/admin/integrations{{ qs }}" class="text-yellow ok-fs-72rem ok-lh-tight ok-hov-underline">Add API key in Integrations to enable live map</a>
       </div>
     </div>
 
     <!-- Count + create -->
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-      <div class="text-sm text-slate">
-        <b class="text-jet">{{ active_zones|length }} active zone{{ '' if active_zones|length == 1 else 's' }}</b>
+    <div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3 mb-3">
+      <div class="ok-fs-sm text-muted-warm">
+        <b class="text-ink">{{ active_zones|length }} active zone{{ '' if active_zones|length == 1 else 's' }}</b>
         · {{ zones|length }} total
       </div>
-      <button type="button" onclick="document.getElementById('createZone').classList.toggle('hidden')"
+      <button type="button" onclick="document.getElementById('createZone').classList.toggle('d-none')"
               class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Create Zone</button>
     </div>
 
     <!-- Create form (hidden until +Create) -->
     <form id="createZone" method="post" action="/admin/settings/zones{{ qs }}"
-          class="hidden rounded-2xl bg-panel border border-paneledge p-5 mb-4">
+          class="d-none ok-rounded-2xl bg-panel border border-paneledge ok-p-5 mb-3">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div class="text-white font-display font-bold mb-4">New delivery zone</div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="text-white font-display fw-bold mb-3">New delivery zone</div>
+      <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 gap-3">
         <div><label class="zlabel">Zone name</label><input name="name" placeholder="Downtown Zone" class="zinput"></div>
         <div><label class="zlabel">Radius (miles)</label><input name="radius_miles" type="number" step="0.1" min="0" value="3" class="zinput"></div>
-        <div><label class="zlabel">Colour</label><input name="color" type="color" value="#E0A200" class="zinput h-[38px] p-1"></div>
+        <div><label class="zlabel">Colour</label><input name="color" type="color" value="#E0A200" class="zinput ok-h-38px p-1"></div>
         <div><label class="zlabel">Delivery fee ($)</label><input name="delivery_fee" type="number" step="0.01" min="0" value="3.99" class="zinput"></div>
         <div><label class="zlabel">Min order ($)</label><input name="min_order" type="number" step="0.01" min="0" value="20" class="zinput"></div>
         <div><label class="zlabel">Est. time (mins)</label><input name="est_minutes" type="number" min="1" value="30" class="zinput"></div>
-        <div class="sm:col-span-2 lg:col-span-3"><label class="zlabel">Covered ZIP codes <span class="text-white/40 normal-case font-normal">(optional, comma-separated)</span></label><input name="zip_codes" placeholder="19104, 19146" class="zinput"></div>
+        <div class="ok-col-span-sm-2 ok-col-span-lg-3"><label class="zlabel">Covered ZIP codes <span class="text-w-40 ok-normal-case fw-normal">(optional, comma-separated)</span></label><input name="zip_codes" placeholder="19104, 19146" class="zinput"></div>
       </div>
-      <div class="flex gap-2 mt-4">
+      <div class="d-flex gap-2 mt-3">
         <button class="btn btn-primary btn-sm">Save zone</button>
-        <button type="button" onclick="document.getElementById('createZone').classList.add('hidden')" class="px-4 py-2 rounded-lg text-white/70 text-sm hover:bg-white/10">Cancel</button>
+        <button type="button" onclick="document.getElementById('createZone').classList.add('d-none')" class="px-3 py-2 ok-rounded-lg text-w-70 ok-fs-sm ok-hov-bg-w-10">Cancel</button>
       </div>
     </form>
 
     <!-- Zone cards -->
-    <div class="space-y-3">
+    <div class="ok-stack-3">
       {% for z in zones|sort(attribute='radius_miles') %}
-      <div data-zone class="rounded-2xl bg-panel border border-paneledge overflow-hidden">
-        <div class="flex flex-col md:flex-row md:items-center gap-4 p-5">
-          <div class="flex items-start gap-3 min-w-0 flex-1">
-            <span class="w-3 h-3 rounded-full shrink-0 mt-1.5" style="background:{{ z.color }}"></span>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2 mb-3">
-                <h4 class="font-display font-bold text-white truncate">{{ z.name }}</h4>
+      <div data-zone class="ok-rounded-2xl bg-panel border border-paneledge overflow-hidden">
+        <div class="d-flex flex-column flex-md-row align-items-md-center gap-3 ok-p-5">
+          <div class="d-flex align-items-start ok-gap-3 ok-min-w-0 ok-flex-1">
+            <span class="ok-w-3 ok-h-3 rounded-pill flex-shrink-0 ok-mt-15" style="background:{{ z.color }}"></span>
+            <div class="ok-min-w-0 ok-flex-1">
+              <div class="d-flex align-items-center gap-2 ok-mb-3">
+                <h4 class="font-display fw-bold text-white text-truncate">{{ z.name }}</h4>
                 {% if z.is_active %}
-                <span class="inline-flex items-center rounded-full bg-okgreen/20 text-green-400 text-[.66rem] font-semibold px-2 py-0.5">Active</span>
+                <span class="d-inline-flex align-items-center rounded-pill bg-ok-green-20 text-green-400 ok-fs-66rem fw-semibold px-2 ok-py-05">Active</span>
                 {% else %}
-                <span class="inline-flex items-center rounded-full bg-white/10 text-white/55 text-[.66rem] font-semibold px-2 py-0.5">Inactive</span>
+                <span class="d-inline-flex align-items-center rounded-pill bg-w-10 text-w-55 ok-fs-66rem fw-semibold px-2 ok-py-05">Inactive</span>
                 {% endif %}
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
+              <div class="ok-grid ok-grid-2 ok-grid-sm-4 column-gap-4 ok-rgap-3">
                 <div><div class="zstat-l">Radius</div><div class="zstat-v">{{ '%g'|format(z.radius_miles) }} miles</div></div>
                 <div><div class="zstat-l">Delivery Fee</div><div class="zstat-v">${{ '%.2f'|format(z.delivery_fee) }}</div></div>
                 <div><div class="zstat-l">Min Order</div><div class="zstat-v">${{ '%.2f'|format(z.min_order) }}</div></div>
@@ -121,80 +121,80 @@
             </div>
           </div>
 
-          <div class="flex items-center gap-2 shrink-0 md:pl-4 md:border-l md:border-paneledge">
+          <div class="d-flex align-items-center gap-2 flex-shrink-0 ok-pl-md-4 ok-border-start-md ok-border-paneledge-md">
             <!-- Active toggle -->
             <form method="post" action="/admin/settings/zones/{{ z.id }}/toggle{{ qs }}">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
               <button type="submit" title="{{ 'Deactivate zone' if z.is_active else 'Activate zone' }}"
-                      class="relative w-12 h-6 rounded-full transition-colors {{ 'bg-okyellow' if z.is_active else 'bg-white/20' }}">
-                <span class="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all {{ 'left-[1.55rem]' if z.is_active else 'left-0.5' }}"></span>
+                      class="position-relative ok-w-12 ok-h-6 rounded-pill ok-transition-colors {{ 'bg-yellow' if z.is_active else 'bg-w-20' }}">
+                <span class="position-absolute ok-top-05 ok-w-5 ok-h-5 rounded-pill bg-white ok-shadow-md ok-transition {{ 'ok-left-155' if z.is_active else 'ok-left-05' }}"></span>
               </button>
             </form>
-            <button type="button" onclick="this.closest('[data-zone]').querySelector('[data-zone-edit]').classList.toggle('hidden')"
-                    class="px-3.5 py-1.5 rounded-lg border border-white/20 text-white/85 text-sm font-medium hover:bg-white/10 transition">Edit</button>
+            <button type="button" onclick="this.closest('[data-zone]').querySelector('[data-zone-edit]').classList.toggle('d-none')"
+                    class="ok-px-35 ok-py-15 ok-rounded-lg border border-w-20 text-w-85 ok-fs-sm fw-medium ok-hov-bg-w-10 ok-transition">Edit</button>
             <form method="post" action="/admin/settings/zones/{{ z.id }}/delete{{ qs }}"
                   onsubmit="return confirm('Remove the “{{ z.name }}” zone?')">
               <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-              <button class="px-3.5 py-1.5 rounded-lg text-red-400 text-sm font-medium hover:bg-red-500/10 transition">Delete</button>
+              <button class="ok-px-35 ok-py-15 ok-rounded-lg text-red-400 ok-fs-sm fw-medium ok-hov-bg-red-10 ok-transition">Delete</button>
             </form>
           </div>
         </div>
 
         <!-- Inline edit form -->
         <form data-zone-edit method="post" action="/admin/settings/zones/{{ z.id }}/edit{{ qs }}"
-              class="hidden border-t border-paneledge bg-black/20 p-5">
+              class="d-none border-top border-paneledge bg-black-20 ok-p-5">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 gap-3">
             <div><label class="zlabel">Zone name</label><input name="name" value="{{ z.name }}" class="zinput"></div>
             <div><label class="zlabel">Radius (miles)</label><input name="radius_miles" type="number" step="0.1" min="0" value="{{ '%g'|format(z.radius_miles) }}" class="zinput"></div>
-            <div><label class="zlabel">Colour</label><input name="color" type="color" value="{{ z.color or '#E0A200' }}" class="zinput h-[38px] p-1"></div>
+            <div><label class="zlabel">Colour</label><input name="color" type="color" value="{{ z.color or '#E0A200' }}" class="zinput ok-h-38px p-1"></div>
             <div><label class="zlabel">Delivery fee ($)</label><input name="delivery_fee" type="number" step="0.01" min="0" value="{{ '%.2f'|format(z.delivery_fee) }}" class="zinput"></div>
             <div><label class="zlabel">Min order ($)</label><input name="min_order" type="number" step="0.01" min="0" value="{{ '%.2f'|format(z.min_order) }}" class="zinput"></div>
             <div><label class="zlabel">Est. time (mins)</label><input name="est_minutes" type="number" min="1" value="{{ z.est_minutes }}" class="zinput"></div>
-            <div class="sm:col-span-2 lg:col-span-3"><label class="zlabel">Covered ZIP codes <span class="text-white/40 normal-case font-normal">(optional)</span></label><input name="zip_codes" value="{{ (z.zip_codes or [])|join(', ') }}" placeholder="19104, 19146" class="zinput"></div>
+            <div class="ok-col-span-sm-2 ok-col-span-lg-3"><label class="zlabel">Covered ZIP codes <span class="text-w-40 ok-normal-case fw-normal">(optional)</span></label><input name="zip_codes" value="{{ (z.zip_codes or [])|join(', ') }}" placeholder="19104, 19146" class="zinput"></div>
           </div>
-          <div class="flex gap-2 mt-4">
+          <div class="d-flex gap-2 mt-3">
             <button class="btn btn-primary btn-sm">Save changes</button>
-            <button type="button" onclick="this.closest('[data-zone-edit]').classList.add('hidden')" class="px-4 py-2 rounded-lg text-white/70 text-sm hover:bg-white/10">Cancel</button>
+            <button type="button" onclick="this.closest('[data-zone-edit]').classList.add('d-none')" class="px-3 py-2 ok-rounded-lg text-w-70 ok-fs-sm ok-hov-bg-w-10">Cancel</button>
           </div>
         </form>
       </div>
       {% else %}
-      <div class="ok-card p-8 text-center text-slate">No delivery zones yet. Click <b>Create Zone</b> to add one.</div>
+      <div class="ok-card ok-p-8 text-center text-muted-warm">No delivery zones yet. Click <b>Create Zone</b> to add one.</div>
       {% endfor %}
     </div>
 
-    <p class="text-xs text-slate mt-4"><i class="fa-solid fa-circle-info"></i> The closest active zone's fee is used as this store's delivery fee at checkout.</p>
+    <p class="ok-fs-xs text-muted-warm mt-3"><i class="fa-solid fa-circle-info"></i> The closest active zone's fee is used as this store's delivery fee at checkout.</p>
   </div>
 
   <!-- ============================================================ -->
   <!-- General Settings                                             -->
   <!-- ============================================================ -->
-  <div data-panel="general" class="hidden">
-    <form method="post" action="/admin/settings{{ qs }}" class="ok-card p-5 space-y-4 max-w-2xl">
+  <div data-panel="general" class="d-none">
+    <form method="post" action="/admin/settings{{ qs }}" class="ok-card ok-p-5 ok-stack-4 ok-maxw-2xl">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <h3 class="font-display font-bold text-lg">General</h3>
+      <h3 class="font-display fw-bold ok-fs-lg">General</h3>
 
       <div>
-        <label class="ok-label !text-xs mb-2">Order types accepted</label>
-        <div class="flex flex-wrap gap-4">
-          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accepts_delivery" {% if s.accepts_delivery %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Delivery</label>
-          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accepts_pickup" {% if s.accepts_pickup %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Pickup</label>
+        <label class="ok-label ok-fs-xs mb-2">Order types accepted</label>
+        <div class="d-flex flex-wrap gap-3">
+          <label class="d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="accepts_delivery" {% if s.accepts_delivery %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Delivery</label>
+          <label class="d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="accepts_pickup" {% if s.accepts_pickup %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Pickup</label>
         </div>
       </div>
 
-      <div class="grid sm:grid-cols-2 gap-3">
-        <div><label class="ok-label !text-xs">Minimum order ($)</label><input name="min_order_amount" type="number" step="0.01" min="0" value="{{ '%.2f'|format(s.min_order_amount) }}" class="ok-input py-2 text-sm"></div>
-        <div><label class="ok-label !text-xs">Delivery radius (mi)</label><input name="delivery_radius_miles" type="number" step="0.1" min="0" value="{{ s.delivery_radius_miles }}" class="ok-input py-2 text-sm"></div>
-        <div><label class="ok-label !text-xs">Avg prep (min)</label><input name="avg_prep_minutes" type="number" min="1" value="{{ s.avg_prep_minutes }}" class="ok-input py-2 text-sm"></div>
-        <div><label class="ok-label !text-xs">Tax rate</label><input name="tax_rate" type="number" step="0.0001" min="0" value="{{ s.tax_rate }}" class="ok-input py-2 text-sm"></div>
-        <div><label class="ok-label !text-xs">Currency</label><input name="currency" value="{{ s.currency }}" maxlength="3" class="ok-input py-2 text-sm uppercase"></div>
+      <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+        <div><label class="ok-label ok-fs-xs">Minimum order ($)</label><input name="min_order_amount" type="number" step="0.01" min="0" value="{{ '%.2f'|format(s.min_order_amount) }}" class="ok-input py-2 ok-fs-sm"></div>
+        <div><label class="ok-label ok-fs-xs">Delivery radius (mi)</label><input name="delivery_radius_miles" type="number" step="0.1" min="0" value="{{ s.delivery_radius_miles }}" class="ok-input py-2 ok-fs-sm"></div>
+        <div><label class="ok-label ok-fs-xs">Avg prep (min)</label><input name="avg_prep_minutes" type="number" min="1" value="{{ s.avg_prep_minutes }}" class="ok-input py-2 ok-fs-sm"></div>
+        <div><label class="ok-label ok-fs-xs">Tax rate</label><input name="tax_rate" type="number" step="0.0001" min="0" value="{{ s.tax_rate }}" class="ok-input py-2 ok-fs-sm"></div>
+        <div><label class="ok-label ok-fs-xs">Currency</label><input name="currency" value="{{ s.currency }}" maxlength="3" class="ok-input py-2 ok-fs-sm text-uppercase"></div>
       </div>
 
-      <div class="border-t border-[var(--ok-line)] pt-4">
-        <label class="flex items-center gap-2 text-sm mb-3"><input type="checkbox" name="tips_enabled" {% if s.tips_enabled %}checked{% endif %} class="w-4 h-4 accent-okyellow"> <span class="font-semibold">Offer tipping at checkout</span></label>
-        <label class="ok-label !text-xs">Quick-tip percentages <span class="text-slate font-normal">(comma-separated, up to 4)</span></label>
-        <input name="tip_presets" value="{{ (s.tip_presets or [15, 18, 20])|join(', ') }}" class="ok-input py-2 text-sm" placeholder="15, 18, 20">
+      <div class="border-top ok-bc-varokline pt-3">
+        <label class="d-flex align-items-center gap-2 ok-fs-sm ok-mb-3"><input type="checkbox" name="tips_enabled" {% if s.tips_enabled %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> <span class="fw-semibold">Offer tipping at checkout</span></label>
+        <label class="ok-label ok-fs-xs">Quick-tip percentages <span class="text-muted-warm fw-normal">(comma-separated, up to 4)</span></label>
+        <input name="tip_presets" value="{{ (s.tip_presets or [15, 18, 20])|join(', ') }}" class="ok-input py-2 ok-fs-sm" placeholder="15, 18, 20">
         <p class="ok-hint mt-1">Customers can still enter a custom amount. Leave tipping off to hide the tip step entirely.</p>
       </div>
 
@@ -205,25 +205,25 @@
   <!-- ============================================================ -->
   <!-- Delivery Hours                                               -->
   <!-- ============================================================ -->
-  <div data-panel="hours" class="hidden">
-    <form method="post" action="/admin/hours{{ qs }}" class="ok-card p-5 max-w-2xl">
+  <div data-panel="hours" class="d-none">
+    <form method="post" action="/admin/hours{{ qs }}" class="ok-card ok-p-5 ok-maxw-2xl">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="next" value="/admin/settings">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-display font-bold text-lg">Opening &amp; delivery hours</h3>
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="font-display fw-bold ok-fs-lg">Opening &amp; delivery hours</h3>
       </div>
-      <div class="space-y-2">
+      <div class="ok-stack-2">
         {% for r in hour_rows %}
-        <div class="flex flex-wrap items-center gap-3 py-1.5">
-          <div class="w-24 font-semibold text-sm">{{ r.label }}</div>
-          <label class="flex items-center gap-2 text-sm w-24"><input type="checkbox" name="closed_{{ r.day }}" {% if r.closed %}checked{% endif %} class="w-4 h-4 accent-okyellow"> Closed</label>
-          <input name="open_{{ r.day }}" type="time" value="{{ r.open }}" class="ok-input py-1.5 text-sm w-32">
-          <span class="text-slate text-sm">to</span>
-          <input name="close_{{ r.day }}" type="time" value="{{ r.close }}" class="ok-input py-1.5 text-sm w-32">
+        <div class="d-flex flex-wrap align-items-center ok-gap-3 ok-py-15">
+          <div class="ok-w-24 fw-semibold ok-fs-sm">{{ r.label }}</div>
+          <label class="d-flex align-items-center gap-2 ok-fs-sm ok-w-24"><input type="checkbox" name="closed_{{ r.day }}" {% if r.closed %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Closed</label>
+          <input name="open_{{ r.day }}" type="time" value="{{ r.open }}" class="ok-input ok-py-15 ok-fs-sm ok-w-32">
+          <span class="text-muted-warm ok-fs-sm">to</span>
+          <input name="close_{{ r.day }}" type="time" value="{{ r.close }}" class="ok-input ok-py-15 ok-fs-sm ok-w-32">
         </div>
         {% endfor %}
       </div>
-      <button class="btn btn-primary btn-sm mt-4">Save hours</button>
+      <button class="btn btn-primary btn-sm mt-3">Save hours</button>
     </form>
   </div>
 </div>

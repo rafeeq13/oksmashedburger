@@ -10,8 +10,8 @@
       <div class="position-absolute -left-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
       <div class="ok-container text-center">
         <div class="max-w-2xl mx-auto">
-<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ site.get('deals_hero_heading') or 'Deals & Offers' }}</h1>
-          <p class="text-w-80 ok-fs-lg ok-mb-7 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('deals_hero_text') or 'Save on smashed favorites. Start an order straight from any deal, most need no code at all.' }}</p>
+<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ pc('deals_hero_heading') }}</h1>
+          <p class="text-w-80 ok-fs-lg ok-mb-7 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('deals_hero_text') }}</p>
           <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 bg-w-10 border border-w-20 rounded-pill ok-px-3 py-2">
             <span class="ok-fs-sm d-inline-flex align-items-center gap-1"><i class="fa-solid fa-hands-clapping"></i> New here? Enjoy</span>
             <span class="chip is-active !bg-okyellow !text-jet !border-okyellow fw-bold tracking-wide">Free delivery</span>
@@ -39,14 +39,14 @@
     <section class="ok-section">
       <div class="ok-container">
         <div class="d-flex align-items-end justify-content-between ok-mb-3">
-          <div><h2 class="ok-h2">{{ site.get('deals_list_heading') or 'All deals' }}</h2></div>
+          <div><h2 class="ok-h2">{{ pc('deals_list_heading') }}</h2></div>
           <span class="ok-fs-sm text-muted-warm d-none d-sm-block">{{ coupons|length }} offer{{ '' if coupons|length == 1 else 's' }} available</span>
         </div>
 
         {% if coupons %}
         <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
           {% for c in coupons %}
-          <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup d-flex flex-column">
+          <article class="ok-card ok-card-hover ok-dealcard overflow-hidden ok-hovergroup d-flex flex-column">
             <div class="position-relative ok-ar-1610 overflow-hidden">
               <img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">
               {% if c.kind == 'free_delivery' %}<span class="badge badge-green position-absolute top-3 left-3">Free delivery</span>
@@ -61,7 +61,7 @@
               {% if c.requires_code %}
               <p class="ok-fs-xs text-muted-warm ok-mb-3">Use code <b>{{ c.code }}</b>{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
               {% else %}
-              <p class="ok-fs-xs text-ok-green fw-semibold ok-mb-3"><i class="fa-solid fa-circle-check"></i> No code needed{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
+              <p class="ok-fs-xs ok-deal-nocode fw-semibold ok-mb-3"><i class="fa-solid fa-circle-check"></i> No code needed{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
               {% endif %}
               <form method="post" action="/cart/promo">
                 <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -74,7 +74,7 @@
           {% endfor %}
         </div>
         {% else %}
-        <div class="ok-card ok-p-10 text-center text-muted-warm">No active deals right now, check back soon!</div>
+        <div class="ok-card ok-p-10 text-center text-muted-warm">{{ pc('deals_empty_text') }}</div>
         {% endif %}
       </div>
     </section>

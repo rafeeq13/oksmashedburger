@@ -1,0 +1,42 @@
+/* =========================================================
+   GENERATED — do not hand-edit.
+   Every rule here replaces one Tailwind arbitrary value or
+   responsive utility. Regenerate with tools/tw_arbitrary.py
+   ========================================================= */
+.ok-maxw-1440px{max-width:1440px}
+.ok-bgc-f4f5f7{background-color:#f4f5f7}
+.ok-bc-varokline{border-color:var(--ok-line)}
+.ok-fs-7rem{font-size:.7rem}
+.ok-z-60{z-index:60}
+.ok-maxh-85vh{max-height:85vh}
+.ok-bgc-fafafa{background-color:#fafafa}
+.ok-fs-65rem{font-size:.65rem}
+.ok-fs-55rem{font-size:.55rem}
+.ok-h-38px{height:38px}
+.ok-minw-8rem{min-width:8rem}
+.ok-fs-62rem{font-size:.62rem}
+.ok-minw-10rem{min-width:10rem}
+.ok-minw-9rem{min-width:9rem}
+.ok-minw-64px{min-width:64px}
+.ok-mt-18px{margin-top:-18px}
+.ok-fs-6rem{font-size:.6rem}
+.ok-bgc-b002{background-color:rgba(0,0,0,0.02)}
+.ok-gc-220px1fr{grid-template-columns:220px 1fr}
+.ok-gc-1frautoauto{grid-template-columns:1fr auto auto}
+.ok-bgc-0b0f16{background-color:#0b0f16}
+.ok-fs-78rem{font-size:.78rem}
+.ok-maxw-16rem{max-width:16rem}
+.ok-fs-72rem{font-size:.72rem}
+.ok-fs-66rem{font-size:.66rem}
+.ok-ar-1610{aspect-ratio:16/10}
+.ok-bgc-b003{background-color:rgba(0,0,0,0.03)}
+.ok-bc-w006{border-color:rgba(255,255,255,0.06)}
+.ok-bc-w007{border-color:rgba(255,255,255,0.07)}
+.ok-fs-95rem{font-size:.95rem}
+.ok-ls-2em{letter-spacing:.2em}
+.ok-fs-9rem{font-size:.9rem}
+.ok-bgc-w004{background-color:rgba(255,255,255,0.04)}
+.ok-ls-12em{letter-spacing:.12em}
+@media (min-width:1024px){
+  .ok-gc-220px1fr-lg{grid-template-columns:220px 1fr}
+}

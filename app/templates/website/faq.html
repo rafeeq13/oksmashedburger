@@ -9,8 +9,8 @@
       <div class="ok-pagehero-veil"></div>
       <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
       <div class="ok-container text-center">
-<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ site.get('faq_hero_heading') or 'How can we help?' }}</h1>
-        <p class="text-w-80 ok-fs-lg max-w-xl mx-auto ok-mb-8 ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('faq_hero_text') or 'Search our help center or browse the topics below. Most answers are just a tap away.' }}</p>
+<h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ pc('faq_hero_heading') }}</h1>
+        <p class="text-w-80 ok-fs-lg max-w-xl mx-auto ok-mb-8 ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('faq_hero_text') }}</p>
         <form onsubmit="return false" class="max-w-xl mx-auto">
           <div class="d-flex align-items-center gap-2 ok-input bg-white text-ink !py-3">
             <span class="text-gold ok-fs-lg"><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -25,7 +25,7 @@
     <section class="ok-section">
       <div class="ok-container max-w-4xl">
         <div class="text-center ok-mb-3">
-          <h2 class="ok-h2">{{ site.get('faq_list_heading') or 'Frequently asked' }}</h2>
+          <h2 class="ok-h2">{{ pc('faq_list_heading') }}</h2>
         </div>
 
         <!-- Category filter chips -->
@@ -57,8 +57,8 @@
           <div class="position-absolute -right-10 -bottom-10 ok-w-72 ok-h-72 rounded-pill bg-yellow-20 blur-2xl"></div>
           <div class="position-relative ok-p-8 ok-paddin-3rem-md ok-grid ok-grid-md-2 ok-gap-3 align-items-center">
             <div>
-              <h2 class="ok-h2 ok-mb-3">{{ site.get('faq_help_heading') or 'Still need help?' }}</h2>
-              <p class="text-w-70 ok-mb-5">Can't find what you're looking for? Our Philly-based support team is quick, friendly and ready to sort it out.</p>
+              <h2 class="ok-h2 ok-mb-3">{{ pc('faq_help_heading') }}</h2>
+              <p class="text-w-70 ok-mb-5">{{ pc('faq_help_text') }}</p>
               <div class="d-flex flex-wrap ok-gap-3">
                 <a href="/contact" class="btn btn-primary">Contact support</a>
                 <a href="/tracking" class="btn btn-secondary !bg-transparent !text-white !border-white">Track an order</a>

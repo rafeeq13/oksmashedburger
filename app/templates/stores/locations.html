@@ -2,13 +2,13 @@
 {% block title %}Locations, {{ brand_name }}{% endblock %}
 
 {% block content %}
-<section class="bg-cream-40 border-bottom ok-bc-varokhairline">
+<section class="bg-yellow border-bottom ok-bc-varokhairline">
   <div class="ok-container ok-py-14 ok-paddin-5rem-md">
     <nav class="ok-fs-sm text-muted-warm ok-mb-3 d-none"><a href="/" class="">Home</a> <span class="mx-1 text-muted-warm-60">/</span> <span class="fw-semibold text-ink">Locations</span></nav>
-<h1 class="ok-display ok-mb-5">Find your OK Smashed Burger</h1>
+<h1 class="ok-display ok-mb-5">{{ pc('locations_hero_heading') }}</h1>
     <div class="d-flex flex-column flex-sm-row ok-gap-3 max-w-2xl">
       <div class="d-flex align-items-center gap-2 ok-input flex-grow-1"><i class="fa-solid fa-location-dot text-muted-warm"></i>
-        <input id="locSearch" type="search" autocomplete="off" class="w-100 bg-transparent ok-nofocus" placeholder="Filter by area, address or ZIP">
+        <input id="locSearch" type="search" autocomplete="off" class="w-100 bg-transparent ok-nofocus" placeholder="{{ pc('locations_search_placeholder') }}">
       </div>
       <button type="button" id="locGeoBtn" class="btn btn-secondary"><i class="fa-solid fa-location-arrow"></i> Use my location</button>
     </div>
@@ -23,9 +23,9 @@
          data-lat="{{ s.latitude }}" data-lng="{{ s.longitude }}"
          data-name="{{ s.name }}" data-city="{{ s.city }}" data-zip="{{ s.zip_code }}"
          role="button" tabindex="0" aria-label="Select {{ brand_name }}, {{ s.name }} as my store"
-         class="ok-card ok-card-hover ok-pointer overflow-hidden ok-grid ok-grid-md-2 align-items-stretch{% if current_store and s.id == current_store.id %} ok-ring-2 ring-okyellow{% endif %}">
+         class="ok-card ok-locrow ok-pointer overflow-hidden ok-grid ok-grid-md-2 align-items-stretch{% if current_store and s.id == current_store.id %} ok-ring-2 ring-okyellow{% endif %}">
       <!-- LEFT: details -->
-      <div class="ok-p-3 ok-paddin-175rem-md d-flex flex-column justify-content-center">
+      <div class="ok-locinfo ok-p-3 ok-paddin-175rem-md d-flex flex-column justify-content-center">
         <div class="d-flex flex-wrap align-items-start justify-content-between ok-gap-3">
           <div>
             <h3 class="font-display fw-bold ok-fs-lg">{{ brand_name }}, {{ s.name }}</h3>
@@ -35,18 +35,12 @@
                 {% if s.open_now %}Open now · ~{{ s.avg_prep_minutes }} min prep · Today {{ s.today_hours }}{% elif s.scheduling_open %}<span class="ok-status-closed">Closed now</span><span class="ok-status-rest"> · schedule ahead · Today {{ s.today_hours }}</span>{% else %}<span class="ok-status-closed">Closed</span><span class="ok-status-rest"> · Today {{ s.today_hours }}</span>{% endif %}</span>
               <span data-distance-label class="badge badge-soft !text-jet" style="display:none"></span>
             </div>
-            <div class="d-flex flex-wrap ok-gap-15 ok-mt-3">
-              {% if s.accepts_delivery %}<span class="badge badge-soft">Delivery</span>{% endif %}
-              {% if s.accepts_pickup %}<span class="badge badge-soft">Pickup</span>{% endif %}
-              <span class="badge badge-soft">{{ s.phone }}</span>
-            </div>
           </div>
-          <span data-selected-badge class="badge badge-yellow flex-shrink-0"{% if not (current_store and s.id == current_store.id) %} style="display:none"{% endif %}>Selected</span>
         </div>
-        <div class="d-flex flex-wrap gap-2 ok-mt-3">
-          <a href="{{ url_for('menu.menu_for_store', store_slug=s.slug) }}" class="btn btn-primary btn-sm">Order Now</a>
-          <a href="https://www.google.com/maps/dir/?api=1&destination={{ s.full_address|urlencode }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fa-solid fa-location-arrow"></i> Directions</a>
-          <button type="button" data-select class="btn btn-ghost btn-sm">Set as my store</button>
+        <div class="d-flex flex-wrap ok-gap-5 ok-mt-3">
+          <a href="{{ url_for('menu.menu_for_store', store_slug=s.slug) }}" class="ok-loclink">Order Now</a>
+          <a href="https://www.google.com/maps/dir/?api=1&destination={{ s.full_address|urlencode }}" target="_blank" rel="noopener" class="ok-loclink"><i class="fa-solid fa-location-arrow"></i> Directions</a>
+          <button type="button" data-select class="ok-loclink">Set as my store</button>
         </div>
       </div>
       <!-- RIGHT: this location's own Google map (padded so it sits apart from the text) -->
@@ -99,7 +93,9 @@
     if (!slug) return;
     cards.forEach(function (c) {
       var on = c.getAttribute("data-slug") === slug;
-      c.classList.toggle("ring-2", on);
+      // must match the class the server renders on the selected card above,
+      // otherwise picking a store client-side highlights nothing
+      c.classList.toggle("ok-ring-2", on);
       c.classList.toggle("ring-okyellow", on);
       var b = c.querySelector("[data-selected-badge]");
       if (b) b.style.display = on ? "" : "none";

@@ -6,7 +6,7 @@
   {'key':'toast','stars':4.5,'score':'4.5'}
 ] %}
 {% set _bg = {'cream':'ok-band--warm','white':'ok-band--white'}.get(cfg.get('theme'), 'ok-band--warm') %}
-<section class="ok-band {{ _bg }}">
+<section class="ok-band {{ _bg }} d-none">
   <div class="ok-container">
     <div class="ok-sechead" data-reveal="up">
 <h2 class="ok-title">{{ cfg.get('heading') or 'What the people think' }}</h2>

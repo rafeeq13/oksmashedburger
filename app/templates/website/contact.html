@@ -9,8 +9,8 @@
       <div class="ok-pagehero-veil"></div>
       <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
       <div class="ok-container position-relative text-center">
-<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ site.get('contact_hero_heading') or 'Get in touch' }}</h1>
-        <p class="text-w-75 ok-fs-lg max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ site.get('contact_hero_text') or 'Questions, catering, franchising or just some love for the OK sauce, we read every message and reply fast.' }}</p>
+<h1 class="ok-display ok-mb-5" data-reveal="up" data-reveal-delay="0.08">{{ pc('contact_hero_heading') }}</h1>
+        <p class="text-w-75 ok-fs-lg max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('contact_hero_text') }}</p>
       </div>
     </section>
 
@@ -20,8 +20,8 @@
 
         <!-- LEFT: contact form -->
         <div class="ok-card ok-p-7 ok-paddin-25rem-sm ok-positi-sticky-lg ok-top-7rem-lg" data-reveal="up">
-<h2 class="font-display ok-fw-900 ok-fs-3xl tracking-tight mb-2">Drop us a line</h2>
-          <p class="text-muted-warm ok-fs-sm ok-mb-8">Fill out the form and our team will get back to you within one business day.</p>
+<h2 class="font-display ok-fw-900 ok-fs-3xl tracking-tight mb-2">{{ pc('contact_form_heading') }}</h2>
+          <p class="text-muted-warm ok-fs-sm ok-mb-8">{{ pc('contact_form_text') }}</p>
 
           <form method="post" action="/contact" class="ok-stack-5" data-validate novalidate>
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -69,24 +69,24 @@
           <div class="ok-grid ok-grid-sm-2 ok-gap-5" data-reveal-stagger>
             <!-- Phone -->
             <div class="ok-card ok-card-hover ok-p-3">
-              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-phone"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Call us</h3></div>
+              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-phone"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Call us</h3></div>
               <a href="tel:+12155550100" class="link-underline ok-fs-sm">(215) 555-0100</a>
               <p class="ok-fs-xs text-muted-warm ok-mt-15">Daily · 11 AM to 12 AM</p>
             </div>
             <!-- Email -->
             <div class="ok-card ok-card-hover ok-p-3">
-              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-envelope"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Email us</h3></div>
+              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-envelope"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Email us</h3></div>
               <a href="mailto:hello@oksmashedburger.com" class="link-underline ok-fs-sm text-break">hello@oksmashedburger.com</a>
-              <p class="ok-fs-xs text-muted-warm ok-mt-15">We reply within 1 business day</p>
+              <p class="ok-fs-xs text-muted-warm ok-mt-15">{{ pc('contact_email_note') }}</p>
             </div>
             <!-- HQ -->
             <div class="ok-card ok-card-hover ok-p-3">
-              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-location-dot"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Visit HQ</h3></div>
+              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-location-dot"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Visit HQ</h3></div>
               <p class="ok-fs-sm text-muted-warm mt-1">1201 Frankford Ave<br>Philadelphia, PA 19125</p>
             </div>
             <!-- Hours -->
             <div class="ok-card ok-card-hover ok-p-3">
-              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-clock"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Hours</h3></div>
+              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-clock"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Hours</h3></div>
               <p class="ok-fs-sm text-muted-warm mt-1">Mon to Sun<br>11 AM to 12 AM</p>
             </div>
           </div>
@@ -105,12 +105,12 @@
           <!-- Map -->
           <div class="ok-card overflow-hidden" data-reveal="up">
             <div class="position-relative ok-ar-1610 bg-cream-40">
-              <iframe src="https://maps.google.com/maps?q=1201%20Frankford%20Ave%2C%20Philadelphia%2C%20PA%2019125&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="OK Smashed Burger HQ map"></iframe>
+              <iframe src="https://maps.google.com/maps?q=1201%20Frankford%20Ave%2C%20Philadelphia%2C%20PA%2019125&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ pc('contact_hq_name') }} map"></iframe>
             </div>
             <div class="ok-p-5 d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
               <div>
                 <div class="font-display fw-bold ok-fs-sm">OK Smashed Burger HQ</div>
-                <div class="ok-fs-xs text-muted-warm">1201 Frankford Ave, Philadelphia · 19125</div>
+                <div class="ok-fs-xs text-muted-warm">{{ pc('contact_hq_address') }}</div>
               </div>
               <a href="https://maps.google.com/?q=1201+Frankford+Ave,+Philadelphia,+PA+19125" target="_blank" rel="noopener" class="btn btn-secondary btn-sm flex-shrink-0">Directions</a>
             </div>
@@ -124,8 +124,8 @@
     <section class="ok-section bg-cream-30 border-top ok-bc-varokhairline  d-none">
       <div class="ok-container">
         <div class="ok-sechead ok-sechead--center ok-mb-5" data-reveal="up">
-<h2 class="font-display ok-fw-900 ok-fs-3xl ok-fs-25rem-md text-uppercase ok-ls-025em ok-lh-105">{{ site.get('contact_faq_heading') or 'Quick answers, no waiting' }}</h2>
-          <p class="max-w-xl mx-auto">A lot of questions have instant answers in our help center. Jump straight to a topic.</p>
+<h2 class="font-display ok-fw-900 ok-fs-3xl ok-fs-25rem-md text-uppercase ok-ls-025em ok-lh-105">{{ pc('contact_faq_heading') }}</h2>
+          <p class="max-w-xl mx-auto">{{ pc('contact_faq_text') }}</p>
         </div>
         <div class="ok-grid ok-grid-2 ok-grid-md-4 ok-gap-3 ok-gap-125rem-md" data-reveal-stagger>
           {% for icon, label, sub in [
@@ -134,7 +134,7 @@
             ('gift','Rewards','Points, perks & gift cards'),
             ('wheat-awn','Allergens','Ingredients & nutrition')] %}
           <a href="/faq" class="ok-card ok-card-hover ok-p-3 text-center ok-hovergroup">
-            <div class="ok-w-14 ok-h-14 ok-rounded-2xl ok-grid ok-place-center mx-auto ok-mb-3 text-ink" style="background:var(--grad-gold);"><i class="fa-solid fa-{{ icon }} icon-xl"></i></div>
+            <div class="ok-w-14 ok-h-14 ok-rounded-2xl ok-grid ok-place-center mx-auto ok-mb-3 text-ink" style="background:var(--ok-soft);"><i class="fa-solid fa-{{ icon }} icon-xl"></i></div>
             <div class="font-display fw-bold">{{ label }}</div>
             <p class="ok-fs-xs text-muted-warm ok-mt-15">{{ sub }}</p>
           </a>

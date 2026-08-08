@@ -1,0 +1,47 @@
+{# Google-style review carousel.
+
+   Shared by the home "What locals have to say" section and the About page so
+   the two cannot drift apart — they used to be two hand-written copies with
+   different cards, different data and different stars.
+
+   Caller may pass:  rid   – unique id for the scroller (defaults to reviewScroll)
+                     items – the feed (defaults to the same one the home uses)
+#}
+{% set _rid = rid | default('reviewScroll', true) %}
+{% set _items = items | default(testimonials_feed(), true) %}
+{% set _avatar_colors = ['#4285F4','#E0A200','#06C167','#D32323','#7C3AED'] %}
+<div class="position-relative ok-caro--gutter" data-reveal="up">
+  <button type="button" onclick="document.getElementById('{{ _rid }}').scrollBy({left:-360,behavior:'smooth'})"
+          class="ok-iconbtn ok-carobtn ok-grid position-absolute ok-caro-prev top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline"
+          aria-label="Previous review"><i class="fa-solid fa-chevron-left"></i></button>
+
+  <div id="{{ _rid }}" class="d-flex ok-gap-7 overflow-x-auto hide-scrollbar snap-x px-1 py-2 scroll-smooth">
+    {% for t in _items %}
+    <article class="ok-gcard flex-shrink-0 snap-start">
+      <div class="ok-gcard-head">
+        <div class="ok-gcard-avatar" style="background:{{ _avatar_colors[loop.index0 % _avatar_colors|length] }}">{{ t.name[0]|upper }}</div>
+        <div class="ok-gcard-who">
+          <div class="ok-gcard-name">{{ t.name }}</div>
+          <div class="ok-gcard-when">{{ t.when }}</div>
+        </div>
+        {# Google's own mark, drawn inline so it needs no icon font #}
+        <svg class="ok-gcard-g" viewBox="0 0 48 48" aria-label="Google" role="img">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+      </div>
+      <div class="ok-gcard-stars" aria-label="{{ t.stars }} out of 5">
+        {# solid for a scored star, regular (outline) for the rest #}
+        {% for i in range(5) %}{% if t.stars >= i + 1 %}<i class="fa-solid fa-star on"></i>{% else %}<i class="fa-regular fa-star off"></i>{% endif %}{% endfor %}
+      </div>
+      <p class="ok-gcard-text">{{ t.text }}</p>
+    </article>
+    {% endfor %}
+  </div>
+
+  <button type="button" onclick="document.getElementById('{{ _rid }}').scrollBy({left:360,behavior:'smooth'})"
+          class="ok-iconbtn ok-carobtn ok-grid position-absolute ok-caro-next top-1/2 -translate-y-1/2 ok-z-10 ok-w-11 ok-h-11 bg-white ok-shadow-lg border ok-bc-varokhairline"
+          aria-label="Next review"><i class="fa-solid fa-chevron-right"></i></button>
+</div>
