@@ -3,7 +3,7 @@
 Each location owns its own menu (see StoreMenuItem in menu.py) and its own
 integration credentials (StoreIntegration) — Stripe/Square/Uber keys, etc.
 """
-from datetime import datetime, time as _time
+from datetime import datetime, timedelta, time as _time
 
 from app.extensions import db
 from .base import TimestampMixin
@@ -117,6 +117,62 @@ class Store(TimestampMixin, db.Model):
     def can_order(self):
         return self.open_now or self.scheduling_open
 
+    # ── Scheduling slots ──────────────────────────────────────────────
+    # The picker used to be a bare datetime field, so a customer could choose
+    # 03:00 on a day the store shuts at 23:00 and only find out at checkout.
+    # These are the times the store can actually accept, generated from its own
+    # opening hours, and the same helper validates what comes back.
+    SCHED_DAYS = 7           # how far ahead a customer may book
+    SCHED_STEP = 15          # minutes between slots
+    SCHED_LEAD = 30          # minimum notice, so the kitchen can make it
+
+    def schedule_days(self, now=None):
+        """[{date, label, slots:[{value,label}]}] for the next SCHED_DAYS days.
+
+        A day with no open hours is skipped entirely rather than shown empty,
+        and today only offers times that are still reachable.
+        """
+        now = now or datetime.now()
+        earliest = now + timedelta(minutes=self.SCHED_LEAD)
+        out = []
+        for offset in range(self.SCHED_DAYS):
+            day = (now + timedelta(days=offset)).date()
+            h = self.hours_for(day.weekday())
+            if not h or h.is_closed:
+                continue
+            o, c = _parse_hm(h.open_time), _parse_hm(h.close_time)
+            if o is None or c is None:
+                continue
+            start = datetime.combine(day, o)
+            # a close time at or before the open time means it runs past midnight
+            end = datetime.combine(day, c)
+            if c <= o:
+                end += timedelta(days=1)
+
+            slots, t = [], start
+            while t < end:
+                if t >= earliest:
+                    slots.append({"value": t.strftime("%Y-%m-%dT%H:%M"),
+                                  "label": t.strftime("%I:%M %p").lstrip("0")})
+                t += timedelta(minutes=self.SCHED_STEP)
+            if not slots:
+                continue
+            out.append({
+                "date": day.isoformat(),
+                "label": ("Today" if offset == 0 else
+                          "Tomorrow" if offset == 1 else day.strftime("%a %b %d")),
+                "hours": "%s–%s" % (h.open_time, h.close_time),
+                "slots": slots,
+            })
+        return out
+
+    def accepts_schedule_at(self, value, now=None):
+        """Is `value` ("YYYY-MM-DDTHH:MM") a slot this store actually offers?"""
+        if not value:
+            return False
+        return any(value == s["value"]
+                   for d in self.schedule_days(now) for s in d["slots"])
+
     def integration(self, provider):
         return next((i for i in self.integrations if i.provider == provider), None)
 
@@ -134,6 +190,11 @@ class Store(TimestampMixin, db.Model):
         for cat in cats:
             items = []
             for product in sorted(cat.products, key=lambda p: p.sort_order):
+                # `is_active` is the catalogue-wide switch; the item page and
+                # modal both 404 on an inactive product, so listing one here
+                # produced a card that did nothing when tapped.
+                if not product.is_active:
+                    continue
                 mi = by_product.get(product.id)
                 if not mi or not mi.is_listed:
                     continue  # product not on this store's menu

@@ -80,7 +80,7 @@
         <div class="d-flex align-items-center ok-gap-3">
           <div class="qty"><button type="button" data-step="-">&minus;</button><span>1</span><button type="button" data-step="+">+</button></div>
           {% if available %}
-          <button type="submit" class="btn btn-primary btn-lg flex-grow-1">Add to cart · ${{ '%.2f'|format(price) }}</button>
+          <button type="submit" class="ok-cta flex-grow-1">Add to cart · ${{ '%.2f'|format(price) }}</button>
           {% else %}
           <button type="button" disabled class="btn btn-lg flex-grow-1 bg-cream text-muted-warm cursor-not-allowed">Sold out at this store</button>
           {% endif %}

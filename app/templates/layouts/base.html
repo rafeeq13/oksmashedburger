@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#141414">
+  {# light-only, so a dark-mode browser does not repaint the native
+     controls (and their pressed states) from its blue dark theme #}
+  <meta name="color-scheme" content="light only">
   <title>{% block title %}{{ brand_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}Order OK Smashed Burger for delivery or pickup.{% endblock %}">
   <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">

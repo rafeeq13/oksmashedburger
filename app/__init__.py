@@ -167,6 +167,24 @@ def create_app(config_object=None):
     # Client-editable brand palette / type / radius (Admin > Theme).
     from .models.theme import theme_css
     app.jinja_env.globals["theme_css"] = theme_css
+
+    @app.template_filter("nice_when")
+    def nice_when(value):
+        """"2026-08-09T14:45" -> "Today at 2:45 PM". The raw ISO string was
+        being printed straight onto the store card."""
+        from datetime import datetime, timedelta
+        try:
+            dt = datetime.strptime(value, "%Y-%m-%dT%H:%M")
+        except (TypeError, ValueError):
+            return value or ""
+        today = datetime.now().date()
+        if dt.date() == today:
+            day = "Today"
+        elif dt.date() == today + timedelta(days=1):
+            day = "Tomorrow"
+        else:
+            day = dt.strftime("%a %b %d")
+        return "%s at %s" % (day, dt.strftime("%I:%M %p").lstrip("0"))
     app.jinja_env.globals["testimonials_feed"] = testimonials_feed
     app.jinja_env.globals["tier_status"] = tier_status
 

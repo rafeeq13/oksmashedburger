@@ -1,7 +1,7 @@
 """Store locator + choosing which location you're ordering from."""
 from flask import Blueprint, render_template, session, redirect, request, abort, flash
 
-from app.helpers import active_stores, find_store_for_zip
+from app.helpers import active_stores, find_store_for_zip, get_current_store
 from app.models.store import Store
 
 bp = Blueprint("stores", __name__)
@@ -43,7 +43,17 @@ def api_schedule():
     is closed for ASAP and the customer must pick a time before ordering."""
     val = (request.args.get("schedule_at") or "").strip()
     if not val:
-        return {"ok": False}, 400
+        # an empty value means "cancel the schedule, order as soon as possible";
+        # it used to 400, so there was no way back to an ASAP order
+        session.pop("schedule_at", None)
+        session["context_set"] = True
+        return {"ok": True, "schedule_at": ""}
+    # The selects only offer valid slots, but a request can be made by hand, and
+    # an out-of-hours time would sail through to checkout and fail there.
+    store = get_current_store()
+    if store and not store.accepts_schedule_at(val):
+        return {"ok": False, "error": "That time is outside the store's opening hours."}, 400
+
     session["schedule_at"] = val
     session["context_set"] = True
     return {"ok": True, "schedule_at": val}

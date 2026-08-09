@@ -83,7 +83,7 @@ hr{ margin:0; opacity:1; border:0; }
   padding:.85rem 1rem; font-size:.96rem; color:var(--ok-ink,#0E0E0E); background-color:#fff;
 }
 .form-control:focus,.form-select:focus{
-  border-color:var(--ok-amber,#E0A200); box-shadow:0 0 0 4px rgba(255,199,44,.22);
+  border-color:#000; box-shadow:none;
 }
 .form-control::placeholder{ color:#B4ADA6; }
 .form-check-input:checked{ background-color:var(--ok-amber,#E0A200); border-color:var(--ok-amber,#E0A200); }

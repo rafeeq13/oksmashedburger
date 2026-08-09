@@ -24,6 +24,18 @@
           <span class="text-truncate ok-min-w-0">{{ store.full_address }}</span>
           <button data-open="location" class="link-underline text-nowrap flex-shrink-0">Change</button>
         </div>
+        {% if schedule_at %}
+        {# The picked time was stored but never shown, so a customer could not
+           see it, let alone change it. It is a first-class control now. #}
+        <div class="d-flex align-items-center ok-gap-15 ok-fs-sm ok-mt-05 flex-wrap">
+          <span class="badge badge-yellow"><i class="fa-solid fa-clock"></i> Scheduled</span>
+          <span data-sched-label class="fw-semibold text-ink">{{ schedule_at|nice_when }}</span>
+          <button type="button" data-sched-edit class="link-underline text-nowrap">Change time</button>
+          {% if store.open_now %}
+          <button type="button" data-sched-clear class="link-underline text-nowrap text-muted-warm">Order ASAP instead</button>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
     </div>
 
@@ -90,7 +102,7 @@
          plain substring test instead of normalising on every keystroke #}
       <article data-menu-item
                data-search="{{ (it.product.name ~ ' ' ~ (it.product.description or '') ~ ' ' ~ grp.category.name ~ ' ' ~ (it.product.tags | join(' ') if it.product.tags else ''))|lower }}"
-               class="position-relative ok-card ok-card-hover overflow-hidden d-flex align-items-stretch{% if not it.available %} ok-opacity-60{% endif %}">
+               class="position-relative ok-card ok-card-hover d-flex align-items-stretch{% if not it.available %} ok-opacity-60{% endif %}">
         <!-- LEFT: text (tap to customize) -->
         <button type="button" data-item="{{ it.product.slug }}" class="flex-grow-1 ok-min-w-0 text-start ok-p-3 ok-paddin-125rem-md d-flex flex-column">
           <h3 class="font-display fw-bold ok-fs-sm text-uppercase tracking-tight ok-lh-snug">{{ it.product.name }}</h3>
@@ -104,11 +116,11 @@
             {% if it.product.is_vegan %}<span class="badge badge-green !ok-fs-68rem">Vegan</span>{% endif %}
           </div>
         </button>
+        {% if not it.available %}<span class="badge badge-red ok-cardflag">Sold out</span>
+        {% elif it.featured %}<span class="badge ok-cardflag"><i class="fa-solid fa-star"></i> Popular</span>{% endif %}
         <!-- RIGHT: image + vertical divider -->
         <div class="ok-media position-relative ok-w-28 ok-width-10rem-sm flex-shrink-0 align-self-stretch border-start ok-bc-varokhairline bg-white !rounded-none">
           <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy">
-          {% if not it.available %}<span class="badge badge-red position-absolute top-2 left-2">Sold out</span>
-          {% elif it.featured %}<span class="badge badge-new position-absolute top-2 left-2"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
           <form method="post" action="/favorites/toggle" class="position-absolute top-2 right-2 ok-z-10">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="product_id" value="{{ it.product.id }}">
@@ -128,7 +140,9 @@
 </div>
 {% endif %}
 
-{% if store and not store.open_now and store.scheduling_open and not schedule_at %}
+{# available whenever this store takes scheduled orders, so an
+   already-scheduled customer can still change the time #}
+{% if store and store.scheduling_open %}
 <!-- Schedule-first modal: store is closed for ASAP, pick a time before ordering -->
 <div class="drawer-backdrop" data-sched-close id="schedBackdrop"></div>
 <div id="schedModal" class="position-fixed ok-fill ok-z-82 ok-grid ok-place-center ok-p-3 ok-modal">
@@ -137,12 +151,53 @@
     {# icon sits on the same line as the heading rather than stacked above it #}
     <div class="d-flex align-items-center ok-gap-25 mb-1">
       <span class="ok-w-10 ok-h-10 rounded-pill bg-cream ok-grid ok-place-center text-ink ok-fs-lg flex-shrink-0"><i class="fa-solid fa-clock"></i></span>
-      <h3 class="ok-h2 ok-fs-xl mb-0">Schedule your order</h3>
+      <h3 class="ok-h2 ok-fs-xl mb-0">
+        {% if schedule_at %}Change your pickup time
+        {% elif store.open_now %}Order for later
+        {% else %}Schedule your order{% endif %}
+      </h3>
     </div>
-    <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ store.name }} is closed for immediate orders. Pick a time to have your order ready{% if store.today_hours %} · today's hours {{ store.today_hours }}{% endif %}.</p>
-    <label class="ok-label" for="schedInput">Date &amp; time</label>
-    <input type="datetime-local" id="schedInput" class="ok-input ok-mb-3">
-    <button type="button" id="schedConfirm" class="btn btn-primary btn-block"><i class="fa-solid fa-calendar-check"></i> Continue</button>
+    {# The copy has to match the store you actually picked: an open store must
+       not be told it is closed, and a customer who already has a time is
+       changing one, not setting the first. #}
+    <p class="ok-fs-sm text-muted-warm ok-mb-3">
+      {% if store.open_now %}
+        {{ store.name }} is open now, so you can order right away. Pick a time only if
+        you want it later{% if store.today_hours %} · today {{ store.today_hours }}{% endif %}.
+      {% else %}
+        {{ store.name }} is closed for immediate orders. Pick a time to have your order
+        ready{% if store.today_hours %} · today's hours {{ store.today_hours }}{% endif %}.
+      {% endif %}
+    </p>
+    {# Two selects built from the store's own opening hours, so an impossible
+       time cannot be chosen at all. A free datetime field let a customer pick
+       03:00 on a day the store shuts at 23:00 and only fail at checkout. #}
+    {% set sched_days = store.schedule_days() %}
+    {% if sched_days %}
+    <div class="ok-grid ok-grid-2 ok-gap-25 ok-mb-3">
+      <label class="d-block">
+        <span class="ok-label">Day</span>
+        <select id="schedDay" class="ok-input ok-select w-100">
+          {% for d in sched_days %}
+          <option value="{{ d.date }}" data-hours="{{ d.hours }}">{{ d.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="d-block">
+        <span class="ok-label">Time</span>
+        <select id="schedTime" class="ok-input ok-select w-100"></select>
+      </label>
+    </div>
+    <p class="ok-fs-xs text-muted-warm ok-mb-3" data-sched-hours></p>
+    <script type="application/json" id="schedData">{{ sched_days|tojson }}</script>
+    {% else %}
+    <p class="ok-fs-sm text-ok-red ok-mb-3">
+      {{ store.name }} has no bookable times in the next few days. Please try another location.
+    </p>
+    {% endif %}
+    <button type="button" id="schedConfirm" class="btn btn-primary btn-block"><i class="fa-solid fa-calendar-check"></i>
+      {% if schedule_at %}Update time{% elif store.open_now %}Save for later{% else %}Continue{% endif %}
+    </button>
   </div>
 </div>
 {% endif %}
@@ -187,7 +242,7 @@
 })();
 </script>
 
-{% if store and not store.open_now and store.scheduling_open and not schedule_at %}
+{% if store and store.scheduling_open %}
 <script>
 // Schedule-first: store is closed for ASAP and no time picked yet. Clicking any
 // item opens the schedule modal first, then the item modal.
@@ -195,9 +250,54 @@
   var modal = document.getElementById("schedModal");
   if (!modal) return;
   var backdrop = document.getElementById("schedBackdrop");
-  var input = document.getElementById("schedInput");
+  var daySel = document.getElementById("schedDay");
+  var timeSel = document.getElementById("schedTime");
+  var hoursNote = document.querySelector("[data-sched-hours]");
+  var DAYS = (function () {
+    var tag = document.getElementById("schedData");
+    try { return tag ? JSON.parse(tag.textContent) : []; } catch (e) { return []; }
+  })();
+
+  // repopulate the time list whenever the day changes
+  function fillTimes(keep) {
+    if (!daySel || !timeSel) return;
+    var day = DAYS.filter(function (d) { return d.date === daySel.value; })[0];
+    timeSel.innerHTML = "";
+    if (!day) return;
+    day.slots.forEach(function (sl) {
+      var o = document.createElement("option");
+      o.value = sl.value; o.textContent = sl.label;
+      timeSel.appendChild(o);
+    });
+    if (keep) timeSel.value = keep;
+    if (hoursNote) hoursNote.textContent = day.label + " · open " + day.hours;
+  }
+  function currentValue() { return timeSel ? timeSel.value : ""; }
   var confirmBtn = document.getElementById("schedConfirm");
-  var scheduled = false, pendingSlug = null;
+  // `scheduled` starts true when the server already has a time, so an
+  // already-scheduled customer is not forced through the modal again.
+  var already = {{ 'true' if schedule_at else 'false' }};
+  var scheduled = already, pendingSlug = null;
+  if (daySel) {
+    var saved = "{{ schedule_at or '' }}";
+    if (saved && DAYS.some(function (d) { return d.date === saved.slice(0, 10); })) {
+      daySel.value = saved.slice(0, 10);
+    }
+    fillTimes(saved);
+    daySel.addEventListener("change", function () { fillTimes(null); });
+  }
+
+
+  // explicit "Change time" / "Order ASAP instead" from the store card
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-sched-edit]")) { e.preventDefault(); pendingSlug = null; open(true); }
+    if (e.target.closest("[data-sched-clear]")) {
+      e.preventDefault();
+      fetch("/api/schedule?schedule_at=", { credentials: "same-origin" })
+        .then(function () { location.reload(); })
+        .catch(function () {});
+    }
+  });
 
   function two(n) { return String(n).padStart(2, "0"); }
   function fmt(d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + "T" + two(d.getHours()) + ":" + two(d.getMinutes()); }
@@ -233,8 +333,8 @@
   document.querySelectorAll("[data-sched-close]").forEach(function (b) { b.addEventListener("click", function () { open(false); }); });
 
   confirmBtn.addEventListener("click", function () {
-    var val = input && input.value;
-    if (!val) { if (input) input.focus(); return; }
+    var val = currentValue();
+    if (!val) { if (timeSel) timeSel.focus(); return; }
     confirmBtn.disabled = true;
     fetch("/api/schedule?schedule_at=" + encodeURIComponent(val), { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
@@ -242,8 +342,18 @@
         if (d && d.ok) {
           scheduled = true;
           open(false);
-          if (window.OK && OK.toast) OK.toast("Scheduled, now build your order");
-          if (window.OK && OK.openItemModal && pendingSlug) OK.openItemModal(pendingSlug);
+          var lbl = document.querySelector("[data-sched-label]");
+          if (lbl) lbl.textContent = (timeSel.options[timeSel.selectedIndex] || {}).text
+            ? daySel.options[daySel.selectedIndex].text + " at " + timeSel.options[timeSel.selectedIndex].text
+            : val.replace("T", " at ");
+          if (pendingSlug) {
+            if (window.OK && OK.toast) OK.toast("Scheduled, now build your order");
+            if (window.OK && OK.openItemModal) OK.openItemModal(pendingSlug);
+          } else {
+            if (window.OK && OK.toast) OK.toast("Time updated");
+            // the badge only exists after the first pick — show it now
+            if (!lbl) location.reload();
+          }
         }
       })
       .catch(function () {})

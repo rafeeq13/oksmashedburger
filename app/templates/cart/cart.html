@@ -33,19 +33,21 @@
             </div>
             <div class="text-end flex-shrink-0">
               <div class="fw-bold ok-fs-lg">${{ '%.2f'|format(line.line_total) }}</div>
-              <div class="ok-fs-xs text-muted-warm">${{ '%.2f'|format(line.unit_price) }} ea</div>
+              <div class="ok-fs-xs text-muted-warm">${{ '%.2f'|format(line.unit_price) }} each</div>
             </div>
           </div>
           <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mt-3">
-            <div class="d-inline-flex align-items-center ok-bw-15 ok-bc-varokline rounded-pill overflow-hidden">
+            {# same .qty pill the menu and item modal use, so the control
+               looks and behaves identically everywhere #}
+            <div class="qty">
               <form method="post" action="/cart/update">
                 <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="index" value="{{ line.index }}"><input type="hidden" name="qty" value="{{ line.qty - 1 }}">
-                <button class="ok-w-9 ok-h-9 ok-fs-lg fw-bold" aria-label="Decrease">&minus;</button>
+                <button type="submit" aria-label="Decrease quantity">&minus;</button>
               </form>
-              <span class="ok-minw-2rem text-center fw-bold">{{ line.qty }}</span>
+              <span>{{ line.qty }}</span>
               <form method="post" action="/cart/update">
                 <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="index" value="{{ line.index }}"><input type="hidden" name="qty" value="{{ line.qty + 1 }}">
-                <button class="ok-w-9 ok-h-9 ok-fs-lg fw-bold" aria-label="Increase">+</button>
+                <button type="submit" aria-label="Increase quantity">+</button>
               </form>
             </div>
             <form method="post" action="/cart/remove">

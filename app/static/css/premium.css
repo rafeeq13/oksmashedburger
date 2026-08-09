@@ -3365,14 +3365,14 @@ button:focus, button:focus-visible,
 .ok-hero-ratings{ gap:1.75rem !important; }
 
 /* Deals cards: body copy reads black, and the green "no code needed" line
-   flips to white on hover so it stays legible over the card's hover fill. */
+   goes black on hover — the hover fill is yellow, so white was unreadable. */
 .ok-dealcard .ok-fs-sm,
 .ok-dealcard .ok-fs-xs,
 .ok-dealcard p,
 .ok-dealcard h3{ color:#000 !important; }
 .ok-dealcard .ok-deal-nocode{ color:var(--ok-green) !important; }
 .ok-dealcard:hover .ok-deal-nocode,
-.ok-dealcard:hover .ok-deal-nocode i{ color:#fff !important; }
+.ok-dealcard:hover .ok-deal-nocode i{ color:#000 !important; }
 
 /* ---------------------------------------------------------
    ALL TEXT IS BLACK (client, 2026-08-06)
@@ -3414,11 +3414,13 @@ label i.text-gold, label i.text-yellow,
   color:inherit !important;
 }
 
-/* Deals cards: the green "no code needed" line flips to white on hover so it
-   stays legible over the card's hover fill. */
+/* Deals cards: the green "no code needed" line goes black on hover, matching
+   the rest of the copy over the card's yellow hover fill. */
 .ok-deal-nocode{ color:var(--ok-green) !important; }
 .ok-dealcard:hover .ok-deal-nocode,
-.ok-dealcard:hover .ok-deal-nocode i{ color:#fff !important; }
+.ok-dealcard:hover .ok-deal-nocode i,
+.ok-dealcard:focus-within .ok-deal-nocode,
+.ok-dealcard:focus-within .ok-deal-nocode i{ color:#000 !important; }
 
 /* A selected chip is a dark pill; style.css already gives it white text, this
    just guarantees the icon inside comes along. */
@@ -3557,4 +3559,595 @@ label i.text-gold, label i.text-yellow,
     place-items: center;
     color: var(--ok-ink);
   }
+}
+
+/* ---------------------------------------------------------
+   DATE / TIME FIELDS ON iOS
+   Safari gives date, time and datetime-local inputs a large
+   intrinsic width and ignores the parent's width, so the field
+   ran off the side of the phone. These three declarations are
+   what actually contain it: appearance:none drops the native
+   sizing, min-width:0 lets it shrink inside a flex/grid parent,
+   and the explicit width pins it to the container.
+   --------------------------------------------------------- */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"]{
+  -webkit-appearance: none;
+          appearance: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  /* iOS vertically mis-centres the text once appearance is dropped */
+  min-height: 2.75rem;
+  line-height: 1.2;
+}
+
+/* the native calendar/clock button needs to stay inside the box */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+/* iOS renders the value in its own inline box that can still overflow */
+input[type="datetime-local"]::-webkit-date-and-time-value{
+  text-align: left;
+  min-width: 0;
+  margin: 0;
+}
+
+/* a date field inside a flex row must be allowed to shrink too */
+.ok-input[type="date"],
+.ok-input[type="time"],
+.ok-input[type="datetime-local"]{ flex: 1 1 auto; }
+
+/* the admin's fixed-width time boxes stay fixed on desktop, fluid on phones */
+@media (max-width: 575.98px){
+  .ok-w-32[type="time"], .ok-w-32[type="date"]{ width: 100% !important; }
+}
+
+/* ---------------------------------------------------------
+   CARD FLAG ("Popular" / "Sold out")
+   Sits astride the card's top edge — half above the border,
+   half below — instead of floating inside the photo. White
+   fill and black text so it reads on any image behind it.
+   --------------------------------------------------------- */
+.ok-cardflag{
+  position: absolute;
+  top: 0;
+  /* the card is text-left / photo-right, so centre the flag over the photo
+     rather than over the whole card */
+  right: 3.5rem;
+  transform: translateY(-50%);        /* exactly half in, half out */
+  z-index: 12;
+  background: #fff;
+  color: #000;
+  border: 1px solid var(--ok-hairline);
+  border-radius: 9999px;
+  padding: .3rem .7rem;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(20, 20, 20, .12);
+}
+.ok-cardflag i{ color: var(--ok-yellow); }
+
+
+
+/* ---------------------------------------------------------
+   NO NATIVE BLUE ON A TAPPED BUTTON
+   The palette rules were already correct — hover, focus and
+   active all resolve to black. The blue was the browser's own
+   painting: iOS Safari gives <button type="submit"> a native
+   appearance with a system highlight, and Chrome draws its
+   default focus ring. Both are switched off here and replaced
+   with a brand-coloured ring, so keyboard users still see focus.
+   --------------------------------------------------------- */
+button, [type="button"], [type="submit"], [type="reset"], .btn{
+  -webkit-appearance: none;
+          appearance: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+}
+.btn:focus, .btn:active, .btn:focus-within,
+button:focus, button:active{
+  outline: none;
+  box-shadow: none;
+}
+/* keyboard focus stays visible — and is yellow, never blue */
+.btn:focus-visible,
+button:focus-visible,
+a:focus-visible{
+  outline: 2px solid var(--ok-yellow);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------
+   THE LAST BLUE: Bootstrap's focus ring
+   .btn-primary carries --bs-btn-focus-shadow-rgb:49,132,253 and
+   Bootstrap paints it as a 4px halo on :focus-visible. The button
+   fill was already black in every state; this halo was the blue
+   flash on click. Killed on the exact selectors Bootstrap uses,
+   so specificity cannot go the wrong way, and the variables are
+   neutralised too in case a future rule reads them.
+   --------------------------------------------------------- */
+.btn,
+.btn-check + .btn,
+.btn:first-child:active,
+:not(.btn-check) + .btn:active,
+.btn.active,
+.btn.show{
+  --bs-btn-focus-shadow-rgb: 0, 0, 0;
+  --bs-btn-focus-box-shadow: none;
+  --bs-btn-active-shadow: none;
+  --bs-focus-ring-color: transparent;
+  --bs-focus-ring-box-shadow: none;
+}
+
+.btn:focus,
+.btn:focus-visible,
+.btn:active,
+.btn:first-child:active,
+:not(.btn-check) + .btn:active,
+.btn.active,
+.btn.show,
+.btn-check:focus-visible + .btn,
+.btn-check:checked + .btn{
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* the primary CTA is black on press, never Bootstrap blue */
+.btn-primary:first-child:active,
+:not(.btn-check) + .btn-primary:active,
+.btn-primary.active,
+.btn-primary.show{
+  background-color: #000 !important;
+  border-color: #000 !important;
+  color: #fff !important;
+}
+
+/* keyboard users still get a visible ring — yellow, on the outside */
+.btn:focus-visible{
+  outline: 2px solid var(--ok-yellow) !important;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   FOCUS RING — never the browser's blue
+   Chrome's UA sheet paints :focus-visible with
+   `outline: -webkit-focus-ring-color auto 1px`, and that colour
+   is system blue. Setting `outline: none` alone has proved
+   unreliable across engines, so the ring is rebuilt as a
+   box-shadow (which no UA sheet touches) and the focus-ring
+   colour itself is redefined in case an outline still lands.
+   --------------------------------------------------------- */
+:root{
+  --ok-focus-ring: var(--ok-yellow);
+}
+
+*:focus,
+*:focus-visible{
+  outline-color: var(--ok-focus-ring);
+}
+
+.btn:focus,
+.btn:active,
+.btn:focus-within,
+button:focus,
+button:active,
+[type="submit"]:focus,
+[type="submit"]:active{
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* keyboard users still get a ring — drawn with box-shadow, so the UA
+   stylesheet has nothing to contribute and nothing to colour blue */
+.btn:focus-visible,
+button:focus-visible,
+[type="submit"]:focus-visible,
+a:focus-visible{
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ok-focus-ring) !important;
+}
+
+/* on a dark surface the white spacer ring would glare */
+.bg-ink .btn:focus-visible,
+.ok-footer .btn:focus-visible,
+.ok-modal .btn:focus-visible{
+  box-shadow: 0 0 0 2px var(--ok-ink), 0 0 0 4px var(--ok-focus-ring) !important;
+}
+
+/* ═════════════════════════════════════════════════════════
+   NO BOOTSTRAP BLUE, ANYWHERE
+   Chasing individual blue states one at a time kept missing
+   cases. Bootstrap ships blue in three different shapes and
+   all three are neutralised here at the source:
+
+     1. CSS variables   (--bs-blue, --bs-primary, link colours,
+                         button hover/active, focus ring)
+     2. HARD-CODED hex  (.form-control:focus uses #86b7fe and
+                         rgba(13,110,253,.25) directly — no
+                         variable to override, so the rules
+                         themselves have to be restated)
+     3. UA focus ring   (-webkit-focus-ring-color, handled above)
+
+   Anything added later that leans on a Bootstrap default now
+   inherits the brand palette instead of blue.
+   ═════════════════════════════════════════════════════════ */
+:root{
+  --bs-blue: var(--ok-ink);
+  --bs-primary: var(--ok-yellow);
+  --bs-primary-rgb: 255, 199, 44;
+  --bs-primary-text-emphasis: var(--ok-ink);
+  --bs-primary-border-subtle: var(--ok-hairline);
+  --bs-primary-bg-subtle: var(--ok-beige);
+
+  --bs-link-color: var(--ok-ink);
+  --bs-link-hover-color: var(--ok-amber);
+  --bs-link-color-rgb: 14, 14, 14;
+  --bs-link-hover-color-rgb: 224, 162, 0;
+
+  --bs-focus-ring-color: rgba(255, 199, 44, .35);
+  --bs-focus-ring-box-shadow: 0 0 0 .25rem rgba(255, 199, 44, .35);
+
+  --bs-btn-focus-shadow-rgb: 255, 199, 44;
+  --bs-dropdown-link-active-bg: var(--ok-ink);
+  --bs-accordion-btn-focus-border-color: var(--ok-ink);
+  --bs-nav-link-hover-color: var(--ok-amber);
+  --bs-pagination-focus-bg: var(--ok-beige);
+  --bs-pagination-active-bg: var(--ok-ink);
+  --bs-pagination-active-border-color: var(--ok-ink);
+}
+
+/* 2. the hard-coded ones — restated, because there is no variable */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.ok-input:focus,
+.ok-select:focus,
+.ok-textarea:focus,
+textarea:focus,
+input:focus,
+select:focus{
+  border-color: var(--ok-ink) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.form-check-input:checked,
+.form-check-input[type="checkbox"]:indeterminate{
+  background-color: var(--ok-ink) !important;
+  border-color: var(--ok-ink) !important;
+}
+.form-range::-webkit-slider-thumb{ background-color: var(--ok-ink); }
+.form-range::-moz-range-thumb{ background-color: var(--ok-ink); }
+
+/* text selection and the caret, on every surface */
+::selection{ background: var(--ok-yellow); color: var(--ok-ink); }
+::-moz-selection{ background: var(--ok-yellow); color: var(--ok-ink); }
+input, textarea, select, [contenteditable]{ caret-color: var(--ok-ink); }
+
+/* and the one iOS still paints on its own */
+*{ -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+
+/* ═════════════════════════════════════════════════════════
+   FORCE THE LIGHT UI PALETTE
+   Without `color-scheme`, a browser running in dark mode
+   renders every NATIVE part of the page from its own dark
+   theme — button press states, form fields, focus rings,
+   scrollbars, select popups — and Chrome's dark accent is
+   blue. No stylesheet rule can reach those; they are painted
+   by the browser, which is why the CSS scanned clean while
+   blue was still showing on screen.
+
+   This page is a light design, so it says so. Everything the
+   browser draws now comes from the light palette, and the
+   accent it uses for checkboxes, radios, ranges and progress
+   is the brand ink rather than system blue.
+   ═════════════════════════════════════════════════════════ */
+:root{
+  color-scheme: light only;
+  accent-color: var(--ok-ink);
+}
+html, body{ color-scheme: light only; }
+
+/* native form controls follow the same accent */
+input, select, textarea, button, progress, meter{
+  color-scheme: light only;
+  accent-color: var(--ok-ink);
+}
+
+/* a dark-mode browser also tints scrollbars blue-grey */
+*{ scrollbar-color: var(--ok-lux-gray) transparent; }
+
+/* ═════════════════════════════════════════════════════════
+   THE REMAINING NATIVE BLUE
+   color-scheme fixed the bulk of it. Two gaps were left, both
+   painted by the browser rather than by any rule:
+
+     1. the focus ring only covered .btn / button / a, so form
+        fields still got Chrome's own — which is blue
+     2. autofill was never handled at all; Chrome repaints an
+        autofilled field with its own background and text colour
+   ═════════════════════════════════════════════════════════ */
+
+/* 1. every focusable thing, not just the buttons */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+details:focus-visible,
+[tabindex]:focus-visible,
+[contenteditable]:focus-visible,
+label:focus-visible{
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ok-focus-ring) !important;
+}
+input:focus, select:focus, textarea:focus,
+summary:focus, [tabindex]:focus, [contenteditable]:focus{
+  outline: 0 !important;
+}
+
+/* 2. autofill. Chrome ignores background-color on an autofilled field, so the
+   fill has to be faked with a large inset shadow, and the text colour set
+   through -webkit-text-fill-color. The long delay keeps it from flashing
+   back to the browser's own colour. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill{
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+          box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: var(--ok-ink) !important;
+  caret-color: var(--ok-ink) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* selection inside a field, and the native search "x" */
+input::selection, textarea::selection{
+  background: var(--ok-yellow);
+  color: var(--ok-ink);
+}
+input[type="search"]::-webkit-search-cancel-button{
+  -webkit-appearance: none;
+          appearance: none;
+}
+
+/* ═════════════════════════════════════════════════════════
+   .ok-cta — the Add-to-cart button, built from scratch
+   It used to be `btn btn-primary btn-lg`, which drags in the
+   whole Bootstrap button engine: ~30 --bs-btn-* variables and
+   the :hover / :active / :focus-visible rules that read them.
+   Every one of those was a way for blue to come back.
+   This carries no Bootstrap class at all, so none of that
+   applies — every state below is the only thing that can win.
+   ═════════════════════════════════════════════════════════ */
+.ok-cta{
+  /* reset anything the UA or a framework might contribute */
+  -webkit-appearance: none;
+          appearance: none;
+  margin: 0;
+  border: 1px solid var(--ok-yellow);
+  background: var(--ok-yellow);
+  color: #000;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 3rem;
+  padding: .85rem 1.5rem;
+  border-radius: var(--r-control, 8px);
+
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  outline: none;
+  box-shadow: none;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+
+.ok-cta:hover,
+.ok-cta:focus,
+.ok-cta:active,
+.ok-cta:focus-within{
+  background: #000;
+  border-color: #000;
+  color: #fff;
+  outline: none;
+  box-shadow: none;
+}
+
+/* keyboard focus stays visible, drawn with a shadow so no UA outline appears */
+.ok-cta:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ok-yellow);
+}
+
+.ok-cta:disabled,
+.ok-cta[aria-disabled="true"]{
+  opacity: .55;
+  cursor: not-allowed;
+  background: var(--ok-yellow);
+  border-color: var(--ok-yellow);
+  color: #000;
+}
+
+/* ---------------------------------------------------------
+   QUANTITY STEPPER
+   The cart built its own version of this control out of
+   utility classes, so it drifted from the one on the menu.
+   Both use .qty now — including inside the little forms the
+   cart needs to POST each change.
+   --------------------------------------------------------- */
+.qty{
+  background: #fff;
+  border-color: var(--ok-hairline-strong);
+}
+/* the cart wraps each button in its own <form>; that must not break the row */
+.qty > form{
+  display: flex;
+  margin: 0;
+}
+.qty button{
+  -webkit-appearance: none;
+          appearance: none;
+  border: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  background: #fff;
+  color: var(--ok-ink);
+  cursor: pointer;
+  line-height: 1;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  transition: background-color .15s ease, color .15s ease;
+}
+.qty button:hover{
+  background: var(--ok-ink);
+  color: #fff;
+}
+.qty button:active{
+  background: #000;
+  color: #fff;
+}
+.qty button:focus{ outline: none; box-shadow: none; }
+.qty button:focus-visible{
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ok-yellow);
+}
+.qty span{
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 700;
+  padding-inline: .15rem;
+}
+
+/* ---------------------------------------------------------
+   MENU CARD WIDTH
+   The card used to carry Bootstrap's .overflow-hidden, which
+   was removed so the "Popular" flag could hang over its top
+   edge. That class was doing a second, invisible job: per
+   spec, a grid/flex item whose overflow is not `visible` gets
+   an automatic minimum size of zero. Without it the card fell
+   back to min-width:auto and grew to the intrinsic width of
+   its longest line — 919px inside a 390px phone, which pushed
+   the photo off screen.
+
+   min-width:0 restores exactly that containment, without
+   clipping anything.
+   --------------------------------------------------------- */
+[data-menu-item]{
+  min-width: 0;
+  max-width: 100%;
+}
+[data-menu-item] > button[data-item]{
+  min-width: 0;
+  max-width: 100%;
+}
+/* the description row truncates, so every box in its chain must shrink */
+[data-menu-item] [data-rm],
+[data-menu-item] [data-rm-text]{
+  min-width: 0;
+}
+
+/* ═════════════════════════════════════════════════════════
+   FORM FIELDS: NO YELLOW BORDER
+   The focus ring that was added while chasing Chrome's blue
+   was drawn in the brand yellow, so every field picked up a
+   yellow outline on focus — most visibly on the wrapper-style
+   fields (checkout address, header search), where the ring
+   hugged the bare inner input inside its shell.
+
+   Fields now show focus the way the design always did: the
+   border goes to ink. Buttons and links keep their ring,
+   which is the thing that actually needs to stand out when
+   someone tabs through the page.
+   ═════════════════════════════════════════════════════════ */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.ok-input:focus-visible,
+.ok-select:focus-visible,
+.ok-textarea:focus-visible,
+[contenteditable]:focus-visible{
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* the field's own border carries the focus state */
+input:focus, input:focus-visible,
+select:focus, select:focus-visible,
+textarea:focus, textarea:focus-visible,
+.form-control:focus, .form-select:focus,
+.ok-input:focus, .ok-select:focus, .ok-textarea:focus{
+  border-color: var(--ok-ink) !important;
+}
+
+/* a bare input inside an .ok-input shell has no border of its own,
+   so the shell takes the state instead of the input */
+div.ok-input:focus-within,
+span.ok-input:focus-within,
+label.ok-input:focus-within,
+.ok-input:focus-within{
+  border-color: #000 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+.ok-input > input:focus,
+.ok-input > input:focus-visible,
+.ok-nofocus:focus,
+.ok-nofocus:focus-visible{
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+/* checkbox and radio are round/small — a 4px square ring around them read
+   as a stray yellow box. A tight neutral ring instead. */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible{
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(20, 20, 20, .35) !important;
+}
+
+/* The date / time editor highlights the segment you are typing in with the
+   browser's own selection colour, which is blue and is not reachable through
+   ::selection. Stated explicitly so it matches the rest of the site. */
+::-webkit-datetime-edit-year-field:focus,
+::-webkit-datetime-edit-month-field:focus,
+::-webkit-datetime-edit-day-field:focus,
+::-webkit-datetime-edit-week-field:focus,
+::-webkit-datetime-edit-hour-field:focus,
+::-webkit-datetime-edit-minute-field:focus,
+::-webkit-datetime-edit-second-field:focus,
+::-webkit-datetime-edit-millisecond-field:focus,
+::-webkit-datetime-edit-ampm-field:focus{
+  background-color: var(--ok-yellow);
+  color: #000;
+  outline: none;
 }
