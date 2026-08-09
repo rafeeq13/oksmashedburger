@@ -26,7 +26,7 @@
               {% if line.options and (line.options.variant or line.options.addons or line.options.notes) %}
               <div class="ok-fs-sm text-muted-warm ok-mt-15 ok-stack-05">
                 {% if line.options.variant %}<div class="d-flex flex-wrap gap-x-1"><span>{{ line.options.variant }}</span>{% if line.options.variant_delta %}<span class="text-muted-warm-70">({{ '+' if line.options.variant_delta > 0 else '−' }}${{ '%.2f'|format(line.options.variant_delta|abs) }})</span>{% endif %}</div>{% endif %}
-                {% for a in line.options.addons %}<div class="d-flex flex-wrap gap-x-1"><span>+ {{ a.name }}</span><span class="text-muted-warm-70">(+${{ '%.2f'|format(a.price) }})</span></div>{% endfor %}
+                {% for a in line.options.addons %}<div class="d-flex flex-wrap gap-x-1"><span>+ {{ a.name }}{% if (a.qty or 1) > 1 %} &times;{{ a.qty }}{% endif %}</span><span class="text-muted-warm-70">(+${{ '%.2f'|format(a.price * (a.qty or 1)) }})</span></div>{% endfor %}
                 {% if line.options.notes %}<div class="fst-italic ok-fs-xs">“{{ line.options.notes }}”</div>{% endif %}
               </div>
               {% endif %}
@@ -66,6 +66,7 @@
       {% if store %}<p class="ok-fs-sm text-muted-warm ok-mb-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-location-dot text-gold"></i> {{ store.name }}</p>{% endif %}
 
       <!-- Promo code -->
+      {% if features.deals %}
       {% if summary.promo.code and not summary.promo.error and (summary.promo.discount or summary.promo.delivery_discount) %}
       <div class="d-flex align-items-center justify-content-between bg-ok-green-10 border border-ok-green-30 ok-rounded-lg ok-px-3 py-2 ok-mb-3 ok-fs-sm">
         <span class="fw-semibold text-ok-green"><i class="fa-solid fa-tag"></i> {{ summary.promo.code }} applied</span>
@@ -80,8 +81,10 @@
       {% if summary.promo.error %}<p class="ok-fs-xs text-ok-red ok-mb-3">{{ summary.promo.error }}</p>{% else %}<div class="ok-mb-3"></div>{% endif %}
       {% endif %}
 
+      {% endif %}{# features.deals #}
+
       <!-- Loyalty points -->
-      {% if current_user and summary.points.available > 0 %}
+      {% if features.rewards and current_user and summary.points.available > 0 %}
       <form method="post" action="/cart/points" class="d-flex align-items-center justify-content-between ok-fs-sm ok-mb-3">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <span>Redeem {{ summary.points.available }} pts{% if summary.points.redeemed %} <span class="text-ok-green fw-semibold">(−${{ '%.2f'|format(summary.points.dollars) }})</span>{% endif %}</span>
@@ -90,6 +93,7 @@
       {% endif %}
 
       <!-- Gift card -->
+      {% if features.giftcards %}
       {% if summary.giftcard.code and not summary.giftcard.error and summary.giftcard.applied %}
       <div class="d-flex align-items-center justify-content-between bg-ok-green-10 border border-ok-green-30 ok-rounded-lg ok-px-3 py-2 ok-mb-3 ok-fs-sm">
         <span class="fw-semibold text-ok-green"><i class="fa-solid fa-gift"></i> Gift card −${{ '%.2f'|format(summary.giftcard.applied) }}</span>
@@ -103,6 +107,7 @@
       </form>
       {% if summary.giftcard.error %}<p class="ok-fs-xs text-ok-red ok-mb-3">{{ summary.giftcard.error }}</p>{% else %}<div class="ok-mb-3"></div>{% endif %}
       {% endif %}
+      {% endif %}{# features.giftcards #}
 
       <div class="divider ok-my-3"></div>
       <div class="ok-stack-2 ok-fs-sm">

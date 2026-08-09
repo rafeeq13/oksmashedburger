@@ -7,7 +7,7 @@
 
   <div class="ok-container ok-py-14 ok-grid ok-grid-2 ok-grid-md-5 ok-gap-8 position-relative">
     <div class="col-span-2 ok-gridco-span1span1-md">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-16 ok-mb-3" alt="{{ brand_name }}">
+      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-16 ok-mb-3" alt="{{ brand_name }}">
       <p class="text-w-55 ok-fs-sm ok-mb-5 ok-lh-relaxed">{{ pc('footer_tagline') }}</p>
       <div class="d-flex ok-gap-25">
         <a href="{{ pc_attr('footer_instagram_url') }}" aria-label="Instagram" class="ok-social ok-w-10 ok-h-10 ok-grid ok-place-center rounded-pill bg-w-10"><i class="fa-brands fa-instagram icon-lg"></i></a>
@@ -17,9 +17,9 @@
     </div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col1_heading') }}</h4><ul class="ok-stack-25">
       <li><a href="/menu" class="ok-flink text-w-60 ok-fs-sm">Menu</a></li>
-      <li><a href="/deals" class="ok-flink text-w-60 ok-fs-sm">Deals &amp; Offers</a></li>
+      {% if features.deals %}<li><a href="/deals" class="ok-flink text-w-60 ok-fs-sm">Deals &amp; Offers</a></li>{% endif %}
       <li><a href="/locations" class="ok-flink text-w-60 ok-fs-sm">Locations</a></li>
-      <li><a href="/gift-cards" class="ok-flink text-w-60 ok-fs-sm">Gift Cards</a></li>
+      {% if features.giftcards %}<li><a href="/gift-cards" class="ok-flink text-w-60 ok-fs-sm">Gift Cards</a></li>{% endif %}
       <li><a href="/tracking" class="ok-flink text-w-60 ok-fs-sm">Track Order</a></li>
     </ul></div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col2_heading') }}</h4><ul class="ok-stack-25">
@@ -32,7 +32,7 @@
       <li><a href="/login" class="ok-flink text-w-60 ok-fs-sm">Sign In</a></li>
       <li><a href="/register" class="ok-flink text-w-60 ok-fs-sm">Register</a></li>
       <li><a href="/orders" class="ok-flink text-w-60 ok-fs-sm">My Orders</a></li>
-      <li><a href="/rewards" class="ok-flink text-w-60 ok-fs-sm">Rewards</a></li>
+      {% if features.rewards %}<li><a href="/rewards" class="ok-flink text-w-60 ok-fs-sm">Rewards</a></li>{% endif %}
       <li><a href="/favorites" class="ok-flink text-w-60 ok-fs-sm">Favorites</a></li>
     </ul></div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col4_heading') }}</h4><ul class="ok-stack-25">

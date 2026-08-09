@@ -17,6 +17,40 @@ class SiteSetting(db.Model):
 # truth: storefront templates AND the admin "Site images" previews both read it,
 # so an un-overridden slot always shows the picture the site is actually using.
 # Keep the hero_* URLs in step with the `hero_slides` list in website/index.html.
+# ── Feature switches ────────────────────────────────────────────────────────
+# Whole parts of the storefront the client can turn off. A switch that has
+# never been touched has no row, and no row means ON — turning the system on
+# must not silently remove anything that is live today.
+#
+# (key, label, what disappears when it is off)
+FEATURES = [
+    ("feature_deals", "Deals & offers",
+     "The Deals page, its nav and footer links, the promo-code box in the cart "
+     "and at checkout, and the “Deals” badge in the menu."),
+    ("feature_rewards", "Rewards & points",
+     "The Rewards page, its nav, footer and account links, and points earning "
+     "or spending anywhere in checkout."),
+    ("feature_giftcards", "Gift cards",
+     "The Gift cards page, its nav and footer links, and the gift-card box at "
+     "checkout."),
+    ("feature_news", "News & updates",
+     "The News page and its nav and footer links."),
+]
+
+FEATURE_KEYS = [f[0] for f in FEATURES]
+
+
+def features_from(settings):
+    """{'deals': True, …} from a {key: value} map of SiteSetting rows.
+
+    Absent or anything other than the string "off" reads as on, so a missing
+    row — and a row written by some older version of the admin — both keep the
+    feature visible rather than hiding a page nobody meant to hide.
+    """
+    return {k.replace("feature_", ""): (settings.get(k) or "on") != "off"
+            for k in FEATURE_KEYS}
+
+
 SITE_IMAGE_DEFAULTS = {
     "hero_1_img":  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1600&h=760&fit=crop&q=72",
     "hero_2_img":  "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1600&h=760&fit=crop&q=72",

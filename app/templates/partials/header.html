@@ -1,7 +1,7 @@
 <header class="ok-header" id="okHeader"><div class="ok-container">
   <div class="d-flex align-items-center ok-gap-3 ok-gap-15rem-md ok-h-16 ok-height-5rem-md">
     <a href="/" class="d-flex align-items-center flex-shrink-0" aria-label="{{ brand_name }} home">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ brand_name }}" class="ok-h-11 ok-height-35rem-md w-auto">
+      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ brand_name }}" class="ok-h-11 ok-height-35rem-md w-auto">
     </a>
 
     <button data-open="location" class="d-none d-md-flex align-items-center ok-gap-25 text-start ok-pl-25 ok-pr-35 ok-py-15 rounded-pill border border-transparent   transition-all duration-200 flex-shrink-0 text-nowrap">
@@ -64,17 +64,26 @@
 <div class="drawer-backdrop" data-close="drawer"></div>
 <aside class="drawer" id="okDrawer" aria-label="Mobile menu">
   <div class="d-flex align-items-center justify-content-between ok-mb-5">
-    <img src="{{ url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-12" alt="{{ brand_name }}">
+    <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-12" alt="{{ brand_name }}">
     <button data-close="drawer" class="ok-iconbtn ok-w-9 ok-h-9" aria-label="Close"><i class="fa-solid fa-xmark icon-lg"></i></button>
   </div>
   {# Search lives in the header on every screen size now, so the drawer no
      longer carries its own (dead) copy of the field. #}
   {% for n in nav_links %}
   {% if n.children %}
-  <div class="ok-pt-3 pb-1 ok-fs-68rem fw-bold text-uppercase ok-ls-018em text-gold">{{ n.label }}</div>
-  {% for c in n.children %}
-  <a href="{{ c.href }}" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">{{ c.label }}</a>
-  {% endfor %}
+  {# A group starts closed and opens on tap. It is a real <button> with
+     aria-expanded so a screen reader is told the same thing the chevron says. #}
+  <button type="button" class="ok-navgroup" data-navgroup aria-expanded="false" aria-controls="navgrp{{ loop.index }}">
+    <span>{{ n.label }}</span>
+    <i class="fa-solid fa-chevron-down ok-navgroup-i" aria-hidden="true"></i>
+  </button>
+  <div class="ok-navgroup-panel" id="navgrp{{ loop.index }}" data-navpanel>
+    <div>
+      {% for c in n.children %}
+      <a href="{{ c.href }}" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">{{ c.label }}</a>
+      {% endfor %}
+    </div>
+  </div>
   {% else %}
   <a href="{{ n.href }}" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">{{ n.label }}</a>
   {% endif %}

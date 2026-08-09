@@ -3,7 +3,17 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Site images</h2>
-<p class="text-muted-warm ok-fs-sm ok-mb-5">Set the pictures shown in each storefront section. Paste an image URL <b>or</b> upload a file. Clear a field and save to revert to the built-in default. Recommended: landscape JPG/PNG/WEBP, at least 1200px wide.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-3">
+  Set the pictures shown in each part of the website. Paste an image URL <b>or</b> upload a file.
+  Clear a field and save to go back to the built-in default.
+</p>
+<div class="ok-card bg-cream-40 ok-p-3 ok-mb-5 ok-fs-sm">
+  <b>Designing a replacement?</b> Every slot below lists the size to build it at and where it appears.
+  The size is the space the website gives that picture, at double resolution so it stays sharp on a
+  phone or a retina screen. Every picture is cropped to fill its space, so keep the subject
+  near the middle — on a full-width banner a phone only keeps the middle third of the width.
+  Save as WEBP or JPEG: banners under 400&nbsp;KB, cards and tiles under 120&nbsp;KB.
+</div>
 
 <form method="post" action="/admin/site-images{{ qs }}" enctype="multipart/form-data" class="ok-stack-6">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -12,10 +22,14 @@
   <section class="ok-card ok-p-5">
     <h3 class="font-display fw-bold ok-fs-lg mb-3">{{ title }}</h3>
     <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 gap-3">
-      {% for key, label in slots %}
+      {% for key, label, blurb, size, ratio in slots %}
       {% set shown = current.get(key) or site_defaults.get(key) %}
       <div class="ok-rounded-xl border ok-bc-varokline ok-p-3">
-        <div class="ok-fs-xs fw-semibold text-muted-warm mb-2">{{ label }}</div>
+        <div class="d-flex align-items-start justify-content-between ok-gap-15 mb-1">
+          <div class="ok-fs-xs fw-semibold text-ink">{{ label }}</div>
+          {% if size %}<span class="badge badge-yellow ok-fs-6rem text-nowrap flex-shrink-0" title="Build the image at this size">{{ size }}</span>{% endif %}
+        </div>
+        <p class="ok-fs-62rem text-muted-warm ok-lh-snug mb-2">{{ blurb }}{% if ratio %} <span class="text-nowrap">· {{ ratio }}</span>{% endif %}</p>
         <div class="position-relative ok-ar-1610 ok-rounded-lg overflow-hidden bg-cream-40 mb-2 ok-grid ok-place-center">
           {% if shown %}
           <img src="{{ shown }}" alt="{{ label }}" class="w-100 h-100 ok-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

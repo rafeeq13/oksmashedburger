@@ -490,11 +490,37 @@
       if (e.target.closest("[data-msearch-open]")) { e.preventDefault(); openMenuSearch(true); }
       else if (e.target.closest("[data-msearch-close]")) { e.preventDefault(); openMenuSearch(false); }
 
-      var qBtn = e.target.closest(".qty button");
-      if (qBtn) { var span = qBtn.parentElement.querySelector("span"); var v = (parseInt(span.textContent, 10) || 0) + (qBtn.dataset.step === "-" ? -1 : 1); if (v < 1) v = 1; span.textContent = v; }
+      // add-on steppers: same pill as the item stepper but they may reach 0,
+      // which is how "not on this burger" is expressed.
+      var aBtn = e.target.closest("[data-astep]");
+      if (aBtn) {
+        var row = aBtn.closest("[data-addon]");
+        var cSpan = row.querySelector("[data-acount]");
+        var hidden = row.querySelector('input[type="hidden"]');
+        var n = (parseInt(cSpan.textContent, 10) || 0) + (aBtn.dataset.astep === "-" ? -1 : 1);
+        if (n < 0) n = 0;
+        if (n > 20) n = 20;
+        cSpan.textContent = n;
+        if (hidden) hidden.value = n;
+        row.classList.toggle("is-on", n > 0);
+        recalcItem(aBtn.closest("[data-item-form]"));
+      }
+
+      var qBtn = !aBtn && e.target.closest(".qty button");
+      if (qBtn) {
+        var span = qBtn.parentElement.querySelector("span");
+        var v = (parseInt(span.textContent, 10) || 0) + (qBtn.dataset.step === "-" ? -1 : 1);
+        if (v < 1) v = 1;
+        span.textContent = v;
+        recalcItem(qBtn.closest("[data-item-form]"));
+      }
 
       var chip = e.target.closest("[data-chip-group] .chip");
-      if (chip) { if (chip.dataset.multi === undefined) chip.parentElement.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("is-active"); }); chip.classList.toggle("is-active"); }
+      if (chip) {
+        if (chip.dataset.multi === undefined) chip.parentElement.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("is-active"); });
+        chip.classList.toggle("is-active");
+        recalcItem(chip.closest("[data-item-form]"));
+      }
 
       // order-type segmented toggle (delivery / pickup) — switches live, no reload
       var otBtn = e.target.closest("[data-ordertype]");
@@ -512,6 +538,15 @@
 
       var addBtn = e.target.closest("[data-add-cart]");
       if (addBtn) { e.preventDefault(); var cc = document.getElementById("cartCount"); if (cc) cc.textContent = (parseInt(cc.textContent, 10) || 0) + 1; toast((addBtn.dataset.addCart || "Item") + " added to cart"); }
+
+      // drawer nav group: one open at a time, so the drawer stays short
+      var navGrp = e.target.closest("[data-navgroup]");
+      if (navGrp) {
+        var panel = document.getElementById(navGrp.getAttribute("aria-controls"));
+        var open = navGrp.getAttribute("aria-expanded") === "true";
+        navGrp.setAttribute("aria-expanded", open ? "false" : "true");
+        if (panel) panel.classList.toggle("is-open", !open);
+      }
 
       var accQ = e.target.closest(".acc-q");
       if (accQ) accQ.parentElement.classList.toggle("is-open");
@@ -575,6 +610,29 @@
         var target = id && document.getElementById(id);
         if (target) { smoothScrollToEl(target); if (history.replaceState) history.replaceState(null, "", href); }
       }
+    });
+
+    // One price, recomputed from the choices on screen: base + the selected
+    // size + every add-on times how many of it, all multiplied by quantity.
+    // The button is the only place a total is shown, so it cannot drift.
+    function recalcItem(form) {
+      if (!form) return;
+      var total = parseFloat(form.dataset.base || "0") || 0;
+      var variant = form.querySelector('input[name="variant_id"]:checked');
+      if (variant) total += parseFloat(variant.dataset.delta || "0") || 0;
+      form.querySelectorAll("[data-addon]").forEach(function (row) {
+        var n = parseInt((row.querySelector("[data-acount]") || {}).textContent, 10) || 0;
+        total += (parseFloat(row.dataset.price || "0") || 0) * n;
+      });
+      var qtySpan = form.querySelector(".qty:not(.qty-sm) span");
+      total *= parseInt(qtySpan && qtySpan.textContent, 10) || 1;
+      var out = form.querySelector("[data-total]");
+      if (out) out.textContent = "$" + (total < 0 ? 0 : total).toFixed(2);
+    }
+
+    // a size chip checks its radio through the label, so recalc on change too
+    document.addEventListener("change", function (e) {
+      if (e.target.name === "variant_id") recalcItem(e.target.closest("[data-item-form]"));
     });
 
     // Quick-add modal form → add to cart without leaving the page.

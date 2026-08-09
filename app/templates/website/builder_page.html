@@ -7,5 +7,4 @@
 <div class="gjs-page">
 {{ (expanded_html if expanded_html is defined else page.html)|safe }}
 </div>
-{% if page.is_home %}{% include "partials/mobile_order_cta.html" %}{% endif %}
 {% endblock %}

@@ -204,6 +204,15 @@ PAGE_CONTENT = [
         ("footer_instagram_url", "Instagram link", "#"),
         ("footer_facebook_url", "Facebook link", "#"),
         ("footer_youtube_url", "YouTube link", "#")]},
+    {"key": "newspage", "label": "News page copy", "url": "/news", "fields": [
+        ("news_grid_heading", "Story grid heading", "More stories"),
+        ("news_grid_cta_label", "Story grid button", "See the menu"),
+        ("news_grid_cta_href", "Story grid button link", "/menu"),
+        ("news_readmore_label", "Read-more link text", "Read more"),
+        ("news_cta_button", "Closing CTA button", "Start Your Order"),
+        ("news_cta_href", "Closing CTA button link", "/menu"),
+        ("news_empty_text", "Shown when there are no posts",
+         "No stories yet. Check back soon.", "area")]},
     {"key": "storefront", "label": "Deals, Rewards & Gift cards copy", "url": "/deals", "fields": [
         # /deals
         ("deals_strip_lead", "Deals — banner lead-in", "New here? Enjoy"),
@@ -256,7 +265,8 @@ PAGE_CONTENT = [
         ("contact_form_heading", "Form heading", "Drop us a line"),
         ("contact_form_text", "Form sub-text", "Fill out the form and our team will get back to you within one business day.", "area"),
         ("contact_email_note", "Email card note", "We reply within 1 business day"),
-        ("contact_hq_name", "HQ name", "OK Smashed Burger HQ"),
+        ("contact_hq_name", "Fallback location name", "OK Smashed Burger HQ"),
+        ("contact_directions_label", "Directions button", "Directions"),
         ("contact_hq_address", "HQ address", "1201 Frankford Ave, Philadelphia · 19125"),
         ("contact_faq_heading", "FAQ teaser heading", "Quick answers, no waiting"),
         ("contact_faq_text", "FAQ teaser text", "A lot of questions have instant answers in our help center. Jump straight to a topic.", "area")]},

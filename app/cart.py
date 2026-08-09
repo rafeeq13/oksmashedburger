@@ -22,12 +22,21 @@ def add_item(product, qty=1, variant=None, addon_ids=None, notes=""):
         unit += float(variant.price_delta)
         options["variant"] = variant.name
         options["variant_delta"] = float(variant.price_delta)
+    # An add-on can be taken more than once — the id simply repeats, which also
+    # keeps every existing caller (and a re-order built from a past order)
+    # working without knowing anything about quantities.
     addons = []
+    seen = []
     for aid in (addon_ids or []):
+        if aid not in seen:
+            seen.append(aid)
+    for aid in seen:
         addon = ProductAddon.query.get(aid)
-        if addon and addon.product_id == product.id:
-            unit += float(addon.price)
-            addons.append({"name": addon.name, "price": float(addon.price)})
+        if not addon or addon.product_id != product.id:
+            continue
+        n = max(1, list(addon_ids).count(aid))
+        unit += float(addon.price) * n
+        addons.append({"name": addon.name, "price": float(addon.price), "qty": n})
     if addons:
         options["addons"] = addons
     if notes:
@@ -76,6 +85,13 @@ def summary(store, tip=0.0, order_type="delivery"):
     from app.auth import current_user
     from app.models.promo import Coupon, GiftCard
 
+    # A switched-off feature must not just be hidden — it must not price.
+    # Hiding the promo box alone left an already-applied code still taking
+    # money off the total, which is the discount showing up on a site where
+    # Deals is turned off.
+    from app.models.site import SiteSetting, features_from
+    feats = features_from({r.key: r.value for r in SiteSetting.query.all() if r.value})
+
     cart = get_cart()
     lines, subtotal = [], 0.0
     for i, it in enumerate(cart):
@@ -98,7 +114,7 @@ def summary(store, tip=0.0, order_type="delivery"):
 
     # ── Promo code ────────────────────────────────────────────
     promo = {"code": None, "discount": 0.0, "delivery_discount": 0.0, "error": None, "desc": None}
-    code = session.get("promo")
+    code = session.get("promo") if feats.get("deals", True) else None
     if code:
         c = Coupon.query.filter_by(code=code.upper()).first()
         if not c:
@@ -118,7 +134,10 @@ def summary(store, tip=0.0, order_type="delivery"):
     # ── Loyalty points redemption (100 pts = $1) ──────────────
     user = current_user()
     points = {"available": user.loyalty_points if user else 0, "redeemed": False, "dollars": 0.0, "points_used": 0}
-    if session.get("redeem_points") and user and user.loyalty_points > 0:
+    if not feats.get("rewards", True):
+        points["available"] = 0
+    if (feats.get("rewards", True) and session.get("redeem_points")
+            and user and user.loyalty_points > 0):
         cap = max(0.0, round(subtotal - order_discount, 2))
         dollars = round(min(user.loyalty_points * 0.01, cap), 2)
         if dollars > 0:
@@ -133,7 +152,7 @@ def summary(store, tip=0.0, order_type="delivery"):
 
     # ── Gift card (applied as credit against the total) ───────
     giftcard = {"code": None, "applied": 0.0, "balance": 0.0, "error": None}
-    gc_code = session.get("giftcard")
+    gc_code = session.get("giftcard") if feats.get("giftcards", True) else None
     if gc_code:
         gc = GiftCard.query.filter_by(code=gc_code.upper(), active=True).first()
         if gc and float(gc.balance) > 0:

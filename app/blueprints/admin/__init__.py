@@ -21,7 +21,7 @@ from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon
 from app.models.order import Order, OrderItem
 from app.models.promo import Coupon, GiftCard, COUPON_KINDS
 from app.models.user import User, Role
-from app.models.site import SiteSetting
+from app.models.site import SiteSetting, FEATURES, FEATURE_KEYS, features_from
 from app.models.page import (
     PageSection, HOME_SECTIONS, SECTION_THEMES, home_sections_ordered, resolved_defaults,
     spec_for, is_custom_key, next_custom_key, PAGE_CONTENT, page_content_defaults,
@@ -360,44 +360,102 @@ def zone_delete(zid):
 # ── Site images (brand-wide storefront section pictures) ─────────────────
 # (group title, [(setting key, label), …]). Templates read `site.get(key)` and
 # fall back to their built-in default when a key isn't set.
+# (group title, [(setting key, label, where it shows, required size, ratio), …])
+# The size is the box the site actually paints the picture into, doubled for a
+# retina screen — measured in a browser, not guessed, so a designer can build
+# to it before uploading rather than after seeing it cropped.
 SITE_IMAGE_SLOTS = [
-    ("Home hero carousel", [(f"hero_{i}_img", f"Slide {i}") for i in range(1, 11)]),
-    ("Home sections", [
-        ("catering_img", "Catering banner"),
-        ("about_img", "About / team photo"),
-        ("franchise_img", "Franchise banner"),
+    ("Brand", [
+        ("brand_logo", "Logo",
+         "Everywhere — site header, mobile menu, footer, the sign-in pages, the "
+         "gift-card artwork and the admin panel. A transparent PNG or SVG works best.",
+         "480×640", "any, it is scaled to fit"),
+        ("brand_favicon", "Browser tab icon",
+         "The little icon in the browser tab and in a bookmark. Square, and it has "
+         "to stay readable at 16 pixels — usually just the mark, not the full logo.",
+         "512×512", "1:1"),
+        ("brand_app_icon", "Home-screen icon",
+         "Used when someone saves the site to a phone home screen. Square, and it "
+         "gets rounded corners, so keep clear space around the edge.",
+         "512×512", "1:1"),
     ]),
-    ("Home — Instagram grid", [(f"ig_{i}_img", f"Instagram tile {i}") for i in range(1, 9)]),
+    ("Home hero carousel", [
+        ("hero_%d_img" % i, "Slide %d" % i,
+         "Home page — hero carousel, slide %d. The same picture is a wide band on "
+         "a desktop and a tall one on a phone, so keep the subject in the middle "
+         "third." % i, "2560×1440", "16:9") for i in range(1, 11)]),
+    ("Home sections", [
+        ("catering_img", "Catering banner",
+         "Home page — the full-width catering band. Also used as the band on the About page.",
+         "2400×1200", "2:1"),
+        ("about_img", "About / team photo",
+         "Home page — the story band. Also the photo and the video poster on the About page.",
+         "1200×1500", "4:5 portrait"),
+        ("franchise_img", "Franchise banner",
+         "Home page — the yellow franchise band, right-hand photo.",
+         "1600×1500", "16:15"),
+    ]),
+    ("Home — Instagram grid", [
+        ("ig_%d_img" % i, "Instagram tile %d" % i,
+         "Home page and About page — Instagram grid, tile %d. Square, nothing is cropped." % i,
+         "800×800", "1:1") for i in range(1, 9)]),
+    ("About page — Instagram grid", [
+        ("about_ig_%d_img" % i, "About tile %d" % i,
+         "About page — Instagram grid, tile %d. Leave it empty and this tile "
+         "shows whatever the home page's tile %d shows." % (i, i),
+         "800×800", "1:1") for i in range(1, 9)]),
+    ("About page — Instagram reel links", [
+        ("about_ig_%d_reel" % i, "About reel link %d" % i,
+         "About page — tapping tile %d opens this link. Empty falls back to the "
+         "home page's link for the same tile. A URL, not an image." % i,
+         "", "") for i in range(1, 9)]),
     ("Page banners", [
-        ("catering_hero_img", "Catering page hero"),
-        ("careers_hero_img", "Careers page hero"),
-        ("about_hero_img", "About page hero"),
-        ("contact_hero_img", "Contact page hero"),
-        ("deals_hero_img", "Deals page banner"),
-        ("giftcards_hero_img", "Gift cards page banner"),
-        ("rewards_hero_img", "Rewards page banner"),
-        ("faq_hero_img", "FAQ / help hero"),
+        ("catering_hero_img", "Catering page hero", "Catering page — the banner across the top.", "2560×1200", "21:10"),
+        ("careers_hero_img", "Careers page hero", "Join Our Team page — the banner across the top.", "2560×1200", "21:10"),
+        ("about_hero_img", "About page hero", "About page — the banner across the top.", "2560×1200", "21:10"),
+        ("contact_hero_img", "Contact page hero", "Contact page — the banner across the top.", "2560×1200", "21:10"),
+        ("deals_hero_img", "Deals page banner", "Deals page — the banner across the top.", "2560×1200", "21:10"),
+        ("giftcards_hero_img", "Gift cards page banner", "Gift cards page — the banner across the top.", "2560×1200", "21:10"),
+        ("rewards_hero_img", "Rewards page banner", "Rewards page — the banner across the top. This is the tallest banner on the site.", "2560×1440", "16:9"),
+        ("faq_hero_img", "FAQ / help hero", "Help centre page — the banner across the top.", "2560×1200", "21:10"),
     ]),
     ("About page photos", [
-        ("about_card1_img", "Story card 1 photo"),
-        ("about_card2_img", "Story card 2 photo"),
-        ("about_table_img", "“Meet us at the table” photo"),
-        ("about_crew_img", "Team photo"),
+        ("about_card1_img", "Story card 1 photo", "About page — the first of the two story cards.", "1200×900", "4:3"),
+        ("about_card2_img", "Story card 2 photo", "About page — the second story card.", "1200×900", "4:3"),
+        ("about_table_img", "“Meet us at the table” photo", "About page — the photo beside “Meet us at the table”.", "1200×900", "4:3"),
+        ("about_crew_img", "Team photo", "About page — the tilted team photo near the bottom.", "1200×1200", "1:1"),
+        ("about_kitchen_img", "Kitchen photo",
+         "About page — the “inside our kitchen” photo beside the story text. "
+         "Until you set it, it borrows the home page’s story photo.",
+         "1200×1500", "4:5 portrait"),
+        ("about_video_poster", "Video poster",
+         "About page — the still shown before the video plays. Until you set it, "
+         "it borrows the home page’s story photo.",
+         "1920×1080", "16:9"),
+        ("about_band_img", "Full-width band photo",
+         "About page — the full-width photo band lower down. Until you set it, it "
+         "borrows the home page’s catering banner.",
+         "2400×1200", "2:1"),
     ]),
     ("Other page photos", [
-        ("rewards_refer_img", "Rewards — refer a friend"),
-        ("giftcards_corporate_img", "Gift cards — corporate gifting"),
-        ("faq_support_img", "FAQ — support photo"),
-        ("tracking_map_img", "Order tracking — map picture"),
+        ("rewards_refer_img", "Rewards — refer a friend", "Rewards page — the “refer a friend” card.", "1200×900", "4:3"),
+        ("giftcards_corporate_img", "Gift cards — corporate gifting", "Gift cards page — the corporate gifting card.", "1000×625", "16:10"),
+        ("faq_support_img", "FAQ — support photo", "Help centre page — the photo beside the support text.", "1200×900", "4:3"),
+        ("tracking_map_img", "Order tracking — map picture", "Order tracking page — the picture standing in for the live map.", "1600×1000", "16:10"),
     ]),
-    ("Instagram reels (paste a reel link per tile)", [(f"ig_{i}_reel", f"Reel link for tile {i}") for i in range(1, 9)]),
+    ("Instagram reels (paste a reel link per tile)", [
+        ("ig_%d_reel" % i, "Reel link for tile %d" % i,
+         "Home page — tapping Instagram tile %d opens this link. A URL, not an image." % i,
+         "", "") for i in range(1, 9)]),
     ("Videos (self-hosted)", [
-        ("about_video", "About page video (MP4/WEBM, or paste a YouTube/Vimeo link)"),
+        ("about_video", "About page video (MP4/WEBM, or paste a YouTube/Vimeo link)",
+         "About page — plays in place of the photo. Upload MP4/WEBM or paste a YouTube/Vimeo link.",
+         "1920×1080", "16:9"),
     ]),
     ("Sign in & sign up pages", [
-        ("login_img", "Sign-in panel photo"),
-        ("register_img", "Sign-up panel photo"),
-        ("forgot_img", "Forgot-password panel photo"),
+        ("login_img", "Sign-in panel photo", "Sign-in page — the photo panel beside the form. Hidden on phones.", "1024×1400", "3:4 portrait"),
+        ("register_img", "Sign-up panel photo", "Sign-up page — a very tall photo panel. Hidden on phones.", "1024×2200", "1:2 tall"),
+        ("forgot_img", "Forgot-password panel photo", "Forgot-password page — the photo panel. Hidden on phones.", "1024×1400", "3:4 portrait"),
     ]),
 ]
 
@@ -416,7 +474,8 @@ def site_images():
 def site_images_save():
     store = _admin_store()
     for _title, slots in SITE_IMAGE_SLOTS:
-        for key, _label in slots:
+        for slot in slots:
+            key = slot[0]
             _exts = VIDEO_EXTS if key.endswith("_video") else IMAGE_EXTS
             uploaded = _save_image(request.files.get(key + "_file"),
                                    "site-" + key.replace("_", "-"), _exts)
@@ -434,16 +493,51 @@ def site_images_save():
     return redirect("/admin/site-images" + _qs(store))
 
 
+# ── Features: switch whole areas of the storefront off ───────────────────
+@bp.get("/admin/features")
+@roles_required(*ADMIN_ROLES)
+def features_page():
+    store = _admin_store()
+    rows = {r.key: r.value for r in SiteSetting.query.all() if r.value}
+    flags = features_from(rows)
+    current = {k: flags[k.replace("feature_", "")] for k in FEATURE_KEYS}
+    return render_template("admin/features.html", features_spec=FEATURES,
+                           current=current, **_shell(store))
+
+
+@bp.post("/admin/features")
+@roles_required(*ADMIN_ROLES)
+def features_save():
+    store = _admin_store()
+    for key in FEATURE_KEYS:
+        want_on = bool(request.form.get(key))
+        row = SiteSetting.query.filter_by(key=key).first()
+        if want_on:
+            # on is the default, so an "on" feature keeps no row at all
+            if row:
+                db.session.delete(row)
+        elif row:
+            row.value = "off"
+        else:
+            db.session.add(SiteSetting(key=key, value="off"))
+    db.session.commit()
+    flash("Features updated.", "success")
+    return redirect("/admin/features" + _qs(store))
+
+
 # ── Page builder (home page sections: order, visibility, text, theme) ────
 @bp.get("/admin/page-builder")
 @roles_required(*ADMIN_ROLES)
 def page_builder():
-    store = _admin_store()
-    sections = home_sections_ordered()            # ensures rows exist
-    specs = {row.key: spec_for(row.key) for row in sections}   # incl. custom blocks
-    defaults = resolved_defaults(current_app.config.get("BRAND_NAME", ""))
-    return render_template("admin/page_builder.html", sections=sections, specs=specs,
-                           themes=SECTION_THEMES, defaults=defaults, **_shell(store))
+    """Retired — the Visual editor does everything this screen did.
+
+    This was a drag-to-reorder list with a show/hide checkbox. /admin/canvas
+    reorders, shows/hides, edits each section's text AND restyles it, so two
+    tabs were offering the same job with different amounts of it. The route
+    stays as a redirect: bookmarks and any older link still land somewhere
+    useful instead of on a 404.
+    """
+    return redirect("/admin/canvas" + _qs(_admin_store()))
 
 
 def _apply_page_builder_form():
@@ -566,6 +660,12 @@ def page_content_save():
     for p in PAGE_CONTENT:
         for field in p["fields"]:
             key = field[0]
+            # Only touch what this form actually carried. The loop used to walk
+            # every field in the registry and delete any it could not find in
+            # the request, so a form covering one page would wipe the copy on
+            # all the others — which is exactly what a per-page editor posts.
+            if key not in request.form:
+                continue
             val = (request.form.get(key) or "").strip()
             setting = SiteSetting.query.filter_by(key=key).first()
             if val and val != (defaults.get(key) or ""):
@@ -577,7 +677,7 @@ def page_content_save():
                 db.session.delete(setting)        # cleared or == default → use default
     db.session.commit()
     flash("Page content saved.", "success")
-    return redirect("/admin/page-content" + _qs(store))
+    return redirect(request.form.get("next") or ("/admin/page-content" + _qs(store)))
 
 
 # ── Visual canvas editor (drag/reorder + live restyle of home sections) ──
@@ -608,7 +708,7 @@ def canvas():
             "enabled": bool(row.enabled), "custom": bool(spec.get("custom")),
             "config": row.config or {}, "fields": fields,
         })
-    return render_template("admin/canvas.html", state=state, fonts=CANVAS_FONTS, **_shell(store))
+    return render_template("admin/canvas.html", inner_pages=INNER_PAGES, state=state, fonts=CANVAS_FONTS, **_shell(store))
 
 
 @bp.post("/admin/canvas/save")
@@ -2149,10 +2249,18 @@ def design():
     styled = {s["key"]: any(str(v).strip() for k, v in s["config"].items()
                             if k.startswith("style_"))
               for s in inner_sections(page)}
+    # The words on this page live in the same screen as its design now — a
+    # client editing the Contact page should not have to work out that the
+    # heading is on one tab and the section colour on another.
+    current = {r.key: r.value for r in SiteSetting.query.all() if r.value}
+    defaults = page_content_defaults(current_app.config.get("BRAND_NAME", ""))
+    text_groups = [g for g in PAGE_CONTENT if g.get("url") == spec["url"]]
     return render_template("admin/design.html",
                            pages=INNER_PAGES, page=page, spec=spec,
                            sections=inner_sections(page), fields=DESIGN_FIELDS,
-                           styled=styled, **_shell(store))
+                           styled=styled, text_groups=text_groups,
+                           content_current=current, content_defaults=defaults,
+                           **_shell(store))
 
 
 @bp.post("/admin/design/<page>/<key>")

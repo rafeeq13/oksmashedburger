@@ -55,8 +55,12 @@
   </div>
 </div>
 
-<!-- page picker -->
+<!-- page picker — Home included, so this is the only place you choose a page -->
 <div class="d-flex flex-wrap gap-2 ok-mb-5">
+  <a href="/admin/canvas{{ qs }}"
+     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40">
+    <i class="fa-solid fa-house"></i> Home
+  </a>
   {% for p in pages %}
   <a href="/admin/design?page={{ p.page }}"
      class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border
@@ -70,6 +74,36 @@
 <div class="ok-grid ok-grid-lg-2 ok-gap-5">
   <!-- ── section list ─────────────────────────────────────────── -->
   <div class="ok-stack-4">
+    {% if text_groups %}
+    <article class="ok-card ok-p-3">
+      <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mb-3">
+        <b class="font-display ok-fs-sm">Words on this page</b>
+        <a href="{{ spec.url }}?edit=1" target="_blank" rel="noopener" class="ok-fs-xs link-underline">
+          or edit them on the page itself
+        </a>
+      </div>
+      <form method="post" action="/admin/page-content{{ qs }}" class="ok-stack-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="next" value="/admin/design?page={{ page }}">
+        {% for g in text_groups %}{% for f in g.fields %}
+        {% set key = f[0] %}
+        {% set val = content_current.get(key, '') %}
+        {% set ph = content_defaults.get(key, '') %}
+        <label class="d-block">
+          <span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">{{ f[1] }}</span>
+          {% if f|length > 3 and f[3] == 'area' %}
+          <textarea name="{{ key }}" rows="2" class="ok-input ok-fs-sm w-100" placeholder="{{ ph }}">{{ val }}</textarea>
+          {% else %}
+          <input name="{{ key }}" value="{{ val }}" placeholder="{{ ph }}" class="ok-input ok-fs-sm w-100">
+          {% endif %}
+        </label>
+        {% endfor %}{% endfor %}
+        <div><button class="btn btn-primary btn-sm">Save the words</button></div>
+        <p class="ok-fs-xs text-muted-warm mb-0">Leave a box empty to keep the built-in wording.</p>
+      </form>
+    </article>
+    {% endif %}
+
     {% for s in sections %}
     <article class="ok-card ok-p-3" id="s-{{ s.key }}">
       <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mb-3">

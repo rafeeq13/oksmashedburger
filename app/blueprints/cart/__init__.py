@@ -8,6 +8,14 @@ from app.models.menu import Product, ProductVariant
 bp = Blueprint("cart", __name__)
 
 
+def _feature_on(name):
+    """A switched-off area must refuse writes too, not only hide its form."""
+    from app.models.site import SiteSetting, features_from
+    rows = {r.key: r.value for r in SiteSetting.query.all() if r.value}
+    return features_from(rows).get(name, True)
+
+
+
 @bp.get("/cart")
 def view():
     store = get_current_store()
@@ -41,7 +49,17 @@ def add():
         v = ProductVariant.query.get(vid)
         if v and v.product_id == product.id:
             variant = v
+    # the modal posts one addon_qty_<id> per add-on; expand it into a repeated
+    # id list, which is how a quantity is expressed all the way to the cart line
     addon_ids = request.form.getlist("addon_ids", type=int)
+    for key, raw in request.form.items():
+        if not key.startswith("addon_qty_"):
+            continue
+        try:
+            aid, n = int(key[10:]), int(raw or 0)
+        except ValueError:
+            continue
+        addon_ids.extend([aid] * max(0, min(n, 20)))
     notes = request.form.get("notes", "").strip()
 
     cartlib.add_item(product, qty, variant, addon_ids, notes)
@@ -65,6 +83,8 @@ def remove():
 
 @bp.post("/cart/promo")
 def promo():
+    if not _feature_on("deals"):
+        abort(404)
     code = request.form.get("promo", "").strip().upper()
     nxt = request.form.get("next", "/cart")
     if code:
@@ -89,12 +109,16 @@ def promo_remove():
 
 @bp.post("/cart/points")
 def points():
+    if not _feature_on("rewards"):
+        abort(404)
     session["redeem_points"] = not session.get("redeem_points")
     return redirect("/cart")
 
 
 @bp.post("/cart/giftcard")
 def giftcard():
+    if not _feature_on("giftcards"):
+        abort(404)
     code = request.form.get("giftcard", "").strip().upper()
     if code:
         session["giftcard"] = code

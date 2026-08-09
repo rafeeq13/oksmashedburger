@@ -85,7 +85,8 @@ CONTENT_LISTS = [
         "where": "News page",
         "fields": [("title", "Headline", TEXT), ("date", "Date", TEXT),
                    ("tag", "Tag", TEXT), ("img", "Image URL", URL),
-                   ("excerpt", "Excerpt", AREA)],
+                   ("excerpt", "Excerpt", AREA),
+                   ("link", "Read-more link (optional)", URL)],
         "defaults": [
             {"title": "We are opening in Fishtown", "date": "12 July 2026", "tag": "Openings", "img": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=900&h=600&fit=crop&q=72", "excerpt": "Our second Philly kitchen is now serving on Frankford Ave, with the full menu, late weekend hours and our own delivery fleet."},
             {"title": "The Spicy Jalapeno Smash is back", "date": "28 June 2026", "tag": "Menu", "img": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=900&h=600&fit=crop&q=72", "excerpt": "Fresh jalapenos, pepper jack and our smoky sauce. Back on the menu by popular demand, and this time it is staying."},

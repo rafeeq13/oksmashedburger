@@ -59,7 +59,7 @@
   {% for row in rows %}
   <form method="post" action="/admin/menu/{{ row.product.id }}{{ qs }}" class="p-3 d-flex flex-wrap align-items-center ok-cgap-5 ok-rgap-3 {% if not row.product.is_active %}ok-opacity-60{% endif %}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <img src="{{ row.product.image_url or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="ok-w-14 ok-h-14 ok-rounded-lg ok-cover flex-shrink-0 bg-cream">
+    <img src="{{ row.product.image_url or logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="ok-w-14 ok-h-14 ok-rounded-lg ok-cover flex-shrink-0 bg-cream">
     <div class="ok-flex-1 ok-minw-10rem">
       <div class="fw-bold ok-lh-tight">{{ row.product.name }}{% if not row.product.is_active %} <span class="badge badge-soft ms-1">Archived</span>{% endif %}</div>
       <div class="ok-fs-xs text-muted-warm">{{ row.product.category.name }} · base ${{ '%.2f'|format(row.product.base_price) }}</div>

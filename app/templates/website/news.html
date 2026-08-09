@@ -15,6 +15,11 @@
 </section></div>
 
 <!-- ============ FEATURED POST ============ -->
+{% if not posts %}
+<section class="ok-section"><div class="ok-container">
+  <div class="ok-card ok-p-10 text-center text-muted-warm">{{ pc('news_empty_text') }}</div>
+</div></section>
+{% else %}
 {% set lead = posts[0] %}
 {% set _s = pb_page_style('news', 'featured_post') %}<div class="pb-sec" data-page="news" data-section="featured_post" data-label="Featured Post"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
   <div class="ok-container">
@@ -29,7 +34,7 @@
         </div>
         <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl ok-lh-tight ok-mb-3">{{ lead.title }}</h2>
         <p class="text-muted-warm ok-mb-3">{{ lead.excerpt }}</p>
-        <a href="/locations" class="d-inline-flex align-items-center gap-2 ok-fs-xs fw-bold text-uppercase tracking-wide w-max">Read more <i class="fa-solid fa-arrow-right"></i></a>
+        {% if lead.link %}<a href="{{ lead.link }}" class="d-inline-flex align-items-center gap-2 ok-fs-xs fw-bold text-uppercase tracking-wide w-max">{{ pc('news_readmore_label') }} <i class="fa-solid fa-arrow-right"></i></a>{% endif %}
       </div>
     </article>
   </div>
@@ -39,8 +44,8 @@
 {% set _s = pb_page_style('news', 'post_grid') %}<div class="pb-sec" data-page="news" data-section="post_grid" data-label="Post Grid"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section bg-cream-20 border-top ok-bc-varokline">
   <div class="ok-container">
     <div class="d-flex align-items-end justify-content-between ok-gap-3 border-bottom border-ink-80 ok-pb-3 ok-mb-8">
-      <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl text-uppercase tracking-tight">More stories</h2>
-      <a href="/menu" class="d-inline-flex align-items-center gap-2 border border-ink ok-px-3 ok-paddin-125rem-sm ok-py-25 ok-fs-11px ok-fs-sm-xs fw-bold text-uppercase tracking-wide flex-shrink-0">See the menu</a>
+      <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl text-uppercase tracking-tight">{{ pc('news_grid_heading') }}</h2>
+      <a href="{{ pc_attr('news_grid_cta_href') }}" class="d-inline-flex align-items-center gap-2 border border-ink ok-px-3 ok-paddin-125rem-sm ok-py-25 ok-fs-11px ok-fs-sm-xs fw-bold text-uppercase tracking-wide flex-shrink-0">{{ pc('news_grid_cta_label') }}</a>
     </div>
     <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
       {% for p in posts[1:] %}
@@ -55,20 +60,21 @@
           </div>
           <h3 class="font-display fw-bold ok-fs-lg ok-lh-tight">{{ p.title }}</h3>
           <p class="ok-fs-sm text-muted-warm mt-2 flex-grow-1">{{ p.excerpt }}</p>
-          <span class="d-inline-flex align-items-center ok-gap-15 ok-fs-11px fw-bold text-uppercase tracking-wide ok-mt-3 text-ink">Read more <i class="fa-solid fa-arrow-right"></i></span>
+          {% if p.link %}<a href="{{ p.link }}" class="d-inline-flex align-items-center ok-gap-15 ok-fs-11px fw-bold text-uppercase tracking-wide ok-mt-3 text-ink">{{ pc('news_readmore_label') }} <i class="fa-solid fa-arrow-right"></i></a>{% endif %}
         </div>
       </article>
       {% endfor %}
     </div>
   </div>
 </section></div>
+{% endif %}
 
 <!-- ============ CLOSING CTA ============ -->
 {% set _s = pb_page_style('news', 'closing_cta') %}<div class="pb-sec" data-page="news" data-section="closing_cta" data-label="Closing Cta"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section d-none">
   <div class="ok-container text-center">
     <h2 class="ok-h2 ok-mb-3">{{ pc('news_cta_heading') }}</h2>
     <p class="text-muted-warm ok-mb-3 max-w-lg mx-auto">{{ pc('news_cta_text') }}</p>
-    <a href="/menu" class="btn btn-primary btn-lg">Start Your Order</a>
+    <a href="{{ pc_attr('news_cta_href') }}" class="btn btn-primary btn-lg">{{ pc('news_cta_button') }}</a>
   </div>
 </section></div>
 {% endblock %}

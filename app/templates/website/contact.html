@@ -1,6 +1,12 @@
 {% extends "layouts/base.html" %}
 {% block title %}Contact Us, OK Smashed Burger{% endblock %}
 {% block content %}
+{# The map and the address card follow whichever location the visitor chose
+   in the header. Nothing is picked yet on a first visit, so the head-office
+   address from Page Content is the fallback. #}
+{% set _loc_name = current_store.name if current_store else pc_attr('contact_hq_name') %}
+{% set _loc_addr = current_store.full_address if current_store else pc_attr('contact_hq_address') %}
+
     <!-- ============ HERO ============ -->
     {% set _s = pb_page_style('contact', 'hero') %}<div class="pb-sec" data-page="contact" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
@@ -105,14 +111,15 @@
           <!-- Map -->
           <div class="ok-card overflow-hidden" data-reveal="up">
             <div class="position-relative ok-ar-1610 bg-cream-40">
-              <iframe src="https://maps.google.com/maps?q=1201%20Frankford%20Ave%2C%20Philadelphia%2C%20PA%2019125&z=15&output=embed" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ pc('contact_hq_name') }} map"></iframe>
+              <iframe src="https://maps.google.com/maps?q={{ _loc_addr|urlencode }}&z=15&output=embed" title="Map of {{ _loc_name }}" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ pc('contact_hq_name') }} map"></iframe>
             </div>
             <div class="ok-p-5 d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
-              <div>
-                <div class="font-display fw-bold ok-fs-sm">OK Smashed Burger HQ</div>
-                <div class="ok-fs-xs text-muted-warm">{{ pc('contact_hq_address') }}</div>
+              <div class="ok-min-w-0">
+                <div class="font-display fw-bold ok-fs-sm">{{ _loc_name }}</div>
+                <div class="ok-fs-xs text-muted-warm">{{ _loc_addr }}</div>
+                {% if current_store and current_store.phone %}<div class="ok-fs-xs text-muted-warm">{{ current_store.phone }}</div>{% endif %}
               </div>
-              <a href="https://maps.google.com/?q=1201+Frankford+Ave,+Philadelphia,+PA+19125" target="_blank" rel="noopener" class="btn btn-secondary btn-sm flex-shrink-0">Directions</a>
+              <a href="https://maps.google.com/?q={{ _loc_addr|urlencode }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm flex-shrink-0">{{ pc('contact_directions_label') }}</a>
             </div>
           </div>
         </div>

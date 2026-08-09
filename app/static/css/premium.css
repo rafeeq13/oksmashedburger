@@ -4154,3 +4154,129 @@ input[type="radio"]:focus-visible{
 
 /* A reward the customer cannot afford yet: still readable, clearly not clickable. */
 .ok-locked-btn{ opacity:.7; cursor:not-allowed; }
+
+/* ═════════════════════════════════════════════════════════
+   QUICK-ADD MODAL
+   The Add-to-cart row stays on screen while the add-on list
+   scrolls behind it, and the add-on steppers reuse the menu
+   pill at a smaller size.
+   ═════════════════════════════════════════════════════════ */
+.ok-modal-foot{
+  position: sticky;
+  /* sticky is clamped to the scroll container's PADDING box, so bottom:0 would
+     leave the container's own padding as a strip the list scrolls through. */
+  bottom: -1.5rem;
+  z-index: 6;
+  margin: 0 -1.5rem -1.5rem;
+  padding: 0 1.5rem;
+  background: #fff;
+  /* border-top: 1px solid var(--ok-hairline); */
+}
+
+/* small stepper for an add-on row */
+.qty.qty-sm{ border-width: 1px; }
+.qty.qty-sm button{ width: 1.75rem; height: 1.75rem; font-size: .95rem; }
+.qty.qty-sm > span{ min-width: 1.5rem; text-align: center; font-size: .85rem; font-weight: 700; }
+
+/* an add-on that has been picked reads as picked, not just as a number */
+[data-addon]{ transition: border-color .15s ease, background-color .15s ease; }
+[data-addon].is-on{ border-color: var(--ok-ink); background: #fff; }
+[data-addon].is-on .qty.qty-sm{ border-color: var(--ok-ink); }
+
+
+/* The sticky Add-to-cart button matches the quantity pill exactly: the row
+   stretches, the button carries no vertical padding of its own, so the pill
+   is what sets the height. No fixed number to drift out of step. */
+.ok-modal-foot .ok-cta{
+  min-height: 0;
+  padding-block: 0;
+  border-radius: 50px;
+}
+
+/* ═════════════════════════════════════════════════════════
+   ONE HERO HEIGHT FOR EVERY INNER PAGE
+   The banners were sized by whatever copy happened to be in
+   them, so /about came out at 480px and /catering at 819px on
+   the same screen. The Contact banner is the reference, and
+   this reproduces its measured height — 345 / 467 / 482 at
+   390 / 1440 / 1920 — as one token every inner page uses.
+   The home page keeps its own full-bleed carousel.
+   ═════════════════════════════════════════════════════════ */
+:root{ --ok-hero-h: clamp(21.5rem, 18rem + 12vw, 30rem); }
+
+.ok-pagehero,
+.ok-abt-hero{
+  min-height: var(--ok-hero-h);
+  display: grid;
+  align-items: center;
+}
+.ok-pagehero > .ok-container,
+.ok-abt-hero > .ok-container{
+  width: 100%;
+  /* small enough that the tallest inner-page banner still fits inside the
+     token; the shorter ones are padded out by min-height instead. */
+  padding-block: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+/* ═════════════════════════════════════════════════════════
+   DRAWER: COLLAPSIBLE NAV GROUP
+   "More" used to dump its links straight into the list, so the
+   drawer opened long enough to scroll. It is a disclosure now:
+   closed by default, chevron turning as it opens. The order and
+   location buttons underneath are never collapsed — they are the
+   two things someone opens this drawer to do.
+   ═════════════════════════════════════════════════════════ */
+.ok-navgroup{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--ok-line);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ok-ink);
+  cursor: pointer;
+  text-align: left;
+}
+.ok-navgroup-i{
+  font-size: .8rem;
+  color: var(--ok-slate);
+  transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+}
+.ok-navgroup[aria-expanded="true"] .ok-navgroup-i{ transform: rotate(180deg); }
+
+/* grid-rows 0fr → 1fr animates to the content's own height, so no max-height
+   guess that clips a longer list or lags on a shorter one */
+.ok-navgroup-panel{
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .28s cubic-bezier(.4, 0, .2, 1);
+}
+.ok-navgroup-panel > div{ overflow: hidden; }
+.ok-navgroup-panel.is-open{ grid-template-rows: 1fr; }
+
+@media (prefers-reduced-motion: reduce){
+  .ok-navgroup-i, .ok-navgroup-panel{ transition: none; }
+}
+
+/* ═════════════════════════════════════════════════════════
+   CATERING + FRANCHISE: A BIGGER TITLE ON WIDE SCREENS
+   These two are full-bleed statement bands — half photo, half
+   copy — so their headline has far more room around it than
+   the ordinary section headings that share .ok-title. Above
+   1300px it steps up; everything else, and every narrower
+   screen, is untouched.
+   ═════════════════════════════════════════════════════════ */
+@media (min-width: 1301px){
+  [data-section="catering"] .ok-title,
+  .ok-franchise .ok-title{
+    font-size: clamp(2.9rem, 3.6vw, 4.25rem);
+    line-height: .98;
+    letter-spacing: -.025em;
+  }
+}

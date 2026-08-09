@@ -34,7 +34,7 @@
             <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
             <a href="/account#addresses" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
             <a href="/account#payment" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
-            <a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
+            {% if features.rewards %}<a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>{% endif %}
             <a href="/account#profile" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
             <a href="/account#notifications" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
           </nav>
@@ -106,7 +106,7 @@
                   <span>{{ '{:,}'.format(reward_target) }} pts · next reward</span>
                 </div>
               </div>
-              <a href="/rewards" class="btn btn-secondary flex-shrink-0 justify-self-start ok-justif-end-md">View rewards</a>
+              {% if features.rewards %}<a href="/rewards" class="btn btn-secondary flex-shrink-0 justify-self-start ok-justif-end-md">View rewards</a>{% endif %}
             </div>
           </div>
 

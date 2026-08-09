@@ -1,6 +1,6 @@
 <!-- hero image: flush to the top and both sides, content below stays padded -->
 <div class="ok-modal-hero">
-  <img src="{{ product.image_url or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ product.name }}" class="w-100 ok-ar-1610 ok-cover bg-cream">
+  <img src="{{ product.image_url or logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ product.name }}" class="w-100 ok-ar-1610 ok-cover bg-cream">
 </div>
 
 <h3 class="font-display fw-bold ok-fs-sm text-uppercase tracking-tight ok-lh-snug ok-pr-8">{{ product.name }}</h3>
@@ -16,13 +16,13 @@
 </div>
 {% endif %}
 
-<div class="d-flex align-items-baseline gap-2">
-  <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none">${{ '%.2f'|format(price) }}</span>
-  {% if store %}<span class="ok-fs-xs text-muted-warm">at {{ store.name }}</span>{% endif %}
-</div>
+{# The price used to sit here. It now lives only in the sticky Add-to-cart
+   button, where it updates as the size and add-ons change — one number,
+   never two that can disagree. #}
+{% if store %}<div class="ok-fs-xs text-danger">at {{ store.name }}</div>{% endif %}
 
 {% if available %}
-<form method="post" action="/cart/add" data-item-form class="ok-mt-5">
+<form method="post" action="/cart/add" data-item-form data-base="{{ '%.2f'|format(price) }}" class="ok-mt-5">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" name="product_id" value="{{ product.id }}">
   <input type="hidden" name="qty" value="1">
@@ -33,7 +33,7 @@
     <label class="ok-label">Choose a size</label>
     <div class="d-flex gap-2 ok-optrow" data-chip-group>
       {% for v in product.variants %}
-      <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
+      <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" data-delta="{{ '%.2f'|format(v.price_delta or 0) }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
       {% endfor %}
     </div>
   </div>
@@ -44,7 +44,18 @@
     <label class="ok-label">Add-ons</label>
     <div class="ok-stack-2">
       {% for a in product.addons %}
-      <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer"><span class="fw-medium">{{ a.name }}</span><span class="d-flex align-items-center ok-gap-3"><span class="text-muted-warm ok-fs-sm">+${{ '%.2f'|format(a.price) }}</span><input type="checkbox" name="addon_ids" value="{{ a.id }}" class="ok-w-5 ok-h-5 accent-okyellow"></span></label>
+      <div class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-gap-3" data-addon data-price="{{ '%.2f'|format(a.price) }}">
+        <span class="fw-medium ok-min-w-0">{{ a.name }}</span>
+        <span class="d-flex align-items-center ok-gap-3 flex-shrink-0">
+          <span class="text-muted-warm ok-fs-sm text-nowrap">+${{ '%.2f'|format(a.price) }}</span>
+          <span class="qty qty-sm">
+            <button type="button" data-astep="-" aria-label="One less {{ a.name }}">&minus;</button>
+            <span data-acount>0</span>
+            <button type="button" data-astep="+" aria-label="One more {{ a.name }}">+</button>
+          </span>
+          <input type="hidden" name="addon_qty_{{ a.id }}" value="0">
+        </span>
+      </div>
       {% endfor %}
     </div>
   </div>
@@ -55,9 +66,9 @@
     <textarea name="notes" rows="2" class="ok-textarea" placeholder="No pickles, extra sauce…"></textarea>
   </div>
 
-  <div class="d-flex align-items-center ok-gap-3">
+  <div class="ok-modal-foot d-flex align-items-stretch ok-gap-3">
     <div class="qty"><button type="button" data-step="-">&minus;</button><span>1</span><button type="button" data-step="+">+</button></div>
-    <button type="submit" class="ok-cta flex-grow-1">Add to cart · ${{ '%.2f'|format(price) }}</button>
+    <button type="submit" class="ok-cta flex-grow-1">Add to cart · <span data-total>${{ '%.2f'|format(price) }}</span></button>
   </div>
 </form>
 {% else %}

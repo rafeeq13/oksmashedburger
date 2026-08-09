@@ -2,6 +2,19 @@
 {% block title %}Visual Editor, {{ brand_name }}{% endblock %}
 
 {% block admin %}
+{# Page picker, the same strip the design screen shows, so "which page am I
+   editing" is answered the same way on both. #}
+<div class="d-flex flex-wrap gap-2 ok-mb-4">
+  <span class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-ink text-white border-ink">
+    <i class="fa-solid fa-house"></i> Home
+  </span>
+  {% for p in inner_pages %}
+  <a href="/admin/design?page={{ p.page }}"
+     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40">
+    {{ p.label }}
+  </a>
+  {% endfor %}
+</div>
 <div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3 ok-mb-3">
   <div class="ok-min-w-0">
     <h2 class="ok-h2 ok-lh-tight">Visual editor</h2>

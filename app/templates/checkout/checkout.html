@@ -127,7 +127,7 @@
           {% for line in summary.lines %}
           <div class="d-flex ok-gap-3">
             <div class="position-relative ok-w-12 ok-h-12 ok-rounded-lg overflow-hidden flex-shrink-0 bg-cream">
-              <img src="{{ line.image or url_for('static', filename='img/logo.png') }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-100 h-100 ok-cover">
+              <img src="{{ line.image or logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-100 h-100 ok-cover">
               <span class="position-absolute -top-1.5 -right-1.5 ok-w-5 ok-h-5 rounded-pill bg-ink text-white ok-fs-65rem fw-bold ok-grid ok-place-center">{{ line.qty }}</span>
             </div>
             <div class="flex-grow-1 ok-min-w-0">
@@ -141,7 +141,7 @@
                 <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm"><span>{{ line.options.variant }}</span>{% if line.options.variant_delta %}<span class="text-nowrap">{{ '+' if line.options.variant_delta > 0 else '−' }}${{ '%.2f'|format(line.options.variant_delta|abs) }}</span>{% endif %}</div>
                 {% endif %}
                 {% for a in line.options.addons %}
-                <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm"><span>+ {{ a.name }}</span><span class="text-nowrap">+${{ '%.2f'|format(a.price) }}</span></div>
+                <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm"><span>+ {{ a.name }}{% if (a.qty or 1) > 1 %} &times;{{ a.qty }}{% endif %}</span><span class="text-nowrap">+${{ '%.2f'|format(a.price * (a.qty or 1)) }}</span></div>
                 {% endfor %}
                 {% if line.options.notes %}<div class="ok-fs-xs text-muted-warm fst-italic">“{{ line.options.notes }}”</div>{% endif %}
               </div>

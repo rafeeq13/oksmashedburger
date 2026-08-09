@@ -44,6 +44,33 @@ def create_app(config_object=None):
     app.register_blueprint(admin_bp)
     app.register_blueprint(driver_bp)
 
+    # ── Feature switches: the page itself, not just the link ────────────
+    # Hiding a nav entry is cosmetic — the URL still works, and a search
+    # engine or an old bookmark walks straight in. A switched-off area is
+    # gone from the routing table's point of view too.
+    FEATURE_PATHS = [
+        ("/deals", "deals"),
+        ("/rewards", "rewards"),
+        ("/gift-cards", "giftcards"),
+        ("/giftcards", "giftcards"),
+        ("/news", "news"),
+    ]
+
+    @app.before_request
+    def _feature_gate():
+        from flask import request, abort
+        path = request.path.rstrip("/") or "/"
+        if path.startswith("/admin"):
+            return None                     # the admin can always reach its own screens
+        for prefix, feat in FEATURE_PATHS:
+            if path == prefix or path.startswith(prefix + "/"):
+                from .models.site import SiteSetting, features_from
+                rows = {r.key: r.value for r in SiteSetting.query.all() if r.value}
+                if not features_from(rows).get(feat, True):
+                    abort(404)
+                break
+        return None
+
     # ── Static assets: cache hard, bust on change ────────────────────────
     # Nothing was setting a cache policy, so every visit re-fetched ~360 KB of
     # CSS/JS. A one-year max-age is only safe with a busting token, so
@@ -199,7 +226,7 @@ def create_app(config_object=None):
             current = stores[0]
         user = current_user()
         favorite_ids = {f.product_id for f in user.favorites} if user else set()
-        from .models.site import SiteSetting, SITE_IMAGE_DEFAULTS
+        from .models.site import SiteSetting, SITE_IMAGE_DEFAULTS, features_from
         from .models.page import BuilderPage, page_content_defaults
         site = {s.key: s.value for s in SiteSetting.query.all() if s.value}
 
@@ -230,30 +257,45 @@ def create_app(config_object=None):
             from markupsafe import Markup, escape
             return Markup('<span class="ok-ie" data-pc="%s" title="Click to edit">%s</span>'
                           % (escape(key), escape(val)))
+        # Parts of the site the client has switched off disappear from every
+        # menu here, so no template has to remember to check.
+        feats = features_from(site)
         more_children = [
-            {"label": "Rewards", "href": "/rewards"},
-            {"label": "Gift Cards", "href": "/gift-cards"},
+            {"label": "Rewards", "href": "/rewards", "feature": "rewards"},
+            {"label": "Gift Cards", "href": "/gift-cards", "feature": "giftcards"},
             {"label": "Contact", "href": "/contact"},
             {"label": "Join Our Team", "href": "/careers"},
-            {"label": "News", "href": "/news"},
+            {"label": "News", "href": "/news", "feature": "news"},
         ]
+        more_children = [c for c in more_children if feats.get(c.get("feature"), True)]
         for p in BuilderPage.query.filter_by(show_in_nav=True, published=True).order_by(BuilderPage.title).all():
             more_children.append({"label": p.title, "href": "/p/" + p.slug})
+        # Brand artwork is admin-set with the shipped file as the fallback, so
+        # the logo is not something only a developer can change.
+        from flask import url_for as _url_for
+        def _asset(key, fallback):
+            return site.get(key) or _url_for("static", filename=fallback)
+
         return {
             "brand_name": app.config["BRAND_NAME"],
+            "logo_url": _asset("brand_logo", "img/logo.png"),
+            "favicon_url": _asset("brand_favicon", "img/favicon.ico"),
+            "app_icon_url": _asset("brand_app_icon", "img/logo-icon.png"),
             "site": site,
             "pc": pc,
             "pc_attr": pc_attr,
             "inline_edit": _inline,
             "site_defaults": SITE_IMAGE_DEFAULTS,
-            "nav_links": [
+            "features": feats,
+            "nav_links": [n for n in [
                 {"label": "Menu", "href": "/menu", "hot": False},
-                {"label": "Deals", "href": "/deals", "hot": True},
+                {"label": "Deals", "href": "/deals", "hot": True, "feature": "deals"},
                 {"label": "Catering", "href": "/catering", "hot": False},
                 {"label": "Locations", "href": "/locations", "hot": False},
                 {"label": "About Us", "href": "/about", "hot": False},
-                {"label": "More", "href": "/rewards", "hot": False, "children": more_children},
-            ],
+                {"label": "More", "href": more_children[0]["href"] if more_children else "/contact",
+                 "hot": False, "children": more_children},
+            ] if feats.get(n.get("feature"), True) and n.get("children") != []],
             "all_stores": stores,
             "current_store": current,
             "cart_count": sum(i.get("qty", 0) for i in session.get("cart", [])),

@@ -9,8 +9,8 @@
   <meta name="color-scheme" content="light only">
   <title>{% block title %}{{ brand_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}Order OK Smashed Burger for delivery or pickup.{% endblock %}">
-  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/logo-icon.png') }}">
+  <link rel="icon" href="{{ favicon_url }}">
+  <link rel="apple-touch-icon" href="{{ app_icon_url }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,7 +42,7 @@
   {# Luxury loading sequence, first visit of the session only. #}
   <div id="okLoader" aria-hidden="true">
     <div class="ldr-inner">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="">
+      <img src="{{ logo_url }}" alt="">
       <div class="ldr-rail"><span class="ldr-fill"></span></div>
       <div class="ldr-word">Fresh smashed, every time</div>
     </div>
@@ -58,6 +58,9 @@
   {% include "partials/location_modal.html" %}
   {% include "partials/item_modal.html" %}
   {% include "partials/flash.html" %}
+  {# Sticky order bar on the mobile layout. Everywhere except the menu,
+     which is already the ordering screen and has its own sticky bar. #}
+  {% if request.path != "/menu" %}{% include "partials/mobile_order_cta.html" %}{% endif %}
 
   <div class="ok-veil" data-veil aria-hidden="true"></div>
   {% if inline_edit %}{% include "partials/inline_editor.html" %}{% endif %}

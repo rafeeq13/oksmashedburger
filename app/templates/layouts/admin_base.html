@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Management · {{ brand_name }}{% endblock %}</title>
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+  <link rel="icon" href="{{ favicon_url }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.css') }}">
@@ -36,7 +36,7 @@
   <!-- ===== Sidebar ===== -->
   <aside class="adm-sidebar position-fixed ok-inset-y-0 start-0 ok-z-50 ok-w-64 text-white d-flex flex-column border-end ok-bc-w006">
     <div class="sb-header d-flex align-items-center ok-gap-3 ok-h-16 px-3 border-bottom ok-bc-w007 flex-shrink-0">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ brand_name }}" class="ok-h-10 ok-w-10 ok-contain flex-shrink-0">
+      <img src="{{ logo_url }}" alt="{{ brand_name }}" class="ok-h-10 ok-w-10 ok-contain flex-shrink-0">
       <div class="ok-lh-tight ok-min-w-0 sb-text">
         <div class="font-display ok-fw-800 ok-fs-95rem text-truncate">{{ brand_name }}</div>
         <div class="ok-fs-55rem text-yellow fw-bold text-uppercase ok-ls-2em ok-mt-05">Management</div>
@@ -62,6 +62,11 @@
       {% endmacro %}
 
       {% if is_admin %}
+      {# Three groups, by what someone is actually trying to do: run the
+         business, change the website, or configure how it works. The website
+         tools used to sit in "Setup" as eight look-alike tabs — "Page Design",
+         "Page Builder", "Visual Editor", "Page Content", "Website Content" —
+         which gave no clue as to which one edits what. #}
       <div class="sb-group" data-group="management">
         {{ grouphead('Management') }}
         <div class="sb-group-body"><div class="ok-stack-05">
@@ -69,31 +74,35 @@
           {{ navlink('/admin/orders', 'Orders', 'receipt') }}
           {{ navlink('/admin/customers', 'Customers', 'users') }}
           {{ navlink('/admin/menu', 'Menu', 'burger') }}
-          {{ navlink('/admin/coupons', 'Coupons', 'tag') }}
+          {{ navlink('/admin/coupons', 'Deals & coupons', 'tag') }}
           {{ navlink('/admin/gift-cards', 'Gift Cards', 'gift') }}
+          {{ navlink('/admin/reviews', 'Reviews', 'star') }}
+          {{ navlink('/admin/messages', 'Messages', 'envelope') }}
+          {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
           {{ navlink('/admin/drivers', 'Drivers', 'car-side') }}
           {{ navlink('/admin/staff', 'Staff', 'user-gear') }}
           {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/locations', 'Locations', 'store') }}{% endif %}
+        </div></div>
+      </div>
+      <div class="sb-group" data-group="website">
+        {{ grouphead('Website') }}
+        <div class="sb-group-body"><div class="ok-stack-05">
+          {{ navlink('/admin/canvas', 'Pages', 'layer-group') }}
+          {{ navlink('/admin/page-content', 'All text (every page)', 'file-lines') }}
+          {{ navlink('/admin/content', 'Content lists', 'list-ul') }}
+          {{ navlink('/admin/site-images', 'Images', 'image') }}
+          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Brand & theme', 'palette') }}{% endif %}
+          {{ navlink('/admin/builder', 'Extra pages', 'pen-ruler') }}
+          {{ navlink('/admin/features', 'Features on / off', 'sliders') }}
         </div></div>
       </div>
       <div class="sb-group" data-group="setup">
         {{ grouphead('Setup') }}
         <div class="sb-group-body"><div class="ok-stack-05">
           {{ navlink('/admin/settings', 'Settings', 'gear') }}
-          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Theme', 'palette') }}{% endif %}
-          {{ navlink('/admin/design', 'Page Design', 'swatchbook') }}
-          {{ navlink('/admin/canvas', 'Visual Editor', 'wand-magic-sparkles') }}
-          {{ navlink('/admin/builder', 'Web Pages', 'pen-ruler') }}
-          {{ navlink('/admin/page-builder', 'Page Builder', 'table-cells-large') }}
-          {{ navlink('/admin/page-content', 'Page Content', 'file-lines') }}
-          {{ navlink('/admin/content', 'Website Content', 'list-ul') }}
-          {{ navlink('/admin/site-images', 'Site Images', 'image') }}
-          {{ navlink('/admin/hours', 'Hours', 'clock') }}
+          {{ navlink('/admin/hours', 'Opening hours', 'clock') }}
           {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
           {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
-          {{ navlink('/admin/reviews', 'Reviews', 'star') }}
-          {{ navlink('/admin/messages', 'Messages', 'envelope') }}
-          {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
         </div></div>
       </div>
       {% endif %}
