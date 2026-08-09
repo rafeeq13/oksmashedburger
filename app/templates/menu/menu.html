@@ -18,7 +18,12 @@
           {% else %}<span class="badge badge-red">Closed</span>{% endif %}
         </div>
         <div class="font-display fw-bold ok-fs-lg text-ink ok-lh-tight" data-store-name>{{ store.name }}</div>
-        <div class="ok-fs-sm text-muted-warm text-truncate">{{ store.full_address }} <button data-open="location" class="link-underline text-nowrap ms-1">Change</button></div>
+        {# the address may wrap/truncate, but Change is a separate flex item so
+           it can never be clipped off the end on a narrow screen #}
+        <div class="ok-fs-sm text-muted-warm d-flex align-items-baseline ok-gap-15 ok-min-w-0">
+          <span class="text-truncate ok-min-w-0">{{ store.full_address }}</span>
+          <button data-open="location" class="link-underline text-nowrap flex-shrink-0">Change</button>
+        </div>
       </div>
     </div>
 
@@ -78,7 +83,6 @@
       <div>
 <h2 class="font-display ok-fw-900 ok-fs-2xl ok-fs-md-3xl text-uppercase ok-ls-02em ok-lh-none">{{ grp.category.name }}</h2>
       </div>
-      {% if grp.category.icon %}<i class="fa-solid fa-{{ grp.category.icon }} ok-fs-2xl text-yellow-70 mb-1"></i>{% endif %}
     </div>
     <div class="ok-grid ok-grid-md-2 ok-gap-3 ok-gap-125rem-md">
       {% for it in grp['items'] %}
@@ -130,8 +134,11 @@
 <div id="schedModal" class="position-fixed ok-fill ok-z-82 ok-grid ok-place-center ok-p-3 ok-modal">
   <div class="ok-card w-100 max-w-md ok-p-3 pointer-events-auto position-relative">
     <button type="button" data-sched-close class="position-absolute top-3.5 right-3.5 ok-w-9 ok-h-9 rounded-pill ok-grid ok-place-center" aria-label="Close"><i class="fa-solid fa-xmark icon-lg"></i></button>
-    <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center text-gold ok-fs-xl ok-mb-3"><i class="fa-solid fa-clock"></i></div>
-    <h3 class="ok-h2 ok-fs-xl mb-1">Schedule your order</h3>
+    {# icon sits on the same line as the heading rather than stacked above it #}
+    <div class="d-flex align-items-center ok-gap-25 mb-1">
+      <span class="ok-w-10 ok-h-10 rounded-pill bg-cream ok-grid ok-place-center text-ink ok-fs-lg flex-shrink-0"><i class="fa-solid fa-clock"></i></span>
+      <h3 class="ok-h2 ok-fs-xl mb-0">Schedule your order</h3>
+    </div>
     <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ store.name }} is closed for immediate orders. Pick a time to have your order ready{% if store.today_hours %} · today's hours {{ store.today_hours }}{% endif %}.</p>
     <label class="ok-label" for="schedInput">Date &amp; time</label>
     <input type="datetime-local" id="schedInput" class="ok-input ok-mb-3">

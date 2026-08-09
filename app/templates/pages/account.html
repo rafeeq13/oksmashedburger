@@ -32,11 +32,11 @@
             <a href="/account" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
             <a href="/orders" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
             <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
-            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
-            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
+            <a href="/account#addresses" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
+            <a href="/account#payment" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
             <a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>
-            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
-            <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <a href="/account#profile" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
+            <a href="/account#notifications" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
           </nav>
           <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
             <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red text-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
@@ -95,9 +95,9 @@
             <div class="ok-p-3 ok-grid ok-gc-1frauto-md ok-gap-5 align-items-center">
               <div class="w-100">
                 <div class="d-flex align-items-center justify-content-between mb-1">
-                  <span class="badge badge-yellow">Gold</span>
+                  <span class="badge badge-yellow">{{ tier.current.name if tier.current else "Member" }}</span>
                 </div>
-                <h3 class="font-display fw-bold ok-fs-lg mb-2">{{ reward_to_go }} points to your next reward</h3>
+                <h3 class="font-display fw-bold ok-fs-lg mb-2">{% if tier.next %}{{ "{:,}".format(reward_to_go) }} points to {{ tier.next.name }}{% else %}You are on our top tier{% endif %}</h3>
                 <div class="ok-h-3 w-100 rounded-pill bg-cream overflow-hidden" role="progressbar" aria-valuenow="{{ current_user.loyalty_points }}" aria-valuemin="0" aria-valuemax="{{ reward_target }}" aria-label="Progress to next reward">
                   <div class="h-100 rounded-pill bg-yellow" style="width:{{ reward_pct }}%"></div>
                 </div>
@@ -111,7 +111,7 @@
           </div>
 
           <!-- Recent order -->
-          <section>
+          <section id="orders">
             <div class="d-flex align-items-center justify-content-between ok-mb-3">
               <h2 class="ok-h2 ok-fs-xl">Recent order</h2>
               <a href="/orders" class="link-underline ok-fs-sm d-inline-flex align-items-center gap-1">View all orders <i class="fa-solid fa-arrow-right"></i></a>
@@ -197,7 +197,7 @@
           </section>
 
           <!-- Payment methods -->
-          <section>
+          <section id="payment">
             <div class="d-flex align-items-center justify-content-between ok-mb-3">
               <h2 class="ok-h2 ok-fs-xl">Payment methods</h2>
               <button data-add-cart="New card" class="btn btn-secondary btn-sm">+ Add card</button>
@@ -230,7 +230,7 @@
           </section>
 
           <!-- Profile quick section -->
-          <section>
+          <section id="profile">
             <div class="d-flex align-items-center justify-content-between ok-mb-3">
               <h2 class="ok-h2 ok-fs-xl">Profile</h2>
             </div>
@@ -287,6 +287,37 @@
                 </form>
               </div>
             </details>
+          </section>
+
+          <!-- Notifications -->
+          {# The sidebar linked here but no such section existed, so the link
+             was dead. It shows what this account has actually been sent —
+             the same rows the admin sees in its notifications log. #}
+          <section id="notifications">
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <h2 class="ok-h2 ok-fs-xl">Notifications</h2>
+              <span class="ok-fs-xs text-muted-warm">Order updates we've sent you</span>
+            </div>
+            <div class="ok-card overflow-hidden">
+              {% for n in notifications %}
+              <div class="ok-p-3 d-flex align-items-start ok-gap-3{% if not loop.last %} border-bottom ok-bc-varokhairline{% endif %}">
+                <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center flex-shrink-0">
+                  <i class="fa-solid fa-{{ 'envelope' if n.channel == 'email' else 'comment-sms' }}"></i>
+                </span>
+                <div class="ok-min-w-0 flex-grow-1">
+                  <div class="fw-semibold ok-fs-sm">{{ n.subject or n.event|replace('_', ' ')|capitalize }}</div>
+                  <p class="ok-fs-xs text-muted-warm ok-mt-05 text-truncate">{{ n.body }}</p>
+                </div>
+                <span class="ok-fs-xs text-muted-warm text-nowrap flex-shrink-0">
+                  {{ n.created_at.strftime('%b %d') if n.created_at else '' }}
+                </span>
+              </div>
+              {% else %}
+              <div class="ok-p-8 text-center text-muted-warm ok-fs-sm">
+                Nothing yet. Order updates will appear here.
+              </div>
+              {% endfor %}
+            </div>
           </section>
 
         </div>

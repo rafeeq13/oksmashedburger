@@ -32,13 +32,13 @@
           {% set pct = ts.pct %}
           <div class="d-flex align-items-start justify-content-between ok-mb-5">
             <div class="d-flex align-items-center ok-gap-3">
-              <img data-ph="Jordan" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-12 ok-h-12 rounded-pill" alt="">
+              {% set av_size = 'ok-w-12 ok-h-12' %}{% include 'partials/user_avatar.html' %}
               <div>
                 <div class="ok-fs-xs text-muted-warm">Welcome back</div>
                 <div class="font-display fw-bold ok-fs-lg ok-lh-tight">{{ current_user.full_name if current_user else 'Jordan M.' }}</div>
               </div>
             </div>
-            <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> Silver member</span>
+            <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> {{ ts.current.name if ts.current else "Member" }} member</span>
           </div>
 
           <div class="d-flex align-items-end gap-2 mb-1">

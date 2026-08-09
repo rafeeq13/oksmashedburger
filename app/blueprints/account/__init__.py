@@ -10,6 +10,7 @@ from app.models.order import Order
 from app.models.menu import Product, ProductVariant, ProductAddon
 from app.models.favorite import Favorite
 from app.models.address import UserAddress
+from app.models.notification import Notification
 from app.services.orders import orders_for_user, STAGE_META
 
 AVATAR_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
@@ -19,8 +20,17 @@ bp = Blueprint("account", __name__)
 
 
 def _next_reward(points):
-    target = 1500 if points < 1500 else ((points // 500) + 1) * 500
-    return target, max(0, target - points), min(100, round(points / target * 100)) if target else 0
+    """Resolve the balance against the admin's tier list.
+
+    This used to hardcode a 1,500 target, which had nothing to do with the
+    thresholds printed on /rewards — 53 points showed "1,447 to your next
+    reward" while the tier cards said Silver starts at 2,500. One source of
+    truth now: the same rows the client edits in Website Content.
+    """
+    from app.models.content import tier_status
+    ts = tier_status(points)
+    target = int(ts["next"]["min_points"]) if ts["next"] else points
+    return target, ts["to_go"], ts["pct"], ts
 
 
 # ── Dashboard ────────────────────────────────────────────────────────────
@@ -29,7 +39,7 @@ def _next_reward(points):
 def account():
     u = current_user()
     all_orders = orders_for_user(u.id)
-    target, to_go, pct = _next_reward(u.loyalty_points)
+    target, to_go, pct, tier = _next_reward(u.loyalty_points)
     return render_template(
         "pages/account.html",
         recent_order=all_orders[0] if all_orders else None,
@@ -38,6 +48,13 @@ def account():
         addresses=UserAddress.query.filter_by(user_id=u.id)
         .order_by(UserAddress.is_default.desc(), UserAddress.id).all(),
         reward_target=target, reward_to_go=to_go, reward_pct=pct,
+        tier=tier,
+        # what this customer has actually been sent, newest first
+        notifications=(Notification.query
+                       .filter(Notification.recipient.in_(
+                           [x for x in (u.email, u.phone) if x]))
+                       .order_by(Notification.created_at.desc())
+                       .limit(20).all()) if (u.email or u.phone) else [],
     )
 
 

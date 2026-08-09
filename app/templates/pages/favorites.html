@@ -18,7 +18,7 @@
         <!-- ============ SIDEBAR ============ -->
         <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
           <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
-            <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+            {% set av_size = 'ok-w-11 ok-h-11' %}{% include 'partials/user_avatar.html' %}
             <div class="ok-min-w-0">
               <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
               <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.loyalty_points }} pts</div>

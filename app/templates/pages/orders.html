@@ -44,7 +44,7 @@
     <!-- sidebar -->
     <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
       <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
-        <img data-ph="{{ current_user.full_name }}" data-ph-type="avatar" data-ph-ratio="1/1" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0" alt="">
+        {% set av_size = 'ok-w-11 ok-h-11' %}{% include 'partials/user_avatar.html' %}
         <div class="ok-min-w-0"><div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div><div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.loyalty_points }} pts</div></div>
       </div>
       <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar">
@@ -57,21 +57,16 @@
     </aside>
 
     <!-- main -->
-    <div class="ok-min-w-0" data-tab-group>
-      <div class="d-flex gap-2 ok-mb-3">
-        <button data-tab="active" class="chip is-active">Active <span class="badge badge-yellow ms-1">{{ active|length }}</span></button>
-        <button data-tab="past" class="chip">Past <span class="badge badge-soft ms-1">{{ past|length }}</span></button>
-      </div>
-
-      <div data-panel="active" class="ok-stack-5">
-        {% for o in active %}{{ order_card(o, csrf_token) }}{% else %}
-        <div class="ok-card ok-p-10 text-center text-muted-warm"><p class="ok-mb-3">No active orders.</p><a href="/menu" class="btn btn-primary">Start an order</a></div>
-        {% endfor %}
-      </div>
-
-      <div data-panel="past" class="ok-stack-5 d-none">
-        {% for o in past %}{{ order_card(o, csrf_token) }}{% else %}
-        <div class="ok-card ok-p-10 text-center text-muted-warm">No past orders yet.</div>
+    <div class="ok-min-w-0">
+      {# One list, newest first. The Active/Past pills split six orders across
+         two tabs and hid half of them behind a click; each card already carries
+         its own status badge, so the split earned nothing. #}
+      <div class="ok-stack-5">
+        {% for o in active + past %}{{ order_card(o, csrf_token) }}{% else %}
+        <div class="ok-card ok-p-10 text-center text-muted-warm">
+          <p class="ok-mb-3">No orders yet.</p>
+          <a href="/menu" class="btn btn-primary">Start an order</a>
+        </div>
         {% endfor %}
       </div>
     </div>

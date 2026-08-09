@@ -1,0 +1,11 @@
+{# The signed-in customer's own photo, with their initials as the fallback.
+   The pages used to render a `data-ph` placeholder here, which picks a random
+   stock face from a hash — so the same account showed a different stranger on
+   every page. Size is passed in, e.g. {% set av_size = 'ok-w-11 ok-h-11' %} #}
+{% set _sz = av_size or 'ok-w-11 ok-h-11' %}
+{% if current_user and current_user.avatar_url %}
+<img src="{{ current_user.avatar_url }}" class="{{ _sz }} rounded-pill flex-shrink-0 ok-cover"
+     alt="{{ current_user.full_name }}">
+{% else %}
+<span class="ok-avatar {{ _sz }} flex-shrink-0" aria-hidden="true">{{ current_user.initials if current_user else '?' }}</span>
+{% endif %}

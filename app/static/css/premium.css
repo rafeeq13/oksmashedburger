@@ -3507,3 +3507,54 @@ label i.text-gold, label i.text-yellow,
    On the locations page the row's yellow hover fill already blacks everything
    in that column, so this holds there too. */
 .ok-status-rest{ color:#000 !important; }
+
+/* ---------------------------------------------------------
+   PHONE SEARCH BAR — magnifier hard left, close hard right
+   Both icons were sitting in the middle of the pill with the
+   input squeezed between them, so neither read as a control.
+   They anchor to the two ends now and the field takes what is
+   left. Same on the menu page's own search.
+   --------------------------------------------------------- */
+@media (max-width: 767.98px){
+  .hdr-search .search-panel > form,
+  .hdr-search .search-panel > div,
+  .menu-search-panel > div{
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding-inline: .25rem;      /* the icons carry their own tap area */
+  }
+
+  /* the magnifier: first item, pinned to the left end */
+  .hdr-search .search-panel [type="submit"],
+  .hdr-search .search-panel > form > span:first-child,
+  .hdr-search .search-panel > div > span:first-child,
+  .menu-search-panel > div > span:first-child{
+    order: -1;
+    flex: 0 0 auto;
+    width: 2.5rem;
+    display: grid;
+    place-items: center;
+    color: var(--ok-ink);
+  }
+
+  /* the field fills everything between them */
+  .hdr-search .search-panel input[type="search"],
+  .menu-search-panel input[type="search"]{
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-inline: .25rem;
+  }
+
+  /* the close button: last item, pinned to the right end */
+  .hdr-search .search-panel [data-search-close],
+  .menu-search-panel [data-msearch-close]{
+    order: 99;
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    color: var(--ok-ink);
+  }
+}
