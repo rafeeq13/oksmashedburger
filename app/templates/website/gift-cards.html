@@ -27,16 +27,16 @@
           <h2 class="ok-h2 ok-fs-2xl ok-mb-3">{{ pc('giftcards_build_heading') }}</h2>
 
           <!-- design -->
-          <label class="ok-label">1 · Choose a design</label>
+          <label class="ok-label">{{ pc('gc_step1') }}</label>
           <div class="ok-grid ok-grid-2 ok-grid-sm-4 gap-2 ok-mb-3" data-chip-group>
-            <button type="button" class="chip is-active justify-content-center ok-py-3"><i class="fa-solid fa-burger"></i> Classic</button>
-            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-cake-candles"></i> Birthday</button>
-            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-heart"></i> Thank You</button>
-            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-hands-clapping"></i> Congrats</button>
+            <button type="button" class="chip is-active justify-content-center ok-py-3"><i class="fa-solid fa-burger"></i> {{ pc('gc_design1') }}</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-cake-candles"></i> {{ pc('gc_design2') }}</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-heart"></i> {{ pc('gc_design3') }}</button>
+            <button type="button" class="chip justify-content-center ok-py-3"><i class="fa-solid fa-hands-clapping"></i> {{ pc('gc_design4') }}</button>
           </div>
 
           <!-- amount -->
-          <label class="ok-label">2 · Choose an amount</label>
+          <label class="ok-label">{{ pc('gc_step2') }}</label>
           <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
             <button type="button" class="chip">$10</button>
             {# Amounts — editable in Admin > Website Content #}
@@ -56,7 +56,7 @@
           <div class="divider ok-mb-3"></div>
 
           <!-- recipient -->
-          <label class="ok-label">3 · Who's it for?</label>
+          <label class="ok-label">{{ pc('gc_step3') }}</label>
           <div class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mb-3">
             <div>
               <label class="ok-label !text-slate !font-normal !text-xs">Recipient name</label>
@@ -80,15 +80,15 @@
 
           <!-- message -->
           <div class="ok-mb-3">
-            <label class="ok-label">4 · Personal message <span class="ok-hint fw-normal">(optional)</span></label>
+            <label class="ok-label">{{ pc('gc_step4') }} <span class="ok-hint fw-normal">(optional)</span></label>
             <textarea rows="3" maxlength="200" placeholder="Happy birthday! Grab a smash on me" class="ok-textarea">Happy birthday! Grab a smash on me</textarea>
-            <p class="ok-hint mt-1">Up to 200 characters.</p>
+            <p class="ok-hint mt-1">{{ pc('gc_message_hint') }}</p>
           </div>
 
           <div class="divider ok-mb-3"></div>
 
           <!-- delivery -->
-          <label class="ok-label">5 · Delivery</label>
+          <label class="ok-label">{{ pc('gc_step5') }}</label>
           <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
             <button type="button" class="chip is-active"><i class="fa-solid fa-paper-plane"></i> Send now</button>
             <button type="button" class="chip"><i class="fa-solid fa-calendar-days"></i> Schedule</button>
@@ -214,7 +214,7 @@
             </div>
             <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
               <div class="ok-card overflow-hidden -rotate-2 ok-shadow-2xl">
-                <img data-ph="Corporate Gifting" data-ph-ratio="4/3" class="ph-img" alt="">
+                {% if site.get('giftcards_corporate_img') %}<img src="{{ site.get('giftcards_corporate_img') }}" alt="Corporate Gifting" class="ph-img">{% else %}<img data-ph="Corporate Gifting" data-ph-ratio="4/3" class="ph-img" alt="">{% endif %}
               </div>
             </div>
           </div>

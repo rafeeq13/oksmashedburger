@@ -363,7 +363,14 @@ def test_inline_editing_is_admin_only_and_saves(app):
 
     page = c.get("/about?edit=1").get_data(as_text=True)
     assert "okIeBar" in page
-    assert page.count('class="ok-ie"') == 20
+    # every pc() field on the page — About's own plus the site-wide footer —
+    # becomes editable. Derived, not a literal, so adding copy to the registry
+    # does not "fail" this test for doing exactly what it is meant to do.
+    from app.models.page import PAGE_CONTENT
+    by_key = {p["key"]: p for p in PAGE_CONTENT}
+    expected = len(by_key["about"]["fields"]) + sum(
+        1 for f in by_key["footer"]["fields"] if not f[0].endswith("_url"))
+    assert page.count('class="ok-ie"') == expected
     # and the public HTML stays clean when the flag is absent
     assert 'class="ok-ie"' not in c.get("/about").get_data(as_text=True)
 

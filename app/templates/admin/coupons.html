@@ -5,7 +5,7 @@
 <h2 class="ok-h2 mb-1">Coupons &amp; promotions</h2>
 <p class="text-muted-warm ok-fs-sm ok-mb-5">Brand-wide promo codes customers can apply at checkout.</p>
 
-<form method="post" action="/admin/coupons{{ qs }}" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
+<form method="post" action="/admin/coupons{{ qs }}" enctype="multipart/form-data" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <div><label class="ok-label ok-fs-xs">Code</label><input name="code" required class="ok-input py-2 ok-fs-sm text-uppercase" placeholder="SAVE10"></div>
   <div><label class="ok-label ok-fs-xs">Type</label>
@@ -17,19 +17,24 @@
   <div><label class="ok-label ok-fs-xs">Min order $</label><input name="min_order" type="number" step="0.01" class="ok-input py-2 ok-fs-sm" placeholder="0"></div>
   <div><label class="ok-label ok-fs-xs">Description</label><input name="description" class="ok-input py-2 ok-fs-sm" placeholder="10% off"></div>
   <label class="d-flex align-items-center gap-2 ok-fs-sm ok-h-38px"><input type="checkbox" name="requires_code" checked class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>
-  <div class="ok-col-span-lg-6 ok-col-span-sm-2"><button class="btn btn-primary">Add coupon</button> <span class="ok-fs-xs text-muted-warm ms-2">Untick “Needs code” for an automatic deal · set Min order $0 to remove the spend restriction.</span></div>
+  <div class="ok-col-span-lg-3 ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Card photo — upload</label><input type="file" name="image_file" accept="image/*" class="ok-input py-2 ok-fs-sm"></div>
+  <div class="ok-col-span-lg-3 ok-col-span-sm-2"><label class="ok-label ok-fs-xs">…or paste an image link</label><input name="image_url" class="ok-input py-2 ok-fs-sm" placeholder="https://…"></div>
+  <div class="ok-col-span-lg-6 ok-col-span-sm-2"><button class="btn btn-primary">Add coupon</button> <span class="ok-fs-xs text-muted-warm ms-2">Untick “Needs code” for an automatic deal · set Min order $0 to remove the spend restriction · card photo looks best at 1000×625.</span></div>
 </form>
 
 <p class="text-muted-warm ok-fs-sm ok-mb-3">Edit any field and hit Save. <b>Needs code</b> off = auto deal (customers order without typing a code). <b>Min order</b> $0 = no restriction.</p>
 <div class="ok-stack-2">
   {% for c in coupons %}
-  <form method="post" action="/admin/coupons/{{ c.id }}/edit{{ qs }}" class="ok-card p-3 d-flex flex-wrap align-items-center column-gap-3 ok-rgap-3{% if not c.active %} ok-opacity-60{% endif %}">
+  <form method="post" action="/admin/coupons/{{ c.id }}/edit{{ qs }}" enctype="multipart/form-data" class="ok-card p-3 d-flex flex-wrap align-items-center column-gap-3 ok-rgap-3{% if not c.active %} ok-opacity-60{% endif %}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% if c.image_url %}<img src="{{ c.image_url }}" alt="" class="ok-w-14 ok-h-10 ok-cover ok-rounded-lg flex-shrink-0">{% endif %}
     <div class="fw-bold ok-w-24 flex-shrink-0">{{ c.code }}</div>
     <div class="ok-fs-xs text-muted-warm text-capitalize ok-w-20 flex-shrink-0">{{ c.kind.replace('_',' ') }}</div>
     <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Value <input name="value" type="number" step="0.01" value="{{ '%.2f'|format(c.value) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
     <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Min $ <input name="min_order" type="number" step="0.01" value="{{ '%.2f'|format(c.min_order) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
     <input name="description" value="{{ c.description or '' }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-minw-8rem" placeholder="Description">
+    <input name="image_url" value="{{ c.image_url or '' }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-minw-8rem" placeholder="Photo link (or upload →)">
+    <input type="file" name="image_file" accept="image/*" class="ok-input ok-py-15 ok-fs-xs ok-w-40 flex-shrink-0" aria-label="Upload a photo for {{ c.code }}">
     <label class="d-flex align-items-center ok-gap-15 ok-fs-xs text-nowrap"><input type="checkbox" name="requires_code" {% if c.requires_code %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>
     <label class="d-flex align-items-center ok-gap-15 ok-fs-xs text-nowrap"><input type="checkbox" name="active" {% if c.active %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Active</label>
     <span class="ok-fs-xs text-muted-warm text-nowrap">Used {{ c.used_count }}{% if c.max_uses %}/{{ c.max_uses }}{% endif %}</span>

@@ -20,6 +20,7 @@ class Coupon(TimestampMixin, db.Model):
     max_uses = db.Column(db.Integer)                         # null = unlimited
     used_count = db.Column(db.Integer, default=0, nullable=False)
     description = db.Column(db.String(200))
+    image_url = db.Column(db.String(400))   # the photo on the deal card, set from the admin
 
     def validate(self, subtotal):
         """Return (ok, error_message)."""

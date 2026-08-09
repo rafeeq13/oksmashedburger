@@ -5,7 +5,7 @@
 {% block topbar_actions %}
   {% if can_switch and admin_stores %}
   <form method="get" class="d-flex align-items-center ok-gap-15">
-    <i class="fa-solid fa-store text-muted-warm ok-fs-xs d-none d-sm-inline"></i>
+    <i class="fa-solid fa-store text-muted-warm ok-fs-lg d-none d-sm-inline"></i>
     <select name="store" onchange="this.form.submit()" class="ok-select text-ink ok-fs-sm ok-py-15">
       {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
     </select>

@@ -4151,3 +4151,6 @@ input[type="radio"]:focus-visible{
   color: #000;
   outline: none;
 }
+
+/* A reward the customer cannot afford yet: still readable, clearly not clickable. */
+.ok-locked-btn{ opacity:.7; cursor:not-allowed; }

@@ -189,6 +189,46 @@ def next_custom_key():
 # A field is (key, label, default) or (key, label, default, "area") when it is
 # long enough to want a textarea in the admin.
 PAGE_CONTENT = [
+    # The footer is on every page, so it is listed first — a change here is the
+    # single highest-reach edit the client can make.
+    {"key": "footer", "label": "Footer (every page)", "url": "/", "fields": [
+        ("footer_news_heading", "Newsletter heading", "Get the good stuff first"),
+        ("footer_news_text", "Newsletter sub-text", "Exclusive deals, new drops & rewards, straight to your inbox.", "area"),
+        ("footer_news_button", "Newsletter button", "Subscribe"),
+        ("footer_tagline", "Tagline under the logo", "Real smashed burgers, fast. Philadelphia's neighborhood burger joint.", "area"),
+        ("footer_col1_heading", "Column 1 heading", "Order"),
+        ("footer_col2_heading", "Column 2 heading", "Company"),
+        ("footer_col3_heading", "Column 3 heading", "Account"),
+        ("footer_col4_heading", "Column 4 heading", "Support"),
+        ("footer_legal", "Copyright line", "© 2026 {brand} · OK Brands, Philadelphia. All rights reserved."),
+        ("footer_instagram_url", "Instagram link", "#"),
+        ("footer_facebook_url", "Facebook link", "#"),
+        ("footer_youtube_url", "YouTube link", "#")]},
+    {"key": "storefront", "label": "Deals, Rewards & Gift cards copy", "url": "/deals", "fields": [
+        # /deals
+        ("deals_strip_lead", "Deals — banner lead-in", "New here? Enjoy"),
+        ("deals_code_hint", "Deals — promo code hint", "Have a promo code? Apply it before you order."),
+        ("deals_terms", "Deals — small print", "One offer per order. Deals cannot be combined and are available at participating locations for a limited time.", "area"),
+        ("deals_terms_link", "Deals — small print link text", "See full terms & conditions"),
+        # /rewards
+        ("rewards_join_prompt", "Rewards — join prompt", "Not a member yet?"),
+        ("rewards_join_link", "Rewards — join link text", "Join free"),
+        ("rewards_tab_earn", "Rewards — tab 1", "Earn"),
+        ("rewards_tab_redeem", "Rewards — tab 2", "Redeem"),
+        ("rewards_tab_history", "Rewards — tab 3", "History"),
+        ("rewards_earn_cta", "Rewards — Earn panel button", "Start Your Order"),
+        ("rewards_redeem_note", "Rewards — Redeem panel note", "to spend. Rewards you can't afford yet are greyed out."),
+        # /gift-cards
+        ("gc_step1", "Gift cards — step 1", "1 · Choose a design"),
+        ("gc_step2", "Gift cards — step 2", "2 · Choose an amount"),
+        ("gc_step3", "Gift cards — step 3", "3 · Who's it for?"),
+        ("gc_step4", "Gift cards — step 4", "4 · Personal message"),
+        ("gc_step5", "Gift cards — step 5", "5 · Delivery"),
+        ("gc_design1", "Gift cards — design 1 name", "Classic"),
+        ("gc_design2", "Gift cards — design 2 name", "Birthday"),
+        ("gc_design3", "Gift cards — design 3 name", "Thank You"),
+        ("gc_design4", "Gift cards — design 4 name", "Congrats"),
+        ("gc_message_hint", "Gift cards — message hint", "Up to 200 characters.")]},
     {"key": "about", "label": "About", "url": "/about", "fields": [
         ("about_hero_heading", "Hero heading", "About Us"),
         ("about_story_heading", "Intro heading", "Start the day off right with one of our delicious smash burgers"),

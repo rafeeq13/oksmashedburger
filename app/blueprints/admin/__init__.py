@@ -378,6 +378,18 @@ SITE_IMAGE_SLOTS = [
         ("rewards_hero_img", "Rewards page banner"),
         ("faq_hero_img", "FAQ / help hero"),
     ]),
+    ("About page photos", [
+        ("about_card1_img", "Story card 1 photo"),
+        ("about_card2_img", "Story card 2 photo"),
+        ("about_table_img", "“Meet us at the table” photo"),
+        ("about_crew_img", "Team photo"),
+    ]),
+    ("Other page photos", [
+        ("rewards_refer_img", "Rewards — refer a friend"),
+        ("giftcards_corporate_img", "Gift cards — corporate gifting"),
+        ("faq_support_img", "FAQ — support photo"),
+        ("tracking_map_img", "Order tracking — map picture"),
+    ]),
     ("Instagram reels (paste a reel link per tile)", [(f"ig_{i}_reel", f"Reel link for tile {i}") for i in range(1, 9)]),
     ("Videos (self-hosted)", [
         ("about_video", "About page video (MP4/WEBM, or paste a YouTube/Vimeo link)"),
@@ -1604,12 +1616,15 @@ def coupons_create():
     elif Coupon.query.filter_by(code=code).first():
         flash("That code already exists.", "error")
     else:
+        img = _save_image(request.files.get("image_file"), "deal-" + code.lower()) \
+            or request.form.get("image_url", "").strip()
         db.session.add(Coupon(
             code=code, kind=kind,
             value=request.form.get("value", type=float) or 0,
             min_order=request.form.get("min_order", type=float) or 0,
             requires_code=bool(request.form.get("requires_code")),
-            description=request.form.get("description", "").strip(), active=True))
+            description=request.form.get("description", "").strip(),
+            image_url=img or None, active=True))
         db.session.commit()
         flash(f"Coupon {code} created.", "success")
     return redirect("/admin/coupons" + _qs(store))
@@ -1626,6 +1641,12 @@ def coupons_edit(cid):
         c.min_order = request.form.get("min_order", type=float) or 0
     if "description" in request.form:
         c.description = request.form.get("description", "").strip() or c.description
+    # an upload wins over a pasted link; clearing the link box removes the photo
+    uploaded = _save_image(request.files.get("image_file"), "deal-" + c.code.lower())
+    if uploaded:
+        c.image_url = uploaded
+    elif "image_url" in request.form:
+        c.image_url = request.form.get("image_url", "").strip() or None
     # checkboxes only post when checked, so this form controls them explicitly
     c.requires_code = bool(request.form.get("requires_code"))
     c.active = bool(request.form.get("active"))

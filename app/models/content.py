@@ -192,6 +192,22 @@ CONTENT_LISTS = [
             {"name": "Gold", "min_points": 6000, "tagline": "Top tier", "perks": "Everything in Silver\n15 points per $1 spent\nFree delivery, always\nSurprise gifts & VIP events"}
         ],
     },
+    {
+        "kind": "rewards_catalog",
+        "label": "Rewards — what points buy",
+        "where": "Rewards page, the Redeem panel. A reward locks itself when the customer "
+                 "does not have enough points, so the order here is the ladder they climb.",
+        "fields": [("name", "Reward", TEXT), ("points", "Costs (points)", NUM),
+                   ("text", "Description", AREA), ("badge", "Badge (optional)", TEXT),
+                   ("img", "Image URL", URL)],
+        "defaults": [
+            {"name": "Free Fries", "points": 200, "text": "A regular order of our crispy OK fries.", "badge": "", "img": ""},
+            {"name": "Free Milkshake", "points": 350, "text": "Hand-spun vanilla, chocolate or strawberry.", "badge": "", "img": ""},
+            {"name": "Free Classic Smash", "points": 500, "text": "Single smash, American cheese, OK sauce.", "badge": "Popular", "img": ""},
+            {"name": "Free Combo", "points": 900, "text": "Any smash burger + fries + a drink.", "badge": "", "img": ""},
+            {"name": "$10 Off Your Order", "points": 1000, "text": "Take $10 straight off your next order.", "badge": "", "img": ""},
+        ],
+    },
 ]
 
 LIST_BY_KIND = {c["kind"]: c for c in CONTENT_LISTS}

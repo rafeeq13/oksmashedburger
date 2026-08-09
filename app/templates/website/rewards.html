@@ -17,7 +17,7 @@
             <a href="/menu" class="btn btn-primary btn-lg">Order &amp; Earn</a>
             <a href="#redeem" class="ok-btn-outline ok-btn-outline--light">Browse Rewards</a>
           </div>
-          <p class="ok-fs-sm text-w-60 ok-mt-5">Not a member yet? <a href="/register" class="text-white fw-semibold link-underline !text-white">Join free <i class="fa-solid fa-arrow-right"></i></a></p>
+          <p class="ok-fs-sm text-w-60 ok-mt-5">{{ pc('rewards_join_prompt') }} <a href="/register" class="text-white fw-semibold link-underline !text-white">{{ pc('rewards_join_link') }} <i class="fa-solid fa-arrow-right"></i></a></p>
         </div>
 
         <!-- Points card -->
@@ -71,9 +71,9 @@
           <div><h2 class="ok-h2">{{ pc('rewards_earn_heading') }}</h2></div>
           <!-- tab buttons -->
           <div class="d-flex gap-2 p-1 rounded-pill bg-cream-70">
-            <button data-tab="earn" class="chip is-active border-0 bg-transparent">Earn</button>
-            <button data-tab="redeem" class="chip border-0 bg-transparent">Redeem</button>
-            <button data-tab="history" class="chip border-0 bg-transparent">History</button>
+            <button data-tab="earn" class="chip is-active border-0 bg-transparent">{{ pc('rewards_tab_earn') }}</button>
+            <button data-tab="redeem" class="chip border-0 bg-transparent">{{ pc('rewards_tab_redeem') }}</button>
+            <button data-tab="history" class="chip border-0 bg-transparent">{{ pc('rewards_tab_history') }}</button>
           </div>
         </div>
 
@@ -94,7 +94,7 @@
             <article class="ok-card ok-card-hover ok-p-3 bg-ink text-white d-flex flex-column justify-content-center">
               <h3 class="font-display fw-bold ok-fs-lg mb-1">{{ pc('rewards_stack_heading') }}</h3>
               <p class="ok-fs-sm text-w-70 ok-mb-3">{{ pc('rewards_stack_text') }}</p>
-              <a href="/menu" class="btn btn-primary btn-sm align-self-start">Start Your Order</a>
+              <a href="/menu" class="btn btn-primary btn-sm align-self-start">{{ pc('rewards_earn_cta') }}</a>
             </article>
           </div>
         </div>
@@ -103,70 +103,40 @@
         <div data-panel="redeem" class="d-none" id="redeem">
           <div class="ok-card bg-cream-50 border-yellow-40 ok-p-3 ok-mb-3 d-flex align-items-center ok-gap-3">
             <span class="ok-fs-2xl"><i class="fa-solid fa-star fill-current icon-lg"></i></span>
-            <p class="ok-fs-sm fw-semibold">You have <b>{{ '{:,}'.format(current_user.loyalty_points if current_user else 1240) }} points</b> to spend. Rewards you can't afford yet are greyed out.</p>
+            <p class="ok-fs-sm fw-semibold">You have <b>{{ '{:,}'.format(current_user.loyalty_points if current_user else 1240) }} points</b> {{ pc('rewards_redeem_note') }}</p>
           </div>
+          {% set _bal = (current_user.loyalty_points if current_user else 1240) or 0 %}
           <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
-            <!-- affordable -->
-            <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup">
+            {% for r in content_list('rewards_catalog') %}
+            {% set _cost = r.points|int if r.points else 0 %}
+            {% set _locked = _cost > _bal %}
+            <article class="ok-card overflow-hidden{% if _locked %} ok-opacity-60{% else %} ok-card-hover ok-hovergroup{% endif %}">
               <div class="position-relative ok-ar-1610 overflow-hidden">
-                <img data-ph="Free Fries" data-ph-ratio="16/10" class="ph-img transition" alt="">
-                <span class="badge badge-yellow position-absolute top-3 left-3">200 pts</span>
+                {% if r.img %}<img src="{{ r.img }}" alt="{{ r.name }}" class="ph-img transition{% if _locked %} grayscale{% endif %}">
+                {% else %}<img data-ph="{{ r.name }}" data-ph-ratio="16/10" class="ph-img transition{% if _locked %} grayscale{% endif %}" alt="">{% endif %}
+                {% if r.badge and not _locked %}<span class="badge badge-deal position-absolute top-3 left-3">{{ r.badge }}</span>{% endif %}
+                <span class="badge {{ 'badge-soft' if _locked else 'badge-yellow' }} position-absolute top-3 {{ 'left-3' if _locked or not r.badge else 'right-3' }}">{{ '{:,}'.format(_cost) }} pts</span>
               </div>
               <div class="ok-p-3">
-                <h3 class="font-display fw-bold ok-fs-lg">Free Fries</h3>
-                <p class="ok-fs-sm text-muted-warm ok-mb-3">A regular order of our crispy OK fries.</p>
-                <button data-add-cart="Free Fries reward" class="btn btn-primary btn-block">Redeem · 200</button>
+                <h3 class="font-display fw-bold ok-fs-lg">{{ r.name }}</h3>
+                {% if _locked %}
+                <p class="ok-fs-sm text-muted-warm ok-mb-3"><i class="fa-solid fa-lock"></i> Earn {{ '{:,}'.format(_cost) }} points to unlock this reward.</p>
+                <button class="btn btn-secondary btn-block ok-locked-btn" disabled>Need {{ '{:,}'.format(_cost) }} pts</button>
+                {% else %}
+                <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ r.text }}</p>
+                <button data-add-cart="{{ r.name }} reward" class="btn btn-primary btn-block">Redeem · {{ _cost }}</button>
+                {% endif %}
               </div>
             </article>
-            <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup">
-              <div class="position-relative ok-ar-1610 overflow-hidden">
-                <img data-ph="Free Milkshake" data-ph-ratio="16/10" class="ph-img transition" alt="">
-                <span class="badge badge-yellow position-absolute top-3 left-3">350 pts</span>
-              </div>
-              <div class="ok-p-3">
-                <h3 class="font-display fw-bold ok-fs-lg">Free Milkshake</h3>
-                <p class="ok-fs-sm text-muted-warm ok-mb-3">Hand-spun vanilla, chocolate or strawberry.</p>
-                <button data-add-cart="Free Milkshake reward" class="btn btn-primary btn-block">Redeem · 350</button>
-              </div>
-            </article>
-            <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup">
-              <div class="position-relative ok-ar-1610 overflow-hidden">
-                <img data-ph="Free Classic Smash" data-ph-ratio="16/10" class="ph-img transition" alt="">
-                <span class="badge badge-deal position-absolute top-3 left-3">Popular</span>
-                <span class="badge badge-yellow position-absolute top-3 right-3">500 pts</span>
-              </div>
-              <div class="ok-p-3">
-                <h3 class="font-display fw-bold ok-fs-lg">Free Classic Smash</h3>
-                <p class="ok-fs-sm text-muted-warm ok-mb-3">Single smash, American cheese, OK sauce.</p>
-                <button data-add-cart="Free Classic Smash reward" class="btn btn-primary btn-block">Redeem · 500</button>
-              </div>
-            </article>
-            <article class="ok-card ok-card-hover overflow-hidden ok-hovergroup">
-              <div class="position-relative ok-ar-1610 overflow-hidden">
-                <img data-ph="Free Combo" data-ph-ratio="16/10" class="ph-img transition" alt="">
-                <span class="badge badge-yellow position-absolute top-3 left-3">900 pts</span>
-              </div>
-              <div class="ok-p-3">
-                <h3 class="font-display fw-bold ok-fs-lg">Free Combo</h3>
-                <p class="ok-fs-sm text-muted-warm ok-mb-3">Any smash burger + fries + a drink.</p>
-                <button data-add-cart="Free Combo reward" class="btn btn-primary btn-block">Redeem · 900</button>
-              </div>
-            </article>
-            <!-- locked / above balance -->
-            <article class="ok-card overflow-hidden ok-opacity-60">
-              <div class="position-relative ok-ar-1610 overflow-hidden">
-                <img data-ph="$10 Off" data-ph-ratio="16/10" class="ph-img grayscale" alt="">
-                <span class="badge badge-soft position-absolute top-3 left-3">1,000 pts</span>
-              </div>
-              <div class="ok-p-3">
-                <div class="d-flex align-items-center gap-2 mb-1"><h3 class="font-display fw-bold ok-fs-lg">$10 Off Your Order</h3></div>
-                <p class="ok-fs-sm text-muted-warm ok-mb-3"><i class="fa-solid fa-lock"></i> Earn 1,000 points to unlock this reward.</p>
-                <button class="btn btn-secondary btn-block" disabled style="opacity:.7;cursor:not-allowed">Need 1,000 pts</button>
-              </div>
-            </article>
+            {% endfor %}
             <article class="ok-card overflow-hidden bg-ink text-white d-flex flex-column justify-content-center ok-p-3">
+              {% set _next = (content_list('rewards_catalog') | selectattr('points') | rejectattr('points', 'lt', _bal + 1) | list | first) %}
               <h3 class="font-display fw-bold ok-fs-lg mb-1">Keep going!</h3>
-              <p class="ok-fs-sm text-w-70 ok-mb-3">You're just <b class="text-yellow">260 points</b> away from a free Classic Smash.</p>
+              {% if _next %}
+              <p class="ok-fs-sm text-w-70 ok-mb-3">You're just <b class="text-yellow">{{ '{:,}'.format(_next.points|int - _bal) }} points</b> away from {{ _next.name }}.</p>
+              {% else %}
+              <p class="ok-fs-sm text-w-70 ok-mb-3">You have enough points for <b class="text-yellow">every reward</b> on the list. Go and spend them.</p>
+              {% endif %}
               <a href="/menu" class="btn btn-primary btn-sm align-self-start">Earn more points</a>
             </article>
           </div>
@@ -305,7 +275,7 @@
             </div>
             <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
               <div class="ok-card overflow-hidden rotate-2 ok-shadow-2xl">
-                <img data-ph="Refer a Friend" data-ph-ratio="4/3" class="ph-img" alt="">
+                {% if site.get('rewards_refer_img') %}<img src="{{ site.get('rewards_refer_img') }}" alt="Refer a Friend" class="ph-img">{% else %}<img data-ph="Refer a Friend" data-ph-ratio="4/3" class="ph-img" alt="">{% endif %}
               </div>
             </div>
           </div>

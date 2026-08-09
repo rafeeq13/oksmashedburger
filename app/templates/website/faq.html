@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
-              <img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img ok-rounded-2xl" alt="">
+              {% if site.get('faq_support_img') %}<img src="{{ site.get('faq_support_img') }}" alt="Friendly support" class="ph-img ok-rounded-2xl">{% else %}<img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img ok-rounded-2xl" alt="">{% endif %}
             </div>
           </div>
         </div>

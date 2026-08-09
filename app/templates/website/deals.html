@@ -13,7 +13,7 @@
 <h1 class="ok-display ok-mb-3" data-reveal="up" data-reveal-delay="0.08">{{ pc('deals_hero_heading') }}</h1>
           <p class="text-w-80 ok-fs-lg ok-mb-7 max-w-xl mx-auto ok-lh-relaxed" data-reveal="up" data-reveal-delay="0.14">{{ pc('deals_hero_text') }}</p>
           <div class="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 bg-w-10 border border-w-20 rounded-pill ok-px-3 py-2">
-            <span class="ok-fs-sm d-inline-flex align-items-center gap-1"><i class="fa-solid fa-hands-clapping"></i> New here? Enjoy</span>
+            <span class="ok-fs-sm d-inline-flex align-items-center gap-1"><i class="fa-solid fa-hands-clapping"></i> {{ pc('deals_strip_lead') }}</span>
             <span class="chip is-active !bg-okyellow !text-jet !border-okyellow fw-bold tracking-wide">Free delivery</span>
             <span class="ok-fs-sm text-w-70">on your first order</span>
           </div>
@@ -25,7 +25,7 @@
     {% set _s = pb_page_style('deals', 'promo_code_entry') %}<div class="pb-sec" data-page="deals" data-section="promo_code_entry" data-label="Promo-Code Entry"{% if _s %} style="{{ _s }}"{% endif %}><section class="bg-yellow">
       <div class="ok-container ok-py-5 d-flex flex-column flex-sm-row align-items-center ok-gap-3 justify-content-between">
         <div class="d-flex align-items-center gap-2 fw-semibold text-ink">
-          <span class="ok-fs-xl"><i class="fa-solid fa-tag"></i></span> Have a promo code? Apply it before you order.
+          <span class="ok-fs-xl"><i class="fa-solid fa-tag"></i></span> {{ pc('deals_code_hint') }}
         </div>
         <form method="post" action="/cart/promo" class="d-flex gap-2 w-100 ok-width-auto-sm">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -48,7 +48,8 @@
           {% for c in coupons %}
           <article class="ok-card ok-card-hover ok-dealcard overflow-hidden ok-hovergroup d-flex flex-column">
             <div class="position-relative ok-ar-1610 overflow-hidden">
-              <img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">
+              {% if c.image_url %}<img src="{{ c.image_url }}" alt="{{ c.description or c.code }}" class="ph-img transition">
+              {% else %}<img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">{% endif %}
               {% if c.kind == 'free_delivery' %}<span class="badge badge-green position-absolute top-3 left-3">Free delivery</span>
               {% elif c.kind == 'percent' %}<span class="badge badge-green position-absolute top-3 left-3">-{{ c.value|int }}%</span>
               {% else %}<span class="badge badge-deal position-absolute top-3 left-3">Save ${{ '%.0f'|format(c.value) }}</span>{% endif %}
@@ -83,8 +84,8 @@
     {% set _s = pb_page_style('deals', 'terms_note') %}<div class="pb-sec" data-page="deals" data-section="terms_note" data-label="Terms Note"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pb-14">
       <div class="ok-container">
         <div class="ok-card bg-cream-40 ok-p-3 text-center">
-          <p class="ok-fs-sm text-muted-warm">One offer per order. Deals cannot be combined and are available at participating locations for a limited time.
-            <a href="/faq" class="link-underline">See full terms &amp; conditions</a>.
+          <p class="ok-fs-sm text-muted-warm">{{ pc('deals_terms') }}
+            <a href="/faq" class="link-underline">{{ pc('deals_terms_link') }}</a>.
           </p>
         </div>
       </div>
