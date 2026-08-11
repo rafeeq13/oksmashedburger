@@ -8,8 +8,8 @@
     <div data-loc-step="1">
       {# The heading scrolls away with the list; only the field itself stays
          pinned, so the panel does not lose half its height to a static header. #}
-      <h3 class="ok-h2 ok-fs-xl mb-1">Find your store</h3>
-      <p class="ok-fs-sm text-muted-warm ok-mb-3">Enter your address to see the nearest location.</p>
+      <h3 class="ok-h2 ok-fs-xl mb-1">{{ pc('loc_modal_heading') }}</h3>
+      <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ pc('loc_modal_text') }}</p>
       <div class="ok-locsearch position-sticky top-0 ok-z-20 bg-white ok-pb-3">
       <div class="d-flex gap-2">
         <div class="d-flex align-items-center gap-2 ok-input flex-grow-1"><span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span><input id="locZip" class="w-100 bg-transparent ok-nofocus" placeholder="Address or ZIP (e.g. 19104)"></div>

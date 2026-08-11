@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- Store + order-type bar (one cohesive card) -->
-<section class="ok-container ok-pt-3 ok-paddin-2rem-md">
+{% set _s = pb_page_style('menu', 'store_bar') %}<div class="pb-sec" data-page="menu" data-section="store_bar" data-label="Store & order-type bar"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-container ok-pt-3 ok-paddin-2rem-md">
   {% if store %}
   <div class="ok-card ok-p-5 ok-paddin-15rem-md d-flex flex-column flex-lg-row align-items-lg-center ok-gap-5 justify-content-between">
     <!-- which store you're ordering from -->
@@ -52,8 +52,10 @@
     <button data-open="location" class="btn btn-primary btn-sm">Choose a store</button>
   </div>
   {% endif %}
-</section>
+</section></div>
 
+{% set _s2 = pb_page_style('menu', 'menu_list') %}
+<div class="pb-sec" data-page="menu" data-section="menu_list" data-label="The menu itself"{% if _s2 %} style="{{ _s2 }}"{% endif %}>
 {% if not menu %}
 <div class="ok-container ok-py-16 text-center">
   <p class="text-muted-warm ok-fs-lg ok-mb-3">No menu is available for this location yet.</p>
@@ -90,6 +92,10 @@
     <button type="button" data-msearch-clear class="btn btn-primary btn-sm">Show the whole menu</button>
   </div>
   {% for grp in menu %}
+  {# each category is its own design target — the keys are dynamic, which the
+     panel handles because it reads them off the page rather than a fixed list #}
+  {% set _cs = pb_page_style('menu', 'cat_' ~ grp.category.slug) %}
+  <div class="pb-sec" data-page="menu" data-section="cat_{{ grp.category.slug }}" data-label="{{ grp.category.name }}"{% if _cs %} style="{{ _cs }}"{% endif %}>
   <section id="{{ grp.category.slug }}" data-menu-section class="scroll-mt-40">
     <div class="ok-mb-7 d-flex align-items-end justify-content-between ok-gap-3 ok-pb-3 border-bottom ok-bc-varokhairline">
       <div>
@@ -136,9 +142,11 @@
       {% endfor %}
     </div>
   </section>
+  </div>
   {% endfor %}
 </div>
 {% endif %}
+</div>{# /menu_list #}
 
 {# available whenever this store takes scheduled orders, so an
    already-scheduled customer can still change the time #}
@@ -299,11 +307,9 @@
     }
   });
 
-  function two(n) { return String(n).padStart(2, "0"); }
-  function fmt(d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + "T" + two(d.getHours()) + ":" + two(d.getMinutes()); }
-  var soon = new Date();
-  soon.setMinutes(soon.getMinutes() + (15 - (soon.getMinutes() % 15 || 15)) + 15);
-  if (input) { input.min = fmt(new Date()); input.value = fmt(soon); }
+  // The schedule picker is the day + time pair below; the datetime-local field
+  // it grew out of is long gone.
+  var dayPick = document.getElementById("schedDay");
 
   function open(o) {
     // same left-in / right-out motion as every other popup
@@ -315,7 +321,7 @@
       modal.style.pointerEvents = o ? "auto" : "none";
       if (backdrop) backdrop.classList.toggle("is-open", o);
     }
-    if (o && input) setTimeout(function () { input.focus(); }, 60);
+    if (o && dayPick) setTimeout(function () { dayPick.focus(); }, 60);
   }
 
   // Capture phase → runs before app.js's item handler, so we can open the

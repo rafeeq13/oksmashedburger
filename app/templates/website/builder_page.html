@@ -4,7 +4,14 @@
 {% block head_extra %}{% if page.head_code %}{{ page.head_code|safe }}{% endif %}{% endblock %}
 {% block content %}
 <style>{{ page.css|safe }}</style>
+{# A page built in the drag-drop editor is a design target too, so the on-page
+   panel reaches pages the admin creates, not only the ones that shipped. Its
+   key is the page slug, which is unique and stable. #}
+{% set _s = pb_page_style('p:' ~ page.slug, 'body') %}
+<div class="pb-sec" data-page="p:{{ page.slug }}" data-section="body"
+     data-label="{{ page.title }}"{% if _s %} style="{{ _s }}"{% endif %}>
 <div class="gjs-page">
 {{ (expanded_html if expanded_html is defined else page.html)|safe }}
+</div>
 </div>
 {% endblock %}

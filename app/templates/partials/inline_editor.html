@@ -6,7 +6,39 @@
   <b>Editing this page</b>
   <span class="ok-ie-hint">Click any highlighted text to change it. Changes save on their own.</span>
   <span id="okIeStatus" class="ok-ie-status"></span>
+  <select id="okIeJump" class="ok-ie-jump" aria-label="Design a shared part of the site">
+    <option value="">Design a shared part…</option>
+    <option value="header">Header / navigation</option>
+    <option value="footer">Footer</option>
+    <option value="item_modal">Item quick-add sheet</option>
+    <option value="location_modal">Location picker</option>
+  </select>
   <a href="{{ request.path }}" class="ok-ie-exit">Done</a>
+</div>
+
+<div id="okIeDesign" role="dialog" aria-label="Section design">
+  <button type="button" class="close" id="okIeDesignClose" aria-label="Close design panel">&times;</button>
+  <h4 id="okIeDesignName">Section</h4>
+  <p class="sub">Every change shows straight away and is saved.</p>
+  <div id="okIeDesignBody"></div>
+  <div class="ie-reset">
+    <button type="button" id="okIeResetSec">Reset this section</button>
+    <button type="button" id="okIeResetPage">Reset the whole page</button>
+  </div>
+</div>
+
+<div id="okIeSheet" aria-hidden="true">
+  <div class="box" role="dialog" aria-label="Change this picture">
+    <h4>Change this picture</h4>
+    <p class="hint" id="okIeSheetWhere"></p>
+    <input type="url" id="okIeUrl" placeholder="Paste an image link…" aria-label="Image link">
+    <input type="file" id="okIeFile" accept="image/*" aria-label="Upload an image from your computer">
+    <div class="row">
+      <button type="button" class="reset" id="okIeReset">Delete — use the built-in</button>
+      <button type="button" class="cancel" id="okIeCancel">Cancel</button>
+      <button type="button" class="go" id="okIeGo">Apply</button>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -20,6 +52,9 @@
   .ok-ie-dot{ width:9px; height:9px; border-radius:50%; background:#FFC72C; flex-shrink:0; }
   .ok-ie-hint{ font-weight:500; color:rgba(255,255,255,.62); }
   .ok-ie-status{ margin-left:auto; color:#FFC72C; font-weight:600; }
+  .ok-ie-jump{ background:rgba(255,255,255,.12); color:#fff; border:0; border-radius:8px;
+    font:600 12px/1 Quicksand,sans-serif; padding:.45rem .6rem; cursor:pointer; }
+  .ok-ie-jump option{ color:#101820; }
   .ok-ie-exit{ background:#FFC72C; color:#101820; text-decoration:none;
     padding:.45rem .9rem; border-radius:8px; font-weight:700; }
 
@@ -30,6 +65,60 @@
   .ok-ie[contenteditable="true"]:focus{
     outline:2px solid #FFC72C; background:rgba(255,199,44,.12); }
   .ok-ie.ok-ie-saved{ animation:okIeFlash .9s ease; }
+
+  /* pictures: a dashed frame and a Change button on hover */
+  .ok-ie-img{ outline:2px dashed rgba(255,199,44,.75); outline-offset:-2px; cursor:pointer; }
+  .ok-ie-imgwrap{ position:relative; }
+  .ok-ie-badge{
+    position:absolute; z-index:8000; transform:translate(-50%,-50%);
+    background:#101820; color:#fff; font:700 12px/1 Quicksand,sans-serif;
+    padding:.5rem .8rem; border-radius:999px; box-shadow:0 4px 14px rgba(0,0,0,.35);
+    pointer-events:none; white-space:nowrap;
+  }
+  #okIeSheet{ position:fixed; inset:0; z-index:9500; background:rgba(16,24,32,.55);
+    display:none; align-items:center; justify-content:center; padding:1rem; }
+  #okIeSheet.is-open{ display:flex; }
+  #okIeSheet .box{ background:#fff; border-radius:14px; padding:1.1rem; width:min(460px,100%);
+    font:500 14px/1.5 Quicksand,sans-serif; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+  #okIeSheet h4{ margin:0 0 .2rem; font:800 16px/1.2 Poppins,sans-serif; }
+  #okIeSheet .hint{ color:#6B6B6B; font-size:12.5px; margin:0 0 .9rem; }
+  #okIeSheet input[type=url], #okIeSheet input[type=file]{
+    width:100%; border:1px solid #dcdcdc; border-radius:8px; padding:.6rem .7rem; margin-bottom:.6rem; }
+  #okIeSheet .row{ display:flex; gap:.5rem; justify-content:flex-end; margin-top:.4rem; }
+  #okIeSheet button{ border:0; border-radius:8px; padding:.55rem 1rem; font-weight:700; cursor:pointer; }
+  #okIeSheet .go{ background:#FFC72C; color:#101820; }
+  #okIeSheet .cancel{ background:#eee; color:#333; }
+  /* per-section design */
+  .ok-ie-secbtn{
+    position:absolute; top:8px; right:8px; z-index:7000;
+    background:#101820; color:#fff; border:0; border-radius:999px;
+    font:700 11px/1 Quicksand,sans-serif; padding:.45rem .75rem; cursor:pointer;
+    opacity:.35; transition:opacity .15s ease;
+  }
+  .pb-sec:hover > .ok-ie-secbtn{ opacity:1; }
+  #okIeDesign{
+    position:fixed; top:56px; right:10px; z-index:9400; width:270px; max-height:calc(100vh - 70px);
+    overflow:auto; background:#fff; border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.30);
+    padding:.9rem; font:500 13px/1.45 Quicksand,sans-serif; display:none;
+  }
+  #okIeDesign.is-open{ display:block; }
+  #okIeDesign h4{ margin:0 0 .1rem; font:800 14px/1.2 Poppins,sans-serif; }
+  #okIeDesign .sub{ color:#6B6B6B; font-size:11.5px; margin:0 0 .7rem; }
+  #okIeDesign label{ display:block; font-size:11.5px; color:#6B6B6B; margin:.55rem 0 .15rem; }
+  #okIeDesign input[type=color]{ width:100%; height:30px; border:1px solid #e2e2e2; border-radius:7px; padding:2px; background:#fff; }
+  #okIeDesign input[type=range]{ width:100%; accent-color:#FFC72C; }
+  #okIeDesign select{ width:100%; border:1px solid #dcdcdc; border-radius:7px; padding:.35rem .45rem; font:inherit; }
+  #okIeDesign .grp{ font:800 10.5px/1 Poppins,sans-serif; letter-spacing:.12em;
+    text-transform:uppercase; color:#101820; margin:.9rem 0 .1rem;
+    padding-top:.6rem; border-top:1px solid #eee; }
+  #okIeDesign .grp:first-child{ border-top:0; padding-top:0; margin-top:0; }
+  #okIeDesign .ie-reset{ margin-top:1rem; padding-top:.8rem; border-top:1px solid #eee;
+    display:flex; flex-direction:column; gap:.4rem; }
+  #okIeDesign .ie-reset button{ border:1px solid #f0caca; background:#fff; color:#C62828;
+    border-radius:8px; padding:.5rem; font:700 12px/1 Quicksand,sans-serif; cursor:pointer; }
+  #okIeDesign .ie-reset button:hover{ background:#fff5f5; }
+  #okIeDesign .close{ float:right; border:0; background:none; font-size:16px; cursor:pointer; color:#888; }
+  #okIeSheet .reset{ background:#fff; color:#C62828; box-shadow:inset 0 0 0 1px #f0caca; margin-right:auto; }
   @keyframes okIeFlash{ 0%{ background:rgba(46,125,50,.30) } 100%{ background:transparent } }
 </style>
 
@@ -43,7 +132,421 @@
     if (ms) timer = setTimeout(function () { status.textContent = ""; }, ms);
   }
 
-  document.querySelectorAll(".ok-ie").forEach(function (el) {
+  /* ---------- pictures ---------- */
+  // Every admin-set image arrives with its slot key tagged onto the URL as a
+  // fragment (see _Marked in the context processor), so the editor can find
+  // them all without any template knowing about edit mode.
+  var sheet = document.getElementById("okIeSheet");
+  var sheetWhere = document.getElementById("okIeSheetWhere");
+  var urlBox = document.getElementById("okIeUrl");
+  var fileBox = document.getElementById("okIeFile");
+  var current = null;
+
+  function keyOf(src) {
+    var i = (src || "").indexOf("#ie=");
+    return i < 0 ? null : src.slice(i + 4);
+  }
+  function label(k) {
+    return k.replace(/_/g, " ").replace(/img/, "image").replace(/^\w/, function (c) { return c.toUpperCase(); });
+  }
+  function openSheet(el, k) {
+    current = { el: el, key: k };
+    sheetWhere.textContent = label(k);
+    urlBox.value = ""; fileBox.value = "";
+    sheet.classList.add("is-open");
+    urlBox.focus();
+  }
+  function closeSheet() { sheet.classList.remove("is-open"); current = null; }
+
+  document.querySelectorAll("img, video").forEach(function (el) {
+    // a slot with nothing in it yet renders the styled placeholder, which
+    // carries its key as an attribute instead of on the URL
+    var k = keyOf(el.getAttribute("src") || el.getAttribute("poster") || "")
+            || el.getAttribute("data-ie-slot");
+    if (!k) return;
+    el.classList.add("ok-ie-img");
+    el.setAttribute("data-ie-img", k);
+    el.setAttribute("title", "Click to change this picture");
+    el.addEventListener("click", function (e) {
+      e.preventDefault(); e.stopPropagation();
+      openSheet(el, k);
+    });
+  });
+
+  function saveImage(body) {
+    say("Saving…");
+    return fetch("/admin/inline-image", { method: "POST", headers: { "X-CSRF-Token": "{{ csrf_token }}" }, body: body })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (d) {
+        if (current && current.el) {
+          var next = (d.url || "") + "#ie=" + d.key;
+          if (current.el.tagName === "VIDEO") current.el.setAttribute("poster", next);
+          else current.el.src = next;
+        }
+        say("Saved", 1600);
+        closeSheet();
+        if (!d.url) location.reload();       // back to the built-in default
+      })
+      .catch(function (err) { say("Could not save (" + err + ")", 4000); });
+  }
+  document.getElementById("okIeGo").addEventListener("click", function () {
+    if (!current) return;
+    var fd = new FormData();
+    fd.append("key", current.key);
+    if (fileBox.files && fileBox.files[0]) fd.append("file", fileBox.files[0]);
+    else fd.append("url", urlBox.value.trim());
+    saveImage(fd);
+  });
+  document.getElementById("okIeReset").addEventListener("click", function () {
+    if (!current) return;
+    var fd = new FormData(); fd.append("key", current.key); fd.append("url", "");
+    saveImage(fd);
+  });
+  document.getElementById("okIeCancel").addEventListener("click", closeSheet);
+  sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });
+
+  /* ---------- while editing, clicks must not navigate ----------
+     A link or a button is a thing to edit here, not a thing to follow. The
+     listener runs in the capture phase so it wins before the site's own
+     handlers, and it deliberately ignores anything belonging to the editor
+     itself — its bar, its panels and its Design buttons still work. */
+  function inEditorChrome(el) {
+    return !!(el.closest && el.closest("#okIeBar, #okIeDesign, #okIeSheet, .ok-ie-secbtn"));
+  }
+  // things whose whole job is to reveal more of the page — a modal, the cart
+  // drawer, a menu, an accordion. Those must keep working, or half the design
+  // could never be reached to edit it.
+  var OPENERS = "[data-open], [data-item], [data-add], [data-sched-edit], [data-bs-toggle], [data-toggle]";
+
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.closest || inEditorChrome(t)) return;
+
+    // clicking the words themselves means "edit these words", never "follow me"
+    // the browser has already put the caret where the click landed, so only
+    // take focus when something else still holds it
+    var ie = t.closest(".ok-ie");
+    if (ie) {
+      e.preventDefault(); e.stopPropagation();
+      if (document.activeElement !== ie) ie.focus();
+      return;
+    }
+
+    var link = t.closest("a[href]");
+    if (!link) return;                       // buttons and toggles are left alone
+    var href = link.getAttribute("href") || "";
+    if (href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
+
+    // stop the page from changing, but let whatever else is bound to this link
+    // still run — some links open modals rather than navigate
+    e.preventDefault();
+    if (link.matches(OPENERS)) return;
+    var inner = link.querySelector(".ok-ie");
+    if (inner) inner.focus();
+  }, true);
+
+  // forms must not submit either — Enter in a field would reload the page
+  document.addEventListener("submit", function (e) {
+    if (inEditorChrome(e.target)) return;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+
+  /* ---------- section design, on the page itself ----------
+     Writes the same style_* keys the Visual editor and Page design write, to
+     the same PageSection row — one place the style lives, so the three ways
+     of reaching it can never drift apart. */
+  var dPanel = document.getElementById("okIeDesign");
+  var dBody = document.getElementById("okIeDesignBody");
+  var dName = document.getElementById("okIeDesignName");
+
+  var FONTS = {{ canvas_fonts|tojson }};
+  var WEIGHTS = {{ canvas_weights|tojson }};
+  var CASES = {{ canvas_cases|tojson }};
+  var SHADOWS = {{ canvas_shadows|tojson }};
+  var TSSIDES = {{ canvas_tssides|tojson }};
+  var ITALICS = {{ canvas_italics|tojson }};
+  var BGSIZES = {{ canvas_bgsizes|tojson }};
+  var BGPOSES = {{ canvas_bgposes|tojson }};
+  var GRADDIRS = {{ canvas_graddirs|tojson }};
+  var FILTERS = {{ canvas_filters|tojson }};
+  var VALIGNS = {{ canvas_valigns|tojson }};
+  var IMGFITS = {{ canvas_imgfits|tojson }};
+  var COLSS = {{ canvas_colss|tojson }};
+  var XTRAPOSES = {{ canvas_xtraposes|tojson }};
+  var XTRAALIGNS = {{ canvas_xtraaligns|tojson }};
+  var ALIGNS = [["", "Default"], ["left", "Left"], ["center", "Centre"], ["right", "Right"]];
+
+  // group, kind, config key, label, css variable, options / [min,max,step,default,unit]
+  // Everything the section-style system can do is here — the same keys the
+  // Visual editor and Page design write, so all three stay in step.
+  var CONTROLS = [
+    ["Section", "color",  "style_bg",           "Background colour", "--pb-bg",           "#ffffff"],
+    ["Section", "image",  "style_bgimage",      "Background picture","--pb-bgimage",      null],
+    ["Section", "select", "style_bgsize",       "How it sits",       "--pb-bgsize",       BGSIZES],
+    ["Section", "select", "style_bgpos",        "Where it sits",     "--pb-bgpos",        BGPOSES],
+    ["Section", "color",  "style_gradfrom",     "Gradient from",     "--pb-gradfrom",     "#000000"],
+    ["Section", "color",  "style_gradto",       "Gradient to",       "--pb-gradto",       "#ffffff"],
+    ["Section", "select", "style_graddir",      "Gradient direction","--pb-graddir",      GRADDIRS],
+    ["Section", "color",  "style_divider",      "Divider line",      "--pb-divider",      "#ececec"],
+    ["Section", "range",  "style_minh",         "Minimum height",    "--pb-minh",         [0, 900, 20, 0, "px"]],
+    ["Section", "range",  "style_maxw",         "Content width",     "--pb-maxw",         [720, 1600, 20, 1200, "px"]],
+    ["Section", "range",  "style_px",           "Side padding",      "--pb-px",           [0, 120, 4, 16, "px"]],
+    ["Section", "range",  "style_pt",           "Space above",       null,                [0, 200, 4, 0, "px"]],
+    ["Section", "range",  "style_pb",           "Space below",       null,                [0, 200, 4, 0, "px"]],
+    ["Section", "select", "style_valign",       "Vertical position", "--pb-valign",       VALIGNS],
+    ["Section", "select", "style_align",        "Text alignment",    null,                ALIGNS],
+
+    ["Type",    "select", "style_font",         "Heading font",      "--pb-font",         FONTS],
+    ["Type",    "select", "style_hweight",      "Heading weight",    "--pb-hweight",      WEIGHTS],
+    ["Type",    "select", "style_case",         "Heading case",      "--pb-case",         CASES],
+    ["Type",    "select", "style_italic",       "Heading style",     "--pb-italic",       ITALICS],
+    ["Type",    "range",  "style_hsize",        "Heading size",      "--pb-hsize",        [12, 120, 1, 40, "px"]],
+    ["Type",    "range",  "style_hlh",          "Heading line height","--pb-hlh",         [0.8, 2, 0.05, 1.1, ""]],
+    ["Type",    "range",  "style_tracking",     "Letter spacing",    "--pb-tracking",     [-3, 12, 0.5, 0, "px"]],
+    ["Type",    "range",  "style_textw",        "Text width",        "--pb-textw",        [200, 1400, 20, 720, "px"]],
+    ["Shadow",  "select", "style_tsside",       "Which side",        null,                TSSIDES],
+    ["Shadow",  "range",  "style_tsdist",       "How far",           null,                [0, 24, 1, 2, "px"]],
+    ["Shadow",  "range",  "style_tsblur",       "How soft",          null,                [0, 60, 1, 4, "px"]],
+    ["Shadow",  "color",  "style_tscolor",      "Shadow colour",     null,                "#000000"],
+    ["Type",    "select", "style_bodyfont",     "Body font",         "--pb-bodyfont",     FONTS],
+    ["Type",    "select", "style_bweight",      "Body weight",       "--pb-bweight",      WEIGHTS],
+    ["Type",    "range",  "style_bsize",        "Body size",         "--pb-bsize",        [10, 48, 1, 16, "px"]],
+    ["Type",    "range",  "style_lh",           "Body line height",  "--pb-lh",           [1, 2.4, 0.05, 1.6, ""]],
+
+    ["Colour",  "color",  "style_hcolor",       "Heading colour",    "--pb-hcolor",       "#141414"],
+    ["Colour",  "color",  "style_tcolor",       "Text colour",       "--pb-tcolor",       "#6b6b6b"],
+    ["Colour",  "color",  "style_accent",       "Accent",            "--pb-accent",       "#ffc72c"],
+    ["Colour",  "color",  "style_link",         "Link colour",       "--pb-link",         "#141414"],
+
+    ["Photos",  "range",  "style_overlay",      "Banner darkness",   "--pb-overlay",      [0, 1, 0.05, 0.35, ""]],
+    ["Photos",  "color",  "style_overlaycolor", "Banner tint",       "--pb-overlaycolor", "#000000"],
+    ["Photos",  "color",  "style_imgoverlay",   "Overlay on photos", "--pb-imgoverlay",   "#000000"],
+    ["Photos",  "select", "style_imgfilter",    "Photo effect",      "--pb-imgfilter",    FILTERS],
+    ["Photos",  "range",  "style_imgradius",    "Photo corners",     "--pb-imgradius",    [0, 40, 2, 0, "px"]],
+    ["Photos",  "range",  "style_imgh",         "Picture height",    "--pb-imgh",         [80, 700, 10, 240, "px"]],
+    ["Photos",  "select", "style_imgfit",       "Picture fit",       "--pb-imgfit",       IMGFITS],
+
+    ["Cards",   "color",  "style_cardbg",       "Card background",   "--pb-cardbg",       "#ffffff"],
+    ["Cards",   "color",  "style_cardborder",   "Card border",       "--pb-cardborder",   "#ececec"],
+    ["Cards",   "range",  "style_cardborderw",  "Border width",      "--pb-cardborderw",  [0, 6, 1, 1, "px"]],
+    ["Cards",   "color",  "style_cardhead",     "Card heading",      "--pb-cardhead",     "#141414"],
+    ["Cards",   "color",  "style_cardtext",     "Card text",         "--pb-cardtext",     "#6b6b6b"],
+    ["Cards",   "range",  "style_cardradius",   "Card corners",      "--pb-cardradius",   [0, 40, 2, 20, "px"]],
+    ["Cards",   "range",  "style_cardpad",      "Card padding",      "--pb-cardpad",      [0, 60, 2, 20, "px"]],
+    ["Cards",   "select", "style_shadow",       "Card shadow",       "--pb-shadow",       SHADOWS],
+    ["Cards",   "select", "style_cardcols",     "Cards per row",     "--pb-cardcols",     COLSS],
+    ["Cards",   "range",  "style_cardw",        "Card width",        "--pb-cardw",        [120, 900, 10, 320, "px"]],
+    ["Cards",   "range",  "style_cardh",        "Card min height",   "--pb-cardh",        [80, 700, 10, 200, "px"]],
+    ["Cards",   "range",  "style_cardminw",     "Card min width",    "--pb-cardminw",     [120, 600, 10, 240, "px"]],
+    ["Cards",   "range",  "style_gap",          "Gap between items", "--pb-gap",          [0, 80, 2, 20, "px"]],
+
+    ["Buttons", "color",  "style_btnbg",        "Button colour",     "--pb-btnbg",        "#ffc72c"],
+    ["Buttons", "color",  "style_btntext",      "Button text",       "--pb-btntext",      "#141414"],
+    ["Buttons", "color",  "style_btnborder",    "Button border",     "--pb-btnborder",    "#ffc72c"],
+    ["Buttons", "range",  "style_btnradius",    "Button corners",    "--pb-btnradius",    [0, 40, 2, 999, "px"]],
+
+    ["Details", "color",  "style_squigcolor",   "Squiggle colour",   "--pb-squigcolor",   "#e0a200"],
+    ["Details", "range",  "style_squigw",       "Squiggle width",    "--pb-squigw",       [20, 200, 5, 68, "px"]],
+
+    ["Header",  "color",  "style_navlink",      "Nav link colour",   "--pb-navlink",      "#141414"],
+    ["Header",  "color",  "style_iconcolor",    "Icon colour",       "--pb-iconcolor",    "#141414"],
+    ["Header",  "range",  "style_logoh",        "Logo height",       "--pb-logoh",        [20, 120, 2, 48, "px"]],
+
+    ["Add a picture", "image",  "style_xtraimg",    "Picture",        "--pb-xtraimg",      null],
+    ["Add a picture", "select", "style_xtrapos",    "Where it goes",  "--pb-xtrapos",      XTRAPOSES],
+    ["Add a picture", "select", "style_xtraalign",  "Its position",   "--pb-xtraalign",    XTRAALIGNS],
+    ["Add a picture", "range",  "style_xtraw",      "Its width",      "--pb-xtraw",        [100, 1600, 20, 600, "px"]],
+    ["Add a picture", "range",  "style_xtrah",      "Its height",     "--pb-xtrah",        [60, 800, 10, 260, "px"]],
+    ["Add a picture", "range",  "style_xtraradius", "Its corners",    "--pb-xtraradius",   [0, 60, 2, 0, "px"]],
+    ["Add a picture", "color",  "style_xtraborder", "Its border",     "--pb-xtraborder",   "#141414"],
+    ["Add a picture", "range",  "style_xtraborderw","Its border width","--pb-xtraborderw", [0, 12, 1, 0, "px"]],
+    ["Add a picture", "select", "style_xtrashadow", "Its shadow",     "--pb-xtrashadow",   SHADOWS]
+  ];
+
+  function applyLive(el, cssvar, key, val) {
+    if (cssvar) {
+      if (val) el.style.setProperty(cssvar, val);
+      else el.style.removeProperty(cssvar);
+    }
+    if (key === "style_pt") el.style.paddingTop = val || "";
+    if (key === "style_pb") el.style.paddingBottom = val || "";
+    if (key === "style_align") el.style.textAlign = val || "";
+  }
+
+  function saveStyle(el, key, value) {
+    say("Saving…");
+    fetch("/admin/inline-style", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
+      body: JSON.stringify({
+        page: el.getAttribute("data-page"),
+        section: el.getAttribute("data-section"),
+        key: key, value: value
+      })
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (d) {
+        say("Saved", 1400);
+        // the heading shadow is built on the server from four separate
+        // controls, so there is nothing sensible to preview locally — ask for
+        // the rebuilt value instead of guessing at it
+        if (d && d.style !== undefined) {
+          var keep = (el.getAttribute("style") || "").split(";")
+            .filter(function (p) { return p.trim() && p.indexOf("--pb-") !== 0; }).join(";");
+          el.setAttribute("style", (d.style || "") + (keep ? ";" + keep : ""));
+        }
+      })
+      .catch(function (e) { say("Could not save (" + e + ")", 4000); });
+  }
+
+  function uploadSectionBg(el, file) {
+    var fd = new FormData();
+    fd.append("page", el.getAttribute("data-page"));
+    fd.append("section", el.getAttribute("data-section"));
+    fd.append("key", "style_bgimage");
+    fd.append("file", file);
+    say("Uploading…");
+    fetch("/admin/inline-style-image", { method: "POST", headers: { "X-CSRF-Token": "{{ csrf_token }}" }, body: fd })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (d) {
+        el.style.setProperty("--pb-bgimage", d.url ? "url('" + d.url + "')" : "");
+        say("Saved", 1400);
+      })
+      .catch(function (e) { say("Could not upload (" + e + ")", 4000); });
+  }
+
+  var currentSec = null;
+  function buildPanel(el) {
+    currentSec = el;
+    dName.textContent = el.getAttribute("data-label") || el.getAttribute("data-section") || "Section";
+    dBody.innerHTML = "";
+    var lastGroup = null;
+    CONTROLS.forEach(function (c) {
+      var group = c[0], kind = c[1], key = c[2], label = c[3], cssvar = c[4], extra = c[5];
+      if (group !== lastGroup) {
+        var head = document.createElement("div");
+        head.className = "grp";
+        head.textContent = group;
+        dBody.appendChild(head);
+        lastGroup = group;
+      }
+      var cur = cssvar ? (el.style.getPropertyValue(cssvar) || "") : "";
+      var wrap = document.createElement("div");
+      var id = "ie_" + key;
+      var html = '<label for="' + id + '">' + label + "</label>";
+      if (kind === "color") {
+        html += '<input type="color" id="' + id + '" value="' + (cur || extra) + '">';
+      } else if (kind === "image") {
+        html += '<input type="file" id="' + id + '" accept="image/*" aria-label="' + label + '">';
+      } else if (kind === "select") {
+        html += '<select id="' + id + '">' + extra.map(function (o) {
+          var v = String(o[0]).replace(/"/g, "&quot;");
+          return '<option value="' + v + '"' + (cur === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
+        }).join("") + "</select>";
+      } else {
+        html += '<input type="range" id="' + id + '" min="' + extra[0] + '" max="' + extra[1] +
+                '" step="' + extra[2] + '" value="' + (parseFloat(cur) || extra[3]) + '">';
+      }
+      wrap.innerHTML = html;
+      var input = wrap.querySelector("input,select");
+      if (kind === "image") {
+        input.addEventListener("change", function () {
+          if (input.files && input.files[0]) uploadSectionBg(el, input.files[0]);
+        });
+      } else {
+        input.addEventListener("input", function () {
+          var unit = (kind === "range") ? extra[4] : "";
+          applyLive(el, cssvar, key, input.value === "" ? "" : input.value + unit);
+        });
+        input.addEventListener("change", function () {
+          var unit = (kind === "range") ? extra[4] : "";
+          saveStyle(el, key, input.value === "" ? "" : input.value + unit);
+        });
+      }
+      wrap.querySelector("input,select").setAttribute("data-ie-key", key);
+      dBody.appendChild(wrap);
+    });
+    dPanel.classList.add("is-open");
+    fillFromSaved(el);
+  }
+
+  // Show what is actually saved. Most controls can be read back off the
+  // element's CSS variables, but the heading-shadow group is composed into one
+  // variable server-side, so those four have to come from the config itself.
+  function fillFromSaved(el) {
+    var page = el.getAttribute("data-page"), sec = el.getAttribute("data-section");
+    if (!page || !sec) return;
+    fetch("/admin/inline-style?page=" + encodeURIComponent(page) +
+          "&section=" + encodeURIComponent(sec), { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.config || currentSec !== el) return;
+        Object.keys(d.config).forEach(function (k) {
+          var input = dBody.querySelector('[data-ie-key="' + k + '"]');
+          if (!input) return;
+          var v = String(d.config[k]);
+          input.value = input.type === "range" ? parseFloat(v) : v;
+        });
+      })
+      .catch(function () {});
+  }
+
+  document.querySelectorAll(".pb-sec[data-section]").forEach(function (el) {
+    if (getComputedStyle(el).position === "static") el.style.position = "relative";
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "ok-ie-secbtn";
+    b.textContent = "Design";
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      buildPanel(el);
+    });
+    el.appendChild(b);
+  });
+  // the shared parts (header, footer, the two modals) cannot be hovered on
+  // every page — a modal is not even on screen — so they open from the bar
+  var jump = document.getElementById("okIeJump");
+  if (jump) jump.addEventListener("change", function () {
+    var el = document.querySelector('.pb-sec[data-section="' + jump.value + '"]');
+    if (el) buildPanel(el);
+    jump.value = "";
+  });
+
+  function resetDesign(el, wholePage) {
+    var what = wholePage ? "every section on this page" : "this section";
+    var msg = "Put " + what + " back to the built-in design?"
+            + "\n\nYour words and pictures are kept — only the styling is undone.";
+    if (!confirm(msg)) return;
+    say("Resetting…");
+    fetch("/admin/inline-style-reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
+      body: JSON.stringify({ page: el.getAttribute("data-page"),
+                             section: wholePage ? "" : el.getAttribute("data-section") })
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function () { location.reload(); })
+      .catch(function (e) { say("Could not reset (" + e + ")", 4000); });
+  }
+  document.getElementById("okIeResetSec").addEventListener("click", function () {
+    if (currentSec) resetDesign(currentSec, false);
+  });
+  document.getElementById("okIeResetPage").addEventListener("click", function () {
+    if (currentSec) resetDesign(currentSec, true);
+  });
+
+  document.getElementById("okIeDesignClose").addEventListener("click", function () {
+    dPanel.classList.remove("is-open");
+  });
+
+
+  /* ---------- text ---------- */
+  function wireText(root) {
+  (root || document).querySelectorAll(".ok-ie").forEach(function (el) {
+    if (el.dataset.ieWired) return;
+    el.dataset.ieWired = "1";
     el.setAttribute("contenteditable", "true");
     el.setAttribute("spellcheck", "false");
     var original = el.textContent;
@@ -59,10 +562,15 @@
       var val = el.textContent.trim();
       if (val === original.trim()) return;
       say("Saving…");
-      fetch("/admin/inline-save", {
+      // two kinds of editable string: a Page Content field, and a home
+      // section's own words. They save to different places.
+      var isSection = el.hasAttribute("data-sc");
+      fetch(isSection ? "/admin/inline-section-text" : "/admin/inline-save", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
-        body: JSON.stringify({ key: el.getAttribute("data-pc"), value: val })
+        body: JSON.stringify(isSection
+          ? { section: el.getAttribute("data-scsec"), field: el.getAttribute("data-sc"), value: val }
+          : { key: el.getAttribute("data-pc"), value: val })
       })
         .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
         .then(function () {
@@ -78,6 +586,9 @@
         });
     });
   });
+  }
+  wireText(document);
+  window.okIeRefresh = wireText;
 
   say(document.querySelectorAll(".ok-ie").length + " editable areas", 2600);
 })();

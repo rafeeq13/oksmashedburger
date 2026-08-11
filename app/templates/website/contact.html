@@ -10,7 +10,7 @@
     <!-- ============ HERO ============ -->
     {% set _s = pb_page_style('contact', 'hero') %}<div class="pb-sec" data-page="contact" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
-        {% if site.get('contact_hero_img') %}<img src="{{ site.get('contact_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Contact hero" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+        {% if site.get('contact_hero_img') %}<img src="{{ site.get('contact_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Contact hero" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="" data-ie-slot="contact_hero_img">{% endif %}
       </div>
       <div class="ok-pagehero-veil"></div>
       <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>

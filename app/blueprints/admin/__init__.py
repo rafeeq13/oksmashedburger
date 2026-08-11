@@ -525,6 +525,264 @@ def features_save():
     return redirect("/admin/features" + _qs(store))
 
 
+# ── On-page image swap (the editor bar, ?edit=1) ─────────────────────────
+@bp.post("/admin/inline-image")
+@roles_required(*ADMIN_ROLES)
+def inline_image():
+    """Set one image slot from the page itself.
+
+    Same guard as inline-save: only keys the Site images registry knows about,
+    so this cannot become a way to write arbitrary settings rows.
+    """
+    allowed = {slot[0] for _t, rows in SITE_IMAGE_SLOTS for slot in rows}
+    key = (request.form.get("key") or "").strip()
+    if key not in allowed:
+        return {"ok": False, "error": "unknown image"}, 400
+
+    url = _save_image(request.files.get("file"), "site-" + key.replace("_", "-"))         or (request.form.get("url") or "").strip()
+    row = SiteSetting.query.filter_by(key=key).first()
+    if url:
+        if row:
+            row.value = url
+        else:
+            db.session.add(SiteSetting(key=key, value=url))
+    elif row:
+        db.session.delete(row)          # cleared → back to the built-in default
+    db.session.commit()
+    return {"ok": True, "key": key, "url": url}
+
+
+# ── On-page section styling (the editor bar, ?edit=1) ────────────────────
+TEXTSHADOW_CHOICES = [
+    ("", "Default"), ("none", "None"),
+    ("0 1px 2px rgba(0,0,0,.35)", "Subtle"),
+    ("0 2px 10px rgba(0,0,0,.45)", "Soft glow"),
+    ("0 4px 26px rgba(0,0,0,.55)", "Strong"),
+    ("2px 2px 0 rgba(0,0,0,.85)", "Hard offset"),
+]
+
+ITALIC_CHOICES = [("", "Default"), ("normal", "Upright"), ("italic", "Italic")]
+
+# "None" has to be a real stored value, not an empty one: an empty box means
+# "inherit whatever was there", and the client asked for off to mean off.
+TSSIDE_CHOICES = [("", "Leave as designed"), ("none", "No shadow"), ("bottom", "Bottom only"),
+                  ("top", "Top only"), ("left", "Left only"), ("right", "Right only"),
+                  ("all", "All sides")]
+
+BGSIZE_CHOICES = [("", "Default"), ("cover", "Fill the section"),
+                  ("contain", "Fit inside"), ("auto", "Original size")]
+BGPOS_CHOICES = [("", "Default"), ("center", "Centre"), ("top", "Top"),
+                 ("bottom", "Bottom"), ("left", "Left"), ("right", "Right")]
+GRADDIR_CHOICES = [("", "Default"), ("180deg", "Top to bottom"), ("0deg", "Bottom to top"),
+                   ("90deg", "Left to right"), ("270deg", "Right to left"),
+                   ("135deg", "Diagonal")]
+FILTER_CHOICES = [("", "None"), ("grayscale(1)", "Black & white"),
+                  ("grayscale(.5)", "Muted"), ("sepia(.6)", "Warm / sepia"),
+                  ("brightness(1.15)", "Brighter"), ("brightness(.8)", "Darker"),
+                  ("contrast(1.2)", "More contrast"), ("saturate(1.4)", "More colour"),
+                  ("blur(3px)", "Blurred")]
+VALIGN_CHOICES = [("", "Default"), ("flex-start", "Top"), ("center", "Middle"),
+                  ("flex-end", "Bottom")]
+IMGFIT_CHOICES = [("", "Default"), ("cover", "Fill the frame"), ("contain", "Fit inside"),
+                  ("fill", "Stretch"), ("scale-down", "Never enlarge")]
+COLS_CHOICES = [("", "Default"), ("1", "1 per row"), ("2", "2"), ("3", "3"),
+                ("4", "4"), ("5", "5"), ("6", "6")]
+XTRAPOS_CHOICES = [("", "Below the section"), ("top", "Above the section")]
+XTRAALIGN_CHOICES = [("auto", "Centre"), ("0 auto 0 0", "Left"), ("0 0 0 auto", "Right")]
+
+SHADOW_CHOICES = [
+    ("", "Default"), ("none", "None"),
+    ("0 1px 3px rgba(20,20,20,.10)", "Soft"),
+    ("0 4px 20px rgba(20,20,20,.10)", "Medium"),
+    ("0 12px 40px rgba(20,20,20,.16)", "Deep"),
+    ("0 20px 60px rgba(20,20,20,.28)", "Dramatic"),
+]
+
+
+@bp.post("/admin/inline-section-text")
+@roles_required(*ADMIN_ROLES)
+def inline_section_text():
+    """Save one home-section word from the page itself."""
+    data = request.get_json(silent=True) or {}
+    section = (data.get("section") or "").strip()
+    field = (data.get("field") or "").strip()
+    value = (data.get("value") or "").strip()
+    spec = spec_for(section)
+    if not spec or field not in {f[0] for f in spec.get("fields", [])}:
+        return {"ok": False, "error": "unknown field"}, 400
+
+    row = PageSection.query.filter_by(page="home", key=section).first()
+    if not row:
+        row = PageSection(page="home", key=section, label=spec.get("label", section))
+        db.session.add(row)
+    cfg = dict(row.config or {})
+    if value:
+        cfg[field] = value
+    else:
+        cfg.pop(field, None)
+    row.config = cfg
+    db.session.commit()
+    return {"ok": True}
+
+
+@bp.post("/admin/inline-style-reset")
+@roles_required(*ADMIN_ROLES)
+def inline_style_reset():
+    """Put a section — or a whole page — back to the design it shipped with.
+
+    Only the style_* keys are dropped. Words the client wrote and pictures they
+    uploaded are theirs and stay; this is "undo my restyling", not "undo my
+    work".
+    """
+    data = request.get_json(silent=True) or {}
+    page = (data.get("page") or "").strip()
+    section = (data.get("section") or "").strip()
+    if not page:
+        return {"ok": False, "error": "which page?"}, 400
+
+    q = PageSection.query.filter_by(page=page)
+    if section:
+        q = q.filter_by(key=section)
+    cleared = 0
+    for row in q.all():
+        cfg = dict(row.config or {})
+        styled = [k for k in cfg if k.startswith("style_")]
+        if not styled:
+            continue
+        for k in styled:
+            cfg.pop(k)
+        row.config = cfg
+        cleared += len(styled)
+    db.session.commit()
+    return {"ok": True, "cleared": cleared, "scope": section or page}
+
+
+@bp.post("/admin/site-images/<key>/delete")
+@roles_required(*ADMIN_ROLES)
+def site_image_delete(key):
+    """Remove a picture: forget the setting and delete the file we stored.
+
+    A pasted link is only forgotten — it is not ours to delete. An upload we
+    made is removed from disk as well, so clearing a slot does not quietly
+    leave megabytes behind.
+    """
+    store = _admin_store()
+    allowed = {slot[0] for _t, rows in SITE_IMAGE_SLOTS for slot in rows}
+    if key not in allowed:
+        abort(404)
+    row = SiteSetting.query.filter_by(key=key).first()
+    removed_file = False
+    if row:
+        val = row.value or ""
+        if val.startswith("/static/img/uploads/"):
+            path = os.path.join(current_app.static_folder,
+                                *val.replace("/static/", "").split("/"))
+            try:
+                if os.path.isfile(path):
+                    os.remove(path); removed_file = True
+            except OSError:
+                current_app.logger.warning("could not delete %s", path)
+        db.session.delete(row)
+        db.session.commit()
+    if request.headers.get("X-Requested-With") == "fetch":
+        return {"ok": True, "deleted": bool(row), "file_removed": removed_file}
+    flash("Picture removed — that slot is back to the built-in image.", "success")
+    return redirect("/admin/site-images" + _qs(store))
+
+
+@bp.post("/admin/inline-style-image")
+@roles_required(*ADMIN_ROLES)
+def inline_style_image():
+    """Upload a section's background picture straight from the page."""
+    page = (request.form.get("page") or "").strip()
+    section = (request.form.get("section") or "").strip()
+    if not page or not section:
+        return {"ok": False, "error": "unknown section"}, 400
+    key = (request.form.get("key") or "style_bgimage").strip()
+    if key not in ("style_bgimage", "style_xtraimg"):
+        return {"ok": False, "error": "unknown image"}, 400
+    url = _save_image(request.files.get("file"),
+                      "sec-%s-%s-%s" % (page, section, key.replace("style_", "")))
+    if not url:
+        return {"ok": False, "error": "no image"}, 400
+    row = PageSection.query.filter_by(page=page, key=section).first()
+    if not row:
+        row = PageSection(page=page, key=section, label=section.replace("_", " ").title())
+        db.session.add(row)
+    cfg = dict(row.config or {}); cfg[key] = url; row.config = cfg
+    db.session.commit()
+    return {"ok": True, "url": url, "key": key}
+
+
+@bp.get("/admin/inline-style")
+@roles_required(*ADMIN_ROLES)
+def inline_style_read():
+    """What is currently saved for one section.
+
+    The panel used to read its starting values back out of the CSS variables on
+    the element, which cannot work for the controls that have no variable of
+    their own — the four heading-shadow fields are composed into a single
+    variable on the server. Those controls came up blank after a reload and
+    made a saved setting look lost.
+    """
+    page = (request.args.get("page") or "").strip()
+    section = (request.args.get("section") or "").strip()
+    if not page or not section:
+        return {"ok": False, "error": "which section?"}, 400
+    row = PageSection.query.filter_by(page=page, key=section).first()
+    cfg = dict(row.config or {}) if row else {}
+    return {"ok": True, "config": {k: v for k, v in cfg.items() if k.startswith("style_")}}
+
+
+@bp.post("/admin/inline-style")
+@roles_required(*ADMIN_ROLES)
+def inline_style():
+    """Restyle one section from the page itself.
+
+    Writes to the same PageSection.config the Visual editor and Page design
+    write to — one place the style lives, so the three ways of reaching it can
+    never disagree.
+    """
+    data = request.get_json(silent=True) or {}
+    page = (data.get("page") or "").strip()
+    section = (data.get("section") or "").strip()
+    key = (data.get("key") or "").strip()
+    value = (data.get("value") or "").strip()
+
+    allowed = {f[0] for f in DESIGN_FIELDS} | {
+        "style_font", "style_bodyfont", "style_hweight", "style_case",
+        "style_overlay", "style_overlaycolor", "style_cardbg", "style_cardborder",
+        "style_cardhead", "style_cardtext", "style_cardradius", "style_shadow", "style_tsside", "style_tsdist",
+        "style_tsblur", "style_tscolor", "style_textw", "style_imgoverlay",
+        "style_imgradius", "style_bweight", "style_bsize", "style_italic",
+        "style_divider", "style_lh", "style_maxw", "style_hsize", "style_tracking",
+        "style_imgh", "style_imgfit", "style_cardcols", "style_cardminw",
+        "style_cardw", "style_cardh", "style_gap", "style_squigcolor", "style_squigw", "style_navlink",
+        "style_iconcolor", "style_logoh", "style_bgimage", "style_xtraimg",
+        "style_xtrapos", "style_xtraw", "style_xtrah", "style_xtraradius",
+        "style_xtraborder", "style_xtraborderw", "style_xtrashadow",
+        "style_xtraalign"}
+    if key not in allowed or not page or not section:
+        return {"ok": False, "error": "unknown field"}, 400
+
+    row = PageSection.query.filter_by(page=page, key=section).first()
+    if not row:
+        row = PageSection(page=page, key=section, label=section.replace("_", " ").title())
+        db.session.add(row)
+    cfg = dict(row.config or {})
+    if value:
+        cfg[key] = value
+    else:
+        cfg.pop(key, None)
+    row.config = cfg
+    db.session.commit()
+    # hand back the rebuilt inline style: several controls (the heading shadow)
+    # are composed from more than one field, so the page cannot work it out
+    style_of = current_app.jinja_env.globals.get("pb_section_style")
+    return {"ok": True, "key": key, "value": value,
+            "style": style_of(cfg) if style_of else ""}
+
+
 # ── Page builder (home page sections: order, visibility, text, theme) ────
 @bp.get("/admin/page-builder")
 @roles_required(*ADMIN_ROLES)
@@ -646,7 +904,7 @@ def page_content():
     # paths that can also be rebuilt from scratch in the drag-drop builder, so
     # each page block can offer "Redesign" next to "View"
     taken = {p.override_path for p in BuilderPage.query.all() if p.override_path}
-    overridable = {o[0] for o in BUILDER_OVERRIDABLE if o[0] not in taken}
+    overridable = {o[0] for o in builder_overridable() if o[0] not in taken}
     return render_template("admin/page_content.html", pages=PAGE_CONTENT,
                            current=current, defaults=defaults,
                            overridable=overridable, **_shell(store))
@@ -681,15 +939,79 @@ def page_content_save():
 
 
 # ── Visual canvas editor (drag/reorder + live restyle of home sections) ──
+# Only faces the page can actually render: the two brand webfonts plus stacks
+# built from what every OS already ships. A face nobody has installed would
+# silently fall back and the client would think the control was broken.
+# (css stack, label, Google family to load — blank means it needs no webfont)
+#
+# A face the page never loads would silently fall back and the control would
+# look broken, so the families here are fetched on demand: a page only asks
+# Google for the ones its own sections actually use (see google_fonts_link).
 CANVAS_FONTS = [
-    ("", "Default"),
-    ("'Poppins',sans-serif", "Poppins (bold display)"),
-    ("'Quicksand',sans-serif", "Quicksand (rounded)"),
-    ("'Inter',sans-serif", "Inter (clean)"),
-    ("Georgia,'Times New Roman',serif", "Georgia (serif)"),
-    ("'Arial Black',Impact,sans-serif", "Arial Black (heavy)"),
-    ("'Courier New',monospace", "Courier (mono)"),
+    ("", "Default", ""),
+    # already loaded site-wide
+    ("'Poppins',sans-serif", "Poppins — bold display", "Poppins:wght@400;500;600;700;800;900"),
+    ("'Quicksand',sans-serif", "Quicksand — rounded", "Quicksand:wght@400;500;600;700"),
+    ("'Inter',sans-serif", "Inter — clean", "Inter:wght@300;400;500;600;700;800"),
+    # display / headline faces
+    ("'Anton',sans-serif", "Anton — poster", "Anton"),
+    ("'Bebas Neue',sans-serif", "Bebas Neue — tall caps", "Bebas+Neue"),
+    ("'Oswald',sans-serif", "Oswald — condensed", "Oswald:wght@300;400;500;600;700"),
+    ("'Archivo Black',sans-serif", "Archivo Black — heavy", "Archivo+Black"),
+    ("'Righteous',cursive", "Righteous — retro diner", "Righteous"),
+    ("'Permanent Marker',cursive", "Permanent Marker — handwritten", "Permanent+Marker"),
+    # text faces
+    ("'Montserrat',sans-serif", "Montserrat — modern", "Montserrat:wght@300;400;500;600;700;800;900"),
+    ("'Work Sans',sans-serif", "Work Sans — neutral", "Work+Sans:wght@300;400;500;600;700;800"),
+    ("'Nunito',sans-serif", "Nunito — soft", "Nunito:wght@300;400;500;600;700;800;900"),
+    ("'Space Grotesk',sans-serif", "Space Grotesk — technical", "Space+Grotesk:wght@300;400;500;600;700"),
+    # more display / headline
+    ("'Alfa Slab One',serif", "Alfa Slab — heavy slab", "Alfa+Slab+One"),
+    ("'Bungee',sans-serif", "Bungee — signage", "Bungee"),
+    ("'Fredoka',sans-serif", "Fredoka — friendly round", "Fredoka:wght@300;400;500;600;700"),
+    ("'Titan One',cursive", "Titan One — chunky", "Titan+One"),
+    ("'Bowlby One SC',cursive", "Bowlby — fat caps", "Bowlby+One+SC"),
+    ("'Passion One',cursive", "Passion One — condensed bold", "Passion+One:wght@400;700;900"),
+    ("'Staatliches',cursive", "Staatliches — poster caps", "Staatliches"),
+    ("'Rampart One',cursive", "Rampart — outlined", "Rampart+One"),
+    # more text faces
+    ("'Rubik',sans-serif", "Rubik — rounded sans", "Rubik:wght@300;400;500;600;700;800;900"),
+    ("'DM Sans',sans-serif", "DM Sans — geometric", "DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700"),
+    ("'Manrope',sans-serif", "Manrope — modern sans", "Manrope:wght@300;400;500;600;700;800"),
+    ("'Karla',sans-serif", "Karla — grotesque", "Karla:wght@300;400;500;600;700;800"),
+    ("'Barlow',sans-serif", "Barlow — low contrast", "Barlow:wght@300;400;500;600;700;800;900"),
+    ("'Cabin',sans-serif", "Cabin — humanist", "Cabin:wght@400;500;600;700"),
+    # more serif
+    ("'Merriweather',serif", "Merriweather — sturdy serif", "Merriweather:wght@300;400;700;900"),
+    ("'Bitter',serif", "Bitter — slab serif", "Bitter:wght@300;400;500;600;700;800"),
+    ("'Abril Fatface',serif", "Abril Fatface — display serif", "Abril+Fatface"),
+    # handwriting
+    ("'Caveat',cursive", "Caveat — handwriting", "Caveat:wght@400;500;600;700"),
+    ("'Pacifico',cursive", "Pacifico — script", "Pacifico"),
+    ("'Shadows Into Light',cursive", "Shadows — light hand", "Shadows+Into+Light"),
+    # serif
+    ("'Playfair Display',serif", "Playfair — editorial serif", "Playfair+Display:wght@400;500;600;700;800;900"),
+    ("'Lora',serif", "Lora — readable serif", "Lora:wght@400;500;600;700"),
+    ("Georgia,'Times New Roman',serif", "Georgia — system serif", ""),
+    # system stacks, no download needed
+    ("'Trebuchet MS',sans-serif", "Trebuchet — friendly", ""),
+    ("'Segoe UI',system-ui,sans-serif", "Segoe / system", ""),
+    ("'Helvetica Neue',Helvetica,Arial,sans-serif", "Helvetica — neutral", ""),
+    ("'Arial Black',Impact,sans-serif", "Arial Black — heavy", ""),
+    ("Impact,Haettenschweiler,sans-serif", "Impact — condensed", ""),
+    ("'Courier New',monospace", "Courier — mono", ""),
+    ("ui-monospace,'Cascadia Mono',Consolas,monospace", "Mono — modern", ""),
 ]
+
+# what the admin <select>s show — (value, label) only
+CANVAS_FONT_CHOICES = [(f[0], f[1]) for f in CANVAS_FONTS]
+
+CANVAS_WEIGHTS = [("", "Default"), ("300", "Light"), ("400", "Regular"),
+                  ("500", "Medium"), ("600", "Semibold"), ("700", "Bold"),
+                  ("800", "Extrabold"), ("900", "Black")]
+
+CANVAS_CASES = [("", "As written"), ("none", "Normal"), ("uppercase", "UPPERCASE"),
+                ("capitalize", "Capitalise"), ("lowercase", "lowercase")]
 
 
 @bp.get("/admin/canvas")
@@ -708,7 +1030,8 @@ def canvas():
             "enabled": bool(row.enabled), "custom": bool(spec.get("custom")),
             "config": row.config or {}, "fields": fields,
         })
-    return render_template("admin/canvas.html", inner_pages=INNER_PAGES, state=state, fonts=CANVAS_FONTS, **_shell(store))
+    return render_template("admin/canvas.html", inner_pages=INNER_PAGES, state=state, fonts=CANVAS_FONT_CHOICES,
+                           weights=CANVAS_WEIGHTS, cases=CANVAS_CASES, **_shell(store))
 
 
 @bp.post("/admin/canvas/save")
@@ -736,7 +1059,7 @@ def builder_list():
     store = _admin_store()
     pages = BuilderPage.query.order_by(BuilderPage.created_at.desc()).all()
     taken = {p.override_path for p in pages if p.override_path}
-    overridable = [o for o in BUILDER_OVERRIDABLE if o[0] not in taken]
+    overridable = [o for o in builder_overridable() if o[0] not in taken]
     return render_template("admin/builder_list.html", pages=pages,
                            overridable=overridable, **_shell(store))
 
@@ -765,22 +1088,31 @@ BUILDER_TEMPLATES = {
 }
 
 
-# Existing storefront pages that can be taken over and rebuilt in the builder.
-# (path, label, template to preload the real design from)
-BUILDER_OVERRIDABLE = [
-    ("/about", "About", "website/about.html"),
-    ("/contact", "Contact", "website/contact.html"),
-    ("/catering", "Catering", "website/catering.html"),
-    ("/careers", "Careers", "website/careers.html"),
-    ("/faq", "FAQ", "website/faq.html"),
-    ("/news", "News", "website/news.html"),
-    ("/deals", "Deals", "website/deals.html"),
-    ("/rewards", "Rewards", "website/rewards.html"),
-    ("/gift-cards", "Gift cards", "website/gift-cards.html"),
-]
-# /menu and /locations are deliberately NOT here: their content is the live menu
-# and store list, so a rebuilt copy would freeze that data into static HTML.
-# Their headings are editable in Page Content instead.
+# Which storefront pages the builder can take over. Derived from the page
+# registry rather than typed out, so a page added there shows up here on its
+# own instead of quietly missing from the list.
+#
+# `live` marks a page whose body is data — the menu, the store list, the cart.
+# Rebuilding one of those freezes today's data into static HTML, which is a
+# much bigger deal than freezing a copy block, so the screen says so per page.
+_BUILDER_TEMPLATES_BY_PAGE = {
+    "menu": ("menu/menu.html", True),
+    "locations": ("stores/locations.html", True),
+    "cart": ("cart/cart.html", True),
+}
+
+
+def builder_overridable():
+    """[(path, label, template, live), …] for every page that can be rebuilt."""
+    from app.models.page import INNER_PAGES
+    out = []
+    for spec in INNER_PAGES:
+        page = spec["page"]
+        tpl, live = _BUILDER_TEMPLATES_BY_PAGE.get(page, ("website/%s.html" % page, False))
+        out.append((spec["url"], spec["label"], tpl, live))
+    return out
+
+
 
 
 def _extract_page_content(template_name):
@@ -799,7 +1131,7 @@ def builder_new():
     tpl = request.form.get("template") or "blank"
     html = BUILDER_TEMPLATES.get(tpl, ("", ""))[1]
     override = (request.form.get("override") or "").strip()
-    ov = next((o for o in BUILDER_OVERRIDABLE if o[0] == override), None)
+    ov = next((o for o in builder_overridable() if o[0] == override), None)
     opath = None
     if ov:
         if BuilderPage.query.filter_by(override_path=ov[0]).first():
@@ -2164,7 +2496,7 @@ def review_delete(rid):
 # The palette lived only in premium.css, so a colour change meant editing a
 # stylesheet. These are settings now, emitted as a :root{} block in the head.
 from app.models.theme import (                                      # noqa: E402
-    THEME_TOKENS, FONT_CHOICES, theme_values, theme_css,
+    THEME_TOKENS, FONT_CHOICES, THEME_GROUPS, SHADOW_PRESETS, theme_values, theme_css,
 )
 
 
@@ -2174,6 +2506,7 @@ def theme():
     store = _admin_store()
     return render_template("admin/theme.html",
                            tokens=THEME_TOKENS, fonts=FONT_CHOICES,
+                           groups=THEME_GROUPS, shadow_presets=SHADOW_PRESETS,
                            values=theme_values(), css=theme_css(),
                            **_shell(store))
 
@@ -2182,7 +2515,7 @@ def theme():
 @roles_required("super_admin", "franchise_owner")
 def theme_save():
     changed = 0
-    for key, _label, _prop, _kind, _default, _help in THEME_TOKENS:
+    for key, _label, _prop, _kind, _default, _help, _group in THEME_TOKENS:
         val = (request.form.get(key) or "").strip()
         row = SiteSetting.query.filter_by(key=key).first()
         # An empty box means "use the built-in value", so the row is removed
@@ -2226,7 +2559,67 @@ DESIGN_FIELDS = [
     ("style_bg", "Section background", "color"),
     ("style_hcolor", "Heading colour", "color"),
     ("style_tcolor", "Text colour", "color"),
+    ("style_accent", "Accent colour", "color"),
     ("style_align", "Text alignment", "align"),
+    ("style_font", "Heading font", "font"),
+    ("style_bodyfont", "Body font", "font"),
+    ("style_hweight", "Heading weight", "weight"),
+    ("style_case", "Heading case", "case"),
+    ("style_hsize", "Heading size (px)", "px"),
+    ("style_tracking", "Letter spacing", "px"),
+    ("style_lh", "Body line height", "opacity"),
+    ("style_btnbg", "Button colour", "color"),
+    ("style_btntext", "Button text", "color"),
+    ("style_btnradius", "Button radius", "px"),
+    ("style_shadow", "Card shadow", "shadow"),
+    ("style_tsside", "Heading shadow — side", "tsside"),
+    ("style_tsdist", "Heading shadow — distance", "px"),
+    ("style_tsblur", "Heading shadow — softness", "px"),
+    ("style_tscolor", "Heading shadow — colour", "color"),
+    ("style_textw", "Text width", "px"),
+    ("style_imgoverlay", "Image overlay", "color"),
+    ("style_imgradius", "Image corner radius", "px"),
+    ("style_bweight", "Body weight", "weight"),
+    ("style_bsize", "Body size (px)", "px"),
+    ("style_italic", "Heading italic", "italic"),
+    ("style_divider", "Divider line", "color"),
+    ("style_bgimage", "Section background picture", "image"),
+    ("style_bgsize", "How it sits", "bgsize"),
+    ("style_bgpos", "Where it sits", "bgpos"),
+    ("style_gradfrom", "Gradient from", "color"),
+    ("style_gradto", "Gradient to", "color"),
+    ("style_graddir", "Gradient direction", "graddir"),
+    ("style_imgfilter", "Photo effect", "filter"),
+    ("style_link", "Link colour", "color"),
+    ("style_hlh", "Heading line height", "opacity"),
+    ("style_cardpad", "Card padding", "px"),
+    ("style_cardborderw", "Card border width", "px"),
+    ("style_cardw", "Card width", "px"),
+    ("style_cardh", "Card minimum height", "px"),
+    ("style_btnborder", "Button border", "color"),
+    ("style_minh", "Minimum height", "px"),
+    ("style_px", "Side padding", "px"),
+    ("style_valign", "Vertical position", "valign"),
+    ("style_imgh", "Picture height", "px"),
+    ("style_imgfit", "Picture fit", "imgfit"),
+    ("style_cardcols", "Cards per row", "cols"),
+    ("style_cardminw", "Card minimum width", "px"),
+    ("style_gap", "Gap between items", "px"),
+    ("style_squigcolor", "Squiggle colour", "color"),
+    ("style_squigw", "Squiggle width", "px"),
+    ("style_navlink", "Nav link colour", "color"),
+    ("style_iconcolor", "Icon colour", "color"),
+    ("style_logoh", "Logo height", "px"),
+    ("style_xtraimg", "Extra picture", "image"),
+    ("style_xtrapos", "Where it goes", "xtrapos"),
+    ("style_xtraw", "Its width", "px"),
+    ("style_xtrah", "Its height", "px"),
+    ("style_xtraradius", "Its corners", "px"),
+    ("style_xtraborder", "Its border colour", "color"),
+    ("style_xtraborderw", "Its border width", "px"),
+    ("style_xtrashadow", "Its shadow", "shadow"),
+    ("style_xtraalign", "Its position", "xtraalign"),
+    ("style_maxw", "Content width", "px"),
     ("style_pt", "Padding top", "px"),
     ("style_pb", "Padding bottom", "px"),
     ("style_cardbg", "Card background", "color"),
@@ -2243,6 +2636,23 @@ DESIGN_FIELDS = [
 def design():
     store = _admin_store()
     page = request.args.get("page") or INNER_PAGES[0]["page"]
+    # "site" is not a page — it is the copy that belongs to no single page
+    # (the footer, and text shared by Deals / Rewards / Gift cards). It used to
+    # live on its own tab, which meant every page's words appeared twice.
+    if page == "site":
+        page_urls = {p["url"] for p in INNER_PAGES} | {"/"}
+        groups = [g for g in PAGE_CONTENT if g.get("url") not in page_urls
+                  or g["key"] in ("footer", "storefront")]
+        current = {r.key: r.value for r in SiteSetting.query.all() if r.value}
+        defaults = page_content_defaults(current_app.config.get("BRAND_NAME", ""))
+        return render_template("admin/design.html",
+                               pages=INNER_PAGES, page=page,
+                               spec={"label": "Footer & shared text", "url": "/"},
+                               sections=[], fields=DESIGN_FIELDS,
+                               fonts=CANVAS_FONT_CHOICES, weights=CANVAS_WEIGHTS,
+                               cases=CANVAS_CASES, styled={},
+                               text_groups=groups, content_current=current,
+                               content_defaults=defaults, **_shell(store))
     spec = INNER_PAGE_BY_KEY.get(page)
     if not spec:
         abort(404)
@@ -2254,10 +2664,17 @@ def design():
     # heading is on one tab and the section colour on another.
     current = {r.key: r.value for r in SiteSetting.query.all() if r.value}
     defaults = page_content_defaults(current_app.config.get("BRAND_NAME", ""))
-    text_groups = [g for g in PAGE_CONTENT if g.get("url") == spec["url"]]
+    text_groups = [g for g in PAGE_CONTENT
+                   if g.get("url") == spec["url"] and g["key"] not in ("footer", "storefront")]
     return render_template("admin/design.html",
                            pages=INNER_PAGES, page=page, spec=spec,
                            sections=inner_sections(page), fields=DESIGN_FIELDS,
+                           fonts=CANVAS_FONT_CHOICES, weights=CANVAS_WEIGHTS, cases=CANVAS_CASES, shadows=SHADOW_CHOICES,
+                           tssides=TSSIDE_CHOICES, italics=ITALIC_CHOICES,
+                           bgsizes=BGSIZE_CHOICES, bgposes=BGPOS_CHOICES,
+                           graddirs=GRADDIR_CHOICES, filters=FILTER_CHOICES,
+                           valigns=VALIGN_CHOICES, imgfits=IMGFIT_CHOICES, colss=COLS_CHOICES,
+                           xtraposes=XTRAPOS_CHOICES, xtraaligns=XTRAALIGN_CHOICES,
                            styled=styled, text_groups=text_groups,
                            content_current=current, content_defaults=defaults,
                            **_shell(store))
@@ -2284,6 +2701,10 @@ def design_save(page, key):
             cfg[fkey] = val
         else:
             cfg.pop(fkey, None)
+    # an uploaded backdrop wins over whatever is in the link box
+    up = _save_image(request.files.get("style_bgimage_file"), "sec-%s-%s" % (page, key))
+    if up:
+        cfg["style_bgimage"] = up
     row.config = cfg
     db.session.commit()
     flash("Saved.", "success")

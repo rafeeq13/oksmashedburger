@@ -78,7 +78,7 @@
     <div class="ok-grid ok-grid-md-2 ok-gap-8">
       <article class="ok-card overflow-hidden d-flex flex-column">
         <div class="ok-media ok-ratio !rounded-none">
-          {% if site.get('about_card1_img') %}<img src="{{ site.get('about_card1_img') }}" alt="Cooked fresh from scratch" class="ph-img">{% else %}<img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">{% endif %}
+          {% if site.get('about_card1_img') %}<img src="{{ site.get('about_card1_img') }}" alt="Cooked fresh from scratch" class="ph-img">{% else %}<img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card1_img">{% endif %}
         </div>
         <div class="ok-card-body">
           <h3 class="ok-abt-cardh">{{ pc('about_card1_heading') }}</h3>
@@ -87,7 +87,7 @@
       </article>
       <article class="ok-card overflow-hidden d-flex flex-column">
         <div class="ok-media ok-ratio !rounded-none">
-          {% if site.get('about_card2_img') %}<img src="{{ site.get('about_card2_img') }}" alt="Community focused" class="ph-img">{% else %}<img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">{% endif %}
+          {% if site.get('about_card2_img') %}<img src="{{ site.get('about_card2_img') }}" alt="Community focused" class="ph-img">{% else %}<img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card2_img">{% endif %}
         </div>
         <div class="ok-card-body">
           <h3 class="ok-abt-cardh">{{ pc('about_card2_heading') }}</h3>
@@ -104,7 +104,7 @@
 {% set _s = pb_page_style('about', 'section_5') %}<div class="pb-sec" data-page="about" data-section="section_5" data-label="Section 5"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     <div class="ok-abt-frame">
-      {% if site.get('about_table_img') %}<img src="{{ site.get('about_table_img') }}" alt="Meet us at the table" class="ph-img">{% else %}<img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="">{% endif %}
+      {% if site.get('about_table_img') %}<img src="{{ site.get('about_table_img') }}" alt="Meet us at the table" class="ph-img">{% else %}<img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_table_img">{% endif %}
     </div>
     <div>
       <h2 class="ok-abt-h">{{ pc('about_table_heading') }}</h2>
@@ -138,7 +138,7 @@
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
     <div class="ok-abt-tilt">
-      {% if site.get('about_crew_img') %}<img src="{{ site.get('about_crew_img') }}" alt="The OK crew" class="ph-img">{% else %}<img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="">{% endif %}
+      {% if site.get('about_crew_img') %}<img src="{{ site.get('about_crew_img') }}" alt="The OK crew" class="ph-img">{% else %}<img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="" data-ie-slot="about_crew_img">{% endif %}
     </div>
   </div>
 </section></div>

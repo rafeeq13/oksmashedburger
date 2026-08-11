@@ -39,13 +39,13 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
 .btn{ display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
   font-weight:700; border-radius:9999px; padding:.7rem 1.4rem; line-height:1;
   transition:transform .12s ease, background .18s ease, box-shadow .18s ease; cursor:pointer;
-  white-space:nowrap; border:1px solid transparent; }
+  white-space:nowrap; border:1px solid var(--pb-btnborder, transparent); }
 .btn:active{ transform:translateY(1px) scale(.99); }
 .btn-primary{ background:var(--ok-yellow); color:var(--ok-jet); box-shadow:0 6px 16px rgba(255,199,44,.35); }
 .btn-primary:hover{  background-color: black;
   color: white;
   border: #000;}
-.btn-secondary{ background:#fff; color:var(--ok-jet); border-color:var(--ok-jet); }
+.btn-secondary{ background:#fff; color:var(--ok-jet); border-color:var(--pb-btnborder, var(--ok-jet)); }
 .btn-secondary:hover{}
 .btn-dark{ background:var(--ok-jet); color:#fff; }
 .btn-dark:hover{}
@@ -362,11 +362,11 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 /* Each home section is wrapped in .pb-sec; inline CSS vars set from config drive
    these !important overrides so an admin can restyle any section. */
 
-.pb-sec[style*="--pb-bg"] > section{ background-color:var(--pb-bg) !important; background-image:none !important; }
-.pb-sec[style*="--pb-hcolor"] :is(h1,h2,h3){ color:var(--pb-hcolor) !important; }
-.pb-sec[style*="--pb-tcolor"] :is(p,li){ color:var(--pb-tcolor) !important; }
-.pb-sec[style*="--pb-font"] :is(h1,h2,h3){ font-family:var(--pb-font) !important; }
-.pb-sec[style*="--pb-overlay"] .pb-overlay{ opacity:var(--pb-overlay) !important; }
+
+
+
+
+
 
 
 /* Lucide icon sprite (see modernIcons() in app.js). Lives here, not in
@@ -382,3 +382,85 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 }
 .ok-i.icon-lg{ width: 1.15em; height: 1.15em; }
 .ok-i.icon-xl{ width: 1.3em; height: 1.3em; }
+
+/* ── Page-builder section styling, second set ───────────────────────────
+   Same contract as the --pb-bg / --pb-hcolor rules above: the editor writes
+   a variable onto the .pb-sec wrapper and the rule here is what makes it
+   visible. Each is gated on the variable actually being present so a section
+   nobody has restyled renders exactly as the designer built it. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Page-builder styling, third set: text shadow, image treatment,
+      body type and section dividers ─────────────────────────────────── */
+
+
+
+
+
+
+
+
+
+/* ── Page-builder styling, fourth set: a section's own backdrop, gradients,
+      photo filters, links, card and button detail, and vertical rhythm ─── */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ── Header / footer chrome, driven by the same section editor ─────────── */
+.pb-sec[data-section="header"][style*="--pb-bg:"] .ok-header{ background:var(--pb-bg) !important; }
+.pb-sec[data-section="footer"][style*="--pb-bg:"] .ok-footer{ background:var(--pb-bg) !important; }
+
+
+
+.pb-sec[data-section="footer"][style*="--pb-tcolor:"] .ok-footer :is(p,li,span,a){ color:var(--pb-tcolor) !important; }
+
+/* ── Sizing: pictures, card columns and the space between them ─────────── */
+
+
+
+
+
+
+
+/* ── Modals as design targets ──────────────────────────────────────────── */
+.pb-sec[data-sectype="modal"][style*="--pb-bg:"] :is(.ok-card,.drawer,.ok-modal > div){ background:var(--pb-bg) !important; }
+.pb-sec[data-sectype="modal"][style*="--pb-cardradius:"] .ok-card{ border-radius:var(--pb-cardradius) !important; }
+.pb-sec[data-sectype="modal"][style*="--pb-shadow:"] .ok-card{ box-shadow:var(--pb-shadow) !important; }
+/* a wrapper round a fixed overlay must not create its own stacking context */
+.pb-sec.pb-chrome{ display:contents; }
+
+/* ── An extra picture dropped into a section ───────────────────────────────
+   Drawn as a pseudo-element on the section wrapper, so a client can add a
+   picture anywhere without the template having to leave a slot for it.
+   --pb-xtrapos decides whether it sits above or below the section body. */
+
+
+
+
+
+
+

@@ -13,7 +13,8 @@
   <link rel="apple-touch-icon" href="{{ app_icon_url }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  {# the three brand faces, plus any family a section has been restyled to use #}
+  <link href="{{ google_fonts_link() }}" rel="stylesheet">
   <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
   {# Bootstrap first so our own layers always win. Tailwind's CDN still loads
      above during the migration and is removed once every page is converted. #}
@@ -24,10 +25,13 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/utils.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/generated.css') }}">
 
-  {# Client's theme overrides, emitted after every stylesheet so they win on
-     cascade order alone. Empty unless something was changed in Admin > Theme. #}
-  {% set _theme = theme_css() %}{% if _theme %}<style id="ok-theme">{{ _theme|safe }}</style>{% endif %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/radius.css') }}">
+  {# last, so the section editor's rules win over the base component styles #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
+  {# The client's theme goes LAST of all, after every stylesheet. It used to sit
+     before radius.css, which re-declares --ok-radius and therefore silently
+     beat the button/field radius control. #}
+  {% set _theme = theme_css() %}{% if _theme %}<style id="ok-theme">{{ _theme|safe }}</style>{% endif %}
 
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block head_extra %}{% endblock %}
@@ -50,13 +54,29 @@
 
   <div class="ok-progress" data-progress aria-hidden="true"><span></span></div>
 
+  {# The header and footer are on every page, so they are design targets too —
+     same wrapper, same panel, same storage as any other section. #}
+  {% set _hs = pb_page_style('site', 'header') %}
+  <div class="pb-sec" data-page="site" data-section="header" data-label="Header / navigation" data-sectype="chrome"{% if _hs %} style="{{ _hs }}"{% endif %}>
   {% include "partials/header.html" %}
+  </div>
 
   <main id="main" class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
 
+  {% set _fs = pb_page_style('site', 'footer') %}
+  <div class="pb-sec" data-page="site" data-section="footer" data-label="Footer" data-sectype="chrome"{% if _fs %} style="{{ _fs }}"{% endif %}>
   {% include "partials/footer.html" %}
+  </div>
+  {# Modals are design targets too. They are hidden until opened, so the edit
+     bar carries a direct way in — hovering for a button would never work. #}
+  {% set _ls = pb_page_style('site', 'location_modal') %}
+  <div class="pb-sec pb-chrome" data-page="site" data-section="location_modal" data-label="Location picker" data-sectype="modal"{% if _ls %} style="{{ _ls }}"{% endif %}>
   {% include "partials/location_modal.html" %}
+  </div>
+  {% set _is = pb_page_style('site', 'item_modal') %}
+  <div class="pb-sec pb-chrome" data-page="site" data-section="item_modal" data-label="Item quick-add sheet" data-sectype="modal"{% if _is %} style="{{ _is }}"{% endif %}>
   {% include "partials/item_modal.html" %}
+  </div>
   {% include "partials/flash.html" %}
   {# Sticky order bar on the mobile layout. Everywhere except the menu,
      which is already the ordering screen and has its own sticky bar. #}

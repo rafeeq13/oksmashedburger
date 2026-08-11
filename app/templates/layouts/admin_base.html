@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-generated.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/radius.css') }}">
+  {# last, so the section editor's rules win over the base component styles #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script>try{ if(localStorage.getItem('adm-collapsed')==='1') document.documentElement.classList.add('admin-collapsed'); }catch(e){}</script>
   {% block head_extra %}{% endblock %}
@@ -88,7 +90,6 @@
         {{ grouphead('Website') }}
         <div class="sb-group-body"><div class="ok-stack-05">
           {{ navlink('/admin/canvas', 'Pages', 'layer-group') }}
-          {{ navlink('/admin/page-content', 'All text (every page)', 'file-lines') }}
           {{ navlink('/admin/content', 'Content lists', 'list-ul') }}
           {{ navlink('/admin/site-images', 'Images', 'image') }}
           {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Brand & theme', 'palette') }}{% endif %}

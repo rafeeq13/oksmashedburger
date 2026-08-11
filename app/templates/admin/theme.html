@@ -24,7 +24,9 @@
 
     <!-- ── controls ─────────────────────────────────────────────── -->
     <div class="ok-stack-4">
-      {% for key, label, prop, kind, default, help in tokens %}
+      {% for group in groups %}
+      <div class="ok-label ok-fs-65rem ok-mt-3">{{ group }}</div>
+      {% for key, label, prop, kind, default, help, tgroup in tokens if tgroup == group %}
       <div class="ok-card ok-p-3">
         <div class="d-flex align-items-center justify-content-between ok-gap-3">
           <div class="ok-min-w-0">
@@ -42,12 +44,28 @@
                    class="ok-input ok-fs-sm ok-w-28 text-center" data-token="{{ prop }}">
 
             {% elif kind == 'px' %}
-            <input type="range" min="0" max="32" step="1" id="t-{{ key }}-range"
-                   value="{{ values.get(key) or default }}" data-sync="t-{{ key }}"
+            {% set _max = 1600 if key == 'theme_container' else (200 if key == 'theme_section_space' else 40) %}
+            <input type="range" min="0" max="{{ _max }}" step="{{ 20 if _max > 200 else (4 if _max > 40 else 1) }}"
+                   id="t-{{ key }}-range" value="{{ values.get(key) or default }}" data-sync="t-{{ key }}"
                    class="ok-w-28" aria-label="{{ label }} slider">
-            <input type="number" id="t-{{ key }}" name="{{ key }}" min="0" max="32"
+            <input type="number" id="t-{{ key }}" name="{{ key }}" min="0" max="{{ _max }}"
                    value="{{ values.get(key) or '' }}" placeholder="{{ default }}"
                    class="ok-input ok-fs-sm ok-w-16 text-center" data-token="{{ prop }}" data-unit="px">
+
+            {% elif kind == 'pct' %}
+            <input type="range" min="80" max="140" step="5" id="t-{{ key }}-range"
+                   value="{{ values.get(key) or default }}" data-sync="t-{{ key }}"
+                   class="ok-w-28" aria-label="{{ label }} slider">
+            <input type="number" id="t-{{ key }}" name="{{ key }}" min="80" max="140"
+                   value="{{ values.get(key) or '' }}" placeholder="{{ default }}"
+                   class="ok-input ok-fs-sm ok-w-16 text-center" data-token="{{ prop }}">
+
+            {% elif kind == 'shadow' %}
+            <select id="t-{{ key }}" name="{{ key }}" class="ok-input ok-select ok-fs-sm ok-w-56" data-token="{{ prop }}">
+              {% for val, name in shadow_presets %}
+              <option value="{{ val }}" {{ 'selected' if values.get(key) == val }}>{{ name }}</option>
+              {% endfor %}
+            </select>
 
             {% elif kind == 'font' %}
             <select id="t-{{ key }}" name="{{ key }}" class="ok-input ok-select ok-fs-sm ok-w-56" data-token="{{ prop }}">
@@ -60,6 +78,7 @@
           </div>
         </div>
       </div>
+      {% endfor %}
       {% endfor %}
 
       <div class="d-flex align-items-center gap-3">

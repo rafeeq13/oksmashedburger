@@ -4,7 +4,7 @@
     <!-- ============ HERO (jet) with search ============ -->
     {% set _s = pb_page_style('faq', 'hero') %}<div class="pb-sec" data-page="faq" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
-        {% if site.get('faq_hero_img') %}<img src="{{ site.get('faq_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Help center" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="">{% endif %}
+        {% if site.get('faq_hero_img') %}<img src="{{ site.get('faq_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="Help center" data-ph-type="hero" data-ph-ratio="16/6" class="ph-img" alt="" data-ie-slot="faq_hero_img">{% endif %}
       </div>
       <div class="ok-pagehero-veil"></div>
       <div class="position-absolute -right-20 -top-20 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
-              {% if site.get('faq_support_img') %}<img src="{{ site.get('faq_support_img') }}" alt="Friendly support" class="ph-img ok-rounded-2xl">{% else %}<img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img ok-rounded-2xl" alt="">{% endif %}
+              {% if site.get('faq_support_img') %}<img src="{{ site.get('faq_support_img') }}" alt="Friendly support" class="ph-img ok-rounded-2xl">{% else %}<img data-ph="Friendly support" data-ph-type="banner" data-ph-ratio="4/3" class="ph-img ok-rounded-2xl" alt="" data-ie-slot="faq_support_img">{% endif %}
             </div>
           </div>
         </div>

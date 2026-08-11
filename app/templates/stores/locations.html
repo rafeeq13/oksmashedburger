@@ -2,6 +2,7 @@
 {% block title %}Locations, {{ brand_name }}{% endblock %}
 
 {% block content %}
+{% set _s = pb_page_style('locations', 'locations_body') %}<div class="pb-sec" data-page="locations" data-section="locations_body" data-label="Store list"{% if _s %} style="{{ _s }}"{% endif %}>
 <section class="bg-yellow border-bottom ok-bc-varokhairline">
   <div class="ok-container ok-py-14 ok-paddin-5rem-md">
     <nav class="ok-fs-sm text-muted-warm ok-mb-3 d-none"><a href="/" class="">Home</a> <span class="mx-1 text-muted-warm-60">/</span> <span class="fw-semibold text-ink">Locations</span></nav>
@@ -174,4 +175,5 @@
   }
 })();
 </script>
+</div>
 {% endblock %}

@@ -12,7 +12,7 @@
   The size is the space the website gives that picture, at double resolution so it stays sharp on a
   phone or a retina screen. Every picture is cropped to fill its space, so keep the subject
   near the middle — on a full-width banner a phone only keeps the middle third of the width.
-  Save as WEBP or JPEG: banners under 400&nbsp;KB, cards and tiles under 120&nbsp;KB.
+  Match the pixel size and the shape; the file size is not something you need to worry about.
 </div>
 
 <form method="post" action="/admin/site-images{{ qs }}" enctype="multipart/form-data" class="ok-stack-6">
@@ -47,6 +47,13 @@
         </div>
         <input name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… image URL" class="ok-input ok-py-15 ok-fs-sm ok-mb-15">
         <input name="{{ key }}_file" type="file" accept="{{ 'video/mp4,video/webm' if key.endswith('_video') else 'image/*' }}" class="ok-input py-1 ok-fs-xs">
+        {% if current.get(key) %}
+        <button type="submit" formaction="/admin/site-images/{{ key }}/delete{{ qs }}" formnovalidate
+                class="link-underline ok-fs-xs text-ok-red ok-mt-15 d-inline-block"
+                onclick="return confirm('Remove this picture? The slot goes back to the built-in image, and an uploaded file is deleted.')">
+          Delete this picture
+        </button>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

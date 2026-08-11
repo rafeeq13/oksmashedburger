@@ -463,7 +463,8 @@ p {
   background: #fff;
   border: 1px solid var(--ok-hairline);
   border-radius: var(--r-lg);
-  box-shadow: var(--sh-2);
+  /* the section editor's shadow when one is set, this card's own otherwise */
+  box-shadow: var(--pb-shadow, var(--sh-2));
   transition: transform var(--t-mid) var(--e-out), box-shadow var(--t-mid) var(--e-out), border-color var(--t-mid) var(--e-out);
 }
 
@@ -1619,16 +1620,21 @@ html.ok-loading {
 }
 
 /* The brand squiggle, one size and colour everywhere it appears. */
+/* Drawn as a mask rather than a coloured background image, so its colour is a
+   normal CSS property and the section editor can change it. The old version
+   had the amber baked into the SVG, where nothing could reach it. */
 .ok-squiggle {
   display: block;
-  width: 4.25rem;
+  width: var(--pb-squigw, 4.25rem);
   height: .55rem;
   margin: 1.35rem auto 0;
-  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 8' fill='none' stroke='%23E0A200' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M2 5 C 6 1, 10 1, 14 5 S 22 9, 26 5 S 34 1, 38 5 S 46 9, 50 5 S 58 1, 62 5'/%3E%3C/svg%3E");
+  background-color: var(--pb-squigcolor, #E0A200);
+  -webkit-mask: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 8' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M2 5 C 6 1, 10 1, 14 5 S 22 9, 26 5 S 34 1, 38 5 S 46 9, 50 5 S 58 1, 62 5'/%3E%3C/svg%3E");
+  mask: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 8' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M2 5 C 6 1, 10 1, 14 5 S 22 9, 26 5 S 34 1, 38 5 S 46 9, 50 5 S 58 1, 62 5'/%3E%3C/svg%3E");
 }
 
 .ok-squiggle--light {
-  filter: brightness(0) invert(1) opacity(.85);
+  background-color: var(--pb-squigcolor, rgba(255, 255, 255, .85));
 }
 
 .ok-squiggle--left {
@@ -1759,35 +1765,23 @@ html.ok-loading {
    --pb-card* vars on the .pb-sec wrapper (same mechanism as
    the --pb-bg section vars in style.css).
    --------------------------------------------------------- */
-.pb-sec[style*="--pb-cardbg"] .ok-card {
-  background-color: var(--pb-cardbg) !important;
-}
+
 
 /* A card's inner panels carry their own background (the cream footer on a
    category card, the white body on a product card). They have to go
    transparent, otherwise they paint straight over the chosen colour. */
-.pb-sec[style*="--pb-cardbg"] .ok-card>div:not(.ok-media) {
-  background-color: transparent !important;
-}
 
-.pb-sec[style*="--pb-cardborder"] .ok-card {
-  border-color: var(--pb-cardborder) !important;
-}
 
-.pb-sec[style*="--pb-cardhead"] .ok-card :is(h1, h2, h3, h4) {
-  color: var(--pb-cardhead) !important;
-}
+
+
+
 
 /* Text inside a card. Spans are included so the "see more" label and the price
    follow the chosen colour too, but anything the template colours inline (brand
    logos, star rows) and any badge keeps its own colour. */
-.pb-sec[style*="--pb-cardtext"] .ok-card :is(p, li, span:not([style]):not([class*="badge"])) {
-  color: var(--pb-cardtext) !important;
-}
 
-.pb-sec[style*="--pb-cardradius"] .ok-card {
-  border-radius: var(--pb-cardradius) !important;
-}
+
+
 
 /* Horizontal overflow is contained at the section level (every decorative blob
    lives inside an overflow-hidden section). Deliberately NOT set on html/body:
@@ -2544,7 +2538,9 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   position: fixed;
   left: .5rem;                 /* inset from both edges instead of inner padding */
   right: .5rem;
-  bottom: 0;
+  /* the same gap it has at the sides, plus the iPhone home-indicator strip so
+     the bar never sits under it */
+  bottom: calc(.5rem + env(safe-area-inset-bottom, 0px));
   z-index: 40;                 /* under the header (50) and every overlay */
   width: auto;
   height: 40px;
@@ -2568,9 +2564,12 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   color: #fff;
 }
 
-/* The fixed bar would otherwise sit on top of the last 40px of the footer. */
+/* The fixed bar would otherwise sit on top of the end of the footer — the
+   height plus the gap it now stands off the bottom. */
 @media (max-width: 991.98px){
-  body:has(.ok-mobile-order){ padding-bottom: 40px; }
+  body:has(.ok-mobile-order){
+    padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Menu chips: the hover lift pushed the pill's top edge outside the
@@ -4167,8 +4166,10 @@ input[type="radio"]:focus-visible{
      leave the container's own padding as a strip the list scrolls through. */
   bottom: -1.5rem;
   z-index: 6;
+  /* a little air under the button so it does not sit hard against the
+     bottom edge of the sheet */
   margin: 0 -1.5rem -1.5rem;
-  padding: 0 1.5rem;
+  padding: 0 1.5rem .5rem;
   background: #fff;
   /* border-top: 1px solid var(--ok-hairline); */
 }

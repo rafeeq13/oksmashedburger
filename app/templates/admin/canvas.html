@@ -8,6 +8,11 @@
   <span class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-ink text-white border-ink">
     <i class="fa-solid fa-house"></i> Home
   </span>
+  {# the home page is edited on the page itself as well, exactly like the others #}
+  <a href="/?edit=1" target="_blank" rel="noopener"
+     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40 ms-auto">
+    <i class="fa-solid fa-pen"></i> Edit on the page
+  </a>
   {% for p in inner_pages %}
   <a href="/admin/design?page={{ p.page }}"
      class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40">
@@ -81,6 +86,8 @@
 (function () {
   var STATE = {{ state|tojson }};
   var FONTS = {{ fonts|tojson }};
+  var WEIGHTS = {{ weights|tojson }};
+  var CASES = {{ cases|tojson }};
   var CSRF = "{{ csrf_token }}";
   var byKey = {}; STATE.forEach(function (s) { byKey[s.key] = s; });
 
@@ -149,6 +156,14 @@
     setVar(el, '--pb-bg', c.style_bg); setVar(el, '--pb-hcolor', c.style_hcolor);
     setVar(el, '--pb-tcolor', c.style_tcolor); setVar(el, '--pb-font', c.style_font);
     setVar(el, '--pb-overlay', c.style_overlay);
+    setVar(el, '--pb-bodyfont', c.style_bodyfont); setVar(el, '--pb-hweight', c.style_hweight);
+    setVar(el, '--pb-case', c.style_case); setVar(el, '--pb-lh', c.style_lh);
+    setVar(el, '--pb-accent', c.style_accent); setVar(el, '--pb-overlaycolor', c.style_overlaycolor);
+    setVar(el, '--pb-btnbg', c.style_btnbg); setVar(el, '--pb-btntext', c.style_btntext);
+    setVar(el, '--pb-hsize', c.style_hsize ? c.style_hsize + '%' : '');
+    setVar(el, '--pb-tracking', c.style_tracking ? c.style_tracking + 'px' : '');
+    setVar(el, '--pb-btnradius', c.style_btnradius ? c.style_btnradius + 'px' : '');
+    setVar(el, '--pb-maxw', c.style_maxw ? c.style_maxw + 'px' : '');
     // card-level styling
     setVar(el, '--pb-cardbg', c.style_cardbg); setVar(el, '--pb-cardborder', c.style_cardborder);
     setVar(el, '--pb-cardhead', c.style_cardhead); setVar(el, '--pb-cardtext', c.style_cardtext);
@@ -186,6 +201,19 @@
       opts.map(function (o) { return '<button type="button" data-set="' + key + '" data-val="' + o[0] + '" class="ok-flex-1 ok-py-15 ok-rounded-lg border ok-fs-sm ' + (cur === o[0] ? 'border-yellow bg-yellow-10' : 'ok-bc-varokline') + '">' + o[1] + '</button>'; }).join('') + '</div></div>';
   }
 
+  function pick(label, ctl, opts, cur) {
+    return '<div><span class="ok-fs-xs text-muted-warm">' + label + '</span>'
+      + '<select data-ctl="' + ctl + '" class="ok-input ok-py-15 ok-fs-sm mt-1">'
+      + opts.map(function (o) {
+          return '<option value="' + esc(o[0]) + '"' + ((cur || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+        }).join('') + '</select></div>';
+  }
+  function slider(label, ctl, min, max, step, cur, dflt) {
+    return '<div><span class="ok-fs-xs text-muted-warm">' + label + '</span>'
+      + '<input type="range" min="' + min + '" max="' + max + '" step="' + step + '" data-ctl="' + ctl + '"'
+      + ' value="' + (cur != null && cur !== '' ? cur : dflt) + '" class="w-100 ok-accent-yellow"></div>';
+  }
+
   function colorRow(label, ctl, cur, dflt) {
     return '<div class="d-flex align-items-center justify-content-between gap-2"><span class="ok-fs-xs text-muted-warm">' + label + '</span>'
       + '<span class="d-flex align-items-center gap-1"><input type="color" data-ctl="' + ctl + '" value="' + (cur || dflt) + '" class="ok-w-8 ok-h-7 ok-rounded border ok-bc-varokline ok-p-05 bg-white ok-pointer">'
@@ -202,11 +230,22 @@
     h += colorRow('Background', 'style_bg', c.style_bg, '#ffffff');
     h += colorRow('Heading color', 'style_hcolor', c.style_hcolor, '#141414');
     h += colorRow('Text color', 'style_tcolor', c.style_tcolor, '#6b6b6b');
-    h += '<div><span class="ok-fs-xs text-muted-warm">Heading font</span><select data-ctl="style_font" class="ok-input ok-py-15 ok-fs-sm mt-1">';
-    FONTS.forEach(function (f) { h += '<option value="' + esc(f[0]) + '"' + (c.style_font === f[0] ? ' selected' : '') + '>' + esc(f[1]) + '</option>'; });
-    h += '</select></div>';
+    h += colorRow('Accent color', 'style_accent', c.style_accent, '#ffc72c');
+    h += '</div>';
+    // ---- Type: font, weight, size, spacing, case, line height ----
+    h += '<div class="ok-stack-25 pt-2 border-top ok-bc-varokline"><div class="ok-label ok-fs-65rem">Type</div>';
+    h += pick('Heading font', 'style_font', FONTS, c.style_font);
+    h += pick('Body font', 'style_bodyfont', FONTS, c.style_bodyfont);
+    h += '<div class="ok-grid ok-grid-2 gap-2">' + pick('Heading weight', 'style_hweight', WEIGHTS, c.style_hweight)
+      + pick('Heading case', 'style_case', CASES, c.style_case) + '</div>';
+    h += slider('Heading size (' + (c.style_hsize || 100) + '%)', 'style_hsize', 70, 180, 5, c.style_hsize, 100);
+    h += slider('Letter spacing', 'style_tracking', -3, 8, 0.5, c.style_tracking, 0);
+    h += slider('Body line height', 'style_lh', 1, 2.2, 0.05, c.style_lh, 1.6);
+    h += '<div class="ok-stack-25">';
+    h += colorRow('Overlay tint', 'style_overlaycolor', c.style_overlaycolor, '#000000');
     h += '<div><span class="ok-fs-xs text-muted-warm">Overlay darkness</span><input type="range" min="0" max="1" step="0.05" data-ctl="style_overlay" value="' + (c.style_overlay != null && c.style_overlay !== '' ? c.style_overlay : '0.35') + '" class="w-100 ok-accent-yellow"></div>';
     h += '<div class="ok-grid ok-grid-2 gap-2"><div><span class="ok-fs-xs text-muted-warm">Top pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pt" value="' + (c.style_pt || 0) + '" class="w-100 ok-accent-yellow"></div><div><span class="ok-fs-xs text-muted-warm">Bottom pad</span><input type="range" min="0" max="160" step="4" data-ctl="style_pb" value="' + (c.style_pb || 0) + '" class="w-100 ok-accent-yellow"></div></div>';
+    h += slider('Content width', 'style_maxw', 720, 1600, 20, c.style_maxw, 1200);
     h += '<div><span class="ok-fs-xs text-muted-warm">Text align</span><div class="d-flex gap-1 mt-1">' + ['left', 'center', 'right'].map(function (a) { return '<button type="button" data-align="' + a + '" class="ok-flex-1 ok-py-15 ok-rounded-lg border ok-fs-sm ' + (c.style_align === a ? 'border-yellow bg-yellow-10' : 'ok-bc-varokline') + '"><i class="fa-solid fa-align-' + a + '"></i></button>'; }).join('') + '</div></div></div>';
     // Card controls, only for sections that actually contain cards.
     var secEl = sel(key);
@@ -227,6 +266,9 @@
       if (hasBtn) {
         h += seg('Button align', 'btn_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);
         h += seg('Button size', 'btn_size', [['sm', 'S'], ['', 'M'], ['lg', 'L']]);
+        h += colorRow('Button colour', 'style_btnbg', c.style_btnbg, '#ffc72c');
+        h += colorRow('Button text', 'style_btntext', c.style_btntext, '#141414');
+        h += slider('Button corner radius', 'style_btnradius', 0, 40, 2, c.style_btnradius, 9999);
       }
       if (hasImg) {
         h += seg('Image align', 'img_align', [['left', '<i class="fa-solid fa-align-left"></i>'], ['center', '<i class="fa-solid fa-align-center"></i>'], ['right', '<i class="fa-solid fa-align-right"></i>']]);

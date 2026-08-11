@@ -270,9 +270,13 @@
     if (!body) return;
     body.innerHTML = '<div class="py-12 text-center text-slate"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading…</div>';
     openItem(true);
-    fetch("/item/" + encodeURIComponent(slug) + "/modal", { headers: { "X-Requested-With": "fetch" } })
+    // the sheet is its own request, so edit mode has to travel with it —
+    // otherwise its labels come back as plain text and cannot be clicked
+    fetch("/item/" + encodeURIComponent(slug) + "/modal"
+            + (document.getElementById("okIeBar") ? "?edit=1" : ""),
+          { headers: { "X-Requested-With": "fetch" } })
       .then(function (r) { return r.ok ? r.text() : null; })
-      .then(function (html) { body.innerHTML = html !== null ? html : '<p class="py-8 text-center text-slate">Could not load this item.</p>'; initReadMore(body); })
+      .then(function (html) { body.innerHTML = html !== null ? html : '<p class="py-8 text-center text-slate">Could not load this item.</p>'; initReadMore(body); ; if (window.okIeRefresh) window.okIeRefresh(body); })
       .catch(function () { body.innerHTML = '<p class="py-8 text-center text-slate">Could not load this item.</p>'; });
   }
 

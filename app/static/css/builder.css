@@ -1,0 +1,196 @@
+/* Page-builder section styling.
+   Loaded LAST on purpose: these rules have to beat the base component styles
+   in style.css, premium.css and theme.css. They used to live in style.css,
+   which loads first — so a card shadow or a button border set in the editor
+   saved fine and then lost the cascade, which read as "the control does
+   nothing". Every selector matches on "--pb-x:" including the colon, so a
+   longer variable (--pb-bgimage) can never trigger a shorter one's rule. */
+
+.pb-sec[style*="--pb-cardbg:"] .ok-card{
+  background-color: var(--pb-cardbg) !important;
+}
+.pb-sec[style*="--pb-cardbg:"] .ok-card>div:not(.ok-media){
+  background-color: transparent !important;
+}
+.pb-sec[style*="--pb-cardborder:"] .ok-card{
+  border-color: var(--pb-cardborder) !important;
+}
+.pb-sec[style*="--pb-cardhead:"] .ok-card :is(h1, h2, h3, h4){
+  color: var(--pb-cardhead) !important;
+}
+.pb-sec[style*="--pb-cardtext:"] .ok-card :is(p, li, span:not([style]):not([class*="badge"])){
+  color: var(--pb-cardtext) !important;
+}
+.pb-sec[style*="--pb-cardradius:"] .ok-card{
+  border-radius: var(--pb-cardradius) !important;
+}
+.pb-sec[style*="--pb-bg:"] > section{ background-color:var(--pb-bg) !important; background-image:none !important; }
+.pb-sec[style*="--pb-hcolor:"] :is(h1,h2,h3){ color:var(--pb-hcolor) !important; }
+.pb-sec[style*="--pb-tcolor:"] :is(p,li){ color:var(--pb-tcolor) !important; }
+.pb-sec[style*="--pb-font:"] :is(h1,h2,h3){ font-family:var(--pb-font) !important; }
+.pb-sec[style*="--pb-overlay:"] .pb-overlay{ opacity:var(--pb-overlay) !important; }
+.pb-sec[style*="--pb-bodyfont:"] :is(p,li,span,a,label,input,textarea,button){ font-family:var(--pb-bodyfont) !important; }
+.pb-sec[style*="--pb-hweight:"] :is(h1,h2,h3){ font-weight:var(--pb-hweight) !important; }
+/* Heading size is a real px value, not a percentage of whatever it inherited.
+   Sub-headings step down from it so a section keeps its hierarchy instead of
+   flattening to one size. */
+.pb-sec[style*="--pb-hsize:"] :is(h1,h2,.ok-h1,.ok-h2,.ok-title,.ok-display,.ok-hero-title){
+  font-size:var(--pb-hsize) !important;
+}
+.pb-sec[style*="--pb-hsize:"] :is(h3,.ok-h3,.ok-card-title){
+  font-size:calc(var(--pb-hsize) * .7) !important;
+}
+.pb-sec[style*="--pb-hsize:"] :is(h4,h5,h6){
+  font-size:calc(var(--pb-hsize) * .58) !important;
+}
+.pb-sec[style*="--pb-tracking:"] :is(h1,h2,h3){ letter-spacing:var(--pb-tracking) !important; }
+.pb-sec[style*="--pb-case:"] :is(h1,h2,h3){ text-transform:var(--pb-case) !important; }
+.pb-sec[style*="--pb-lh:"] :is(p,li){ line-height:var(--pb-lh) !important; }
+.pb-sec[style*="--pb-accent:"] :is(.text-gold,.text-yellow,.badge-yellow,.ok-eyebrow){ color:var(--pb-accent) !important; }
+.pb-sec[style*="--pb-accent:"] .badge-yellow{ background-color:var(--pb-accent) !important; color:#141414 !important; }
+.pb-sec[style*="--pb-overlaycolor:"] .pb-overlay{ background:var(--pb-overlaycolor) !important; }
+.pb-sec[style*="--pb-btnbg:"] :is(.btn-primary,.ok-cta){ background-color:var(--pb-btnbg) !important; border-color:var(--pb-btnbg) !important; }
+.pb-sec[style*="--pb-btntext:"] :is(.btn-primary,.ok-cta){ color:var(--pb-btntext) !important; }
+.pb-sec[style*="--pb-btnradius:"] :is(.btn,.btn-primary,.btn-secondary,.ok-cta){ border-radius:var(--pb-btnradius) !important; }
+.pb-sec[style*="--pb-maxw:"] .ok-container{ max-width:var(--pb-maxw) !important; }
+/* Reaches every piece of type in the section, not just h1-h3: the hero titles,
+   kickers and eyebrows carry their own built-in shadows, and "No shadow" has to
+   clear those too or the control looks broken. */
+.pb-sec[style*="--pb-textshadow:"] :is(h1,h2,h3,h4,h5,h6,p,li,span,a,
+  .ok-hero-title,.ok-hero-sub,.ok-hero-kicker,.ok-display,.ok-title,.ok-eyebrow,
+  .ok-h1,.ok-h2,.ok-h3,.ok-subtitle,.ok-card-title,.ok-card-text){
+  text-shadow:var(--pb-textshadow) !important;
+}
+.pb-sec[style*="--pb-imgoverlay:"] :is(.ok-media,.ok-ar-1610,.ph-img,img){ position:relative; }
+.pb-sec[style*="--pb-imgoverlay:"] :is(.ok-media,.ok-ar-1610)::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:var(--pb-imgoverlay); border-radius:inherit;
+}
+.pb-sec[style*="--pb-imgradius:"] :is(img,.ok-media,.ok-ar-1610){ border-radius:var(--pb-imgradius) !important; overflow:hidden; }
+.pb-sec[style*="--pb-bweight:"] :is(p,li,span,a){ font-weight:var(--pb-bweight) !important; }
+.pb-sec[style*="--pb-bsize:"] :is(p,li,.ok-card-text,.ok-subtitle){ font-size:var(--pb-bsize) !important; }
+.pb-sec[style*="--pb-italic:"] :is(h1,h2,h3){ font-style:var(--pb-italic) !important; }
+.pb-sec[style*="--pb-divider:"] > section{
+  border-top:1px solid var(--pb-divider) !important;
+  border-bottom:1px solid var(--pb-divider) !important;
+}
+.pb-sec[style*="--pb-bgimage:"] > section{
+  background-image:var(--pb-bgimage) !important;
+  background-size:var(--pb-bgsize,cover) !important;
+  background-position:var(--pb-bgpos,center) !important;
+  background-repeat:var(--pb-bgrepeat,no-repeat) !important;
+}
+.pb-sec[style*="--pb-gradfrom:"] > section{ position:relative; }
+.pb-sec[style*="--pb-gradfrom:"] > section::before{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:linear-gradient(var(--pb-graddir,180deg), var(--pb-gradfrom), var(--pb-gradto,transparent));
+}
+.pb-sec[style*="--pb-gradfrom:"] > section > *{ position:relative; z-index:1; }
+.pb-sec[style*="--pb-imgfilter:"] img{ filter:var(--pb-imgfilter) !important; }
+.pb-sec[style*="--pb-link:"] a:not(.btn):not(.chip){ color:var(--pb-link) !important; }
+.pb-sec[style*="--pb-hlh:"] :is(h1,h2,h3){ line-height:var(--pb-hlh) !important; }
+.pb-sec[style*="--pb-cardpad:"] .ok-card > :not(.ok-media){ padding:var(--pb-cardpad) !important; }
+.pb-sec[style*="--pb-cardborderw:"] .ok-card{ border-width:var(--pb-cardborderw) !important; border-style:solid; }
+.pb-sec[style*="--pb-minh:"] > section{ min-height:var(--pb-minh) !important; }
+.pb-sec[style*="--pb-px:"] .ok-container{ padding-inline:var(--pb-px) !important; }
+.pb-sec[style*="--pb-valign:"] > section{ display:flex; flex-direction:column; justify-content:var(--pb-valign) !important; }
+.pb-sec[style*="--pb-navlink:"] :is(.nav-link,.ok-flink){ color:var(--pb-navlink) !important; }
+.pb-sec[style*="--pb-iconcolor:"] :is(.ok-iconbtn,.ok-iconbtn i,.ok-header i,.ok-header .ok-i,.ok-social i){ color:var(--pb-iconcolor) !important; }
+.pb-sec[style*="--pb-logoh:"] img[alt]{ height:var(--pb-logoh) !important; width:auto !important; }
+.pb-sec[style*="--pb-imgh:"] :is(.ok-media,.ok-ar-1610,.ok-ratio,.ok-ar-169){
+  height:var(--pb-imgh) !important; aspect-ratio:auto !important;
+}
+.pb-sec[style*="--pb-imgh:"] :is(.ok-media,.ok-ar-1610) img{ height:100% !important; }
+.pb-sec[style*="--pb-imgfit:"] img{ object-fit:var(--pb-imgfit) !important; }
+.pb-sec[style*="--pb-cardcols:"] :is(.ok-grid,.ok-cardgrid){
+  grid-template-columns:repeat(var(--pb-cardcols), minmax(0, 1fr)) !important;
+}
+.pb-sec[style*="--pb-cardminw:"] .ok-card{ min-width:var(--pb-cardminw) !important; }
+.pb-sec[style*="--pb-gap:"] :is(.ok-grid,.ok-cardgrid,.d-flex){ gap:var(--pb-gap) !important; }
+.pb-sec[style*="--pb-xtraimg:"]{ display:flex; flex-direction:column; }
+.pb-sec[style*="--pb-xtraimg:"]::after{
+  content:"";
+  display:block;
+  order:var(--pb-xtraorder, 2);
+  width:var(--pb-xtraw, 100%);
+  height:var(--pb-xtrah, 260px);
+  margin-inline:var(--pb-xtraalign, auto);
+  background:var(--pb-xtraimg) no-repeat center/cover;
+  border-radius:var(--pb-xtraradius, 0);
+  border:var(--pb-xtraborderw, 0) solid var(--pb-xtraborder, transparent);
+  box-shadow:var(--pb-xtrashadow, none);
+}
+.pb-sec[style*="--pb-xtraimg:"]::before{ display:none; }
+.pb-sec[style*="--pb-xtrapos:top"]::before{ display:block; }
+.pb-sec[style*="--pb-xtrapos:top"]::after{ display:none; }
+.pb-sec[style*="--pb-xtraimg:"] > section{ order:1; }
+
+/* Button border needs its own last word: several button variants set
+   border-color themselves, and .btn's var-with-fallback loses to them. */
+.pb-sec[style*="--pb-btnborder:"] :is(.btn,.btn-primary,.btn-secondary,.btn-dark,.ok-cta){
+  border-color: var(--pb-btnborder) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+}
+
+/* A card may also carry a utility shadow class (.ok-shadow-2xl on the rewards
+   points card). Doubling the class lifts the editor's shadow above it. */
+.pb-sec[style*="--pb-shadow:"] .ok-card.ok-card{ box-shadow:var(--pb-shadow) !important; }
+
+/* Card size: an explicit width, and a floor for the height. Both are opt-in —
+   with nothing set the card keeps whatever the layout gives it. */
+/* an explicit width has to be allowed to exceed the grid cell, otherwise
+   the max-width guard silently caps it back to where it started */
+.pb-sec[style*="--pb-cardw:"] .ok-card{ width:var(--pb-cardw) !important; max-width:none !important; }
+.pb-sec[style*="--pb-cardh:"] .ok-card{ min-height:var(--pb-cardh) !important; }
+
+/* How wide the words are allowed to run before they wrap. Raising it stops a
+   heading breaking onto a second line; lowering it forces a tighter column. */
+.pb-sec[style*="--pb-textw:"] :is(h1,h2,h3,p){ max-width:var(--pb-textw) !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BRAND THEME — where each token actually lands
+   Several of these were declared in the theme screen but never read by any
+   rule, so the control looked live and did nothing: the card radius, both
+   font pickers, the card/header/footer backgrounds. Each one below has a
+   fallback, so a token the client never sets changes nothing.
+   ═══════════════════════════════════════════════════════════════════════ */
+body{
+  font-family: var(--ok-font-body, 'Quicksand', 'Inter', system-ui, sans-serif);
+  font-size: calc(1rem * var(--ok-font-scale, 100) / 100);
+}
+h1, h2, h3, .font-display,
+.ok-display, .ok-h1, .ok-h2, .ok-h3, .ok-title{
+  font-family: var(--ok-font-display, 'Poppins', 'Inter', sans-serif);
+}
+a:not(.btn):not(.chip):not(.nav-link):not(.ok-flink){ color: var(--ok-link, inherit); }
+
+.ok-card{
+  background: var(--ok-card-bg, #fff);
+  border-radius: var(--r-card, var(--r-lg, 1rem));
+}
+.ok-media img, .ok-card img, .ok-media{ border-radius: var(--r-media, 0); }
+.ok-header{ background: var(--ok-header-bg, #fff); }
+.ok-footer{ background: var(--ok-footer-bg, var(--ok-ink, #0E0E0E)); }
+.ok-container{ max-width: var(--ok-container, 1200px); }
+.ok-section{ padding-block: var(--ok-section-space, 3rem); }
+@media (min-width: 768px){
+  .ok-section{ padding-block: var(--ok-section-space, 4.5rem); }
+}
+
+/* Card and image radius: radius.css pins a global --ok-radius with !important,
+   which is right for buttons and fields but meant the card and image radius
+   controls could never show. These read the theme token and fall back to the
+   global one, so nothing changes until the client sets them. */
+.ok-card, .ok-card.ok-card{ border-radius: var(--r-card, var(--ok-radius, 1rem)) !important; }
+.ok-media, .ok-media img, .ok-card > .ok-media{ border-radius: var(--r-media, 0) !important; }
+.ok-band--warm{ background: var(--ok-warm-white, #FCFAF6); }
+
+/* The footer carries .bg-ink, a utility with !important, so the footer-colour
+   control needs the same weight to be able to differ from the ink colour. */
+.ok-footer.ok-footer{ background-color: var(--ok-footer-bg, var(--ok-jet, #141414)) !important; }
+/* Media corners: the card clips its own media, so the rule has to reach the
+   same element the card's own radius rule does. */
+.ok-card .ok-media, .ok-card .ok-media img, .ok-media.ok-media{
+  border-radius: var(--r-media, inherit) !important;
+}

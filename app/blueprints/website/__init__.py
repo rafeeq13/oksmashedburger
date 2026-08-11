@@ -41,9 +41,58 @@ def _menu_context():
     return categories, best
 
 
+
+# Fields that are text a person reads. Everything else in a section's config is
+# a link, a theme name or an image URL, and wrapping those in a <span> would
+# land markup inside an attribute.
+_NON_TEXT = ("_href", "theme", "image", "img")
+
+
+def _editable_cfg(key, cfg):
+    """In edit mode, hand the template values that are already editable spans.
+
+    Home sections read their words out of `cfg`, not out of pc(), which is why
+    they were the one page you could restyle but not rewrite on the page. The
+    registry defaults are merged in first, so a field nobody has overridden yet
+    is editable too — otherwise only already-changed text could be changed.
+    """
+    from flask import request
+    from app.auth import current_user
+    from app.models.page import spec_for, resolved_defaults
+    from markupsafe import Markup, escape
+
+    u = current_user()
+    editing = (bool(request.args.get("edit")) and u is not None
+               and u.role is not None
+               and u.role.name in ("super_admin", "franchise_owner", "store_manager"))
+    if not editing:
+        return cfg
+
+    try:
+        defaults = resolved_defaults(current_app.config.get("BRAND_NAME", "")).get(key, {})
+    except Exception:
+        defaults = {}
+    spec_fields = {f[0] for f in (spec_for(key) or {}).get("fields", [])}
+
+    merged = dict(defaults)
+    merged.update({k: v for k, v in (cfg or {}).items() if v not in (None, "")})
+
+    out = {}
+    for k, v in merged.items():
+        if (k in spec_fields and isinstance(v, str) and v
+                and not any(k.endswith(t) or k == t for t in _NON_TEXT)
+                and not k.startswith("style_")):
+            out[k] = Markup('<span class="ok-ie ok-ie-sc" data-sc="%s" data-scsec="%s"'
+                            ' title="Click to edit">%s</span>'
+                            % (escape(k), escape(key), escape(v)))
+        else:
+            out[k] = v
+    return out
+
 def _render_section(row, key, categories, best, style_of):
     """One home section, wrapped in the same `.pb-sec` shell index.html uses."""
     cfg = (row.config if row else None) or {}
+    cfg = _editable_cfg(key, cfg)
     tpl = ("website/sections/custom.html" if key.startswith("custom_")
            else "website/sections/%s.html" % key)
     try:
@@ -55,7 +104,10 @@ def _render_section(row, key, categories, best, style_of):
         current_app.logger.exception("dynamic section %r failed to render: %s", key, e)
         return ""
     style = style_of(cfg) if style_of else ""
-    return '<div class="pb-sec" data-section="%s" data-sid="%s" data-label="%s"%s>%s</div>' % (
+    # data-page is what the on-page design panel posts back; without it the
+    # panel had no idea which page's section it was styling and every save on
+    # the home page came back 400.
+    return '<div class="pb-sec" data-page="home" data-section="%s" data-sid="%s" data-label="%s"%s>%s</div>' % (
         escape(key), escape(str(row.id) if row else ""), escape(row.label if row else key),
         (' style="%s"' % escape(style)) if style else "", inner)
 

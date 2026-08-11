@@ -4,8 +4,10 @@
 {% block content %}
 {# Sections, order and visibility are managed from the admin Page Builder. #}
 {% for sec in home_sections %}
-  {% set cfg = sec.config or {} %}
-  <div class="pb-sec" data-section="{{ sec.key }}" data-sid="{{ sec.id }}" data-label="{{ sec.label }}" data-enabled="{{ 1 if sec.enabled else 0 }}"{% if pb_edit and not sec.enabled %} data-hidden="1"{% endif %}{% set _s = pb_section_style(cfg) %}{% if _s %} style="{{ _s }}"{% endif %}>
+  {# in edit mode this comes back with every word already wrapped as an
+     editable span, so the home page is rewritten on the page like any other #}
+  {% set cfg = pb_cfg(sec.key, sec.config or {}) %}
+  <div class="pb-sec" data-page="home" data-section="{{ sec.key }}" data-sid="{{ sec.id }}" data-label="{{ sec.label }}" data-enabled="{{ 1 if sec.enabled else 0 }}"{% if pb_edit and not sec.enabled %} data-hidden="1"{% endif %}{% set _s = pb_section_style(cfg) %}{% if _s %} style="{{ _s }}"{% endif %}>
   {% if sec.key.startswith('custom_') %}
     {% include 'website/sections/custom.html' %}
   {% else %}

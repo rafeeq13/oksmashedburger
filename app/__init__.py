@@ -1,9 +1,14 @@
 """Application factory — OK Smashed Burger platform (modular monolith)."""
 import os
+import re
+
 from flask import Flask, render_template, request, session
 
 from .config import get_config
 from .extensions import db, migrate, jwt, limiter
+
+# a plain number, with no unit stuck on the end of it yet
+_BARE_NUMBER = re.compile(r"^-?\d+(\.\d+)?$")
 
 
 def create_app(config_object=None):
@@ -125,11 +130,110 @@ def create_app(config_object=None):
                        ("style_overlay", "--pb-overlay"),
                        # card-level styling (Visual Editor "Cards" controls)
                        ("style_cardbg", "--pb-cardbg"), ("style_cardborder", "--pb-cardborder"),
-                       ("style_cardhead", "--pb-cardhead"), ("style_cardtext", "--pb-cardtext")):
+                       ("style_cardhead", "--pb-cardhead"), ("style_cardtext", "--pb-cardtext"),
+                       # typography beyond the heading font
+                       ("style_bodyfont", "--pb-bodyfont"), ("style_hweight", "--pb-hweight"),
+                       ("style_case", "--pb-case"), ("style_lh", "--pb-lh"),
+                       # accent, overlay tint and button colours
+                       ("style_accent", "--pb-accent"),
+                       ("style_overlaycolor", "--pb-overlaycolor"),
+                       ("style_btnbg", "--pb-btnbg"), ("style_btntext", "--pb-btntext"),
+                       ("style_shadow", "--pb-shadow"),
+                       # text shadow, image treatment, body type, dividers
+                       ("style_imgoverlay", "--pb-imgoverlay"),
+                       ("style_bweight", "--pb-bweight"),
+                       ("style_italic", "--pb-italic"),
+                       ("style_divider", "--pb-divider"),
+                       # a section's own backdrop: picture, how it sits, a
+                       # gradient wash over it, and what happens to photos
+                       ("style_bgsize", "--pb-bgsize"), ("style_bgpos", "--pb-bgpos"),
+                       ("style_bgrepeat", "--pb-bgrepeat"),
+                       ("style_gradfrom", "--pb-gradfrom"), ("style_gradto", "--pb-gradto"),
+                       ("style_graddir", "--pb-graddir"),
+                       ("style_imgfilter", "--pb-imgfilter"),
+                       ("style_link", "--pb-link"), ("style_valign", "--pb-valign"),
+                       ("style_btnborder", "--pb-btnborder"),
+                       # header / footer chrome, and the brand squiggle
+                       ("style_navlink", "--pb-navlink"), ("style_iconcolor", "--pb-iconcolor"),
+                       ("style_squigcolor", "--pb-squigcolor"),
+                       ("style_imgfit", "--pb-imgfit"), ("style_cardcols", "--pb-cardcols"),
+                       # an extra picture the client drops into a section
+                       ("style_xtraborder", "--pb-xtraborder"),
+                       ("style_xtrashadow", "--pb-xtrashadow"),
+                       ("style_xtraalign", "--pb-xtraalign")):
             if cfg.get(k) not in (None, ""):
                 parts.append("%s:%s" % (var, cfg[k]))
-        if cfg.get("style_cardradius") not in (None, ""):
-            parts.append("--pb-cardradius:%spx" % cfg["style_cardradius"])
+        # the ones that carry a unit
+        for k, var, unit in (("style_cardradius", "--pb-cardradius", "px"),
+                             ("style_btnradius", "--pb-btnradius", "px"),
+                             ("style_tracking", "--pb-tracking", "px"),
+                             ("style_hsize", "--pb-hsize", "px"),
+                             ("style_maxw", "--pb-maxw", "px"),
+                             ("style_imgradius", "--pb-imgradius", "px"),
+                             ("style_bsize", "--pb-bsize", "px"),
+                             ("style_hlh", "--pb-hlh", ""),
+                             ("style_cardpad", "--pb-cardpad", "px"),
+                             ("style_cardborderw", "--pb-cardborderw", "px"),
+                             ("style_cardw", "--pb-cardw", "px"),
+                             ("style_cardh", "--pb-cardh", "px"),
+                             ("style_textw", "--pb-textw", "px"),
+                             ("style_minh", "--pb-minh", "px"),
+                             ("style_px", "--pb-px", "px"),
+                             ("style_logoh", "--pb-logoh", "px"),
+                             ("style_squigw", "--pb-squigw", "px"),
+                             # sizing: how tall a picture is, how wide a card
+                             # column gets, and the gap between cards
+                             ("style_imgh", "--pb-imgh", "px"),
+                             ("style_cardminw", "--pb-cardminw", "px"),
+                             ("style_gap", "--pb-gap", "px"),
+                             ("style_xtraw", "--pb-xtraw", "px"),
+                             ("style_xtrah", "--pb-xtrah", "px"),
+                             ("style_xtraradius", "--pb-xtraradius", "px"),
+                             ("style_xtraborderw", "--pb-xtraborderw", "px")):
+            if cfg.get(k) not in (None, ""):
+                # Two things write these keys: Page design saves a bare number,
+                # the on-page panel saves the number with its unit already on
+                # it. Appending blindly produced "28pxpx", which the browser
+                # throws away — the control looked like it did nothing after a
+                # reload. Only add the unit when the value is still just a
+                # number.
+                raw = str(cfg[k]).strip()
+                parts.append("%s:%s" % (var, raw + unit if _BARE_NUMBER.match(raw) else raw))
+        # ── text shadow, composed ──────────────────────────────────
+        # "none" has to emit something. Several sections carry a built-in
+        # shadow (the home hero stacks four of them), and saying nothing here
+        # left that shadow in place, so choosing No shadow appeared to do
+        # nothing at all.
+        side = (cfg.get("style_tsside") or "").strip()
+        if side == "none":
+            parts.append("--pb-textshadow:none")
+        elif side:
+            try:
+                dist = int(float(cfg.get("style_tsdist") or 2))
+            except (TypeError, ValueError):
+                dist = 2
+            try:
+                blur = int(float(cfg.get("style_tsblur") or 4))
+            except (TypeError, ValueError):
+                blur = 4
+            col = (cfg.get("style_tscolor") or "rgba(0,0,0,.5)").strip()
+            offsets = {
+                "top":    [(0, -dist)],
+                "bottom": [(0, dist)],
+                "left":   [(-dist, 0)],
+                "right":  [(dist, 0)],
+                "all":    [(0, -dist), (0, dist), (-dist, 0), (dist, 0)],
+            }.get(side, [(0, dist)])
+            parts.append("--pb-textshadow:%s" % ", ".join(
+                "%dpx %dpx %dpx %s" % (x, y, blur, col) for x, y in offsets))
+
+        if cfg.get("style_bgimage") not in (None, ""):
+            # strip the edit-mode tag so it never lands in the saved CSS
+            _u = str(cfg["style_bgimage"]).split("#ie=")[0]
+            parts.append("--pb-bgimage:url('%s')" % _u.replace("'", "%27"))
+        if cfg.get("style_xtraimg") not in (None, ""):
+            _x = str(cfg["style_xtraimg"]).split("#ie=")[0]
+            parts.append("--pb-xtraimg:url('%s')" % _x.replace("'", "%27"))
         if cfg.get("style_pt") not in (None, ""):
             parts.append("padding-top:%spx" % cfg["style_pt"])
         if cfg.get("style_pb") not in (None, ""):
@@ -139,6 +243,53 @@ def create_app(config_object=None):
         return ";".join(parts)
 
     app.jinja_env.globals["pb_section_style"] = pb_section_style
+
+    def pb_cfg(key, cfg):
+        """Section config, with its words already editable when ?edit=1."""
+        from .blueprints.website import _editable_cfg
+        try:
+            return _editable_cfg(key, cfg)
+        except Exception:
+            return cfg or {}
+
+    app.jinja_env.globals["pb_cfg"] = pb_cfg
+
+    def google_fonts_link():
+        """<link> for the webfonts this site's sections actually ask for.
+
+        Loading all two dozen families on every page would cost more than the
+        whole stylesheet, so only the ones in use are fetched. The three brand
+        faces are always included because the base design uses them.
+        """
+        from .models.page import PageSection
+        from .models.site import SiteSetting  # noqa: F401  (kept for symmetry)
+        from .blueprints.admin import CANVAS_FONTS
+
+        by_stack = {f[0]: f[2] for f in CANVAS_FONTS if f[2]}
+        wanted = {"Quicksand:wght@400;500;600;700",
+                  "Poppins:wght@400;500;600;700;800;900",
+                  "Inter:wght@300;400;500;600;700;800"}
+        # only this page's sections — otherwise a face picked for Contact would
+        # be downloaded on the home page too, for nothing
+        from .models.page import INNER_PAGES
+        path = (request.path or "/").rstrip("/") or "/"
+        page_key = "home" if path == "/" else next(
+            (p["page"] for p in INNER_PAGES if p["url"].rstrip("/") == path), None)
+        try:
+            rows = (PageSection.query.filter_by(page=page_key).all() if page_key
+                    else [])
+            for row in rows:
+                cfg = row.config or {}
+                for key in ("style_font", "style_bodyfont"):
+                    fam = by_stack.get(cfg.get(key) or "")
+                    if fam:
+                        wanted.add(fam)
+        except Exception:
+            pass                       # a missing table must not break the page
+        q = "&".join("family=" + f for f in sorted(wanted))
+        return ("https://fonts.googleapis.com/css2?" + q + "&display=swap")
+
+    app.jinja_env.globals["google_fonts_link"] = google_fonts_link
 
     def pb_page_style(page, key):
         """Inline style for an inner-page section. Same contract as
@@ -227,8 +378,32 @@ def create_app(config_object=None):
         user = current_user()
         favorite_ids = {f.product_id for f in user.favorites} if user else set()
         from .models.site import SiteSetting, SITE_IMAGE_DEFAULTS, features_from
+        from .blueprints.admin import (CANVAS_FONT_CHOICES, CANVAS_WEIGHTS,
+                                       CANVAS_CASES, SHADOW_CHOICES,
+                                       TSSIDE_CHOICES, ITALIC_CHOICES,
+                                       BGSIZE_CHOICES, BGPOS_CHOICES,
+                                       GRADDIR_CHOICES, FILTER_CHOICES,
+                                       VALIGN_CHOICES, IMGFIT_CHOICES,
+                                       COLS_CHOICES, XTRAPOS_CHOICES,
+                                       XTRAALIGN_CHOICES)
         from .models.page import BuilderPage, page_content_defaults
         site = {s.key: s.value for s in SiteSetting.query.all() if s.value}
+
+        class _Marked(dict):
+            """In edit mode, hand back the URL with the slot key tagged on.
+
+            Every picture on the site comes out of one of these two dicts, so
+            tagging them here means the on-page editor can identify any image
+            without a single template being touched. The tag is a URL fragment,
+            which a browser ignores when it fetches the image.
+            """
+            def get(self, key, default=None):
+                val = dict.get(self, key, default)
+                if val and isinstance(val, str) and (key.endswith("_img")
+                                                     or key.startswith("brand_")
+                                                     or key.endswith("_poster")):
+                    return "%s#ie=%s" % (val, key)
+                return val
 
         # Admin-editable page copy. Templates call pc('key') instead of
         # repeating the default inline: the default then lives ONLY in
@@ -281,19 +456,27 @@ def create_app(config_object=None):
             "logo_url": _asset("brand_logo", "img/logo.png"),
             "favicon_url": _asset("brand_favicon", "img/favicon.ico"),
             "app_icon_url": _asset("brand_app_icon", "img/logo-icon.png"),
-            "site": site,
+            "site": (_Marked(site) if _inline else site),
             "pc": pc,
             "pc_attr": pc_attr,
             "inline_edit": _inline,
-            "site_defaults": SITE_IMAGE_DEFAULTS,
+            "canvas_fonts": CANVAS_FONT_CHOICES, "canvas_weights": CANVAS_WEIGHTS,
+            "canvas_cases": CANVAS_CASES, "canvas_shadows": SHADOW_CHOICES,
+            "canvas_tssides": TSSIDE_CHOICES, "canvas_italics": ITALIC_CHOICES,
+            "canvas_bgsizes": BGSIZE_CHOICES, "canvas_bgposes": BGPOS_CHOICES,
+            "canvas_graddirs": GRADDIR_CHOICES, "canvas_filters": FILTER_CHOICES,
+            "canvas_valigns": VALIGN_CHOICES,
+            "canvas_imgfits": IMGFIT_CHOICES, "canvas_colss": COLS_CHOICES,
+            "canvas_xtraposes": XTRAPOS_CHOICES, "canvas_xtraaligns": XTRAALIGN_CHOICES,
+            "site_defaults": (_Marked(SITE_IMAGE_DEFAULTS) if _inline else SITE_IMAGE_DEFAULTS),
             "features": feats,
             "nav_links": [n for n in [
-                {"label": "Menu", "href": "/menu", "hot": False},
-                {"label": "Deals", "href": "/deals", "hot": True, "feature": "deals"},
-                {"label": "Catering", "href": "/catering", "hot": False},
-                {"label": "Locations", "href": "/locations", "hot": False},
-                {"label": "About Us", "href": "/about", "hot": False},
-                {"label": "More", "href": more_children[0]["href"] if more_children else "/contact",
+                {"label": pc("nav_menu"), "href": "/menu", "hot": False},
+                {"label": pc("nav_deals"), "href": "/deals", "hot": True, "feature": "deals"},
+                {"label": pc("nav_catering"), "href": "/catering", "hot": False},
+                {"label": pc("nav_locations"), "href": "/locations", "hot": False},
+                {"label": pc("nav_about"), "href": "/about", "hot": False},
+                {"label": pc("nav_more"), "href": more_children[0]["href"] if more_children else "/contact",
                  "hot": False, "children": more_children},
             ] if feats.get(n.get("feature"), True) and n.get("children") != []],
             "all_stores": stores,

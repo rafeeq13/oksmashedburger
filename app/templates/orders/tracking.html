@@ -65,7 +65,7 @@
       <div class="ok-grid ok-grid-lg-3 ok-gap-3 ok-mt-3">
         {% if order.order_type == 'delivery' %}
         <div class="ok-gridco-span2span2-lg ok-card overflow-hidden">
-          <div class="position-relative ok-ar-169">{% if site.get('tracking_map_img') %}<img src="{{ site.get('tracking_map_img') }}" alt="Live driver location" class="ph-img">{% else %}<img data-ph="Live driver location" data-ph-type="map" data-ph-ratio="16/9" class="ph-img" alt="">{% endif %}</div>
+          <div class="position-relative ok-ar-169">{% if site.get('tracking_map_img') %}<img src="{{ site.get('tracking_map_img') }}" alt="Live driver location" class="ph-img">{% else %}<img data-ph="Live driver location" data-ph-type="map" data-ph-ratio="16/9" class="ph-img" alt="" data-ie-slot="tracking_map_img">{% endif %}</div>
           <div class="ok-p-3">
             {% if order.delivery %}
               {% if order.delivery.method == 'own' and order.delivery.driver %}

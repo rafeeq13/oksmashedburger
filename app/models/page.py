@@ -204,6 +204,22 @@ PAGE_CONTENT = [
         ("footer_instagram_url", "Instagram link", "#"),
         ("footer_facebook_url", "Facebook link", "#"),
         ("footer_youtube_url", "YouTube link", "#")]},
+    {"key": "chrome", "label": "Navigation & pop-ups", "url": "/", "fields": [
+        ("nav_menu", "Nav — Menu", "Menu"),
+        ("nav_deals", "Nav — Deals", "Deals"),
+        ("nav_catering", "Nav — Catering", "Catering"),
+        ("nav_locations", "Nav — Locations", "Locations"),
+        ("nav_about", "Nav — About", "About Us"),
+        ("nav_more", "Nav — More", "More"),
+        ("modal_size_label", "Item sheet — size heading", "Choose a size"),
+        ("modal_addons_label", "Item sheet — add-ons heading", "Add-ons"),
+        ("modal_notes_label", "Item sheet — notes heading", "Special instructions"),
+        ("modal_notes_ph", "Item sheet — notes placeholder", "No pickles, extra sauce…"),
+        ("modal_add_label", "Item sheet — button", "Add to cart"),
+        ("modal_soldout", "Item sheet — sold out", "Sold out at this store right now."),
+        ("loc_modal_heading", "Location picker — heading", "Find your store"),
+        ("loc_modal_text", "Location picker — sub-text",
+         "Enter your address to see the nearest location.", "area")]},
     {"key": "newspage", "label": "News page copy", "url": "/news", "fields": [
         ("news_grid_heading", "Story grid heading", "More stories"),
         ("news_grid_cta_label", "Story grid button", "See the menu"),
@@ -394,6 +410,17 @@ def home_sections_ordered():
 # same .pb-sec shell the home page uses, so the Visual Editor can restyle any
 # of them. `page` matches PageSection.page; `key` matches PageSection.key.
 INNER_PAGES = [
+    {"page": "menu", "label": "Menu", "url": "/menu", "sections": [
+        {"key": "store_bar", "label": "Store & order-type bar"},
+        {"key": "menu_list", "label": "The menu itself"},
+    ]},
+    {"page": "cart", "label": "Cart", "url": "/cart", "sections": [
+        {"key": "cart_body", "label": "Cart"},
+    ]},
+    {"page": "locations", "label": "Locations", "url": "/locations", "sections": [
+        {"key": "locations_body", "label": "Store list"},
+    ]},
+
     {"page": 'about', "label": 'About', "url": '/about', "sections": [
         {"key": '1_hero', "label": '1. Hero'},
         {"key": '2_as_seen_in', "label": '2. As Seen In'},

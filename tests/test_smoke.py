@@ -354,10 +354,22 @@ def test_every_inner_page_section_is_styleable(app):
     from app.models.page import INNER_PAGES, PageSection
     c = admin_client(app)
     with app.app_context():
-        assert len(INNER_PAGES) == 9
+        # every page the admin can restyle — the nine content pages plus the
+        # three whose content is live data (menu, cart, locations)
+        assert len(INNER_PAGES) == 12
         for spec in INNER_PAGES:
             html = c.get(spec["url"], follow_redirects=True).get_data(as_text=True)
-            assert html.count('class="pb-sec"') == len(spec["sections"]), spec["page"]
+            # the page's own sections, plus the header and footer every page
+            # shares. The menu also emits one per live category, which is data
+            # rather than registry, so it is a floor there rather than a count.
+            floor = len(spec["sections"]) + 2
+            found = html.count('class="pb-sec"')
+            if spec["page"] == "menu":
+                assert found >= floor, "%s: %d < %d" % (spec["page"], found, floor)
+            else:
+                assert found == floor, "%s: %d != %d" % (spec["page"], found, floor)
+            assert 'data-section="header"' in html, spec["page"]
+            assert 'data-section="footer"' in html, spec["page"]
 
         try:
             c.post("/admin/design/careers/why_work_here", data={
@@ -393,9 +405,29 @@ def test_inline_editing_is_admin_only_and_saves(app):
     # does not "fail" this test for doing exactly what it is meant to do.
     from app.models.page import PAGE_CONTENT
     by_key = {p["key"]: p for p in PAGE_CONTENT}
-    expected = len(by_key["about"]["fields"]) + sum(
-        1 for f in by_key["footer"]["fields"] if not f[0].endswith("_url"))
-    assert page.count('class="ok-ie"') == expected
+
+    def text_fields(key):
+        """Fields that render as words, so they become editable spans.
+
+        A field whose value lands in an href is read with pc_attr and stays a
+        plain string — wrapping it would put markup inside an attribute.
+        """
+        return [f for f in by_key[key]["fields"]
+                if not f[0].endswith("_url") and not f[0].endswith("_href")
+                and not f[0].endswith("_ph")]
+
+    # the page's own copy, plus the footer and the chrome. The item sheet's
+    # labels are in the chrome group too, but that sheet is fetched separately
+    # when someone opens it, so it is not in this page's HTML.
+    chrome = [f for f in text_fields("chrome") if not f[0].startswith("modal_")]
+    # a nav label is on the page twice: the desktop bar and the mobile drawer
+    # both render it, and editing either saves the same setting
+    nav = [f for f in chrome if f[0].startswith("nav_")]
+    expected = (len(text_fields("about")) + len(text_fields("footer"))
+                + len(chrome) + len(nav))
+    assert page.count('class="ok-ie"') == expected, (
+        "expected %d editable strings, found %d"
+        % (expected, page.count('class="ok-ie"')))
     # and the public HTML stays clean when the flag is absent
     assert 'class="ok-ie"' not in c.get("/about").get_data(as_text=True)
 

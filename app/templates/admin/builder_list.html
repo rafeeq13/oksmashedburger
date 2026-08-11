@@ -34,11 +34,32 @@
     <form method="post" action="/admin/builder/new{{ qs }}" class="d-flex align-items-center gap-2">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <select name="override" class="ok-input py-2 ok-fs-sm ok-w-40">
-        {% for path, label, tpl in overridable %}<option value="{{ path }}">{{ label }} ({{ path }})</option>{% endfor %}
+        {% for path, label, tpl, live in overridable %}<option value="{{ path }}"{% if live %} data-live="1"{% endif %}>{{ label }} ({{ path }}){% if live %} — live data{% endif %}</option>{% endfor %}
       </select>
-      <button class="btn btn-secondary btn-sm flex-shrink-0"><i class="fa-solid fa-wand-magic-sparkles"></i> Rebuild page</button>
+      <button class="btn btn-secondary btn-sm flex-shrink-0"
+              onclick="var o=this.form.override.options[this.form.override.selectedIndex];
+                return confirm((o.dataset.live ? 'THIS PAGE SHOWS LIVE DATA.
+
+Rebuilding freezes today's menu / store list / cart into fixed HTML — it will stop updating when the data changes.
+
+' : '')
+                  + 'Rebuilding takes a copy of that page as it looks right now and serves the copy from then on.
+
+That page will STOP following the rest of the admin: its pictures in Site images, its wording in Pages, and its lists all freeze as they are today.
+
+You can hand the page back at any time with “Restore original”.
+
+Continue?');">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Rebuild page
+      </button>
     </form>
   </div>
+  <p class="ok-fs-xs text-muted-warm mt-2 mb-0">
+    <i class="fa-solid fa-triangle-exclamation text-gold"></i>
+    A rebuilt page becomes a fixed copy — it no longer picks up images, text or lists from
+    the rest of the admin. To restyle a page <b>and</b> keep it connected, use
+    <a href="/admin/canvas{{ qs }}" class="link-underline">Pages</a> instead.
+  </p>
 </div>
 {% endif %}
 <p class="text-muted-warm ok-fs-sm ok-mb-5 -mt-3"><i class="fa-solid fa-circle-info"></i> <b>Edit home page</b> builds your site's <code class="ok-fs-xs">/</code> home in the drag-drop builder, pre-loaded with your current sections (menu, best-sellers, locations, …) as live blocks you can reorder, restyle and add buttons/forms around.</p>
@@ -63,6 +84,19 @@
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <button class="btn btn-secondary btn-sm" title="Duplicate"><i class="fa-solid fa-clone"></i></button>
       </form>
+      {% if p.override_path %}
+      <form method="post" action="/admin/builder/{{ p.id }}/meta{{ qs }}"
+            onsubmit="return confirm('Give {{ p.override_path }} back to the website? Your built copy is kept — it just stops replacing the real page, which starts following the admin again.')">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="detach_override" value="1">
+        <input type="hidden" name="title" value="{{ p.title }}">
+        <input type="hidden" name="slug" value="{{ p.slug }}">
+        <input type="hidden" name="published" value="1">
+        <button class="btn btn-secondary btn-sm text-nowrap" title="Stop replacing {{ p.override_path }}">
+          <i class="fa-solid fa-rotate-left"></i> Restore original
+        </button>
+      </form>
+      {% endif %}
       <form method="post" action="/admin/builder/{{ p.id }}/delete{{ qs }}" onsubmit="return confirm('Delete this page?')">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <button class="btn btn-secondary btn-sm text-ok-red" title="Delete"><i class="fa-solid fa-trash"></i></button>

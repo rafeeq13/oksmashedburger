@@ -20,6 +20,38 @@
     {% elif kind == 'opacity' %}
     <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="1" step="0.05"
            placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'image' %}
+    <span class="d-flex flex-column gap-1">
+      <input type="text" name="{{ key }}" value="{{ val }}" placeholder="Paste an image link"
+             class="ok-input ok-fs-xs w-100">
+      <input type="file" name="{{ key }}_file" accept="image/*" class="ok-input ok-fs-xs w-100"
+             aria-label="{{ label }} — upload">
+    </span>
+    {% elif kind in ('shadow', 'tsside', 'italic', 'bgsize', 'bgpos', 'graddir', 'filter', 'valign', 'imgfit', 'cols', 'xtrapos', 'xtraalign') %}
+    {% set _opts = shadows if kind == 'shadow' else tssides if kind == 'tsside'
+                   else italics if kind == 'italic' else bgsizes if kind == 'bgsize'
+                   else bgposes if kind == 'bgpos' else graddirs if kind == 'graddir'
+                   else filters if kind == 'filter' else valigns if kind == 'valign'
+                   else imgfits if kind == 'imgfit' else colss if kind == 'cols'
+                   else xtraposes if kind == 'xtrapos' else xtraaligns %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      {% for v, lbl in _opts %}<option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>{% endfor %}
+    </select>
+    {% elif kind == '__unused' %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      {% for v, lbl in (shadows if kind == 'shadow' else textshadows if kind == 'textshadow' else italics) %}
+      <option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>{% endfor %}
+    </select>
+    {% elif kind == '__old_shadow' %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      {% for v, lbl in shadows %}<option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>{% endfor %}
+    </select>
+    {% elif kind in ('font', 'weight', 'case') %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      {% for v, lbl in (fonts if kind == 'font' else weights if kind == 'weight' else cases) %}
+      <option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
     {% elif kind == 'align' %}
     <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
       <option value="">Default</option>
@@ -60,6 +92,11 @@
   <a href="/admin/canvas{{ qs }}"
      class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40">
     <i class="fa-solid fa-house"></i> Home
+  </a>
+  <a href="/admin/design?page=site{{ '&store=' ~ request.args.get('store') if request.args.get('store') }}"
+     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border
+            {{ 'bg-ink text-white border-ink' if page == 'site' else 'bg-white text-ink border-ink-10 ok-hov-border-ink-40' }}">
+    <i class="fa-solid fa-file-lines"></i> Footer &amp; shared
   </a>
   {% for p in pages %}
   <a href="/admin/design?page={{ p.page }}"
@@ -104,6 +141,9 @@
     </article>
     {% endif %}
 
+    {% if not sections and page == 'site' %}
+    <p class="ok-fs-sm text-muted-warm">This is the copy that is not tied to one page. Everything else lives on the page it belongs to.</p>
+    {% endif %}
     {% for s in sections %}
     <article class="ok-card ok-p-3" id="s-{{ s.key }}">
       <div class="d-flex align-items-center justify-content-between ok-gap-3 ok-mb-3">
@@ -120,7 +160,7 @@
         {% endif %}
       </div>
 
-      <form method="post" action="/admin/design/{{ page }}/{{ s.key }}"
+      <form method="post" action="/admin/design/{{ page }}/{{ s.key }}" enctype="multipart/form-data"
             class="ok-grid ok-grid-sm-3 ok-gap-3 ok-design-form">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% for f in fields %}{{ control(f, s.config) }}{% endfor %}
