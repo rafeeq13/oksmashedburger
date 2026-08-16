@@ -84,6 +84,15 @@ Continue?');">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <button class="btn btn-secondary btn-sm" title="Duplicate"><i class="fa-solid fa-clone"></i></button>
       </form>
+      {% if p.id in frozen_home %}
+      <form method="post" action="/admin/builder/{{ p.id }}/detach-home{{ qs }}"
+            onsubmit="return confirm('Hand the home page back to its sections?\n\nRight now this built page owns / on its own, so switching a section off, reordering or editing it on the page has no effect. What you built here is kept as a draft copy, and your words and pictures live in the sections either way.')">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <button class="btn btn-secondary btn-sm text-nowrap" title="Give / back to the section system">
+          <i class="fa-solid fa-rotate-left"></i> Restore sections
+        </button>
+      </form>
+      {% endif %}
       {% if p.override_path %}
       <form method="post" action="/admin/builder/{{ p.id }}/meta{{ qs }}"
             onsubmit="return confirm('Give {{ p.override_path }} back to the website? Your built copy is kept — it just stops replacing the real page, which starts following the admin again.')">

@@ -170,7 +170,7 @@
           {% if store and store.can_order %}
           <button type="submit" class="btn btn-primary btn-block btn-lg ok-btn-invert"><span data-total-btn>Place order · ${{ '%.2f'|format(summary.total) }}</span></button>
           {% else %}
-          <button type="button" disabled class="btn btn-block btn-lg !bg-white/15 !text-white/60 cursor-not-allowed"><i class="fa-solid fa-lock"></i> Store closed</button>
+          <button type="button" disabled class="btn btn-block btn-lg bg-w-15 text-w-60 cursor-not-allowed"><i class="fa-solid fa-lock"></i> Store closed</button>
           {% endif %}
         </div>
       </div>

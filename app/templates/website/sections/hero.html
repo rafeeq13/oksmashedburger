@@ -18,7 +18,11 @@
 
           <h1 class="ok-hero-title font-display ok-mw-xl" data-hero-title>{{ (cfg.get('slide' ~ loop.index ~ '_title') or s.title)|safe }}</h1>
 
-          <h4 class="ok-hero-sub" data-hero-text>{{ cfg.get('slide' ~ loop.index ~ '_text') or s.text }}</h4>
+          {# A paragraph, not an h4: this is the hero's supporting line, not a
+             heading below the h1. It looked like a heading only because the
+             tag was carrying the styling — .ok-hero-sub carries all of it now,
+             so the semantics are honest and the look is unchanged. #}
+          <p class="ok-hero-sub" data-hero-text>{{ cfg.get('slide' ~ loop.index ~ '_text') or s.text }}</p>
 
           <svg viewBox="0 0 80 10" class="ok-hero-rule d-none" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-hero-rule><path d="M3 7 L11 3 L19 7 L27 3 L35 7 L43 3 L51 7 L59 3 L67 7 L75 3"/></svg>
 

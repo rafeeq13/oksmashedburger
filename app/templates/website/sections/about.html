@@ -15,7 +15,7 @@
 <h2 class="ok-title ok-mt-3" data-reveal="up" data-reveal-delay="0.06">{{ (cfg.get('heading') or ('Learn all about the ' ~ brand_name ~ ' magic'))|safe }}</h2>
       <span class="ok-squiggle ok-squiggle--left" aria-hidden="true" data-reveal="up" data-reveal-delay="0.1"></span>
       <p class="ok-subtitle" data-reveal="up" data-reveal-delay="0.14">{{ cfg.get('subheading') or (brand_name ~ ' is a fast-casual smash-burger concept built on a simple belief: people deserve something better. Quality ingredients, cooked to order, handcrafted, consistent, and served with a smile.') }}</p>
-      <p class="ok-subtitle !mt-4" data-reveal="up" data-reveal-delay="0.18">{{ cfg.get('body2') or "We're obsessed with the details, that's why we smash every patty fresh on the flat-top, toast our buns, make our sauces in-house, and never let a burger sit. Delivery or pickup, you get the same OK-good burger every time." }}</p>
+      <p class="ok-subtitle !mt-4 pb-t-body" data-reveal="up" data-reveal-delay="0.18">{{ cfg.get('body2') or "We're obsessed with the details, that's why we smash every patty fresh on the flat-top, toast our buns, make our sauces in-house, and never let a burger sit. Delivery or pickup, you get the same OK-good burger every time." }}</p>
       <div class="ok-mt-9" data-elw="btn" data-reveal="up" data-reveal-delay="0.22"{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
         <a href="{{ cfg.get('cta_href') or '/about' }}" data-el="btn" class="btn btn-primary btn-lg"{% set _bs = pb_btn_style(cfg) %}{% if _bs %} style="{{ _bs }}"{% endif %}>{{ cfg.get('cta_text') or 'Know us better' }} <i class="fa-solid fa-arrow-right"></i></a>
       </div>

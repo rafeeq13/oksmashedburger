@@ -2,7 +2,7 @@
 {% block title %}Settings, {{ brand_name }}{% endblock %}
 
 {% block admin %}
-<h2 class="ok-h2 mb-1">Delivery &amp; store settings{{ ', ' ~ s.name if s else '' }}</h2>
+<h2 class="ok-h2 mb-1">Store settings{{ ', ' ~ s.name if s else '' }}</h2>
 <p class="text-muted-warm ok-fs-sm ok-mb-5">Delivery zones with radius pricing, general operations and opening hours for this location.</p>
 
 <div data-tab-group>
@@ -10,7 +10,7 @@
   <div class="seg-tabs mb-4">
     <button type="button" data-tab="zones"   class="seg-tab is-active">Delivery Zones</button>
     <button type="button" data-tab="general" class="seg-tab">General Settings</button>
-    <button type="button" data-tab="hours"   class="seg-tab">Delivery Hours</button>
+    <button type="button" data-tab="hours"   class="seg-tab">Opening hours</button>
   </div>
 
   <!-- ============================================================ -->
@@ -229,12 +229,23 @@
 </div>
 
 <script>
-  // Open the tab matching the URL hash (#zones / #general / #hours) after a save-redirect.
+  /* Open the tab named in the URL (#zones / #general / #hours) — after a save,
+     and when something links straight to it. On DOMContentLoaded, not inline:
+     app.js is deferred, so clicking the tab any earlier fires before the
+     handler that switches tabs even exists, and the click does nothing. */
   (function () {
-    var h = (location.hash || '').replace('#', '');
-    if (!h) return;
-    var btn = document.querySelector('[data-tab-group] [data-tab="' + h + '"]');
-    if (btn) btn.click();
+    function openFromHash() {
+      var h = (location.hash || '').replace('#', '');
+      if (!h) return;
+      var btn = document.querySelector('[data-tab-group] [data-tab="' + h + '"]');
+      if (btn) btn.click();
+    }
+    // on load, not DOMContentLoaded: this script is parsed before the deferred
+    // app.js, so its own DOMContentLoaded handler would run first and the click
+    // would land before anything is listening for it
+    if (document.readyState === 'complete') openFromHash();
+    else window.addEventListener('load', openFromHash);
+    window.addEventListener('hashchange', openFromHash);
   })();
 </script>
 {% endblock %}

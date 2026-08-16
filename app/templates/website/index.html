@@ -18,7 +18,10 @@
 {% endblock %}
 
 {% block scripts %}
-{% if needs_location %}
+{# A first-time visitor is asked which shop they want. Not while the page is
+   being designed, though: in the Visual editor's preview and in edit mode the
+   picker opens over the whole page and there is nothing to design behind it. #}
+{% if needs_location and not pb_edit and not inline_edit %}
 <script>window.addEventListener("load", function () { if (window.OK && OK.openLocation) OK.openLocation(); });</script>
 {% endif %}
 {# Hero carousel is initialised in app.js (works on this page and builder pages,

@@ -32,7 +32,7 @@
           <span class="badge badge-yellow">{{ lead.tag }}</span>
           <span class="ok-fs-xs text-muted-warm">{{ lead.date }}</span>
         </div>
-        <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl ok-lh-tight ok-mb-3">{{ lead.title }}</h2>
+        <h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-3xl ok-lh-tight ok-mb-3 pb-t-cardtitle">{{ lead.title }}</h2>
         <p class="text-muted-warm ok-mb-3">{{ lead.excerpt }}</p>
         {% if lead.link %}<a href="{{ lead.link }}" class="d-inline-flex align-items-center gap-2 ok-fs-xs fw-bold text-uppercase tracking-wide w-max">{{ pc('news_readmore_label') }} <i class="fa-solid fa-arrow-right"></i></a>{% endif %}
       </div>

@@ -6,28 +6,40 @@
    nothing". Every selector matches on "--pb-x:" including the colon, so a
    longer variable (--pb-bgimage) can never trigger a shorter one's rule. */
 
-.pb-sec[style*="--pb-cardbg:"] .ok-card{
+/* The three kinds of card: the tiles, the location cards and the
+   Google review cards. Only the first was named here, so every Cards
+   control was dead on the Locations section and on the reviews. */
+.pb-sec[style*="--pb-cardbg:"] :is(.ok-card,.ok-loccard,.ok-gcard){
   background-color: var(--pb-cardbg) !important;
 }
-.pb-sec[style*="--pb-cardbg:"] .ok-card>div:not(.ok-media){
+.pb-sec[style*="--pb-cardbg:"] :is(.ok-card,.ok-loccard,.ok-gcard)>div:not(.ok-media){
   background-color: transparent !important;
 }
-.pb-sec[style*="--pb-cardborder:"] .ok-card{
+.pb-sec[style*="--pb-cardborder:"] :is(.ok-card,.ok-loccard,.ok-gcard){
   border-color: var(--pb-cardborder) !important;
 }
-.pb-sec[style*="--pb-cardhead:"] .ok-card :is(h1, h2, h3, h4){
+.pb-sec[style*="--pb-cardhead:"] :is(.ok-card,.ok-loccard,.ok-gcard) :is(h1, h2, h3, h4){
   color: var(--pb-cardhead) !important;
 }
-.pb-sec[style*="--pb-cardtext:"] .ok-card :is(p, li, span:not([style]):not([class*="badge"])){
+/* Card text means the card's copy. It used to repaint the price beside it
+   as well, and it outranked the price's own colour, so "Price / caption"
+   looked broken on any section whose cards had been coloured. */
+.pb-sec[style*="--pb-cardtext:"] :is(.ok-card,.ok-loccard,.ok-gcard) :is(p, li, span:not([style]):not([class*="badge"])):not(:is(.ok-hint,.ok-stat,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.ok-gcard-when)):not([class*="pb-t-"]){
   color: var(--pb-cardtext) !important;
 }
-.pb-sec[style*="--pb-cardradius:"] .ok-card{
+.pb-sec[style*="--pb-cardradius:"] :is(.ok-card,.ok-loccard,.ok-gcard){
   border-radius: var(--pb-cardradius) !important;
 }
 .pb-sec[style*="--pb-bg:"] > section{ background-color:var(--pb-bg) !important; background-image:none !important; }
 .pb-sec[style*="--pb-hcolor:"] :is(h1,h2,h3){ color:var(--pb-hcolor) !important; }
 .pb-sec[style*="--pb-tcolor:"] :is(p,li){ color:var(--pb-tcolor) !important; }
 .pb-sec[style*="--pb-font:"] :is(h1,h2,h3){ font-family:var(--pb-font) !important; }
+/* The overlay is a tint, never a target. It covers the whole section, so
+   without this it caught every click on a hero photo: on the page that meant
+   nothing happened, and in the editor it counted as clicking a bare div, which
+   pointed the text controls at "Price / caption". The veil and the grain
+   alongside it always had this. */
+.pb-overlay{ pointer-events:none; }
 .pb-sec[style*="--pb-overlay:"] .pb-overlay{ opacity:var(--pb-overlay) !important; }
 .pb-sec[style*="--pb-bodyfont:"] :is(p,li,span,a,label,input,textarea,button){ font-family:var(--pb-bodyfont) !important; }
 .pb-sec[style*="--pb-hweight:"] :is(h1,h2,h3){ font-weight:var(--pb-hweight) !important; }
@@ -55,11 +67,22 @@
 .pb-sec[style*="--pb-maxw:"] .ok-container{ max-width:var(--pb-maxw) !important; }
 /* Reaches every piece of type in the section, not just h1-h3: the hero titles,
    kickers and eyebrows carry their own built-in shadows, and "No shadow" has to
-   clear those too or the control looks broken. */
+   clear those too or the control looks broken.
+
+   Two of those three declarations are about the hero specifically. Its type is
+   painted by a gradient clipped to the glyphs, and that treatment (premium.css)
+   sets `text-shadow:none` and puts the real shadow in a `filter: drop-shadow`
+   instead — so a text-shadow set here painted underneath the fill where nobody
+   could see it, and the shadow the client wanted rid of was not a text-shadow
+   at all. Once they choose a shadow, the fill follows the text colour and the
+   built-in drop-shadow steps aside, so both "add one" and "take it away" do
+   what they say. */
 .pb-sec[style*="--pb-textshadow:"] :is(h1,h2,h3,h4,h5,h6,p,li,span,a,
   .ok-hero-title,.ok-hero-sub,.ok-hero-kicker,.ok-display,.ok-title,.ok-eyebrow,
   .ok-h1,.ok-h2,.ok-h3,.ok-subtitle,.ok-card-title,.ok-card-text){
   text-shadow:var(--pb-textshadow) !important;
+  -webkit-text-fill-color:currentColor !important;
+  filter:none !important;
 }
 .pb-sec[style*="--pb-imgoverlay:"] :is(.ok-media,.ok-ar-1610,.ph-img,img){ position:relative; }
 .pb-sec[style*="--pb-imgoverlay:"] :is(.ok-media,.ok-ar-1610)::after{
@@ -87,10 +110,12 @@
 }
 .pb-sec[style*="--pb-gradfrom:"] > section > *{ position:relative; z-index:1; }
 .pb-sec[style*="--pb-imgfilter:"] img{ filter:var(--pb-imgfilter) !important; }
-.pb-sec[style*="--pb-link:"] a:not(.btn):not(.chip){ color:var(--pb-link) !important; }
+/* Links inside the words. Navigation has its own colour control, and this
+   one used to beat it in the header and the footer. */
+.pb-sec[style*="--pb-link:"] a:not(.btn):not(.chip):not(.nav-link):not(.ok-flink):not(:is(.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order)){ color:var(--pb-link) !important; }
 .pb-sec[style*="--pb-hlh:"] :is(h1,h2,h3){ line-height:var(--pb-hlh) !important; }
-.pb-sec[style*="--pb-cardpad:"] .ok-card > :not(.ok-media){ padding:var(--pb-cardpad) !important; }
-.pb-sec[style*="--pb-cardborderw:"] .ok-card{ border-width:var(--pb-cardborderw) !important; border-style:solid; }
+.pb-sec[style*="--pb-cardpad:"] :is(.ok-card,.ok-loccard,.ok-gcard) > :not(.ok-media){ padding:var(--pb-cardpad) !important; }
+.pb-sec[style*="--pb-cardborderw:"] :is(.ok-card,.ok-loccard,.ok-gcard){ border-width:var(--pb-cardborderw) !important; border-style:solid; }
 .pb-sec[style*="--pb-minh:"] > section{ min-height:var(--pb-minh) !important; }
 .pb-sec[style*="--pb-px:"] .ok-container{ padding-inline:var(--pb-px) !important; }
 .pb-sec[style*="--pb-valign:"] > section{ display:flex; flex-direction:column; justify-content:var(--pb-valign) !important; }
@@ -105,24 +130,29 @@
 .pb-sec[style*="--pb-cardcols:"] :is(.ok-grid,.ok-cardgrid){
   grid-template-columns:repeat(var(--pb-cardcols), minmax(0, 1fr)) !important;
 }
-.pb-sec[style*="--pb-cardminw:"] .ok-card{ min-width:var(--pb-cardminw) !important; }
+.pb-sec[style*="--pb-cardminw:"] :is(.ok-card,.ok-loccard,.ok-gcard){ min-width:var(--pb-cardminw) !important; }
 .pb-sec[style*="--pb-gap:"] :is(.ok-grid,.ok-cardgrid,.d-flex){ gap:var(--pb-gap) !important; }
 .pb-sec[style*="--pb-xtraimg:"]{ display:flex; flex-direction:column; }
+/* The extra picture is one box, moved above or below the section by its order.
+
+   It used to be drawn on ::after with a second, EMPTY ::before that "Above the
+   section" switched to — so choosing Above hid the picture and showed nothing
+   in its place. The order does the same job with the box that has the picture
+   in it. Alignment is a margin shorthand (the three choices are "auto",
+   "0 auto 0 0", "0 0 0 auto"), so it has to be `margin`, not `margin-inline`,
+   which takes at most two values and threw the other two away. */
 .pb-sec[style*="--pb-xtraimg:"]::after{
   content:"";
   display:block;
   order:var(--pb-xtraorder, 2);
   width:var(--pb-xtraw, 100%);
   height:var(--pb-xtrah, 260px);
-  margin-inline:var(--pb-xtraalign, auto);
+  margin:var(--pb-xtraalign, 0 auto);
   background:var(--pb-xtraimg) no-repeat center/cover;
   border-radius:var(--pb-xtraradius, 0);
   border:var(--pb-xtraborderw, 0) solid var(--pb-xtraborder, transparent);
   box-shadow:var(--pb-xtrashadow, none);
 }
-.pb-sec[style*="--pb-xtraimg:"]::before{ display:none; }
-.pb-sec[style*="--pb-xtrapos:top"]::before{ display:block; }
-.pb-sec[style*="--pb-xtrapos:top"]::after{ display:none; }
 .pb-sec[style*="--pb-xtraimg:"] > section{ order:1; }
 
 /* Button border needs its own last word: several button variants set
@@ -135,14 +165,14 @@
 
 /* A card may also carry a utility shadow class (.ok-shadow-2xl on the rewards
    points card). Doubling the class lifts the editor's shadow above it. */
-.pb-sec[style*="--pb-shadow:"] .ok-card.ok-card{ box-shadow:var(--pb-shadow) !important; }
+.pb-sec[style*="--pb-shadow:"] :is(.ok-card,.ok-loccard,.ok-gcard):is(.ok-card,.ok-loccard,.ok-gcard){ box-shadow:var(--pb-shadow) !important; }
 
 /* Card size: an explicit width, and a floor for the height. Both are opt-in —
    with nothing set the card keeps whatever the layout gives it. */
 /* an explicit width has to be allowed to exceed the grid cell, otherwise
    the max-width guard silently caps it back to where it started */
-.pb-sec[style*="--pb-cardw:"] .ok-card{ width:var(--pb-cardw) !important; max-width:none !important; }
-.pb-sec[style*="--pb-cardh:"] .ok-card{ min-height:var(--pb-cardh) !important; }
+.pb-sec[style*="--pb-cardw:"] :is(.ok-card,.ok-loccard,.ok-gcard){ width:var(--pb-cardw) !important; max-width:none !important; }
+.pb-sec[style*="--pb-cardh:"] :is(.ok-card,.ok-loccard,.ok-gcard){ min-height:var(--pb-cardh) !important; }
 
 /* How wide the words are allowed to run before they wrap. Raising it stops a
    heading breaking onto a second line; lowering it forces a tighter column. */
@@ -163,7 +193,10 @@ h1, h2, h3, .font-display,
 .ok-display, .ok-h1, .ok-h2, .ok-h3, .ok-title{
   font-family: var(--ok-font-display, 'Poppins', 'Inter', sans-serif);
 }
-a:not(.btn):not(.chip):not(.nav-link):not(.ok-flink){ color: var(--ok-link, inherit); }
+/* A link colour is for links. Buttons and CTAs carry their own colours per
+   state, and letting this rule reach them is what left a black label sitting
+   on a black hover fill — it outranks .ok-btn-outline:hover by three classes. */
+a:not(.btn):not(.chip):not(.nav-link):not(.ok-flink):not(:is(.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,.ok-skip)){ color: var(--ok-link, inherit); }
 
 .ok-card{
   background: var(--ok-card-bg, #fff);

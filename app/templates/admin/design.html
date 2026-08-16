@@ -4,8 +4,14 @@
 {% macro control(f, cfg) %}
   {% set key, label, kind = f[0], f[1], f[2] %}
   {% set val = cfg.get(key) or '' %}
-  <label class="d-block">
-    <span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">{{ label }}</span>
+  {# A control holding a value is marked, so at a glance you can tell what this
+     section actually overrides from the dozens that are still on the built-in
+     design. #}
+  <label class="d-block ok-ctl {{ 'is-set' if val }}" data-ctl {{ 'data-ctl-set' if val }}>
+    <span class="d-block ok-fs-xs fw-semibold mb-1">
+      {{ label }}
+      {% if val %}<i class="ok-ctl-dot" title="In use: {{ val }}"></i>{% endif %}
+    </span>
     {% if kind == 'color' %}
     <span class="d-flex align-items-center gap-1">
       <input type="color" value="{{ val or '#ffffff' }}" data-sync="{{ key }}"
@@ -16,6 +22,21 @@
     </span>
     {% elif kind == 'px' %}
     <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="200"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'pxwide' %}
+    {# text widths run to the full content column, not the 200 a size needs #}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="2000" step="10"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'pxfine' %}
+    {# letter spacing is routinely negative on display type #}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="-20" max="40" step="0.5"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'ratio' %}
+    {# a line height or a scale runs past 1 — an opacity box would cap it there #}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="0.5" max="3" step="0.05"
+           placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
+    {% elif kind == 'seconds' %}
+    <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="2" step="0.02"
            placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
     {% elif kind == 'opacity' %}
     <input type="number" name="{{ key }}" value="{{ val }}" min="0" max="1" step="0.05"
@@ -46,6 +67,10 @@
     <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
       {% for v, lbl in shadows %}<option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>{% endfor %}
     </select>
+    {% elif kind == 'decoration' %}
+    <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
+      {% for v, lbl in decorations %}<option value="{{ v }}" {{ 'selected' if val == v }}>{{ lbl }}</option>{% endfor %}
+    </select>
     {% elif kind in ('font', 'weight', 'case') %}
     <select name="{{ key }}" class="ok-input ok-select ok-fs-xs w-100">
       {% for v, lbl in (fonts if kind == 'font' else weights if kind == 'weight' else cases) %}
@@ -72,43 +97,12 @@
       Leave a box empty to keep the built-in design.
     </p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{{ spec.url }}?edit=1" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
-      <i class="fa-solid fa-pen"></i> Edit text on the page
-    </a>
-    <a href="{{ spec.url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-      <i class="fa-solid fa-arrow-up-right-from-square"></i> Open page
-    </a>
-    <form method="post" action="/admin/design/{{ page }}/reset-all"
-          onsubmit="return confirm('Reset every section on this page to the built-in design?')">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <button class="btn btn-secondary btn-sm">Reset page</button>
-    </form>
-  </div>
 </div>
 
-<!-- page picker — Home included, so this is the only place you choose a page -->
-<div class="d-flex flex-wrap gap-2 ok-mb-5">
-  <a href="/admin/canvas{{ qs }}"
-     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border bg-white text-ink border-ink-10 ok-hov-border-ink-40">
-    <i class="fa-solid fa-house"></i> Home
-  </a>
-  <a href="/admin/design?page=site{{ '&store=' ~ request.args.get('store') if request.args.get('store') }}"
-     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border
-            {{ 'bg-ink text-white border-ink' if page == 'site' else 'bg-white text-ink border-ink-10 ok-hov-border-ink-40' }}">
-    <i class="fa-solid fa-file-lines"></i> Footer &amp; shared
-  </a>
-  {% for p in pages %}
-  <a href="/admin/design?page={{ p.page }}"
-     class="ok-px-3 py-2 ok-rounded-lg ok-fs-sm fw-semibold border
-            {{ 'bg-ink text-white border-ink' if p.page == page else 'bg-white text-ink border-ink-10 ok-hov-border-ink-40' }}">
-    {{ p.label }}
-    <span class="ms-1 ok-fs-xs {{ 'text-w-60' if p.page == page else 'text-muted-warm' }}">{{ p.sections|length }}</span>
-  </a>
-  {% endfor %}
-</div>
+{% set current = page %}
+{% include "admin/_page_switcher_bar.html" %}
 
-<div class="ok-grid ok-grid-lg-2 ok-gap-5">
+<div class="ok-design-layout ok-gap-5">
   <!-- ── section list ─────────────────────────────────────────── -->
   <div class="ok-stack-4">
     {% if text_groups %}
@@ -150,20 +144,63 @@
         <div class="d-flex align-items-center gap-2 ok-min-w-0">
           <span class="badge badge-soft">{{ loop.index }}</span>
           <b class="font-display ok-fs-sm text-truncate">{{ s.label }}</b>
-          {% if styled.get(s.key) %}<span class="badge badge-yellow">Restyled</span>{% endif %}
+          {% set _inuse = inuse.get(s.key, 0) %}
+          {% if _inuse %}<span class="badge badge-yellow" title="settings in use on this section">{{ _inuse }} in use</span>{% endif %}
         </div>
-        {% if styled.get(s.key) %}
-        <form method="post" action="/admin/design/{{ page }}/{{ s.key }}/reset">
-          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button class="btn btn-secondary btn-sm">Reset</button>
-        </form>
-        {% endif %}
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          {% if _inuse %}
+          <label class="ok-onlyset">
+            <input type="checkbox" data-onlyset> Only what's in use
+          </label>
+          {% endif %}
+          {% if styled.get(s.key) %}
+          <form method="post" action="/admin/design/{{ page }}/{{ s.key }}/reset">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button class="btn btn-secondary btn-sm">Reset</button>
+          </form>
+          {% endif %}
+        </div>
       </div>
 
       <form method="post" action="/admin/design/{{ page }}/{{ s.key }}" enctype="multipart/form-data"
             class="ok-grid ok-grid-sm-3 ok-gap-3 ok-design-form">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% for f in fields %}{{ control(f, s.config) }}{% endfor %}
+        {# Each kind of text keeps its own settings — changing the heading here
+           cannot reach the sub-heading, the body copy or the card titles. #}
+        <div class="ok-col-span-sm-3 ok-stack-2">
+          <b class="d-block ok-fs-xs fw-bold text-ink ok-mt-2">Text styles</b>
+          {% for role, role_label in role_groups %}
+          {% set _set = role_fields_by_role[role] | selectattr('0', 'in', s.config) | list %}
+          <details class="border ok-bc-varokline ok-rounded-lg ok-px-3 ok-py-2">
+            <summary class="ok-fs-xs fw-semibold ok-pointer">
+              {{ role_label }}
+              {% if _set %}<span class="badge badge-yellow ok-ml-1">{{ _set|length }}</span>{% endif %}
+            </summary>
+            <div class="ok-grid ok-grid-sm-3 ok-gap-3 ok-mt-2">
+              {% for f in role_fields_by_role[role] %}{{ control(f, s.config) }}{% endfor %}
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+        {# Each button state keeps its own colours, so a hover fill can never
+           swallow the label that sits on it. #}
+        <div class="ok-col-span-sm-3 ok-stack-2">
+          <b class="d-block ok-fs-xs fw-bold text-ink ok-mt-2">Button states</b>
+          {% for state, state_label in cta_states %}
+          {% set _set = cta_fields_by_state[state] | selectattr('0', 'in', s.config) | list %}
+          <details class="border ok-bc-varokline ok-rounded-lg ok-px-3 ok-py-2">
+            <summary class="ok-fs-xs fw-semibold ok-pointer">
+              {{ state_label }}
+              {% if _set %}<span class="badge badge-yellow ok-ml-1">{{ _set|length }}</span>{% endif %}
+            </summary>
+            <div class="ok-grid ok-grid-sm-3 ok-gap-3 ok-mt-2" data-cta-state="{{ state }}">
+              {% for f in cta_fields_by_state[state] %}{{ control(f, s.config) }}{% endfor %}
+            </div>
+            <p class="ok-fs-xs ok-mt-1 mb-0" data-cta-contrast="{{ state }}"></p>
+          </details>
+          {% endfor %}
+        </div>
         <div class="ok-col-span-sm-3"><button class="btn btn-primary btn-sm">Save section</button></div>
       </form>
     </article>
@@ -182,8 +219,8 @@
         <iframe id="designPreview" src="{{ spec.url }}" title="{{ spec.label }} preview"></iframe>
       </div>
       <p class="ok-fs-xs text-muted-warm ok-mt-3">
-        Save a section, then Refresh to see it. The preview is the real page at 1280px wide,
-        scaled to fit.
+        Save a section, then Refresh to see it. This is the real page at desktop
+        width, scaled to fill the panel.
       </p>
     </div>
   </div>
@@ -193,22 +230,63 @@
   /* A desktop page shown inside a narrow admin column: render it at full width
      and scale the whole frame, so the layout is the real one rather than the
      mobile breakpoint. */
+  /* Controls on the left at a workable width, and the rest of the row given to
+     the preview — it used to sit in half a row at a fixed scale, which left a
+     wide empty gutter beside a letterboxed page. */
+  .ok-design-layout{ display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 992px){
+    .ok-design-layout{ grid-template-columns: minmax(320px, 26rem) minmax(0, 1fr); }
+  }
   .ok-design-frame{
     position: relative;
     width: 100%;
-    height: 620px;
+    height: min(78vh, 880px);
     overflow: hidden;
     border: 1px solid var(--ok-line, #e6e3df);
     border-radius: 12px;
     background: #fff;
   }
+  /* The real page is rendered at desktop width and scaled down, so the layout
+     on show is the desktop one. The scale is worked out from the panel's own
+     width rather than hard-coded, so the preview always fills it exactly. */
   .ok-design-frame iframe{
-    width: 1280px;
-    height: 1900px;
+    width: var(--pv-w, 1280px);
+    height: var(--pv-h, 1900px);
+    /* the admin's responsive default clamps embeds to their container, which
+       would shrink the page to the panel and then scale it down again */
+    max-width: none;
+    max-height: none;
     border: 0;
-    transform: scale(.42);
+    transform: scale(var(--pv-scale, .42));
     transform-origin: 0 0;
   }
+  /* A control that is actually doing something reads differently from the
+     dozens still on the built-in design: its label goes dark, it gets a dot,
+     and its field carries the brand edge. */
+  .ok-ctl > span:first-child{ color: var(--ok-slate, #6b6b6b); }
+  .ok-ctl.is-set > span:first-child{ color: var(--ok-jet, #141414); font-weight: 700; }
+  .ok-ctl-dot{
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ok-amber, #ffc72c); margin-left: .3rem; vertical-align: middle;
+    box-shadow: 0 0 0 2px rgba(255,199,44,.28);
+  }
+  .ok-ctl.is-set .ok-input,
+  .ok-ctl.is-set select,
+  .ok-ctl.is-set input[type="text"],
+  .ok-ctl.is-set input[type="number"]{
+    border-color: var(--ok-amber, #ffc72c);
+    background: #fffdf5;
+  }
+  /* "only what's in use" hides the rest without collapsing the layout */
+  /* the labels carry Bootstrap's .d-block, which is display:block !important */
+  .ok-design-form.only-set .ok-ctl:not(.is-set){ display: none !important; }
+  .ok-onlyset{
+    display: inline-flex; align-items: center; gap: .4rem; cursor: pointer;
+    font: 600 11.5px/1 Quicksand, sans-serif; color: var(--ok-slate, #6b6b6b);
+    border: 1px solid var(--ok-line, #e8e6e3); border-radius: 999px;
+    padding: .32rem .6rem; background: #fff;
+  }
+  .ok-onlyset input{ accent-color: var(--ok-jet, #141414); }
   .ok-design-form input[type="color"]{ padding: 0; }
 </style>
 
@@ -218,6 +296,54 @@
     var box = pick.parentElement.querySelector('input[type="text"]');
     if (box) pick.addEventListener("input", function () { box.value = pick.value; });
   });
+  // fit the rendered page to the panel, and keep it fitted as the window moves
+  (function () {
+    var box = document.querySelector(".ok-design-frame");
+    if (!box) return;
+    var PAGE_W = 1280;
+    function fit() {
+      var w = box.clientWidth, h = box.clientHeight;
+      if (!w) return;
+      var scale = w / PAGE_W;
+      box.style.setProperty("--pv-scale", scale.toFixed(4));
+      box.style.setProperty("--pv-w", PAGE_W + "px");
+      // as tall as the panel, so the page fills it instead of letterboxing
+      box.style.setProperty("--pv-h", Math.round(h / scale) + "px");
+    }
+    fit();
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(box);
+    window.addEventListener("resize", fit);
+  })();
+
+  // the toggle hides everything this section is not overriding
+  document.querySelectorAll("[data-onlyset]").forEach(function (box) {
+    box.addEventListener("change", function () {
+      var form = box.closest("article").querySelector(".ok-design-form");
+      if (form) form.classList.toggle("only-set", box.checked);
+    });
+  });
+
+  // typing a value marks the control straight away, clearing it unmarks it —
+  // the page should not have to be saved before it tells the truth
+  document.querySelectorAll(".ok-design-form [data-ctl]").forEach(function (ctl) {
+    var field = ctl.querySelector("select, input[type=text], input[type=number]");
+    if (!field) return;
+    var refresh = function () {
+      var on = !!String(field.value || "").trim();
+      ctl.classList.toggle("is-set", on);
+      var dot = ctl.querySelector(".ok-ctl-dot");
+      if (on && !dot) {
+        dot = document.createElement("i");
+        dot.className = "ok-ctl-dot";
+        ctl.querySelector("span").appendChild(dot);
+      } else if (!on && dot) {
+        dot.remove();
+      }
+    };
+    field.addEventListener("input", refresh);
+    field.addEventListener("change", refresh);
+  });
+
   var btn = document.getElementById("reloadPreview");
   var frame = document.getElementById("designPreview");
   if (btn && frame) {

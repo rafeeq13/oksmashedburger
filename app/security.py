@@ -1,6 +1,23 @@
 """CSRF protection for state-changing form posts (SRS NFR-2.3)."""
+import re
 import secrets
 from flask import session, request, abort
+
+# ── What a saved style value is allowed to look like ─────────────────────
+# A style_* setting is one CSS value: a colour, a number with its unit, a font
+# stack, a shadow. Every character below ends something — a declaration, an
+# HTML attribute, a comment — so a value carrying one stops being a value:
+#   "red;position:fixed;inset:0"  would bolt extra CSS onto the section, which
+#   every visitor then sees, and
+#   'red" onfocus="…'             would bolt extra attributes onto the editor's
+#   own colour control the next time the panel is drawn.
+# Font stacks quote with ' (see app/fonts.py), so " is never legitimate here.
+_UNSAFE_STYLE = re.compile(r'[;{}<>"\\]|/\*')
+
+
+def style_value_ok(raw):
+    """True when this may be stored and emitted as a CSS value."""
+    return not _UNSAFE_STYLE.search(str(raw or ""))
 
 _SAFE = {"GET", "HEAD", "OPTIONS"}
 # REST API uses JWT; /form-submit receives posts from admin-built (GrapesJS) pages

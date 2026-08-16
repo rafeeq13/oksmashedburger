@@ -35,7 +35,7 @@
               {% set av_size = 'ok-w-12 ok-h-12' %}{% include 'partials/user_avatar.html' %}
               <div>
                 <div class="ok-fs-xs text-muted-warm">Welcome back</div>
-                <div class="font-display fw-bold ok-fs-lg ok-lh-tight">{{ current_user.full_name if current_user else 'Jordan M.' }}</div>
+                <div class="font-display fw-bold ok-fs-lg ok-lh-tight pb-t-cardtitle">{{ current_user.full_name if current_user else 'Jordan M.' }}</div>
               </div>
             </div>
             <span class="badge badge-soft"><i class="fa-solid fa-medal"></i> {{ ts.current.name if ts.current else "Member" }} member</span>
@@ -257,7 +257,7 @@
               <h2 class="ok-h2 ok-mb-3">{{ pc('rewards_referral_heading') }}</h2>
               <p class="text-w-70 ok-mb-5 max-w-md">{{ pc('rewards_referral_text') }}</p>
 
-              <label class="ok-label !text-white/80">Your referral code</label>
+              <label class="ok-label text-w-80">Your referral code</label>
               <div class="d-flex gap-2 ok-mb-3">
                 <div data-copy="[data-refcode]" class="ok-refcode flex-grow-1 d-flex align-items-center justify-content-between ok-input font-display fw-bold tracking-widest ok-fs-lg">
                   <span data-refcode>JORDAN-OK</span>

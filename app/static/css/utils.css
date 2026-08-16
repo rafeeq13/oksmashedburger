@@ -120,6 +120,8 @@
 .text-w-45{color:rgba(255,255,255,.45)!important}
 .text-w-50{color:rgba(255,255,255,.5)!important}
 .text-w-55{color:rgba(255,255,255,.55)!important}
+/* a translucent white fill for a disabled control on a dark surface */
+.bg-w-15{background-color:rgba(255,255,255,.15)!important}
 .text-w-60{color:rgba(255,255,255,.6)!important}
 .text-w-70{color:rgba(255,255,255,.7)!important}
 .text-w-75{color:rgba(255,255,255,.75)!important}

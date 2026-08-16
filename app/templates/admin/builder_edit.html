@@ -316,7 +316,7 @@
   function closeCode() { popup(codeModal, false); }
   document.getElementById('codeBtn').addEventListener('click', function () {
     document.getElementById('codeHtml').value = editor.getHtml();
-    document.getElementById('codeCss').value = editor.getCss();
+    document.getElementById('codeCss').value = editor.getCss({ avoidProtected: true });
     popup(codeModal, true);
   });
   document.getElementById('codeClose').addEventListener('click', closeCode);
@@ -336,7 +336,10 @@
   var lbl = document.getElementById('saveLbl');
   document.getElementById('gjsSave').addEventListener('click', function () {
     lbl.textContent = 'Saving…';
-    var body = JSON.stringify({ html: editor.getHtml(), css: editor.getCss(), gjs: editor.getProjectData() });
+    // avoidProtected: GrapesJS otherwise always hands back its own
+    // `* { box-sizing: border-box; } body { margin: 0 }`, which would make the
+    // page's CSS non-empty and hand the home page permanently to this builder
+    var body = JSON.stringify({ html: editor.getHtml(), css: editor.getCss({ avoidProtected: true }), gjs: editor.getProjectData() });
     fetch('/admin/builder/{{ page.id }}/store', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '{{ csrf_token }}' }, body: body })
       .then(function (r) { return r.json(); })
       .then(function (d) { if (d && d.ok) { dirty = false; lbl.textContent = 'Saved ✓'; } else lbl.textContent = 'Error'; setTimeout(function () { lbl.textContent = 'Save'; }, 1600); })

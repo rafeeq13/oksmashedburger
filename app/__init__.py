@@ -2,13 +2,39 @@
 import os
 import re
 
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, g
 
 from .config import get_config
 from .extensions import db, migrate, jwt, limiter
 
 # a plain number, with no unit stuck on the end of it yet
 _BARE_NUMBER = re.compile(r"^-?\d+(\.\d+)?$")
+
+# The kinds of text a section can hold. Each one owns its typography outright:
+# the selectors in builder.css are mutually exclusive, so a change to one role
+# cannot reach another. Keep this list and that file in step.
+TEXT_ROLES = ("title", "titlehl", "sub", "body", "eyebrow", "cardtitle",
+              "cardtext", "btn", "nav", "meta")
+
+# property key -> unit appended when the saved value is a bare number.
+# `sizemd` is from 768px up and `sizelg` from 1024px, matching the breakpoints
+# the stylesheets already use, so responsive type stays on the same grid.
+TEXT_ROLE_PROPS = (("family", ""), ("color", ""), ("size", "px"),
+                   ("sizemd", "px"), ("sizelg", "px"), ("weight", ""),
+                   ("lh", ""), ("track", "px"), ("case", ""), ("italic", ""),
+                   ("align", ""), ("maxw", "px"), ("mt", "px"), ("mb", "px"))
+
+# A button's five states, each holding its own colours and geometry. Nothing is
+# derived from anything else: the hover fill never implies a hover label colour,
+# which is exactly how a label ends up the same colour as the fill behind it.
+CTA_STATES = ("default", "hover", "focus", "active", "disabled")
+
+CTA_PROPS = (("bg", ""), ("text", ""), ("border", ""), ("borderw", "px"),
+             ("icon", ""), ("shadow", ""), ("opacity", ""), ("weight", ""),
+             ("decoration", ""), ("lift", "px"), ("scale", ""), ("radius", "px"))
+
+# not tied to a state: the focus ring's colour, and the shared timing
+CTA_EXTRA_PROPS = (("focus-ring", ""), ("dur", "s"), ("ease", ""))
 
 
 def create_app(config_object=None):
@@ -113,18 +139,41 @@ def create_app(config_object=None):
         resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         resp.headers.setdefault("Permissions-Policy",
                                 "geolocation=(self), camera=(), microphone=()")
+        # Never serve an admin screen or the on-page editor from cache. The
+        # editor's code is inlined into the page, so a tab left open across an
+        # update keeps running the old one: its controls can write settings the
+        # site has since dropped, and the change looks applied until a reload
+        # throws it away. no-store also keeps the back button from restoring
+        # such a page from the browser's history cache.
+        path = request.path or ""
+        if path.startswith("/admin") or request.args.get("edit") or request.args.get("pbedit"):
+            resp.headers["Cache-Control"] = "no-store, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
         return resp
 
     # ── Template context: header/footer need current store, nav, cart, user ──
     from .models.store import Store
     from .auth import current_user
-    from .security import get_csrf_token
+    from .security import get_csrf_token, style_value_ok
 
     def pb_section_style(cfg):
         """Inline CSS (vars + props) for a page-builder section wrapper, built
         from its style_* config. Paired with the .pb-sec rules in style.css."""
         cfg = cfg or {}
         parts = []
+
+        def put(var, value):
+            """One declaration — but only if the value is really just a value.
+
+            Everything here ends up inside a style attribute the whole internet
+            reads, and inside the editor's own panel afterwards. A value holding
+            a semicolon or a quote would stop being a value and start being
+            extra CSS, so it is dropped rather than emitted. Settings already
+            saved are covered too, which is why the check lives here as well as
+            at the two save routes."""
+            if style_value_ok(value):
+                parts.append("%s:%s" % (var, value))
+
         for k, var in (("style_bg", "--pb-bg"), ("style_hcolor", "--pb-hcolor"),
                        ("style_tcolor", "--pb-tcolor"), ("style_font", "--pb-font"),
                        ("style_overlay", "--pb-overlay"),
@@ -162,7 +211,7 @@ def create_app(config_object=None):
                        ("style_xtrashadow", "--pb-xtrashadow"),
                        ("style_xtraalign", "--pb-xtraalign")):
             if cfg.get(k) not in (None, ""):
-                parts.append("%s:%s" % (var, cfg[k]))
+                put(var, cfg[k])
         # the ones that carry a unit
         for k, var, unit in (("style_cardradius", "--pb-cardradius", "px"),
                              ("style_btnradius", "--pb-btnradius", "px"),
@@ -198,25 +247,55 @@ def create_app(config_object=None):
                 # reload. Only add the unit when the value is still just a
                 # number.
                 raw = str(cfg[k]).strip()
-                parts.append("%s:%s" % (var, raw + unit if _BARE_NUMBER.match(raw) else raw))
+                put(var, raw + unit if _BARE_NUMBER.match(raw) else raw)
+        # ── per-role typography ────────────────────────────────────
+        # Every kind of text in a section carries its own settings, so restyling
+        # a heading can no longer drag the sub-heading, the body copy, the card
+        # titles or the button labels along with it. A role's rule in
+        # builder.css only exists while its variable is here, so a section that
+        # was styled before any of this looks exactly as it did.
+        for role in TEXT_ROLES:
+            for prop, unit in TEXT_ROLE_PROPS:
+                raw = str(cfg.get("style_%s_%s" % (role, prop), "") or "").strip()
+                if not raw:
+                    continue
+                put("--pb-%s-%s" % (role, prop),
+                    raw + unit if (unit and _BARE_NUMBER.match(raw)) else raw)
+        # ── button states ──────────────────────────────────────────
+        for state in CTA_STATES:
+            for prop, unit in CTA_PROPS:
+                raw = str(cfg.get("style_cta_%s_%s" % (state, prop), "") or "").strip()
+                if not raw:
+                    continue
+                put("--pb-cta-%s-%s" % (state, prop),
+                    raw + unit if (unit and _BARE_NUMBER.match(raw)) else raw)
+        for prop, unit in CTA_EXTRA_PROPS:
+            raw = str(cfg.get("style_cta_%s" % prop.replace("-", ""), "") or "").strip()
+            if not raw:
+                continue
+            put("--pb-cta-%s" % prop,
+                raw + unit if (unit and _BARE_NUMBER.match(raw)) else raw)
         # ── text shadow, composed ──────────────────────────────────
-        # "none" has to emit something. Several sections carry a built-in
-        # shadow (the home hero stacks four of them), and saying nothing here
-        # left that shadow in place, so choosing No shadow appeared to do
-        # nothing at all.
-        side = (cfg.get("style_tsside") or "").strip()
-        if side == "none":
-            parts.append("--pb-textshadow:none")
-        elif side:
+        # Four controls make one value, which is why this is built here rather
+        # than emitted like the others. "none" has to emit something: several
+        # sections carry a built-in shadow (the home hero stacks four of them),
+        # and saying nothing left that shadow in place, so choosing No shadow
+        # appeared to do nothing at all.
+        def compose_shadow(prefix):
+            side = (cfg.get(prefix + "tsside") or "").strip()
+            if side == "none":
+                return "none"
+            if not side:
+                return ""
             try:
-                dist = int(float(cfg.get("style_tsdist") or 2))
+                dist = int(float(cfg.get(prefix + "tsdist") or 2))
             except (TypeError, ValueError):
                 dist = 2
             try:
-                blur = int(float(cfg.get("style_tsblur") or 4))
+                blur = int(float(cfg.get(prefix + "tsblur") or 4))
             except (TypeError, ValueError):
                 blur = 4
-            col = (cfg.get("style_tscolor") or "rgba(0,0,0,.5)").strip()
+            col = (cfg.get(prefix + "tscolor") or "rgba(0,0,0,.5)").strip()
             offsets = {
                 "top":    [(0, -dist)],
                 "bottom": [(0, dist)],
@@ -224,22 +303,39 @@ def create_app(config_object=None):
                 "right":  [(dist, 0)],
                 "all":    [(0, -dist), (0, dist), (-dist, 0), (dist, 0)],
             }.get(side, [(0, dist)])
-            parts.append("--pb-textshadow:%s" % ", ".join(
-                "%dpx %dpx %dpx %s" % (x, y, blur, col) for x, y in offsets))
+            return ", ".join("%dpx %dpx %dpx %s" % (x, y, blur, col) for x, y in offsets)
+
+        # the older section-wide one, for anything saved before shadows became
+        # per-element; it is not offered anywhere now
+        old_shadow = compose_shadow("style_")
+        if old_shadow:
+            put("--pb-textshadow", old_shadow)
+        # and one per kind of text, so a shadow on the heading is not a shadow
+        # on the line underneath it
+        for role in TEXT_ROLES:
+            value = compose_shadow("style_%s_" % role)
+            if value:
+                put("--pb-%s-shadow" % role, value)
 
         if cfg.get("style_bgimage") not in (None, ""):
             # strip the edit-mode tag so it never lands in the saved CSS
             _u = str(cfg["style_bgimage"]).split("#ie=")[0]
-            parts.append("--pb-bgimage:url('%s')" % _u.replace("'", "%27"))
+            put("--pb-bgimage", "url('%s')" % _u.replace("'", "%27"))
         if cfg.get("style_xtraimg") not in (None, ""):
             _x = str(cfg["style_xtraimg"]).split("#ie=")[0]
-            parts.append("--pb-xtraimg:url('%s')" % _x.replace("'", "%27"))
+            put("--pb-xtraimg", "url('%s')" % _x.replace("'", "%27"))
+            # Above or below the section. This was never emitted at all, so
+            # "Where it goes" was a control with nothing on the other end of
+            # it; the picture sits in the section's flex order, so above is
+            # simply an order before the section's own.
+            if (cfg.get("style_xtrapos") or "").strip() == "top":
+                put("--pb-xtraorder", "0")
         if cfg.get("style_pt") not in (None, ""):
-            parts.append("padding-top:%spx" % cfg["style_pt"])
+            put("padding-top", "%spx" % cfg["style_pt"])
         if cfg.get("style_pb") not in (None, ""):
-            parts.append("padding-bottom:%spx" % cfg["style_pb"])
+            put("padding-bottom", "%spx" % cfg["style_pb"])
         if cfg.get("style_align"):
-            parts.append("text-align:%s" % cfg["style_align"])
+            put("text-align", cfg["style_align"])
         return ";".join(parts)
 
     app.jinja_env.globals["pb_section_style"] = pb_section_style
@@ -254,33 +350,85 @@ def create_app(config_object=None):
 
     app.jinja_env.globals["pb_cfg"] = pb_cfg
 
-    def google_fonts_link():
-        """<link> for the webfonts this site's sections actually ask for.
+    def _style_rows():
+        """Every saved section style that can apply to the page being rendered.
 
-        Loading all two dozen families on every page would cost more than the
-        whole stylesheet, so only the ones in use are fetched. The three brand
-        faces are always included because the base design uses them.
+        Fetched once per request: the <head> asks it what fonts to fetch and
+        whether the per-element stylesheet is needed, and both questions have
+        the same answer source.
         """
-        from .models.page import PageSection
-        from .models.site import SiteSetting  # noqa: F401  (kept for symmetry)
-        from .blueprints.admin import CANVAS_FONTS
-
-        by_stack = {f[0]: f[2] for f in CANVAS_FONTS if f[2]}
-        wanted = {"Quicksand:wght@400;500;600;700",
-                  "Poppins:wght@400;500;600;700;800;900",
-                  "Inter:wght@300;400;500;600;700;800"}
-        # only this page's sections — otherwise a face picked for Contact would
-        # be downloaded on the home page too, for nothing
-        from .models.page import INNER_PAGES
+        rows = getattr(g, "_pb_style_rows", None)
+        if rows is not None:
+            return rows
+        from .models.page import PageSection, INNER_PAGES
         path = (request.path or "/").rstrip("/") or "/"
         page_key = "home" if path == "/" else next(
             (p["page"] for p in INNER_PAGES if p["url"].rstrip("/") == path), None)
+        # the page's own sections, plus the shared chrome — a face picked for the
+        # header or the footer belongs to every page — plus the builder page's
+        # own key when one is being rendered
+        wanted = ["site"] + ([page_key] if page_key else [])
+        builder_key = getattr(g, "pb_builder_key", None)
+        if builder_key:
+            wanted.append(builder_key)
         try:
-            rows = (PageSection.query.filter_by(page=page_key).all() if page_key
-                    else [])
-            for row in rows:
+            rows = PageSection.query.filter(PageSection.page.in_(wanted)).all()
+        except Exception:
+            rows = []                  # a missing table must not break the page
+        g._pb_style_rows = rows
+        return rows
+
+    app.jinja_env.globals["pb_style_rows"] = _style_rows
+
+    def pb_parts_css():
+        """Does this page need the per-element typography stylesheet?
+
+        It is 190 KB of selectors that anchor on p, a, span, div and h1-h6, and
+        it can only ever do something on a page that has actually set one of its
+        variables — which today is almost none of them. Asking for it only when
+        it can matter keeps that weight off every ordinary visitor, while the
+        editor always gets it because it writes those variables live.
+        """
+        if request.args.get("edit") or request.args.get("pbedit"):
+            return True
+        role_prefixes = tuple("style_%s_" % r for r in TEXT_ROLES)
+        for row in _style_rows():
+            for key in (row.config or {}):
+                if key.startswith("style_cta_") or key.startswith(role_prefixes):
+                    return True
+        return False
+
+    app.jinja_env.globals["pb_parts_css"] = pb_parts_css
+
+    def google_fonts_link():
+        """<link> for the webfonts this site's sections actually ask for.
+
+        The designer offers 160 families; fetching them all would cost far more
+        than the whole stylesheet, so a page asks only for the faces its own
+        sections actually chose. The three brand faces are always included
+        because the base design uses them.
+        """
+        from .models.site import SiteSetting  # noqa: F401  (kept for symmetry)
+        from .blueprints.admin import CANVAS_FONTS
+        from .fonts import GOOGLE_SPEC
+
+        # the whole library, with the older short list as a fallback for any
+        # stack that predates it
+        by_stack = dict(GOOGLE_SPEC)
+        by_stack.update({f[0]: f[2] for f in CANVAS_FONTS if f[2]})
+        wanted = {"Quicksand:wght@400;500;600;700",
+                  "Poppins:wght@400;500;600;700;800;900",
+                  "Inter:wght@300;400;500;600;700;800"}
+        try:
+            # only what can apply to this page — otherwise a face picked for
+            # Contact would be downloaded on the home page too, for nothing
+            # every place a face can be chosen: the two older section-wide keys
+            # and the per-element ones
+            font_keys = ["style_font", "style_bodyfont"] + [
+                "style_%s_family" % role for role in TEXT_ROLES]
+            for row in _style_rows():
                 cfg = row.config or {}
-                for key in ("style_font", "style_bodyfont"):
+                for key in font_keys:
                     fam = by_stack.get(cfg.get(key) or "")
                     if fam:
                         wanted.add(fam)
@@ -385,7 +533,9 @@ def create_app(config_object=None):
                                        GRADDIR_CHOICES, FILTER_CHOICES,
                                        VALIGN_CHOICES, IMGFIT_CHOICES,
                                        COLS_CHOICES, XTRAPOS_CHOICES,
-                                       XTRAALIGN_CHOICES)
+                                       XTRAALIGN_CHOICES, FONT_PICKER,
+                                       FONT_CATEGORIES, FONT_GOOGLE_SPEC,
+                                       RETIRED_STYLE_FIELDS)
         from .models.page import BuilderPage, page_content_defaults
         site = {s.key: s.value for s in SiteSetting.query.all() if s.value}
 
@@ -461,6 +611,14 @@ def create_app(config_object=None):
             "pc_attr": pc_attr,
             "inline_edit": _inline,
             "canvas_fonts": CANVAS_FONT_CHOICES, "canvas_weights": CANVAS_WEIGHTS,
+            # the searchable picker needs the category and the real weight list
+            # for each family; the spec map is what lets it fetch one at a time
+            "canvas_font_picker": FONT_PICKER,
+            "canvas_font_categories": FONT_CATEGORIES,
+            "canvas_font_specs": FONT_GOOGLE_SPEC,
+            # so the panel can show, and offer to remove, a setting from before
+            # every kind of text had its own controls
+            "retired_style_fields": RETIRED_STYLE_FIELDS,
             "canvas_cases": CANVAS_CASES, "canvas_shadows": SHADOW_CHOICES,
             "canvas_tssides": TSSIDE_CHOICES, "canvas_italics": ITALIC_CHOICES,
             "canvas_bgsizes": BGSIZE_CHOICES, "canvas_bgposes": BGPOS_CHOICES,

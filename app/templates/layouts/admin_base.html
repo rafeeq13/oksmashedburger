@@ -21,6 +21,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/radius.css') }}">
   {# last, so the section editor's rules win over the base component styles #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
+  {# unconditional here: the design screens are where these values get set, and
+     an admin is a handful of people rather than every visitor #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/builder-parts.css') }}">
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   <script>try{ if(localStorage.getItem('adm-collapsed')==='1') document.documentElement.classList.add('admin-collapsed'); }catch(e){}</script>
   {% block head_extra %}{% endblock %}
@@ -100,8 +103,10 @@
       <div class="sb-group" data-group="setup">
         {{ grouphead('Setup') }}
         <div class="sb-group-body"><div class="ok-stack-05">
-          {{ navlink('/admin/settings', 'Settings', 'gear') }}
-          {{ navlink('/admin/hours', 'Opening hours', 'clock') }}
+          {# Opening hours are a tab inside Store settings, not a screen of
+             their own: two places editing the same seven rows never agreed on
+             which was the real one. #}
+          {{ navlink('/admin/settings', 'Store settings', 'gear') }}
           {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
           {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
         </div></div>

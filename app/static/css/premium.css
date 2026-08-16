@@ -827,7 +827,9 @@ input[type="radio"] {
   transition: padding-left var(--t-fast) var(--e-out), color var(--t-fast) var(--e-out);
 }
 
-.drawer a:hover {
+/* Buttons inside the drawer own their own colours in every state; letting this
+   repaint them left a cocoa label on the black hover fill. */
+.drawer a:hover:not(.btn):not(.ok-cta):not(.ok-btn-outline):not(.ok-mobile-order) {
   padding-left: .4rem;
   color: var(--ok-cocoa);
 }
@@ -903,6 +905,8 @@ input[type="radio"] {
   margin-bottom: 2.25rem;
 }
 
+/* Both margins are stated because this element is a <p> now and was an <h4>
+   before: the class, not the tag, decides how the hero sits. */
 .ok-hero-sub {
   color: #fff;
   font-family: 'Poppins', 'Inter', sans-serif;
@@ -910,6 +914,7 @@ input[type="radio"] {
   font-size: 20px;
   line-height: 1.6;
   margin-top: 1.75rem;
+  margin-bottom: 0;
   max-width: 36rem;
   text-shadow: 0 1px 1px rgba(0, 0, 0, .9)
 }

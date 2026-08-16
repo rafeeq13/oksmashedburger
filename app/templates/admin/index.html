@@ -38,7 +38,7 @@
       <div>
         <div class="font-display fw-bold ok-fs-lg">{% if admin_store.open_now %}Open for orders{% else %}Closed for new orders{% endif %}</div>
         <div class="ok-fs-sm text-muted-warm">Scheduled ordering is {% if admin_store.accepting_scheduled %}<span class="text-ok-green fw-semibold">on</span>{% else %}<span class="text-ok-red fw-semibold">off</span>{% endif %}{% if not admin_store.open_now and admin_store.accepting_scheduled %} · customers can still order ahead{% endif %}</div>
-        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }} · <a href="/admin/hours{{ qs }}" class="link-underline">Edit hours</a></div>
+        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }} · <a href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a></div>
       </div>
     </div>
     <div class="d-flex flex-wrap gap-2">

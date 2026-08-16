@@ -16,6 +16,7 @@ from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.auth import current_user, roles_required
 from app.helpers import active_stores, get_current_store
+from app.security import style_value_ok
 from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone
 from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon, Category
 from app.models.order import Order, OrderItem
@@ -54,15 +55,35 @@ PROVIDERS = [
 _PROVIDER_KEYS = [p["key"] for p in PROVIDERS]
 
 
+# What the Visual editor's inspector can set. Anything outside this list that
+# turns up in one of its saves belongs to another screen, so it is merged in
+# rather than treated as the whole truth (see canvas_save).
+CANVAS_STYLE_KEYS = {
+    "style_bg", "style_accent", "style_overlay", "style_overlaycolor",
+    "style_pt", "style_pb", "style_maxw", "style_align",
+    "style_cardbg", "style_cardborder", "style_cardhead", "style_cardtext",
+    "style_cardradius",
+}
+
+
 def _admin_store():
+    """Which shop this admin screen is about.
+
+    Someone pinned to one shop never leaves it. ?store= is how head office
+    switches between shops — the same thing _can_switch() below allows only to
+    a user with no shop of their own — so reading it first let a pinned manager
+    open another shop's orders, exports and saved API keys just by editing the
+    address bar. Nothing legitimate sends ?store= to a pinned user: _qs() gives
+    them an empty query string.
+    """
+    u = current_user()
+    if u and u.store_id:
+        return Store.query.get(u.store_id)
     slug = request.args.get("store")
     if slug:
         s = Store.query.filter_by(slug=slug).first()
         if s:
             return s
-    u = current_user()
-    if u and u.store_id:
-        return Store.query.get(u.store_id)
     return get_current_store()
 
 
@@ -203,16 +224,14 @@ _DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Su
 @bp.get("/admin/hours")
 @roles_required(*ADMIN_ROLES)
 def hours():
-    store = _admin_store()
-    existing = {h.day_of_week: h for h in store.hours} if store else {}
-    rows = []
-    for d in range(7):
-        h = existing.get(d)
-        rows.append({"day": d, "label": _DAYS[d],
-                     "open": (h.open_time if h and h.open_time else "11:00"),
-                     "close": (h.close_time if h and h.close_time else "23:00"),
-                     "closed": bool(h.is_closed) if h else False})
-    return render_template("admin/hours.html", rows=rows, **_shell(store))
+    """Opening hours live in Store settings, and only there.
+
+    They used to be two screens editing the same seven rows — a tab inside
+    Store settings and a page of their own in the sidebar — so it was never
+    clear which one was the real one. This keeps old links and bookmarks
+    working by sending them to the tab that owns it.
+    """
+    return redirect("/admin/settings" + _qs(_admin_store()) + "#hours")
 
 
 @bp.post("/admin/hours")
@@ -232,9 +251,7 @@ def hours_save():
         h.close_time = (request.form.get(f"close_{d}") or "23:00")
     db.session.commit()
     flash(f"{store.name} opening hours updated.", "success")
-    if (request.form.get("next") or "").startswith("/admin/settings"):
-        return redirect("/admin/settings" + _qs(store) + "#hours")
-    return redirect("/admin/hours" + _qs(store))
+    return redirect("/admin/settings" + _qs(store) + "#hours")
 
 
 # ── Store settings (order types, min order, delivery zones) ──────────────
@@ -473,13 +490,13 @@ def site_images():
 @roles_required(*ADMIN_ROLES)
 def site_images_save():
     store = _admin_store()
+    # Pictures no longer travel with this form — each one is sent on its own to
+    # /admin/inline-image the moment it is chosen, so one oversized file cannot
+    # take the whole batch down with it. What is left here is the link boxes.
     for _title, slots in SITE_IMAGE_SLOTS:
         for slot in slots:
             key = slot[0]
-            _exts = VIDEO_EXTS if key.endswith("_video") else IMAGE_EXTS
-            uploaded = _save_image(request.files.get(key + "_file"),
-                                   "site-" + key.replace("_", "-"), _exts)
-            val = uploaded or request.form.get(key, "").strip()
+            val = request.form.get(key, "").strip()
             setting = SiteSetting.query.filter_by(key=key).first()
             if val:
                 if setting:
@@ -539,7 +556,16 @@ def inline_image():
     if key not in allowed:
         return {"ok": False, "error": "unknown image"}, 400
 
-    url = _save_image(request.files.get("file"), "site-" + key.replace("_", "-"))         or (request.form.get("url") or "").strip()
+    # the About page's video slot takes MP4/WEBM, every other slot only images
+    exts = VIDEO_EXTS if key.endswith("_video") else IMAGE_EXTS
+    sent = request.files.get("file")
+    url = _save_image(sent, "site-" + key.replace("_", "-"), exts, quiet=True)
+    if sent and getattr(sent, "filename", "") and not url:
+        # a file WAS chosen and we refused it; falling through to the url field
+        # here would quietly clear the slot instead of reporting the problem
+        return {"ok": False, "error": "That file type is not allowed here — use %s."
+                % ", ".join(e.lstrip(".").upper() for e in exts)}, 400
+    url = url or (request.form.get("url") or "").strip()
     row = SiteSetting.query.filter_by(key=key).first()
     if url:
         if row:
@@ -675,11 +701,20 @@ def site_image_delete(key):
     if row:
         val = row.value or ""
         if val.startswith("/static/img/uploads/"):
-            path = os.path.join(current_app.static_folder,
-                                *val.replace("/static/", "").split("/"))
+            # The value is whatever was typed into the link box, so the path it
+            # implies is untrusted: "/static/img/uploads/../../.." would walk out
+            # of the folder and delete something else entirely. Resolve it and
+            # refuse anything that does not land inside uploads.
+            updir = os.path.realpath(
+                os.path.join(current_app.static_folder, "img", "uploads"))
+            path = os.path.realpath(
+                os.path.join(current_app.static_folder, *val.replace("/static/", "").split("/")))
+            inside = path == updir or path.startswith(updir + os.sep)
             try:
-                if os.path.isfile(path):
+                if inside and os.path.isfile(path):
                     os.remove(path); removed_file = True
+                elif not inside:
+                    current_app.logger.warning("refused to delete outside uploads: %s", val)
             except OSError:
                 current_app.logger.warning("could not delete %s", path)
         db.session.delete(row)
@@ -749,21 +784,28 @@ def inline_style():
     key = (data.get("key") or "").strip()
     value = (data.get("value") or "").strip()
 
+    # RETIRED_STYLE_FIELDS are deliberately absent: they still render, so no
+    # existing section changes, but nothing may write them any more.
     allowed = {f[0] for f in DESIGN_FIELDS} | {
-        "style_font", "style_bodyfont", "style_hweight", "style_case",
         "style_overlay", "style_overlaycolor", "style_cardbg", "style_cardborder",
-        "style_cardhead", "style_cardtext", "style_cardradius", "style_shadow", "style_tsside", "style_tsdist",
-        "style_tsblur", "style_tscolor", "style_textw", "style_imgoverlay",
-        "style_imgradius", "style_bweight", "style_bsize", "style_italic",
-        "style_divider", "style_lh", "style_maxw", "style_hsize", "style_tracking",
+        "style_cardhead", "style_cardtext", "style_cardradius", "style_shadow",
+        "style_imgoverlay", "style_imgradius",
+        "style_divider", "style_maxw",
         "style_imgh", "style_imgfit", "style_cardcols", "style_cardminw",
         "style_cardw", "style_cardh", "style_gap", "style_squigcolor", "style_squigw", "style_navlink",
         "style_iconcolor", "style_logoh", "style_bgimage", "style_xtraimg",
         "style_xtrapos", "style_xtraw", "style_xtrah", "style_xtraradius",
         "style_xtraborder", "style_xtraborderw", "style_xtrashadow",
-        "style_xtraalign"}
-    if key not in allowed or not page or not section:
+        "style_xtraalign"} | TEXT_ROLE_KEYS | CTA_KEYS
+    # A retired key may still be CLEARED, never set. A section saved before the
+    # per-element system can carry one, and with no way to remove it the client
+    # would be stuck with a setting that moves several kinds of text at once and
+    # appears nowhere in the panel.
+    clearing_old = key in RETIRED_STYLE_FIELDS and not value
+    if (key not in allowed and not clearing_old) or not page or not section:
         return {"ok": False, "error": "unknown field"}, 400
+    if not style_value_ok(value):
+        return {"ok": False, "error": "that is not a valid value"}, 400
 
     row = PageSection.query.filter_by(page=page, key=section).first()
     if not row:
@@ -1003,12 +1045,30 @@ CANVAS_FONTS = [
     ("ui-monospace,'Cascadia Mono',Consolas,monospace", "Mono — modern", ""),
 ]
 
-# what the admin <select>s show — (value, label) only
-CANVAS_FONT_CHOICES = [(f[0], f[1]) for f in CANVAS_FONTS]
+# The full library the designer offers: 160 families, each one checked against
+# Google Fonts with its real weight list read back, grouped so a picker can be
+# searched and browsed rather than scrolled. CANVAS_FONTS stays as it was so the
+# older screens and google_fonts_link() keep working unchanged.
+from app.fonts import (FONT_LIBRARY, CATEGORIES as FONT_CATEGORIES,  # noqa: E402
+                       GOOGLE_SPEC as FONT_GOOGLE_SPEC,
+                       WEIGHTS_FOR as FONT_WEIGHTS_FOR)
 
-CANVAS_WEIGHTS = [("", "Default"), ("300", "Light"), ("400", "Regular"),
-                  ("500", "Medium"), ("600", "Semibold"), ("700", "Bold"),
-                  ("800", "Extrabold"), ("900", "Black")]
+_LEGACY_STACKS = {f[0] for f in CANVAS_FONTS}
+
+# (stack, label, category, weights) — everything the picker needs in one place
+FONT_PICKER = [(stack, family, category, weights)
+               for family, stack, category, weights in FONT_LIBRARY]
+
+# what the admin <select>s show — (value, label) only
+CANVAS_FONT_CHOICES = ([("", "Default")] +
+                       [(stack, family) for stack, family, _c, _w in FONT_PICKER])
+
+WEIGHT_LABELS = {100: "Thin", 200: "Extralight", 300: "Light", 400: "Regular",
+                 500: "Medium", 600: "Semibold", 700: "Bold", 800: "Extrabold",
+                 900: "Black"}
+
+CANVAS_WEIGHTS = [("", "Default")] + [(str(w), WEIGHT_LABELS[w])
+                                      for w in (100, 200, 300, 400, 500, 600, 700, 800, 900)]
 
 CANVAS_CASES = [("", "As written"), ("none", "Normal"), ("uppercase", "UPPERCASE"),
                 ("capitalize", "Capitalise"), ("lowercase", "lowercase")]
@@ -1017,37 +1077,114 @@ CANVAS_CASES = [("", "As written"), ("none", "Normal"), ("uppercase", "UPPERCASE
 @bp.get("/admin/canvas")
 @roles_required(*ADMIN_ROLES)
 def canvas():
+    """One screen for every page: the sections on the left, the page in the
+    middle, the settings for whatever is selected on the right.
+
+    It used to be the home page's screen alone, and every other page was a long
+    form of a hundred boxes with no picture of what they did. The home page can
+    also be reordered and its sections switched off, which the inner pages
+    cannot — their running order is part of what each page IS — so those two
+    affordances simply do not appear there.
+    """
     store = _admin_store()
-    sections = home_sections_ordered()
+    page = (request.args.get("page") or "home").strip()
     defaults = resolved_defaults(current_app.config.get("BRAND_NAME", ""))
     state = []
-    for row in sections:
-        spec = spec_for(row.key)
-        fields = [{"key": f, "label": lbl, "default": (defaults.get(row.key, {}).get(f) or d or "")}
-                  for f, lbl, d in spec.get("fields", [])]
-        state.append({
-            "key": row.key, "sid": row.id, "label": row.label,
-            "enabled": bool(row.enabled), "custom": bool(spec.get("custom")),
-            "config": row.config or {}, "fields": fields,
-        })
-    return render_template("admin/canvas.html", inner_pages=INNER_PAGES, state=state, fonts=CANVAS_FONT_CHOICES,
+
+    if page == "home":
+        for row in home_sections_ordered():
+            spec = spec_for(row.key)
+            fields = [{"key": f, "label": lbl,
+                       "default": (defaults.get(row.key, {}).get(f) or d or "")}
+                      for f, lbl, d in spec.get("fields", [])]
+            state.append({
+                "key": row.key, "sid": row.id, "label": row.label,
+                "enabled": bool(row.enabled), "custom": bool(spec.get("custom")),
+                "config": row.config or {}, "fields": fields,
+            })
+        page_url, page_label = "/", "Home page"
+    else:
+        spec = INNER_PAGE_BY_KEY.get(page)
+        if not spec:
+            abort(404)
+        for s in inner_sections(page):
+            state.append({
+                "key": s["key"], "sid": s["id"], "label": s["label"],
+                "enabled": True, "custom": False,
+                "config": s["config"], "fields": [],
+            })
+        page_url, page_label = spec["url"], spec["label"]
+
+    return render_template("admin/canvas.html", inner_pages=INNER_PAGES, state=state,
+                           page=page, page_url=page_url, page_label=page_label,
+                           can_reorder=(page == "home"),
+                           fonts=CANVAS_FONT_CHOICES,
                            weights=CANVAS_WEIGHTS, cases=CANVAS_CASES, **_shell(store))
 
 
 @bp.post("/admin/canvas/save")
 @roles_required(*ADMIN_ROLES)
 def canvas_save():
-    items = (request.get_json(silent=True) or {}).get("sections", [])
-    rows = {s.key: s for s in PageSection.query.filter_by(page="home").all()}
+    data = request.get_json(silent=True) or {}
+    items = data.get("sections", [])
+    # which page's sections these are. Only the home page can be reordered or
+    # have sections switched off; an inner page's order is part of what the
+    # page is, so only its styling comes back here.
+    page = (data.get("page") or "home").strip()
+    if page != "home" and page not in INNER_PAGE_BY_KEY:
+        return {"ok": False, "error": "unknown page"}, 400
+    rows = {s.key: s for s in PageSection.query.filter_by(page=page).all()}
     for i, item in enumerate(items):
-        row = rows.get(item.get("key"))
+        key = item.get("key")
+        row = rows.get(key)
+        if not row and page != "home":
+            # an inner page's section has no row until something is saved for it
+            label = next((s["label"] for s in INNER_PAGE_BY_KEY[page]["sections"]
+                          if s["key"] == key), key)
+            row = PageSection(page=page, key=key, label=label, enabled=True, sort_order=i)
+            db.session.add(row)
+            rows[key] = row
         if not row:
+            continue
+        if page != "home":
+            cfg = item.get("config")
+            if isinstance(cfg, dict):
+                kept = dict(row.config or {})
+                for k, v in cfg.items():
+                    if not str(k).startswith("style_"):
+                        kept[k] = v
+                    elif k in RETIRED_STYLE_FIELDS:
+                        continue
+                    elif style_value_ok(v):
+                        kept[k] = v
+                for k in CANVAS_STYLE_KEYS:
+                    if k in kept and k not in cfg:
+                        kept.pop(k)
+                row.config = kept
             continue
         row.sort_order = i
         row.enabled = bool(item.get("enabled", True))
         cfg = item.get("config")
         if isinstance(cfg, dict):
-            row.config = cfg
+            # A merge, not a replacement. This screen used to store whatever
+            # arrived, which meant it also DELETED every setting it does not
+            # know about: a tab opened before someone styled a heading on the
+            # page would, on Save, quietly wipe that heading's settings. It
+            # only offers section-level things now, so anything else it sends
+            # is just what it happened to load — the row keeps its own.
+            kept = dict(row.config or {})
+            for k, v in cfg.items():
+                if not str(k).startswith("style_"):
+                    kept[k] = v                     # content and layout fields
+                elif k in RETIRED_STYLE_FIELDS:
+                    continue                        # never written again
+                elif style_value_ok(v):
+                    kept[k] = v
+            # a control this screen owns, cleared on this screen, really clears
+            for k in CANVAS_STYLE_KEYS:
+                if k in kept and k not in cfg:
+                    kept.pop(k)
+            row.config = kept
     db.session.commit()
     return {"ok": True}
 
@@ -1060,7 +1197,11 @@ def builder_list():
     pages = BuilderPage.query.order_by(BuilderPage.created_at.desc()).all()
     taken = {p.override_path for p in pages if p.override_path}
     overridable = [o for o in builder_overridable() if o[0] not in taken]
-    return render_template("admin/builder_list.html", pages=pages,
+    # a home page holding content of its own has taken `/` away from the
+    # section system, so offer to hand it back
+    from ..website import _is_pure_section_page
+    frozen_home = {p.id for p in pages if p.is_home and not _is_pure_section_page(p)}
+    return render_template("admin/builder_list.html", pages=pages, frozen_home=frozen_home,
                            overridable=overridable, **_shell(store))
 
 
@@ -1166,36 +1307,83 @@ def builder_duplicate(pid):
     return redirect("/admin/builder/%d" % dup.id + _qs(store))
 
 
-# Sections that pull live DB data (rendered as non-editable "live blocks"); the
-# rest are pre-loaded as FULLY-EDITABLE HTML so every card/text/button/link in
-# them can be edited, restyled and dragged in the visual builder.
-_HOME_LIVE_KEYS = {"hero", "explore_menu", "best_sellers", "locations"}
+def _home_placeholders():
+    """The home as the builder should hold it: one live block per section.
+
+    Every section is a `data-dyn` placeholder, so `expand_dynamic` renders it
+    from its own PageSection config every time the page is served. Baking the
+    sections into static HTML here — which is what this used to do for the nine
+    sections that are not fed by the menu/store tables — froze the home page:
+    from that moment `/` served a snapshot, so switching a section off,
+    reordering, restyling or editing its words and pictures did nothing at all.
+
+    The order comes from the Page Builder, not from the registry, and the
+    admin's own custom blocks are included — seeding from the static key list
+    would show them in a different order to the live page and leave custom
+    blocks out of the builder altogether.
+    """
+    try:
+        keys = [r.key for r in home_sections_ordered()]
+    except Exception:
+        keys = list(DYNAMIC_SECTION_KEYS)
+    for k in DYNAMIC_SECTION_KEYS:          # a registry section with no row yet
+        if k not in keys:
+            keys.append(k)
+    return "".join('<section data-dyn="%s"></section>' % k for k in keys)
 
 
 @bp.post("/admin/builder/new-home")
 @roles_required(*ADMIN_ROLES)
 def builder_new_home():
-    """Create (or open) a drag-drop HOME page pre-loaded with the real home:
-    data-driven sections as live blocks, everything else as editable HTML."""
+    """Create (or open) a drag-drop HOME page pre-loaded with the real home."""
     store = _admin_store()
     existing = BuilderPage.query.filter_by(is_home=True).first()
     if existing:
         return redirect("/admin/builder/%d" % existing.id + _qs(store))
-    parts = []
-    for k in DYNAMIC_SECTION_KEYS:
-        if k in _HOME_LIVE_KEYS:
-            parts.append('<section data-dyn="%s"></section>' % k)
-        else:
-            try:
-                parts.append(render_template("website/sections/%s.html" % k, cfg={}))
-            except Exception:
-                parts.append('<section data-dyn="%s"></section>' % k)
     page = BuilderPage(title="Home page", slug=unique_page_slug("home"),
-                       html="".join(parts), css="", gjs={}, published=True, is_home=True)
+                       html=_home_placeholders(), css="", gjs={},
+                       published=True, is_home=True)
     db.session.add(page)
     db.session.commit()
-    flash("Home page loaded into the builder — every text, card and button is now editable.", "success")
+    flash("Home page loaded into the builder — reorder its sections and drop new blocks around them.", "success")
     return redirect("/admin/builder/%d" % page.id + _qs(store))
+
+
+@bp.post("/admin/builder/<int:pid>/detach-home")
+@roles_required(*ADMIN_ROLES)
+def builder_detach_home(pid):
+    """Hand a frozen home page back to the section system.
+
+    A page that has real content of its own owns `/` completely, which is right
+    when the admin built something there on purpose and wrong when it happened
+    by accident. This puts the section placeholders back so the home is once
+    again described by Page Builder, Page design and on-page editing.
+
+    Nothing is thrown away: whatever was built here is kept as a draft page, so
+    an admin who did mean to build a home by hand can get it back. Words and
+    pictures were never in this HTML anyway — they live in the sections.
+    """
+    store = _admin_store()
+    page = BuilderPage.query.get_or_404(pid)
+    if not page.is_home:
+        abort(404)          # only the home page is served this way
+    if (page.html or "").strip():
+        copy = BuilderPage(
+            title=(page.title or "Home page") + " (built copy)",
+            slug=unique_page_slug((page.slug or "home") + "-built-copy"),
+            html=page.html, css=page.css, gjs=page.gjs,
+            published=False, is_home=False)
+        if hasattr(page, "head_code"):
+            copy.head_code = page.head_code      # analytics/pixel snippets too
+        db.session.add(copy)
+    page.html = _home_placeholders()
+    page.css = ""
+    page.gjs = {}
+    if hasattr(page, "head_code"):
+        page.head_code = ""
+    db.session.commit()
+    flash("Home page handed back to its sections. What you had built is saved as a draft copy.", "success")
+    return redirect("/admin/builder" + _qs(store))
 
 
 @bp.get("/admin/builder/<int:pid>")
@@ -1465,17 +1653,22 @@ def _unique_slug(name, model=Product):
     return slug
 
 
-def _save_image(file, slug, exts=IMAGE_EXTS):
+def _save_image(file, slug, exts=IMAGE_EXTS, quiet=False):
     """Save an uploaded file under /static/img/uploads and return its URL.
 
     `exts` lets a caller widen the whitelist, e.g. the About page video slot
     accepts MP4/WEBM. Everything else still only takes images.
+
+    `quiet` is for the JSON endpoints: a flash raised here would sit in the
+    session and surface on whatever page the admin opened next, long after they
+    had already been told what went wrong.
     """
     if not file or not getattr(file, "filename", ""):
         return None
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in exts:
-        flash("Unsupported file type — allowed: %s." % ", ".join(e.lstrip(".").upper() for e in exts), "error")
+        if not quiet:
+            flash("Unsupported file type — allowed: %s." % ", ".join(e.lstrip(".").upper() for e in exts), "error")
         return None
     updir = os.path.join(current_app.static_folder, "img", "uploads")
     os.makedirs(updir, exist_ok=True)
@@ -2554,34 +2747,43 @@ def theme_reset():
 # style vocabulary works there — this is the UI for it.
 from app.models.page import INNER_PAGES, INNER_PAGE_BY_KEY, inner_sections  # noqa: E402
 
+# ── Retired: one control that moved several unrelated things ────────────
+# These keys are still understood by pb_section_style(), so a section saved
+# before this change renders exactly as it did. They are no longer offered
+# anywhere, because each of them reached more than one kind of text at once —
+# "Heading size" set the section heading, the card headings at 70% and the
+# sub-headings at 58%, so sizing a hero heading moved the line underneath it.
+# Every one of them now has a per-element equivalent that moves one thing:
+#   style_hcolor  -> Main heading / Card heading -- Colour
+#   style_font    -> Main heading / Card heading -- Font
+#   style_hweight -> ... -- Weight        style_case    -> ... -- Capitals
+#   style_hsize   -> ... -- Size          style_hlh     -> ... -- Line height
+#   style_tracking-> ... -- Letter spacing  style_italic -> ... -- Slant
+#   style_tcolor  -> Paragraph text -- Colour   style_lh   -> ... -- Line height
+#   style_bsize   -> Paragraph / Card text / Sub heading -- Size
+#   style_bweight -> Paragraph text -- Weight
+#   style_bodyfont-> Paragraph / Card text / Label / Button / Caption -- Font
+#   style_textw   -> each element's own Text width
+#   style_btnbg/btntext/btnradius/btnborder -> Button states -- Normal
+RETIRED_STYLE_FIELDS = [
+    "style_hcolor", "style_tcolor", "style_font", "style_bodyfont",
+    "style_hweight", "style_case", "style_hsize", "style_tracking",
+    "style_lh", "style_textw", "style_bweight", "style_bsize",
+    "style_italic", "style_hlh",
+    "style_btnbg", "style_btntext", "style_btnradius", "style_btnborder",
+    # one shadow for every h1-h6, p, li, span and link in the section; each
+    # kind of text has its own four now (TEXT_ROLE_PROP_SPECS)
+    "style_tsside", "style_tsdist", "style_tsblur", "style_tscolor",
+]
+
 # key, label, input type — matches what pb_section_style() understands
 DESIGN_FIELDS = [
     ("style_bg", "Section background", "color"),
-    ("style_hcolor", "Heading colour", "color"),
-    ("style_tcolor", "Text colour", "color"),
     ("style_accent", "Accent colour", "color"),
     ("style_align", "Text alignment", "align"),
-    ("style_font", "Heading font", "font"),
-    ("style_bodyfont", "Body font", "font"),
-    ("style_hweight", "Heading weight", "weight"),
-    ("style_case", "Heading case", "case"),
-    ("style_hsize", "Heading size (px)", "px"),
-    ("style_tracking", "Letter spacing", "px"),
-    ("style_lh", "Body line height", "opacity"),
-    ("style_btnbg", "Button colour", "color"),
-    ("style_btntext", "Button text", "color"),
-    ("style_btnradius", "Button radius", "px"),
     ("style_shadow", "Card shadow", "shadow"),
-    ("style_tsside", "Heading shadow — side", "tsside"),
-    ("style_tsdist", "Heading shadow — distance", "px"),
-    ("style_tsblur", "Heading shadow — softness", "px"),
-    ("style_tscolor", "Heading shadow — colour", "color"),
-    ("style_textw", "Text width", "px"),
     ("style_imgoverlay", "Image overlay", "color"),
     ("style_imgradius", "Image corner radius", "px"),
-    ("style_bweight", "Body weight", "weight"),
-    ("style_bsize", "Body size (px)", "px"),
-    ("style_italic", "Heading italic", "italic"),
     ("style_divider", "Divider line", "color"),
     ("style_bgimage", "Section background picture", "image"),
     ("style_bgsize", "How it sits", "bgsize"),
@@ -2591,12 +2793,10 @@ DESIGN_FIELDS = [
     ("style_graddir", "Gradient direction", "graddir"),
     ("style_imgfilter", "Photo effect", "filter"),
     ("style_link", "Link colour", "color"),
-    ("style_hlh", "Heading line height", "opacity"),
     ("style_cardpad", "Card padding", "px"),
     ("style_cardborderw", "Card border width", "px"),
     ("style_cardw", "Card width", "px"),
     ("style_cardh", "Card minimum height", "px"),
-    ("style_btnborder", "Button border", "color"),
     ("style_minh", "Minimum height", "px"),
     ("style_px", "Side padding", "px"),
     ("style_valign", "Vertical position", "valign"),
@@ -2631,6 +2831,108 @@ DESIGN_FIELDS = [
 ]
 
 
+# ── Per-role typography ─────────────────────────────────────────────────
+# One set of controls per KIND of text, so restyling a heading cannot reach the
+# sub-heading, the body copy, the card titles or the button labels. The roles
+# and the properties are the same list the CSS and pb_section_style() use.
+TEXT_ROLE_LABELS = [
+    ("title", "Main heading"),
+    ("titlehl", "Highlighted words"),
+    ("sub", "Sub heading"),
+    ("body", "Paragraph text"),
+    ("eyebrow", "Label / badge"),
+    ("cardtitle", "Card heading"),
+    ("cardtext", "Card text"),
+    ("btn", "Button text"),
+    ("nav", "Navigation link"),
+    ("meta", "Price / caption"),
+]
+
+TEXT_ROLE_PROP_SPECS = [
+    ("family", "Font", "font"),
+    ("size", "Size (px)", "px"),
+    ("sizemd", "Size from 768px", "px"),
+    ("sizelg", "Size from 1024px", "px"),
+    ("weight", "Weight", "weight"),
+    ("lh", "Line height", "ratio"),
+    ("track", "Letter spacing", "pxfine"),
+    ("case", "Capitals", "case"),
+    ("italic", "Slant", "italic"),
+    ("color", "Colour", "color"),
+    ("maxw", "Text width (px)", "pxwide"),
+    ("align", "Alignment", "align"),
+    ("mt", "Space above (px)", "px"),
+    ("mb", "Space below (px)", "px"),
+    # composed into one --pb-<role>-shadow by pb_section_style
+    ("tsside", "Shadow — which side", "tsside"),
+    ("tsdist", "Shadow — how far (px)", "px"),
+    ("tsblur", "Shadow — how soft (px)", "px"),
+    ("tscolor", "Shadow — colour", "color"),
+]
+
+TEXT_ROLE_FIELDS = [
+    ("style_%s_%s" % (role, prop), "%s — %s" % (role_label, prop_label), kind)
+    for role, role_label in TEXT_ROLE_LABELS
+    for prop, prop_label, kind in TEXT_ROLE_PROP_SPECS
+]
+
+TEXT_ROLE_KEYS = {f[0] for f in TEXT_ROLE_FIELDS}
+
+TEXT_ROLE_FIELDS_BY_ROLE = {
+    role: [("style_%s_%s" % (role, prop), prop_label, kind)
+           for prop, prop_label, kind in TEXT_ROLE_PROP_SPECS]
+    for role, _label in TEXT_ROLE_LABELS
+}
+
+
+# ── Button states ───────────────────────────────────────────────────────
+# Each state holds its own colours. Nothing is derived: a hover background does
+# not imply a hover label colour, which is how a label ends up invisible against
+# the fill behind it.
+CTA_STATE_LABELS = [
+    ("default", "Normal"),
+    ("hover", "Hover"),
+    ("focus", "Keyboard focus"),
+    ("active", "Being pressed"),
+    ("disabled", "Disabled"),
+]
+
+CTA_PROP_SPECS = [
+    ("bg", "Background", "color"),
+    ("text", "Text", "color"),
+    ("border", "Border", "color"),
+    ("borderw", "Border width (px)", "px"),
+    ("icon", "Icon", "color"),
+    ("shadow", "Shadow", "shadow"),
+    ("opacity", "Opacity", "opacity"),
+    ("weight", "Weight", "weight"),
+    ("decoration", "Underline", "decoration"),
+    ("lift", "Lift (px)", "pxfine"),
+    ("scale", "Scale", "ratio"),
+    ("radius", "Corners (px)", "px"),
+]
+
+CTA_FIELDS = [
+    ("style_cta_%s_%s" % (state, prop), "%s — %s" % (state_label, prop_label), kind)
+    for state, state_label in CTA_STATE_LABELS
+    for prop, prop_label, kind in CTA_PROP_SPECS
+] + [
+    ("style_cta_focusring", "Focus ring colour", "color"),
+    ("style_cta_dur", "Transition (seconds)", "seconds"),
+]
+
+CTA_KEYS = {f[0] for f in CTA_FIELDS}
+
+CTA_FIELDS_BY_STATE = {
+    state: [("style_cta_%s_%s" % (state, prop), prop_label, kind)
+            for prop, prop_label, kind in CTA_PROP_SPECS]
+    for state, _label in CTA_STATE_LABELS
+}
+
+DECORATION_CHOICES = [("", "Default"), ("none", "None"), ("underline", "Underline"),
+                      ("line-through", "Strikethrough")]
+
+
 @bp.get("/admin/design")
 @roles_required(*ADMIN_ROLES)
 def design():
@@ -2648,7 +2950,12 @@ def design():
         return render_template("admin/design.html",
                                pages=INNER_PAGES, page=page,
                                spec={"label": "Footer & shared text", "url": "/"},
-                               sections=[], fields=DESIGN_FIELDS,
+                               sections=[], fields=DESIGN_FIELDS, inuse={},
+                               role_groups=TEXT_ROLE_LABELS,
+                               role_fields_by_role=TEXT_ROLE_FIELDS_BY_ROLE,
+                               cta_states=CTA_STATE_LABELS,
+                               cta_fields_by_state=CTA_FIELDS_BY_STATE,
+                               decorations=DECORATION_CHOICES,
                                fonts=CANVAS_FONT_CHOICES, weights=CANVAS_WEIGHTS,
                                cases=CANVAS_CASES, styled={},
                                text_groups=groups, content_current=current,
@@ -2656,9 +2963,15 @@ def design():
     spec = INNER_PAGE_BY_KEY.get(page)
     if not spec:
         abort(404)
+    _secs = inner_sections(page)
     styled = {s["key"]: any(str(v).strip() for k, v in s["config"].items()
                             if k.startswith("style_"))
-              for s in inner_sections(page)}
+              for s in _secs}
+    # how many settings each section actually overrides, so the screen can say
+    # so and the admin is not hunting through a hundred "default" boxes
+    inuse = {s["key"]: sum(1 for k, v in s["config"].items()
+                           if k.startswith("style_") and str(v).strip())
+             for s in _secs}
     # The words on this page live in the same screen as its design now — a
     # client editing the Contact page should not have to work out that the
     # heading is on one tab and the section colour on another.
@@ -2668,7 +2981,12 @@ def design():
                    if g.get("url") == spec["url"] and g["key"] not in ("footer", "storefront")]
     return render_template("admin/design.html",
                            pages=INNER_PAGES, page=page, spec=spec,
-                           sections=inner_sections(page), fields=DESIGN_FIELDS,
+                           sections=_secs, fields=DESIGN_FIELDS, inuse=inuse,
+                           role_groups=TEXT_ROLE_LABELS,
+                           role_fields_by_role=TEXT_ROLE_FIELDS_BY_ROLE,
+                           cta_states=CTA_STATE_LABELS,
+                           cta_fields_by_state=CTA_FIELDS_BY_STATE,
+                           decorations=DECORATION_CHOICES,
                            fonts=CANVAS_FONT_CHOICES, weights=CANVAS_WEIGHTS, cases=CANVAS_CASES, shadows=SHADOW_CHOICES,
                            tssides=TSSIDE_CHOICES, italics=ITALIC_CHOICES,
                            bgsizes=BGSIZE_CHOICES, bgposes=BGPOS_CHOICES,
@@ -2693,11 +3011,13 @@ def design_save(page, key):
         db.session.add(row)
 
     cfg = dict(row.config or {})
-    for fkey, _label, _kind in DESIGN_FIELDS:
+    for fkey, _label, _kind in DESIGN_FIELDS + TEXT_ROLE_FIELDS + CTA_FIELDS:
         val = (request.form.get(fkey) or "").strip()
         # blank clears the override rather than storing "" — keeps the inline
         # style attribute (and therefore the CSS) free of dead declarations
-        if val:
+        if val and not style_value_ok(val):
+            flash("%s was left alone: that is not a valid value." % _label, "error")
+        elif val:
             cfg[fkey] = val
         else:
             cfg.pop(fkey, None)

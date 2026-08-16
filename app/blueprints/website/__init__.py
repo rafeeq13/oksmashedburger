@@ -2,7 +2,7 @@
 import re
 import secrets
 
-from flask import Blueprint, render_template, request, redirect, flash, current_app
+from flask import Blueprint, render_template, request, redirect, flash, current_app, g
 from markupsafe import escape
 
 from app.extensions import db, limiter
@@ -45,7 +45,13 @@ def _menu_context():
 # Fields that are text a person reads. Everything else in a section's config is
 # a link, a theme name or an image URL, and wrapping those in a <span> would
 # land markup inside an attribute.
-_NON_TEXT = ("_href", "theme", "image", "img")
+# Fields that are NOT words on the page. A value here is wrapped in an editable
+# <span>, so anything a template puts inside an attribute has to be left alone:
+# href="…/<span …>oksmashedburger</span>/reels/" closes the tag early and the
+# rest of it lands on the page as text, which is exactly what the Instagram
+# reels grid did. tests/test_smoke.py re-derives this list from the templates,
+# so a new field used in an attribute fails there instead of on the page.
+_NON_TEXT = ("_href", "theme", "image", "img", "handle")
 
 
 def _editable_cfg(key, cfg):
@@ -161,6 +167,20 @@ def expand_dynamic(html, home=False, include_hidden=False):
     return out
 
 
+# GrapesJS hands back its own reset rules from getCss() whether or not the admin
+# styled anything. Counting those as "the admin built something here" is what
+# would let a single Save in the builder take the home page away from the
+# section system for good.
+_GJS_BOILERPLATE = re.compile(
+    r"\*\s*\{\s*box-sizing\s*:\s*border-box\s*;?\s*\}|body\s*\{\s*margin\s*:\s*0\s*;?\s*\}",
+    re.I)
+
+
+def _real_css(css):
+    """The page's own CSS, with the builder's boilerplate discounted."""
+    return _GJS_BOILERPLATE.sub("", css or "").strip()
+
+
 def _is_pure_section_page(page):
     """True when a builder page is nothing but dynamic-section placeholders.
 
@@ -171,11 +191,24 @@ def _is_pure_section_page(page):
     stored placeholder list instead is what made reordering and new custom blocks
     in the Page Builder look like they did nothing.
     """
-    if (page.css or "").strip() or (page.head_code or "").strip():
+    if _real_css(page.css) or (page.head_code or "").strip():
         return False
     rest = _DYN_RE.sub("", page.html or "")
     rest = _HTML_COMMENT_RE.sub("", rest)
     return not rest.strip()
+
+
+def _render_builder_page(page, expanded):
+    """Render a page built in the drag-drop editor.
+
+    The one place that names the page's design key, so the <head> can ask
+    Google for the family this page chose. Without it the picker's own preview
+    made a custom page look right while every visitor got the fallback face,
+    and nothing on either admin screen showed the difference.
+    """
+    g.pb_builder_key = "p:" + page.slug
+    return render_template("website/builder_page.html", page=page,
+                           expanded_html=expanded)
 
 
 @bp.before_app_request
@@ -189,8 +222,7 @@ def _serve_builder_override():
         return None
     page = BuilderPage.query.filter_by(override_path=p, published=True).first()
     if page:
-        return render_template("website/builder_page.html", page=page,
-                               expanded_html=expand_dynamic(page.html))
+        return _render_builder_page(page, expand_dynamic(page.html))
     return None
 
 
@@ -204,9 +236,8 @@ def home():
     # system describes the page better than the frozen placeholder list does.
     home_page = BuilderPage.query.filter_by(is_home=True, published=True).first()
     if home_page and not _is_pure_section_page(home_page):
-        return render_template("website/builder_page.html", page=home_page,
-                               expanded_html=expand_dynamic(home_page.html, home=True,
-                                                            include_hidden=edit_mode))
+        return _render_builder_page(home_page, expand_dynamic(
+            home_page.html, home=True, include_hidden=edit_mode))
     # The built-in, section-based home.
     categories, best = _menu_context()
     all_secs = home_sections_ordered()
@@ -218,8 +249,7 @@ def home():
 @bp.get("/p/<slug>")
 def custom_page(slug):
     page = BuilderPage.query.filter_by(slug=slug, published=True).first_or_404()
-    return render_template("website/builder_page.html", page=page,
-                           expanded_html=expand_dynamic(page.html))
+    return _render_builder_page(page, expand_dynamic(page.html))
 
 
 @bp.post("/form-submit")

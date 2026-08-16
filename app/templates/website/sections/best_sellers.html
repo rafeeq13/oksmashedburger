@@ -20,7 +20,7 @@
           <a href="/item/{{ it.product.slug }}" data-item="{{ it.product.slug }}"><h3 class="ok-card-title line-clamp-1 ok-hover-gold transition-colors duration-200">{{ it.product.name }}</h3></a>
           <p class="ok-card-text line-clamp-2">{{ it.product.description or '' }}</p>
           <div class="ok-card-foot d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
-            <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none pt-1">${{ '%.2f'|format(it.price) }}</span>
+            <span class="font-display ok-fw-900 ok-fs-lg ok-lh-none pt-1 pb-t-meta">${{ '%.2f'|format(it.price) }}</span>
             <button type="button" data-item="{{ it.product.slug }}" class="ok-w-10 ok-h-10 rounded-pill btn btn-primary ok-grid ok-place-center !p-0" aria-label="Customize {{ it.product.name }}"><i class="fa-solid fa-plus ok-fs-sm"></i></button>
           </div>
         </div>

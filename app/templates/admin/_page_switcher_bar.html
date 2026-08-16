@@ -1,0 +1,80 @@
+{# The page switcher plus the actions for whichever page is in view.
+
+   One bar answers both questions a page builder has to answer at a glance:
+   which page am I editing, and what can I do to it. It replaces a wrapping
+   strip of a dozen identical pills that mixed the two together.
+
+   Expects `current` — 'home', 'site', or an inner page key. #}
+{% set _store = ('&store=' ~ request.args.get('store')) if request.args.get('store') else '' %}
+{% set _pages = pages if pages is defined else inner_pages %}
+{% set _here = _pages | selectattr('page', 'equalto', current) | list | first %}
+{% set _label = 'Home' if current == 'home'
+                else ('Footer & shared text' if current == 'site'
+                else (_here.label if _here else 'Page')) %}
+{% set _url = '/' if current == 'home' else (_here.url if _here else '/') %}
+
+<div class="ok-pageswitch ok-mb-4">
+  <details class="ok-pageswitch-menu">
+    <summary aria-label="Change page">
+      <span class="ok-pageswitch-eyebrow">Page</span>
+      <span class="ok-pageswitch-now">{{ _label }}</span>
+      <i class="fa-solid fa-chevron-down ok-pageswitch-caret"></i>
+    </summary>
+    <div class="ok-pageswitch-panel" role="menu">
+      <input type="search" class="ok-pageswitch-search" placeholder="Search pages…"
+             aria-label="Search pages" data-pageswitch-search>
+      <div class="ok-pageswitch-group">Storefront</div>
+      <a href="/admin/canvas{{ qs }}" class="ok-pageswitch-item {{ 'is-on' if current == 'home' }}" role="menuitem">
+        <i class="fa-solid fa-house"></i><span class="n">Home</span><span class="c">{{ home_sections|length if home_sections is defined else '' }} sections</span>
+      </a>
+      {% for p in _pages %}
+      <a href="/admin/canvas?page={{ p.page }}{{ _store }}"
+         class="ok-pageswitch-item {{ 'is-on' if p.page == current }}" role="menuitem">
+        <i class="fa-solid fa-file-lines"></i>
+        <span class="n">{{ p.label }}</span>
+        <span class="c">{{ p.sections | length }} section{{ '' if p.sections | length == 1 else 's' }}</span>
+      </a>
+      {% endfor %}
+      <div class="ok-pageswitch-group">Everywhere</div>
+      <a href="/admin/design?page=site{{ _store }}"
+         class="ok-pageswitch-item {{ 'is-on' if current == 'site' }}" role="menuitem">
+        <i class="fa-solid fa-bars-staggered"></i>
+        <span class="n">Footer &amp; shared text</span><span class="c">header, footer, modals</span>
+      </a>
+    </div>
+  </details>
+
+  <div class="ok-pageswitch-actions">
+    <a href="{{ _url }}?edit=1" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-pen"></i> Edit on the page
+    </a>
+    <a href="{{ _url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
+      <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
+    </a>
+    {# Home has its own reset in the visual editor, and "Footer & shared text"
+       is not an inner page, so its reset route can only ever 404. #}
+    {% if current not in ('home', 'site') %}
+    <form method="post" action="/admin/design/{{ current }}/reset-all"
+          onsubmit="return confirm('Reset every section on this page to the built-in design?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="btn btn-secondary btn-sm">Reset page</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-pageswitch-search]').forEach(function (box) {
+    box.addEventListener('input', function () {
+      var q = box.value.trim().toLowerCase();
+      box.closest('.ok-pageswitch-panel').querySelectorAll('.ok-pageswitch-item').forEach(function (a) {
+        a.style.display = a.querySelector('.n').textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+      });
+    });
+  });
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('details.ok-pageswitch-menu[open]').forEach(function (d) {
+      if (!d.contains(e.target)) d.removeAttribute('open');
+    });
+  });
+</script>

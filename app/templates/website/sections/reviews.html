@@ -17,7 +17,7 @@
       {% for r in reviews %}
       <div class="ok-card ok-card-hover d-flex flex-column">
         <div class="ok-card-body align-items-center text-center ok-gap-35">
-          <div class="ok-h-7 d-flex align-items-center">
+          <div class="ok-h-7 d-flex align-items-center pb-t-keep">
             {% if r.key == 'google' %}<span class="fw-bold ok-fs-xl" style="font-family:Arial,Helvetica,sans-serif"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></span>
             {% elif r.key == 'yelp' %}<span class="ok-fw-800 ok-fs-xl" style="color:#D32323">Yelp</span> <i class="fa-solid fa-burst ok-fs-sm" style="color:#D32323"></i>
             {% elif r.key == 'ubereats' %}<span class="ok-fw-800 ok-fs-lg text-ink">Uber<span style="color:#06C167">Eats</span></span>

@@ -21,7 +21,8 @@
           <h3 class="ok-loccard-title">{{ s.name }}, {{ s.state }}</h3>
           <ul class="ok-loccard-rows">
             <li><i class="fa-solid fa-location-dot"></i><span>{{ s.full_address }}</span></li>
-            <li><i class="fa-solid fa-clock"></i><span>Today {{ s.today_hours }}</span></li>
+            {# opening hours read as a status, not as the address above them #}
+            <li class="pb-t-meta"><i class="fa-solid fa-clock"></i><span>Today {{ s.today_hours }}</span></li>
             {% if s.phone %}<li><i class="fa-solid fa-phone"></i><a href="tel:{{ s.phone }}">{{ s.phone }}</a></li>{% endif %}
           </ul>
         </div>
