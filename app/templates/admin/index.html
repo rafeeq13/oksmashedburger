@@ -3,8 +3,10 @@
 
 {% macro delta(d) %}
 {%- if d is none -%}<span class="ok-fs-xs text-muted-warm fw-medium">no change</span>
-{%- elif d >= 0 -%}<span class="ok-fs-xs fw-bold text-ok-green"><i class="fa-solid fa-arrow-trend-up"></i> {{ d }}%</span>
-{%- else -%}<span class="ok-fs-xs fw-bold text-ok-red"><i class="fa-solid fa-arrow-trend-down"></i> {{ -d }}%</span>{%- endif -%}
+{%- elif d >= 0 -%}<span class="ok-fs-xs fw-bold text-ok-green"><i class="fa-solid fa-arrow-trend-up"></i> {{ d
+  }}%</span>
+{%- else -%}<span class="ok-fs-xs fw-bold text-ok-red"><i class="fa-solid fa-arrow-trend-down"></i> {{ -d }}%</span>{%-
+endif -%}
 {% endmacro %}
 
 {% block admin %}
@@ -12,7 +14,8 @@
 <div class="d-flex flex-wrap align-items-end justify-content-between ok-gap-3 mb-4">
   <div>
     <h2 class="ok-h2">Dashboard</h2>
-    <p class="text-muted-warm ok-fs-sm mt-1">{{ admin_store.name if admin_store else 'All stores' }} · {{ now_label }}</p>
+    <p class="text-muted-warm ok-fs-sm mt-1">{{ admin_store.name if admin_store else 'All stores' }} · {{ now_label }}
+    </p>
   </div>
   <div class="d-flex gap-2">
     <a href="/admin/orders{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-receipt"></i> Orders</a>
@@ -23,7 +26,8 @@
 {% set pbase = '?store=' + admin_store.slug + '&' if qs else '?' %}
 <div class="d-flex gap-2 overflow-x-auto hide-scrollbar mb-4">
   {% for pv, pl in [('today','Today'), ('7d','7 days'), ('30d','30 days'), ('all','All time')] %}
-  <a href="/admin{{ pbase }}period={{ pv }}" class="chip flex-shrink-0 {% if kpis.period == pv %}is-active{% endif %}">{{ pl }}</a>
+  <a href="/admin{{ pbase }}period={{ pv }}"
+    class="chip flex-shrink-0 {% if kpis.period == pv %}is-active{% endif %}">{{ pl }}</a>
   {% endfor %}
 </div>
 
@@ -32,23 +36,33 @@
 <div class="ok-card ok-p-5 mb-4">
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
     <div class="d-flex align-items-center ok-gap-3">
-      <div class="ok-w-11 ok-h-11 ok-rounded-xl ok-grid ok-place-center {% if admin_store.open_now %}bg-ok-green-10 text-ok-green{% else %}bg-ok-red-10 text-ok-red{% endif %}">
+      <div
+        class="ok-w-11 ok-h-11 ok-rounded-xl ok-grid ok-place-center {% if admin_store.open_now %}bg-ok-green-10 text-ok-green{% else %}bg-ok-red-10 text-ok-red{% endif %}">
         <i class="fa-solid fa-{% if admin_store.open_now %}door-open{% else %}door-closed{% endif %} icon-lg"></i>
       </div>
       <div>
-        <div class="font-display fw-bold ok-fs-lg">{% if admin_store.open_now %}Open for orders{% else %}Closed for new orders{% endif %}</div>
-        <div class="ok-fs-sm text-muted-warm">Scheduled ordering is {% if admin_store.accepting_scheduled %}<span class="text-ok-green fw-semibold">on</span>{% else %}<span class="text-ok-red fw-semibold">off</span>{% endif %}{% if not admin_store.open_now and admin_store.accepting_scheduled %} · customers can still order ahead{% endif %}</div>
-        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }} · <a href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a></div>
+        <div class="font-display fw-bold ok-fs-lg">{% if admin_store.open_now %}Open for orders{% else %}Closed for new
+          orders{% endif %}</div>
+        <div class="ok-fs-sm text-muted-warm">Scheduled ordering is {% if admin_store.accepting_scheduled %}<span
+            class="text-ok-green fw-semibold">on</span>{% else %}<span class="text-ok-red fw-semibold">off</span>{%
+          endif %}{% if not admin_store.open_now and admin_store.accepting_scheduled %} · customers can still order
+          ahead{% endif %}</div>
+        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }} · <a
+            href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a></div>
       </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
-      <form method="post" action="/admin/store/status{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="orders">
+      <form method="post" action="/admin/store/status{{ qs }}"><input type="hidden" name="_csrf"
+          value="{{ csrf_token }}"><input type="hidden" name="field" value="orders">
         <button class="btn btn-sm {% if admin_store.accepting_orders %}btn-secondary{% else %}btn-primary{% endif %}">
-          {% if admin_store.accepting_orders %}<i class="fa-solid fa-door-closed"></i> Close store{% else %}<i class="fa-solid fa-door-open"></i> Open store{% endif %}
+          {% if admin_store.accepting_orders %}<i class="fa-solid fa-door-closed"></i> Close store{% else %}<i
+            class="fa-solid fa-door-open"></i> Open store{% endif %}
         </button>
       </form>
-      <form method="post" action="/admin/store/status{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="scheduled">
-        <button class="btn btn-sm btn-dark">{% if admin_store.accepting_scheduled %}Disable scheduling{% else %}Enable scheduling{% endif %}</button>
+      <form method="post" action="/admin/store/status{{ qs }}"><input type="hidden" name="_csrf"
+          value="{{ csrf_token }}"><input type="hidden" name="field" value="scheduled">
+        <button class="btn btn-sm btn-dark">{% if admin_store.accepting_scheduled %}Disable scheduling{% else %}Enable
+          scheduling{% endif %}</button>
       </form>
     </div>
   </div>
@@ -58,8 +72,13 @@
 <!-- Alerts -->
 {% if sold_out or unpaid %}
 <div class="d-flex flex-wrap ok-gap-3 mb-4">
-  {% if unpaid %}<a href="/admin/orders?status=active{{ '&store=' + admin_store.slug if qs else '' }}" class="d-flex align-items-center gap-2 ok-fs-sm fw-semibold ok-rounded-xl bg-ok-red-10 text-ok-red px-3 ok-py-25"><i class="fa-solid fa-triangle-exclamation"></i> {{ unpaid }} active order{{ '' if unpaid == 1 else 's' }} awaiting payment</a>{% endif %}
-  {% if sold_out %}<a href="/admin/menu{{ qs }}" class="d-flex align-items-center gap-2 ok-fs-sm fw-semibold ok-rounded-xl bg-amber-10 text-gold px-3 ok-py-25"><i class="fa-solid fa-ban"></i> {{ sold_out }} item{{ '' if sold_out == 1 else 's' }} marked sold out</a>{% endif %}
+  {% if unpaid %}<a href="/admin/orders?status=active{{ '&store=' + admin_store.slug if qs else '' }}"
+    class="d-flex align-items-center gap-2 ok-fs-sm fw-semibold ok-rounded-xl bg-ok-red-10 text-ok-red px-3 ok-py-25"><i
+      class="fa-solid fa-triangle-exclamation"></i> {{ unpaid }} active order{{ '' if unpaid == 1 else 's' }} awaiting
+    payment</a>{% endif %}
+  {% if sold_out %}<a href="/admin/menu{{ qs }}"
+    class="d-flex align-items-center gap-2 ok-fs-sm fw-semibold ok-rounded-xl bg-amber-10 text-gold px-3 ok-py-25"><i
+      class="fa-solid fa-ban"></i> {{ sold_out }} item{{ '' if sold_out == 1 else 's' }} marked sold out</a>{% endif %}
 </div>
 {% endif %}
 
@@ -67,15 +86,18 @@
 <div class="ok-grid ok-grid-sm-2 ok-grid-xl-4 gap-3 mb-4">
   <div class="ok-card ok-p-5">
     <div class="d-flex align-items-center justify-content-between ok-mb-3">
-      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-ok-green-10 text-ok-green ok-grid ok-place-center"><i class="fa-solid fa-sack-dollar icon-lg"></i></div>
+      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-ok-green-10 text-ok-green ok-grid ok-place-center"><i
+          class="fa-solid fa-sack-dollar icon-lg"></i></div>
       {{ delta(kpis.rev_delta) }}
     </div>
     <div class="font-display ok-fw-800 ok-fs-3xl ok-lh-none">${{ '%.2f'|format(kpis.revenue) }}</div>
-    <div class="ok-fs-sm text-muted-warm mt-1">Paid revenue · <span class="text-capitalize">{{ kpis.period_label }}</span></div>
+    <div class="ok-fs-sm text-muted-warm mt-1">Paid revenue · <span class="text-capitalize">{{ kpis.period_label
+        }}</span></div>
   </div>
   <div class="ok-card ok-p-5">
     <div class="d-flex align-items-center justify-content-between ok-mb-3">
-      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-amber-10 text-gold ok-grid ok-place-center"><i class="fa-solid fa-receipt icon-lg"></i></div>
+      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-amber-10 text-gold ok-grid ok-place-center"><i
+          class="fa-solid fa-receipt icon-lg"></i></div>
       {{ delta(kpis.orders_delta) }}
     </div>
     <div class="font-display ok-fw-800 ok-fs-3xl ok-lh-none">{{ kpis.orders_ct }}</div>
@@ -83,7 +105,8 @@
   </div>
   <div class="ok-card ok-p-5">
     <div class="d-flex align-items-center justify-content-between ok-mb-3">
-      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-yellow-20 text-gold ok-grid ok-place-center"><i class="fa-solid fa-fire-burner icon-lg"></i></div>
+      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-yellow-20 text-gold ok-grid ok-place-center"><i
+          class="fa-solid fa-fire-burner icon-lg"></i></div>
       {% if kpis.active %}<span class="ok-fs-xs fw-bold text-gold">live</span>{% endif %}
     </div>
     <div class="font-display ok-fw-800 ok-fs-3xl ok-lh-none">{{ kpis.active }}</div>
@@ -91,7 +114,8 @@
   </div>
   <div class="ok-card ok-p-5">
     <div class="d-flex align-items-center justify-content-between ok-mb-3">
-      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-ink-05 text-ink ok-grid ok-place-center"><i class="fa-solid fa-chart-line icon-lg"></i></div>
+      <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-ink-05 text-ink ok-grid ok-place-center"><i
+          class="fa-solid fa-chart-line icon-lg"></i></div>
     </div>
     <div class="font-display ok-fw-800 ok-fs-3xl ok-lh-none">${{ '%.2f'|format(kpis.aov) }}</div>
     <div class="ok-fs-sm text-muted-warm mt-1">Avg order value</div>
@@ -103,21 +127,33 @@
   <!-- Revenue trend -->
   <div class="ok-card ok-p-5 ok-col-span-lg-2">
     <div class="d-flex align-items-center justify-content-between ok-mb-5">
-      <div><h3 class="font-display fw-bold ok-fs-lg">Revenue · last 7 days</h3><p class="ok-fs-xs text-muted-warm">Paid orders</p></div>
-      <div class="text-end"><div class="font-display ok-fw-800 ok-fs-xl">${{ '%.2f'|format(week_rev) }}</div><div class="ok-fs-xs text-muted-warm">this week</div></div>
+      <div>
+        <h3 class="font-display fw-bold ok-fs-lg">Revenue · last 7 days</h3>
+        <p class="ok-fs-xs text-muted-warm">Paid orders</p>
+      </div>
+      <div class="text-end">
+        <div class="font-display ok-fw-800 ok-fs-xl">${{ '%.2f'|format(week_rev) }}</div>
+        <div class="ok-fs-xs text-muted-warm">this week</div>
+      </div>
     </div>
     {% set max_pct = (series|map(attribute='pct')|max) or 0 %}
     <div class="d-flex align-items-end justify-content-between gap-2 ok-gap-sm-3 ok-h-44">
       {% for s in series %}
       <div class="ok-flex-1 d-flex flex-column align-items-center justify-content-end h-100">
-        <div class="ok-fs-65rem fw-semibold text-muted-warm mb-1">{% if s.revenue %}${{ s.revenue|round|int }}{% endif %}</div>
-        <div class="w-100 ok-rounded-t-lg {% if s.pct == max_pct and s.revenue %}bg-amber{% else %}bg-yellow{% endif %} ok-transition"
-             style="height: {{ [s.pct, 2]|max }}%" title="{{ s.date }} · ${{ '%.2f'|format(s.revenue) }} · {{ s.count }} orders"></div>
+        <div class="ok-fs-65rem fw-semibold text-muted-warm mb-1">{% if s.revenue %}${{ s.revenue|round|int }}{% endif
+          %}</div>
+        <div
+          class="w-100 ok-rounded-t-lg {% if s.pct == max_pct and s.revenue %}bg-amber{% else %}bg-yellow{% endif %} ok-transition"
+          style="height: {{ [s.pct, 2]|max }}%"
+          title="{{ s.date }} · ${{ '%.2f'|format(s.revenue) }} · {{ s.count }} orders"></div>
       </div>
       {% endfor %}
     </div>
     <div class="d-flex justify-content-between gap-2 ok-gap-sm-3 mt-2 pt-2 border-top ok-bc-varokline">
-      {% for s in series %}<div class="ok-flex-1 text-center"><div class="ok-fs-xs fw-semibold">{{ s.label }}</div><div class="ok-fs-65rem text-muted-warm">{{ s.count }} ord</div></div>{% endfor %}
+      {% for s in series %}<div class="ok-flex-1 text-center">
+        <div class="ok-fs-xs fw-semibold">{{ s.label }}</div>
+        <div class="ok-fs-65rem text-muted-warm">{{ s.count }} ord</div>
+      </div>{% endfor %}
     </div>
   </div>
 
@@ -130,7 +166,10 @@
       <div class="d-flex align-items-center ok-gap-3">
         <span class="ok-w-5 text-center text-muted-warm"><i class="fa-solid fa-{{ r.icon }}"></i></span>
         <span class="ok-fs-sm ok-w-24 flex-shrink-0 text-capitalize">{{ r.label }}</span>
-        <div class="ok-flex-1 ok-h-2 rounded-pill bg-cream overflow-hidden"><div class="h-100 rounded-pill {% if r.status == 'cancelled' %}bg-ok-red-60{% else %}bg-yellow{% endif %}" style="width: {{ (r.count / max_c * 100)|round|int }}%"></div></div>
+        <div class="ok-flex-1 ok-h-2 rounded-pill bg-cream overflow-hidden">
+          <div class="h-100 rounded-pill {% if r.status == 'cancelled' %}bg-ok-red-60{% else %}bg-yellow{% endif %}"
+            style="width: {{ (r.count / max_c * 100)|round|int }}%"></div>
+        </div>
         <span class="ok-fs-sm fw-bold ok-w-6 text-end">{{ r.count }}</span>
       </div>
       {% endfor %}
@@ -147,7 +186,9 @@
     <div class="ok-stack-3">
       {% for it in top_items %}
       <div class="d-flex align-items-center ok-gap-3">
-        <span class="ok-w-6 ok-h-6 rounded-pill bg-cream text-gold ok-grid ok-place-center ok-fs-xs fw-bold flex-shrink-0">{{ loop.index }}</span>
+        <span
+          class="ok-w-6 ok-h-6 rounded-pill bg-cream text-gold ok-grid ok-place-center ok-fs-xs fw-bold flex-shrink-0">{{
+          loop.index }}</span>
         <span class="ok-fs-sm fw-semibold ok-flex-1 text-truncate">{{ it.name }}</span>
         <span class="ok-fs-sm text-muted-warm">{{ it.qty }} sold</span>
         <span class="ok-fs-sm fw-bold ok-w-20 text-end">${{ '%.2f'|format(it.revenue) }}</span>
@@ -159,17 +200,24 @@
 
   <!-- Recent orders -->
   <div class="ok-card ok-p-5">
-    <div class="d-flex align-items-center justify-content-between mb-3"><h3 class="font-display fw-bold ok-fs-lg">Recent orders</h3><a href="/admin/orders{{ qs }}" class="link-underline ok-fs-sm">View all</a></div>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="font-display fw-bold ok-fs-lg">Recent orders</h3><a href="/admin/orders{{ qs }}"
+        class="link-underline ok-fs-sm">View all</a>
+    </div>
     {% if recent %}
     <div class="ok-divide-y">
       {% for o in recent %}
-      <a href="/admin/orders/{{ o.number }}{{ qs }}" class="ok-py-25 d-flex align-items-center justify-content-between ok-gap-3 -mx-2 px-2 ok-rounded-lg ok-transition">
+      <a href="/admin/orders/{{ o.number }}{{ qs }}"
+        class="ok-py-25 d-flex align-items-center justify-content-between ok-gap-3 -mx-2 px-2 ok-rounded-lg ok-transition">
         <div class="ok-min-w-0">
           <span class="fw-bold">{{ o.number }}</span>
-          <span class="ok-fs-xs text-muted-warm">· {{ o.created_at.strftime('%b %d, %I:%M %p') }} · {{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</span>
+          <span class="ok-fs-xs text-muted-warm">· {{ o.created_at.strftime('%b %d, %I:%M %p') }} · {{ o.item_count }}
+            item{{ '' if o.item_count == 1 else 's' }}</span>
         </div>
         <div class="d-flex align-items-center ok-gap-3 flex-shrink-0">
-          {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow text-capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}
+          {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status ==
+          'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span
+            class="badge badge-yellow text-capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}
           <span class="fw-bold ok-w-16 text-end">${{ '%.2f'|format(o.total) }}</span>
         </div>
       </a>
@@ -185,15 +233,22 @@
   <h3 class="font-display fw-bold ok-fs-lg mb-3">All locations</h3>
   <div class="overflow-x-auto">
     <table class="w-100 ok-fs-sm">
-      <thead><tr class="text-start text-muted-warm border-bottom ok-bc-varokline">
-        <th class="py-2 ok-pr-3 fw-semibold">Store</th><th class="py-2 ok-px-3 fw-semibold text-end">Orders</th><th class="py-2 ok-px-3 fw-semibold text-end">Active</th><th class="py-2 ok-pl-3 fw-semibold text-end">Paid revenue</th>
-      </tr></thead>
+      <thead>
+        <tr class="text-start text-muted-warm border-bottom ok-bc-varokline">
+          <th class="py-2 ok-pr-3 fw-semibold">Store</th>
+          <th class="py-2 ok-px-3 fw-semibold text-end">Orders</th>
+          <th class="py-2 ok-px-3 fw-semibold text-end">Active</th>
+          <th class="py-2 ok-pl-3 fw-semibold text-end">Paid revenue</th>
+        </tr>
+      </thead>
       <tbody>
         {% for p in store_perf %}
         <tr class="border-bottom ok-bc-varokline ok-last-border-0">
-          <td class="ok-py-25 ok-pr-3"><a href="/admin?store={{ p.store.slug }}" class="fw-semibold link-underline">{{ p.store.name }}</a></td>
+          <td class="ok-py-25 ok-pr-3"><a href="/admin?store={{ p.store.slug }}" class="fw-semibold link-underline">{{
+              p.store.name }}</a></td>
           <td class="ok-py-25 ok-px-3 text-end">{{ p.orders }}</td>
-          <td class="ok-py-25 ok-px-3 text-end">{% if p.active %}<span class="badge badge-yellow">{{ p.active }}</span>{% else %}0{% endif %}</td>
+          <td class="ok-py-25 ok-px-3 text-end">{% if p.active %}<span class="badge badge-yellow">{{ p.active
+              }}</span>{% else %}0{% endif %}</td>
           <td class="ok-py-25 ok-pl-3 text-end fw-bold">${{ '%.2f'|format(p.revenue) }}</td>
         </tr>
         {% endfor %}
@@ -206,12 +261,13 @@
 <!-- Quick actions -->
 <div class="ok-grid ok-grid-2 ok-grid-lg-4 gap-3">
   {% for href, label, icon, desc in [
-      ('/admin/menu', 'Menu', 'burger', 'Listing, prices, 86'),
-      ('/admin/coupons', 'Coupons', 'tag', 'Promo codes'),
-      ('/admin/integrations', 'Integrations', 'plug', 'This store’s keys'),
-      ('/admin/notifications', 'Notifications', 'bell', 'SMS & email log')] %}
+  ('/admin/menu', 'Menu', 'bars', 'Listing, prices, 86'),
+  ('/admin/coupons', 'Coupons', 'tag', 'Promo codes'),
+  ('/admin/integrations', 'Integrations', 'plug', 'This store’s keys'),
+  ('/admin/notifications', 'Notifications', 'bell', 'SMS & email log')] %}
   <a href="{{ href }}{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
-    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i class="fa-solid fa-{{ icon }} icon-lg"></i></div>
+    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i
+        class="fa-solid fa-{{ icon }} icon-lg"></i></div>
     <div class="font-display fw-bold">{{ label }}</div>
     <div class="ok-fs-xs text-muted-warm">{{ desc }}</div>
   </a>

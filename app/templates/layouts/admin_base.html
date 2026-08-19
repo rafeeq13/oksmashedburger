@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Management · {{ brand_name }}{% endblock %}</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="{{ favicon_url }}">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
-  <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link id="fa-css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    crossorigin="anonymous">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.css') }}">
   {# Bootstrap first so every one of our own layers wins on equal specificity.
-     premium.css is deliberately NOT loaded here: it is the storefront's
-     luxury layer and would fight the admin's flat, dense UI. #}
+  premium.css is deliberately NOT loaded here: it is the storefront's
+  luxury layer and would fight the admin's flat, dense UI. #}
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
@@ -22,16 +26,17 @@
   {# last, so the section editor's rules win over the base component styles #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
   {# unconditional here: the design screens are where these values get set, and
-     an admin is a handful of people rather than every visitor #}
+  an admin is a handful of people rather than every visitor #}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/builder-parts.css') }}">
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
-  <script>try{ if(localStorage.getItem('adm-collapsed')==='1') document.documentElement.classList.add('admin-collapsed'); }catch(e){}</script>
+  <script>try { if (localStorage.getItem('adm-collapsed') === '1') document.documentElement.classList.add('admin-collapsed'); } catch (e) { }</script>
   {% block head_extra %}{% endblock %}
 </head>
+
 <body class="admin-ui ok-bgc-f4f5f7 text-ink">
   {# Modern (Lucide) icon sprite. app.js swaps every fa-solid/fa-regular
-     glyph for one of these; fa-brands stays on Font Awesome because
-     Lucide deliberately ships no brand marks. #}
+  glyph for one of these; fa-brands stays on Font Awesome because
+  Lucide deliberately ships no brand marks. #}
   <span hidden>{% include "partials/icons.svg" %}</span>
   {% set rn = current_user.role.name if (current_user and current_user.role) else '' %}
   {% set is_admin = rn in ['super_admin', 'franchise_owner', 'store_manager'] %}
@@ -39,7 +44,8 @@
   <input type="checkbox" id="okNavToggle" class="visually-hidden">
 
   <!-- ===== Sidebar ===== -->
-  <aside class="adm-sidebar position-fixed ok-inset-y-0 start-0 ok-z-50 ok-w-64 text-white d-flex flex-column border-end ok-bc-w006">
+  <aside
+    class="adm-sidebar position-fixed ok-inset-y-0 start-0 ok-z-50 ok-w-64 text-white d-flex flex-column border-end ok-bc-w006">
     <div class="sb-header d-flex align-items-center ok-gap-3 ok-h-16 px-3 border-bottom ok-bc-w007 flex-shrink-0">
       <img src="{{ logo_url }}" alt="{{ brand_name }}" class="ok-h-10 ok-w-10 ok-contain flex-shrink-0">
       <div class="ok-lh-tight ok-min-w-0 sb-text">
@@ -52,15 +58,18 @@
       {% macro navlink(href, label, icon) %}
       {% set on = request.path == href or (href != '/admin' and request.path.startswith(href + '/')) %}
       {# active = yellow pill, so the label and icon go black; white on yellow
-         is unreadable and was failing contrast badly #}
-      <a href="{{ href }}{{ qs }}" title="{{ label }}" class="sb-navlink position-relative d-flex align-items-center ok-gap-3 ok-px-35 ok-py-25 ok-rounded-xl ok-fs-9rem fw-medium ok-transition-colors {% if on %}bg-yellow text-ink fw-semibold ok-shadow-sm{% else %}text-white ok-hov-bg-w-10{% endif %}">
-        <i class="fa-solid fa-{{ icon }} ok-w-5 text-center ok-fs-95rem flex-shrink-0 {% if on %}text-ink{% else %}text-white{% endif %}"></i>
+      is unreadable and was failing contrast badly #}
+      <a href="{{ href }}{{ qs }}" title="{{ label }}"
+        class="sb-navlink position-relative d-flex align-items-center ok-gap-3 ok-px-35 ok-py-25 ok-rounded-xl ok-fs-9rem fw-medium ok-transition-colors {% if on %}bg-yellow text-ink fw-semibold ok-shadow-sm{% else %}text-white ok-hov-bg-w-10{% endif %}">
+        <i
+          class="fa-solid fa-{{ icon }} ok-w-5 text-center ok-fs-95rem flex-shrink-0 {% if on %}text-ink{% else %}text-white{% endif %}"></i>
         <span class="sb-text text-truncate">{{ label }}</span>
       </a>
       {% endmacro %}
 
       {% macro grouphead(label) %}
-      <button type="button" data-group-toggle class="sb-section w-100 d-flex align-items-center justify-content-between px-3 mb-2 ok-fs-62rem fw-bold text-uppercase ok-ls-2em text-white ok-pointer ok-nodrag">
+      <button type="button" data-group-toggle
+        class="sb-section w-100 d-flex align-items-center justify-content-between px-3 mb-2 ok-fs-62rem fw-bold text-uppercase ok-ls-2em text-white ok-pointer ok-nodrag">
         <span>{{ label }}</span>
         <i class="fa-solid fa-chevron-up sb-chevron text-white ok-fs-7rem"></i>
       </button>
@@ -68,57 +77,67 @@
 
       {% if is_admin %}
       {# Three groups, by what someone is actually trying to do: run the
-         business, change the website, or configure how it works. The website
-         tools used to sit in "Setup" as eight look-alike tabs — "Page Design",
-         "Page Builder", "Visual Editor", "Page Content", "Website Content" —
-         which gave no clue as to which one edits what. #}
+      business, change the website, or configure how it works. The website
+      tools used to sit in "Setup" as eight look-alike tabs — "Page Design",
+      "Page Builder", "Visual Editor", "Page Content", "Website Content" —
+      which gave no clue as to which one edits what. #}
       <div class="sb-group" data-group="management">
         {{ grouphead('Management') }}
-        <div class="sb-group-body"><div class="ok-stack-05">
-          {{ navlink('/admin', 'Dashboard', 'gauge-high') }}
-          {{ navlink('/admin/orders', 'Orders', 'receipt') }}
-          {{ navlink('/admin/customers', 'Customers', 'users') }}
-          {{ navlink('/admin/menu', 'Menu', 'burger') }}
-          {{ navlink('/admin/coupons', 'Deals & coupons', 'tag') }}
-          {{ navlink('/admin/gift-cards', 'Gift Cards', 'gift') }}
-          {{ navlink('/admin/reviews', 'Reviews', 'star') }}
-          {{ navlink('/admin/messages', 'Messages', 'envelope') }}
-          {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
-          {{ navlink('/admin/drivers', 'Drivers', 'car-side') }}
-          {{ navlink('/admin/staff', 'Staff', 'user-gear') }}
-          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/locations', 'Locations', 'store') }}{% endif %}
-        </div></div>
+        <div class="sb-group-body">
+          <div class="ok-stack-05">
+            {{ navlink('/admin', 'Dashboard', 'gauge-high') }}
+            {{ navlink('/admin/orders', 'Orders', 'receipt') }}
+            {{ navlink('/admin/customers', 'Customers', 'users') }}
+            {{ navlink('/admin/menu', 'Menu', 'bars') }}
+            {{ navlink('/admin/coupons', 'Deals & coupons', 'tag') }}
+            {{ navlink('/admin/gift-cards', 'Gift Cards', 'gift') }}
+            {{ navlink('/admin/reviews', 'Reviews', 'star') }}
+            {{ navlink('/admin/messages', 'Messages', 'envelope') }}
+            {{ navlink('/admin/subscribers', 'Subscribers', 'envelope-open-text') }}
+            {{ navlink('/admin/drivers', 'Drivers', 'car-side') }}
+            {{ navlink('/admin/staff', 'Staff', 'user-gear') }}
+            {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/locations', 'Locations', 'store') }}{%
+            endif %}
+          </div>
+        </div>
       </div>
       <div class="sb-group" data-group="website">
         {{ grouphead('Website') }}
-        <div class="sb-group-body"><div class="ok-stack-05">
-          {{ navlink('/admin/canvas', 'Pages', 'layer-group') }}
-          {{ navlink('/admin/content', 'Content lists', 'list-ul') }}
-          {{ navlink('/admin/site-images', 'Images', 'image') }}
-          {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Brand & theme', 'palette') }}{% endif %}
-          {{ navlink('/admin/builder', 'Extra pages', 'pen-ruler') }}
-          {{ navlink('/admin/features', 'Features on / off', 'sliders') }}
-        </div></div>
+        <div class="sb-group-body">
+          <div class="ok-stack-05">
+            {{ navlink('/admin/canvas', 'Pages', 'layer-group') }}
+            {{ navlink('/admin/content', 'Content lists', 'list-ul') }}
+            {{ navlink('/admin/site-images', 'Images', 'image') }}
+            {% if rn in ['super_admin', 'franchise_owner'] %}{{ navlink('/admin/theme', 'Brand & theme', 'palette') }}{%
+            endif %}
+            {{ navlink('/admin/builder', 'Extra pages', 'pen-ruler') }}
+            {{ navlink('/admin/features', 'Features on / off', 'sliders') }}
+          </div>
+        </div>
       </div>
       <div class="sb-group" data-group="setup">
         {{ grouphead('Setup') }}
-        <div class="sb-group-body"><div class="ok-stack-05">
-          {# Opening hours are a tab inside Store settings, not a screen of
-             their own: two places editing the same seven rows never agreed on
-             which was the real one. #}
-          {{ navlink('/admin/settings', 'Store settings', 'gear') }}
-          {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
-          {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
-        </div></div>
+        <div class="sb-group-body">
+          <div class="ok-stack-05">
+            {# Opening hours are a tab inside Store settings, not a screen of
+            their own: two places editing the same seven rows never agreed on
+            which was the real one. #}
+            {{ navlink('/admin/settings', 'Store settings', 'gear') }}
+            {{ navlink('/admin/integrations', 'Integrations', 'plug') }}
+            {{ navlink('/admin/notifications', 'Notifications', 'bell') }}
+          </div>
+        </div>
       </div>
       {% endif %}
 
       {% if rn == 'driver' %}
       <div class="sb-group" data-group="operations">
         {{ grouphead('Operations') }}
-        <div class="sb-group-body"><div class="ok-stack-05">
-          {% if rn == 'driver' %}{{ navlink('/driver', 'Driver', 'car') }}{% endif %}
-        </div></div>
+        <div class="sb-group-body">
+          <div class="ok-stack-05">
+            {% if rn == 'driver' %}{{ navlink('/driver', 'Driver', 'car') }}{% endif %}
+          </div>
+        </div>
       </div>
       {% endif %}
     </nav>
@@ -126,12 +145,15 @@
     <div class="border-top ok-bc-w007 ok-p-3 flex-shrink-0">
       {% if current_user %}
       <div class="sb-footer d-flex align-items-center ok-gap-25 ok-px-25 py-2 ok-rounded-xl ok-bgc-w004">
-        <span class="ok-w-9 ok-h-9 rounded-pill bg-yellow text-ink ok-grid ok-place-center fw-bold flex-shrink-0">{{ (current_user.first_name or current_user.email)[0]|upper }}</span>
+        <span class="ok-w-9 ok-h-9 rounded-pill bg-yellow text-ink ok-grid ok-place-center fw-bold flex-shrink-0">{{
+          (current_user.first_name or current_user.email)[0]|upper }}</span>
         <div class="ok-min-w-0 ok-flex-1 sb-text">
           <div class="ok-fs-sm fw-semibold text-truncate">{{ current_user.full_name }}</div>
           <div class="ok-fs-6rem text-w-40 text-uppercase ok-ls-12em">{{ rn|replace('_',' ') or 'staff' }}</div>
         </div>
-        <a href="/logout" class="sb-logout text-w-45 ok-hov-text-white p-2 ok-rounded-lg ok-hov-bg-w-10 ok-transition-colors" title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></a>
+        <a href="/logout"
+          class="sb-logout text-w-45 ok-hov-text-white p-2 ok-rounded-lg ok-hov-bg-w-10 ok-transition-colors"
+          title="Sign out"><i class="fa-solid fa-right-from-bracket"></i></a>
       </div>
       {% else %}
       <a href="/login" class="btn btn-primary btn-block btn-sm">Sign in</a>
@@ -145,7 +167,7 @@
         document.querySelectorAll('[data-group]').forEach(function (g) {
           if (localStorage.getItem('adm-group-' + g.dataset.group) === '1') g.classList.add('collapsed');
         });
-      } catch (e) {}
+      } catch (e) { }
     })();
   </script>
 
@@ -156,12 +178,19 @@
   <div class="adm-content min-vh-100 d-flex flex-column">
     <header class="position-sticky top-0 ok-z-30 bg-w-95 ok-blur border-bottom ok-bc-varokline">
       <div class="d-flex align-items-center ok-gap-3 px-3 ok-px-lg-6 ok-h-14">
-        <label for="okNavToggle" class="d-lg-none ok-w-9 ok-h-9 ok-grid ok-place-center ok-rounded-lg ok-pointer flex-shrink-0"><i class="fa-solid fa-bars"></i></label>
-        <button id="admCollapseBtn" type="button" class="d-none d-lg-grid ok-place-center ok-w-9 ok-h-9 ok-rounded-lg text-muted-warm ok-hov-bg-ink-05 ok-pointer flex-shrink-0" title="Collapse / expand sidebar" aria-label="Toggle sidebar"><i class="fa-solid fa-angles-left adm-collapse-icon"></i></button>
+        <label for="okNavToggle"
+          class="d-lg-none ok-w-9 ok-h-9 ok-grid ok-place-center ok-rounded-lg ok-pointer flex-shrink-0"><i
+            class="fa-solid fa-bars"></i></label>
+        <button id="admCollapseBtn" type="button"
+          class="d-none d-lg-grid ok-place-center ok-w-9 ok-h-9 ok-rounded-lg text-muted-warm ok-hov-bg-ink-05 ok-pointer flex-shrink-0"
+          title="Collapse / expand sidebar" aria-label="Toggle sidebar"><i
+            class="fa-solid fa-angles-left adm-collapse-icon"></i></button>
         <div class="ok-min-w-0 font-display fw-bold text-truncate">{% block page_title %}Management{% endblock %}</div>
         <div class="ms-auto d-flex align-items-center gap-2 ok-gap-md-3">
           {% block topbar_actions %}{% endblock %}
-          <a href="/" target="_blank" rel="noopener" class="d-none d-sm-inline-flex align-items-center ok-gap-15 ok-fs-sm text-muted-warm ok-transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> View site</a>
+          <a href="/" target="_blank" rel="noopener"
+            class="d-none d-sm-inline-flex align-items-center ok-gap-15 ok-fs-sm text-muted-warm ok-transition"><i
+              class="fa-solid fa-arrow-up-right-from-square"></i> View site</a>
         </div>
       </div>
     </header>
@@ -178,7 +207,7 @@
       if (!btn) return;
       btn.addEventListener('click', function () {
         var collapsed = document.documentElement.classList.toggle('admin-collapsed');
-        try { localStorage.setItem('adm-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+        try { localStorage.setItem('adm-collapsed', collapsed ? '1' : '0'); } catch (e) { }
       });
     })();
 
@@ -189,7 +218,7 @@
       var g = t.closest('[data-group]');
       if (!g) return;
       var collapsed = g.classList.toggle('collapsed');
-      try { localStorage.setItem('adm-group-' + g.dataset.group, collapsed ? '1' : '0'); } catch (e2) {}
+      try { localStorage.setItem('adm-group-' + g.dataset.group, collapsed ? '1' : '0'); } catch (e2) { }
     });
   </script>
 
@@ -199,34 +228,107 @@
   <script>
     (function () {
       if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return;
-      jQuery(function ($) {
+
+      function initTables() {
         document.querySelectorAll('table[data-table]').forEach(function (t) {
+          if (t.classList.contains("dataTable")) return;
           var tbody = t.tBodies[0];
           if (!tbody) return;
-          // Skip an "empty state" table (single colspan cell) so its message stays intact.
           var real = Array.prototype.filter.call(tbody.rows, function (r) {
             return !(r.cells.length === 1 && r.cells[0].hasAttribute('colspan'));
           });
           if (!real.length) return;
-          // Disable sorting on action columns (those with an empty header cell).
           var noSort = [];
           t.querySelectorAll('thead th').forEach(function (th, i) { if (!th.textContent.trim()) noSort.push(i); });
           try {
-            $(t).DataTable({
+            jQuery(t).DataTable({
               pageLength: parseInt(t.dataset.pageSize, 10) || 10,
               lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
               order: [],
               columnDefs: [{ orderable: false, targets: noSort }],
-              // Wrap controls in flex rows (.dt-top/.dt-bottom) and give the table
-              // its own horizontal scroll (.dt-scroll) so controls stay responsive.
               dom: "<'dt-top'lf>r<'dt-scroll't><'dt-bottom'ip>",
               language: { search: '', searchPlaceholder: 'Filter…', lengthMenu: 'Show _MENU_', info: 'Showing _START_ to _END_ of _TOTAL_', infoEmpty: 'No records', infoFiltered: '(of _MAX_)', zeroRecords: 'No matches', paginate: { previous: '‹', next: '›' } }
             });
-          } catch (e) { /* leave the plain table if init fails */ }
+          } catch (e) { }
         });
+      }
+
+      jQuery(function ($) {
+        initTables();
+        document.addEventListener("pjax:complete", initTables);
       });
     })();
   </script>
+
+  <!-- Sidebar SPA router -->
+  <script>
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a.sb-navlink");
+      if (!a) return;
+      var url = a.getAttribute("href");
+      if (!url || url.indexOf("javascript:") === 0 || url.indexOf("#") === 0) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+
+      // Inside sidebar only
+      if (!a.closest(".adm-sidebar")) return;
+
+      e.preventDefault();
+
+      var icon = a.querySelector("i");
+      var oldClass = icon ? icon.className : "";
+      if (icon) {
+        icon.className = "fa-solid fa-circle-notch fa-spin ok-w-5 text-center ok-fs-95rem flex-shrink-0 text-white";
+      }
+
+      document.querySelectorAll("a.sb-navlink").forEach(function (el) {
+        if (!el.closest(".adm-sidebar")) return;
+        el.className = el.className.replace("bg-yellow", "").replace("text-ink", "text-white").replace("fw-semibold", "fw-medium").replace("ok-shadow-sm", "").replace("ok-hov-bg-w-10", "") + " ok-hov-bg-w-10";
+        var elIcon = el.querySelector("i");
+        if (elIcon && el !== a) elIcon.classList.replace("text-ink", "text-white");
+      });
+      a.className = a.className.replace("text-white", "text-ink").replace("fw-medium", "fw-semibold").replace("ok-hov-bg-w-10", "") + " bg-yellow ok-shadow-sm";
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) {
+          if (r.redirected && r.url.indexOf('/login') > -1) location.href = url;
+          if (!r.ok) throw new Error();
+          return r.text();
+        })
+        .then(function (html) {
+          window.history.pushState(null, "", url);
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          document.title = doc.title;
+
+          var newHeader = doc.querySelector(".adm-content header");
+          var oldHeader = document.querySelector(".adm-content header");
+          if (newHeader && oldHeader) oldHeader.innerHTML = newHeader.innerHTML;
+
+          var newMain = doc.querySelector(".adm-content main");
+          var oldMain = document.querySelector(".adm-content main");
+          if (newMain && oldMain) {
+            oldMain.innerHTML = newMain.innerHTML;
+            oldMain.className = newMain.className;
+
+            newMain.querySelectorAll("script").forEach(function (s) {
+              if (s.src) return;
+              var ns = document.createElement("script");
+              ns.innerHTML = s.innerHTML;
+              document.body.appendChild(ns);
+            });
+
+            document.dispatchEvent(new Event("pjax:complete"));
+          }
+          if (icon) icon.className = oldClass.replace("text-white", "text-ink");
+        })
+        .catch(function () {
+          location.href = url;
+        });
+    });
+
+    window.addEventListener("popstate", function () { location.reload(); });
+  </script>
+
   {% block scripts %}{% endblock %}
 </body>
+
 </html>

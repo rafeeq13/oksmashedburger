@@ -18,8 +18,8 @@
 <form method="post" action="/admin/site-images{{ qs }}" enctype="multipart/form-data" class="ok-stack-6">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {# Enter in any link box submits through the form's FIRST submit button. Each
-     slot carries a Delete button, so without this the keystroke would delete the
-     first slot's picture instead of saving. #}
+  slot carries a Delete button, so without this the keystroke would delete the
+  first slot's picture instead of saving. #}
   <button type="submit" class="d-none" tabindex="-1" aria-hidden="true">Save image links</button>
 
   {% for title, slots in groups %}
@@ -31,38 +31,52 @@
       <div class="ok-rounded-xl border ok-bc-varokline ok-p-3">
         <div class="d-flex align-items-start justify-content-between ok-gap-15 mb-1">
           <div class="ok-fs-xs fw-semibold text-ink">{{ label }}</div>
-          {% if size %}<span class="badge badge-yellow ok-fs-6rem text-nowrap flex-shrink-0" title="Build the image at this size">{{ size }}</span>{% endif %}
+          {% if size %}<span class="badge badge-yellow ok-fs-6rem text-nowrap flex-shrink-0"
+            title="Build the image at this size">{{ size }}</span>{% endif %}
         </div>
-        <p class="ok-fs-62rem text-muted-warm ok-lh-snug mb-2">{{ blurb }}{% if ratio %} <span class="text-nowrap">· {{ ratio }}</span>{% endif %}</p>
-        <div data-slot-preview="{{ key }}" class="position-relative ok-ar-1610 ok-rounded-lg overflow-hidden bg-cream-40 mb-2 ok-grid ok-place-center">
+        <p class="ok-fs-62rem text-muted-warm ok-lh-snug mb-2">{{ blurb }}{% if ratio %} <span class="text-nowrap">· {{
+            ratio }}</span>{% endif %}</p>
+        <div data-slot-preview="{{ key }}"
+          class="position-relative ok-ar-1610 ok-rounded-lg overflow-hidden bg-cream-40 mb-2 ok-grid ok-place-center">
           {% if shown %}
           {# 71 previews on one page: fetched eagerly they saturate the browser's
-             connections to the site, and an upload started while they are still
-             arriving sits in that queue for as long as they take #}
-          <img src="{{ shown }}" alt="{{ label }}" loading="lazy" decoding="async" class="w-100 h-100 ok-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <span class="d-none position-absolute ok-fill align-items-center justify-content-center ok-fs-xs text-muted-warm">Image unavailable</span>
+          connections to the site, and an upload started while they are still
+          arriving sits in that queue for as long as they take #}
+          <img src="{{ shown }}" alt="{{ label }}" loading="lazy" decoding="async" class="w-100 h-100 ok-cover"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span
+            class="d-none position-absolute ok-fill align-items-center justify-content-center ok-fs-xs text-muted-warm">Image
+            unavailable</span>
           {% else %}
-          <span data-slot-empty class="ok-fs-xs text-muted-warm text-center px-2">Styled placeholder<br><span class="ok-fs-62rem">Add an image to replace it</span></span>
+          <span data-slot-empty class="ok-fs-xs text-muted-warm text-center px-2">Styled placeholder<br><span
+              class="ok-fs-62rem">Add an image to replace it</span></span>
           {% endif %}
           {% if current.get(key) %}
-          <span data-slot-badge class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-ok-green-20 text-ok-green">Custom image</span>
+          <span data-slot-badge
+            class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-ok-green-20 text-ok-green">Custom
+            image</span>
           {% elif site_defaults.get(key) %}
-          <span data-slot-badge class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-black-50 text-white">Current default</span>
+          <span data-slot-badge
+            class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-black-50 text-white">Current
+            default</span>
           {% else %}
-          <span data-slot-badge class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-amber-90 text-white">Placeholder</span>
+          <span data-slot-badge
+            class="position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-amber-90 text-white">Placeholder</span>
           {% endif %}
         </div>
-        <input name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… image URL" class="ok-input ok-py-15 ok-fs-sm ok-mb-15">
+        <input name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… image URL"
+          class="ok-input ok-py-15 ok-fs-sm ok-mb-15">
         {# no name= on purpose: this file goes up on its own the moment it is
-           chosen, so picking ten pictures no longer builds one huge upload
-           where a single oversized file loses the whole batch #}
-        <input type="file" data-slot="{{ key }}" accept="{{ 'video/mp4,video/webm' if key.endswith('_video') else 'image/*' }}" class="ok-input py-1 ok-fs-xs">
+        chosen, so picking ten pictures no longer builds one huge upload
+        where a single oversized file loses the whole batch #}
+        <input type="file" data-slot="{{ key }}"
+          accept="{{ 'video/mp4,video/webm' if key.endswith('_video') else 'image/*' }}" class="ok-input py-1 ok-fs-xs">
         <p class="ok-fs-62rem ok-lh-snug ok-mt-1 mb-0 text-muted-warm" data-slot-msg="{{ key }}"></p>
         {# always rendered so it can appear the moment a picture is uploaded,
-           without making the admin reload the page to find it #}
-        <button type="submit" formaction="/admin/site-images/{{ key }}/delete{{ qs }}" formnovalidate
-                data-slot-delete class="link-underline ok-fs-xs text-ok-red ok-mt-15 {{ 'd-inline-block' if current.get(key) else 'd-none' }}"
-                onclick="return confirm('Remove this picture? The slot goes back to the built-in image, and an uploaded file is deleted.')">
+        without making the admin reload the page to find it #}
+        <button type="submit" formaction="/admin/site-images/{{ key }}/delete{{ qs }}" formnovalidate data-slot-delete
+          class="link-underline ok-fs-xs text-ok-red ok-mt-15 {{ 'd-inline-block' if current.get(key) else 'd-none' }}"
+          onclick="return confirm('Remove this picture? The slot goes back to the built-in image, and an uploaded file is deleted.')">
           Delete this picture
         </button>
       </div>
@@ -73,80 +87,80 @@
 
   <div class="position-sticky bottom-0 ok-bgc-f4f5f7 ok-py-3 -mx-4 px-3 border-top ok-bc-varokline">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save image links</button>
-    <span class="ok-fs-xs text-muted-warm ok-ml-3">Uploaded pictures save themselves — this is for the link boxes.</span>
-    <a href="/" target="_blank" rel="noopener" class="link-underline ok-fs-sm ok-ml-3">Preview site <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+    <span class="ok-fs-xs text-muted-warm ok-ml-3">Uploaded pictures save themselves — this is for the link
+      boxes.</span>
+    <a href="/" target="_blank" rel="noopener" class="link-underline ok-fs-sm ok-ml-3">Preview site <i
+        class="fa-solid fa-arrow-up-right-from-square"></i></a>
   </div>
 </form>
 
 <script>
-(function () {
-  // Each picture is sent on its own as soon as it is chosen. One slot failing
-  // now costs that slot alone, and the reason is shown where it happened.
-  // A picture this big is always a mistake; a video legitimately is not, so it
-  // only has to stay under what the server will accept.
-  var BIG_IMAGE = 20 * 1024 * 1024;
-  var BIG_VIDEO = 180 * 1024 * 1024;
+  (function () {
+    if (window._siteImagesInit) return;
+    window._siteImagesInit = true;
 
-  function say(el, text, tone) {
-    el.textContent = text;
-    el.className = "ok-fs-62rem ok-lh-snug ok-mt-1 mb-0 " +
-      (tone === "bad" ? "text-ok-red" : tone === "good" ? "text-ok-green" : "text-muted-warm");
-  }
-  function size(bytes) {
-    return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + " MB"
-                            : Math.max(1, Math.round(bytes / 1024)) + " KB";
-  }
+    var BIG_IMAGE = 20 * 1024 * 1024;
+    var BIG_VIDEO = 180 * 1024 * 1024;
 
-  // A slot with nothing in it yet has no <img> to update — it renders the
-  // styled placeholder instead. Without building one, an upload into an empty
-  // slot saved fine but the card still showed "Styled placeholder", which reads
-  // as a failure.
-  function showPicture(card, url) {
-    var box = card && card.querySelector("[data-slot-preview]");
-    if (!box) return;
-    var img = box.querySelector("img");
-    if (!img) {
-      img = document.createElement("img");
-      img.className = "w-100 h-100 ok-cover";
-      img.alt = "";
-      img.decoding = "async";
-      box.insertBefore(img, box.firstChild);
-      var empty = box.querySelector("[data-slot-empty]");
-      if (empty) empty.remove();
+    function say(el, text, tone) {
+      if (!el) return;
+      el.textContent = text;
+      el.className = "ok-fs-62rem ok-lh-snug ok-mt-1 mb-0 " +
+        (tone === "bad" ? "text-ok-red" : tone === "good" ? "text-ok-green" : "text-muted-warm");
     }
-    img.src = url + "?v=" + Date.now();          // past the browser's cached copy
-    img.style.display = "";
-    var badge = box.querySelector("[data-slot-badge]");
-    if (badge) {
-      badge.textContent = "Custom image";
-      badge.className = "position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold " +
-                        "ok-px-15 ok-py-05 ok-rounded bg-ok-green-20 text-ok-green";
+
+    function size(bytes) {
+      return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + " MB"
+        : Math.max(1, Math.round(bytes / 1024)) + " KB";
     }
-    var del = card.querySelector("[data-slot-delete]");
-    if (del) del.classList.replace("d-none", "d-inline-block");
-  }
 
-  document.querySelectorAll("input[type=file][data-slot]").forEach(function (input) {
-    var key = input.getAttribute("data-slot");
-    var msg = document.querySelector('[data-slot-msg="' + key + '"]');
-    var card = input.closest(".ok-rounded-xl");
+    function showPicture(card, url) {
+      var box = card && card.querySelector("[data-slot-preview]");
+      if (!box) return;
+      var img = box.querySelector("img");
+      if (!img) {
+        img = document.createElement("img");
+        img.className = "w-100 h-100 ok-cover";
+        img.alt = "";
+        img.decoding = "async";
+        box.insertBefore(img, box.firstChild);
+        var empty = box.querySelector("[data-slot-empty]");
+        if (empty) empty.remove();
+      }
+      img.src = url + "?v=" + Date.now();
+      img.style.display = "";
+      var badge = box.querySelector("[data-slot-badge]");
+      if (badge) {
+        badge.textContent = "Custom image";
+        badge.className = "position-absolute ok-top-15 ok-left-15 ok-fs-6rem fw-semibold ok-px-15 ok-py-05 ok-rounded bg-ok-green-20 text-ok-green";
+      }
+      var del = card.querySelector("[data-slot-delete]");
+      if (del) del.classList.replace("d-none", "d-inline-block");
+    }
 
-    var isVideo = /_video$/.test(key);
-    var cap = isVideo ? BIG_VIDEO : BIG_IMAGE;
+    // Use event delegation for file uploads to survive AJAX DOM replacements
+    document.addEventListener("change", function (e) {
+      var input = e.target;
+      if (!input || !input.matches || !input.matches("input[type=file][data-slot]")) return;
 
-    input.addEventListener("change", function () {
       var file = input.files && input.files[0];
       if (!file) return;
+
+      var key = input.getAttribute("data-slot");
+      var msg = document.querySelector('[data-slot-msg="' + key + '"]');
+      var card = input.closest(".ok-rounded-xl");
+      var isVideo = /_video$/.test(key);
+      var cap = isVideo ? BIG_VIDEO : BIG_IMAGE;
+
       if (file.size > cap) {
         say(msg, isVideo
-              ? size(file.size) + " is too big to upload — trim or compress the clip, or paste a "
-                + "YouTube/Vimeo link in the box above instead."
-              : size(file.size) + " is far bigger than this slot needs — save it at the size on "
-                + "the badge above and try again.", "bad");
+          ? size(file.size) + " is too big to upload — trim or compress the clip."
+          : size(file.size) + " is far bigger than this slot needs — save it at a smaller size.", "bad");
         input.value = "";
         return;
       }
       say(msg, "Uploading " + size(file.size) + "…");
+
       var fd = new FormData();
       fd.append("key", key);
       fd.append("file", file);
@@ -156,18 +170,10 @@
       })
         .then(function (r) {
           if (r.status === 413) throw new Error("The server would not take a file this big.");
-          // a signed-out session is answered with a redirect to the login page,
-          // which arrives here as a 200 full of HTML
           var isJson = (r.headers.get("content-type") || "").indexOf("json") > -1;
-          if (r.redirected || !isJson) {
-            throw new Error("You have been signed out — open the admin in a new tab, sign in, then try again.");
-          }
+          if (r.redirected || !isJson) throw new Error("Signed out — open admin in a new tab, sign in, then try again.");
           if (r.status === 400 || r.status === 403) {
-            return r.json().then(function (d) {
-              throw new Error((d && d.error) || "This page has gone stale — reload it and try again.");
-            }, function () {
-              throw new Error("This page has gone stale — reload it and try again.");
-            });
+            return r.json().then(function (d) { throw new Error((d && d.error) || "Page stale — reload and try again."); }, function () { throw new Error("Page stale — reload and try again."); });
           }
           if (!r.ok) throw new Error("Upload failed (" + r.status + ").");
           return r.json();
@@ -175,8 +181,6 @@
         .then(function (d) {
           if (!d || !d.ok) throw new Error((d && d.error) || "Upload failed.");
           showPicture(card, d.url);
-          // keep the link box in step: pressing "Save image links" afterwards
-          // would otherwise read it as empty and clear the picture we just sent
           var urlBox = card && card.querySelector('input[name="' + key + '"]');
           if (urlBox) urlBox.value = d.url;
           say(msg, "Saved.", "good");
@@ -186,7 +190,56 @@
           say(msg, err.message || "Upload failed.", "bad");
         });
     });
-  });
-})();
+
+    // Handle AJAX submittal of the whole form (Save URLs / Delete picture)
+    var form = document.querySelector('form[action^="/admin/site-images"]');
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var btn = e.submitter;
+
+        // Let the loading indicator show clearly
+        var oldText = btn ? btn.innerHTML : "Save";
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+
+        var url = (btn && btn.getAttribute("formaction")) || form.getAttribute("action");
+        var fd = new FormData(form);
+
+        fetch(url, {
+          method: form.getAttribute("method") || "POST",
+          body: fd,
+          redirect: "follow",
+          headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error("Server error " + r.status);
+            return r.text();
+          })
+          .then(function (html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, "text/html");
+            var newForm = doc.querySelector('form[action^="/admin/site-images"]');
+            if (newForm) {
+              form.innerHTML = newForm.innerHTML;
+            } else {
+              location.reload();
+            }
+          })
+          .catch(function (err) {
+            console.error(err);
+            alert("Could not complete the action. Reloading...");
+            location.reload();
+          })
+          .finally(function () {
+            // We only need to restore if an error occurred and it didn't reload, 
+            // since if it succeeds form.innerHTML is replaced anyway.
+            if (btn && document.contains(btn)) {
+              btn.innerHTML = oldText;
+            }
+          });
+      });
+    }
+
+  })();
 </script>
 {% endblock %}
