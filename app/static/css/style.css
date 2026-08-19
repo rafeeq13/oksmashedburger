@@ -452,6 +452,8 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 .pb-sec[data-sectype="modal"][style*="--pb-shadow:"] .ok-card{ box-shadow:var(--pb-shadow) !important; }
 /* a wrapper round a fixed overlay must not create its own stacking context */
 .pb-sec.pb-chrome{ display:contents; }
+/* The header's pb-sec wrapper must not block .ok-header's position:sticky */
+.pb-sec[data-section="header"]{ display:contents; }
 
 /* ── An extra picture dropped into a section ───────────────────────────────
    Drawn as a pseudo-element on the section wrapper, so a client can add a

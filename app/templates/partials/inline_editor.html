@@ -1,6 +1,6 @@
 {# Inline text editor — rendered only when an admin adds ?edit=1 to a page.
-   Every pc() string is already wrapped in .ok-ie by the context processor;
-   this turns those into contenteditables and saves each on blur. #}
+Every pc() string is already wrapped in .ok-ie by the context processor;
+this turns those into contenteditables and saves each on blur. #}
 <script src="{{ url_for('static', filename='js/contrast.js') }}"></script>
 <div id="okIeBar">
   <span class="ok-ie-dot"></span>
@@ -43,341 +43,734 @@
 </div>
 
 <style>
-  body{ padding-top:46px; }
-  /* everything pinned to the top of the page has to clear the editor bar */
-  :root{ --ok-chrome-top:46px; }
-  #okIeBar{
-    position:fixed; inset:0 0 auto 0; z-index:9000; height:46px;
-    display:flex; align-items:center; gap:.75rem; padding:0 1rem;
-    background:#101820; color:#fff; font:600 13px/1 Quicksand, sans-serif;
-    box-shadow:0 1px 0 rgba(255,255,255,.08);
+  body {
+    padding-top: 46px;
   }
-  .ok-ie-dot{ width:9px; height:9px; border-radius:50%; background:#FFC72C; flex-shrink:0; }
-  .ok-ie-hint{ font-weight:500; color:rgba(255,255,255,.62); }
-  .ok-ie-status{ margin-left:auto; color:#FFC72C; font-weight:600; }
-  .ok-ie-jump{ background:rgba(255,255,255,.12); color:#fff; border:0; border-radius:8px;
-    font:600 12px/1 Quicksand,sans-serif; padding:.45rem .6rem; cursor:pointer; }
-  .ok-ie-jump option{ color:#101820; }
-  .ok-ie-exit{ background:#FFC72C; color:#101820; text-decoration:none;
-    padding:.45rem .9rem; border-radius:8px; font-weight:700; }
+
+  /* everything pinned to the top of the page has to clear the editor bar */
+  :root {
+    --ok-chrome-top: 46px;
+  }
+
+  #okIeBar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 9000;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 0 1rem;
+    background: #101820;
+    color: #fff;
+    font: 600 13px/1 Quicksand, sans-serif;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .08);
+  }
+
+  .ok-ie-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #FFC72C;
+    flex-shrink: 0;
+  }
+
+  .ok-ie-hint {
+    font-weight: 500;
+    color: rgba(255, 255, 255, .62);
+  }
+
+  .ok-ie-status {
+    margin-left: auto;
+    color: #FFC72C;
+    font-weight: 600;
+  }
+
+  .ok-ie-jump {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+    border: 0;
+    border-radius: 8px;
+    font: 600 12px/1 Quicksand, sans-serif;
+    padding: .45rem .6rem;
+    cursor: pointer;
+  }
+
+  .ok-ie-jump option {
+    color: #101820;
+  }
+
+  .ok-ie-exit {
+    background: #FFC72C;
+    color: #101820;
+    text-decoration: none;
+    padding: .45rem .9rem;
+    border-radius: 8px;
+    font-weight: 700;
+  }
 
   /* the editable spans: quiet until you go near them */
-  .ok-ie{ outline:1px dashed rgba(255,199,44,.55); outline-offset:2px;
-    border-radius:3px; cursor:text; transition:background-color .12s ease; }
-  .ok-ie:hover{ background:rgba(255,199,44,.16); }
-  .ok-ie[contenteditable="true"]:focus{
-    outline:2px solid #FFC72C; background:rgba(255,199,44,.12); }
-  .ok-ie.ok-ie-saved{ animation:okIeFlash .9s ease; }
+  .ok-ie {
+    outline: 1px dashed rgba(255, 199, 44, .55);
+    outline-offset: 2px;
+    border-radius: 3px;
+    cursor: text;
+    transition: background-color .12s ease;
+  }
+
+  .ok-ie:hover {
+    background: rgba(255, 199, 44, .16);
+  }
+
+  .ok-ie[contenteditable="true"]:focus {
+    outline: 2px solid #FFC72C;
+    background: rgba(255, 199, 44, .12);
+  }
+
+  .ok-ie.ok-ie-saved {
+    animation: okIeFlash .9s ease;
+  }
 
   /* pictures: a dashed frame and a Change button on hover */
-  .ok-ie-img{ outline:2px dashed rgba(255,199,44,.75); outline-offset:-2px; cursor:pointer; }
-  .ok-ie-imgwrap{ position:relative; }
-  .ok-ie-badge{
-    position:absolute; z-index:8000; transform:translate(-50%,-50%);
-    background:#101820; color:#fff; font:700 12px/1 Quicksand,sans-serif;
-    padding:.5rem .8rem; border-radius:999px; box-shadow:0 4px 14px rgba(0,0,0,.35);
-    pointer-events:none; white-space:nowrap;
+  .ok-ie-img {
+    outline: 2px dashed rgba(255, 199, 44, .75);
+    outline-offset: -2px;
+    cursor: pointer;
   }
-  #okIeSheet{ position:fixed; inset:0; z-index:9500; background:rgba(16,24,32,.55);
-    display:none; align-items:center; justify-content:center; padding:1rem; }
-  #okIeSheet.is-open{ display:flex; }
-  #okIeSheet .box{ background:#fff; border-radius:14px; padding:1.1rem; width:min(460px,100%);
-    font:500 14px/1.5 Quicksand,sans-serif; box-shadow:0 20px 60px rgba(0,0,0,.35); }
-  #okIeSheet h4{ margin:0 0 .2rem; font:800 16px/1.2 Poppins,sans-serif; }
-  #okIeSheet .hint{ color:#6B6B6B; font-size:12.5px; margin:0 0 .9rem; }
-  #okIeDesign .hint{ color:#8a8a8a; font-size:11.5px; margin:.15rem 0 .6rem; }
+
+  .ok-ie-imgwrap {
+    position: relative;
+  }
+
+  .ok-ie-badge {
+    position: absolute;
+    z-index: 8000;
+    transform: translate(-50%, -50%);
+    background: #101820;
+    color: #fff;
+    font: 700 12px/1 Quicksand, sans-serif;
+    padding: .5rem .8rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  #okIeSheet {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    background: rgba(16, 24, 32, .55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  #okIeSheet.is-open {
+    display: flex;
+  }
+
+  #okIeSheet .box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.1rem;
+    width: min(460px, 100%);
+    font: 500 14px/1.5 Quicksand, sans-serif;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+  }
+
+  #okIeSheet h4 {
+    margin: 0 0 .2rem;
+    font: 800 16px/1.2 Poppins, sans-serif;
+  }
+
+  #okIeSheet .hint {
+    color: #6B6B6B;
+    font-size: 12.5px;
+    margin: 0 0 .9rem;
+  }
+
+  #okIeDesign .hint {
+    color: #8a8a8a;
+    font-size: 11.5px;
+    margin: .15rem 0 .6rem;
+  }
+
   /* which words the controls below are about to move */
-  #okIeDesign .ok-ie-editing{ color:#141414; font-weight:600; font-size:12px;
-    background:#fff6d8; border-left:3px solid #ffc72c; padding:.35rem .5rem;
-    margin:.35rem 0 .5rem; }
+  #okIeDesign .ok-ie-editing {
+    color: #141414;
+    font-weight: 600;
+    font-size: 12px;
+    background: #fff6d8;
+    border-left: 3px solid #ffc72c;
+    padding: .35rem .5rem;
+    margin: .35rem 0 .5rem;
+  }
+
   /* a setting from before every kind of text had its own controls */
-  #okIeDesign .ok-ie-old{ background:#fdece8; border:1px solid #f2b8ab;
-    border-radius:8px; padding:.6rem .7rem; margin:0 0 .8rem; }
-  #okIeDesign .ok-ie-old strong{ display:block; font-size:12.5px; color:#8a2b16; }
-  #okIeDesign .ok-ie-old p{ font-size:11.5px; color:#6b3b2c; margin:.3rem 0 .5rem; }
-  #okIeDesign .ok-ie-old button{ background:#8a2b16; color:#fff; border:0;
-    border-radius:6px; padding:.35rem .7rem; font-size:11.5px; cursor:pointer; }
+  #okIeDesign .ok-ie-old {
+    background: #fdece8;
+    border: 1px solid #f2b8ab;
+    border-radius: 8px;
+    padding: .6rem .7rem;
+    margin: 0 0 .8rem;
+  }
+
+  #okIeDesign .ok-ie-old strong {
+    display: block;
+    font-size: 12.5px;
+    color: #8a2b16;
+  }
+
+  #okIeDesign .ok-ie-old p {
+    font-size: 11.5px;
+    color: #6b3b2c;
+    margin: .3rem 0 .5rem;
+  }
+
+  #okIeDesign .ok-ie-old button {
+    background: #8a2b16;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: .35rem .7rem;
+    font-size: 11.5px;
+    cursor: pointer;
+  }
+
   /* The font list is an ordinary dropdown, like every other choice in this
      panel. It used to be a button that opened a searchable panel previewing
      each family in its own face — handsome, and unlike anything else here, so
      it read as a row of pills rather than a setting. Grouped by kind of face,
      and a dropdown brings its own keyboard search with it. */
-  .ok-ie-fontsel{ width:100%; }
+  .ok-ie-fontsel {
+    width: 100%;
+  }
+
   /* button-state tabs, the contrast readout and its suggestions */
-  .ok-ie-states{ display:flex; flex-wrap:wrap; gap:.2rem; margin:.1rem 0 .5rem; }
-  .ok-ie-states button{ flex:1 1 auto; border:1px solid #e2e2e2; background:#fafafa;
-    border-radius:7px; padding:.28rem .3rem; font:700 10.5px/1.3 Quicksand,sans-serif;
-    cursor:pointer; color:#555; }
-  .ok-ie-states button.on{ background:#141414; border-color:#141414; color:#fff; }
-  .ok-ie-contrast{ margin:0 0 .55rem; }
-  .ok-ie-contrast .row{ display:flex; align-items:center; gap:.4rem; font-size:11.5px;
-    padding:.12rem .3rem; border-radius:5px; }
-  .ok-ie-contrast .row .n{ flex:1; }
-  .ok-ie-contrast .row .r{ font-variant-numeric:tabular-nums; color:#666; }
-  .ok-ie-contrast .row.fail, .ok-ie-contrast .row.same{ background:#fdecec; color:#a11; }
-  .ok-ie-contrast .row.fail .r, .ok-ie-contrast .row.same .r{ color:#a11; font-weight:700; }
-  .ok-ie-contrast .row.pass, .ok-ie-contrast .row.great{ color:#2c6e3f; }
-  .ok-ie-fix{ margin-top:.35rem; width:100%; border:0; border-radius:7px; background:#FFC72C;
-    color:#101820; font:700 11px/1.2 Quicksand,sans-serif; padding:.42rem .5rem; cursor:pointer; }
-  .ok-ie-suggest{ margin-top:.35rem; }
-  .ok-ie-suggest button{ display:flex; align-items:center; gap:.4rem; width:100%; border:1px solid #e6e6e6;
-    background:#fff; border-radius:7px; padding:.3rem .45rem; margin-bottom:.25rem;
-    font:600 11px/1.2 Quicksand,sans-serif; cursor:pointer; }
-  .ok-ie-suggest .sw{ width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.15); }
-  .ok-ie-suggest em{ margin-left:auto; font-style:normal; color:#777; }
+  .ok-ie-states {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem;
+    margin: .1rem 0 .5rem;
+  }
+
+  .ok-ie-states button {
+    flex: 1 1 auto;
+    border: 1px solid #e2e2e2;
+    background: #fafafa;
+    border-radius: 7px;
+    padding: .28rem .3rem;
+    font: 700 10.5px/1.3 Quicksand, sans-serif;
+    cursor: pointer;
+    color: #555;
+  }
+
+  .ok-ie-states button.on {
+    background: #141414;
+    border-color: #141414;
+    color: #fff;
+  }
+
+  .ok-ie-contrast {
+    margin: 0 0 .55rem;
+  }
+
+  .ok-ie-contrast .row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: 11.5px;
+    padding: .12rem .3rem;
+    border-radius: 5px;
+  }
+
+  .ok-ie-contrast .row .n {
+    flex: 1;
+  }
+
+  .ok-ie-contrast .row .r {
+    font-variant-numeric: tabular-nums;
+    color: #666;
+  }
+
+  .ok-ie-contrast .row.fail,
+  .ok-ie-contrast .row.same {
+    background: #fdecec;
+    color: #a11;
+  }
+
+  .ok-ie-contrast .row.fail .r,
+  .ok-ie-contrast .row.same .r {
+    color: #a11;
+    font-weight: 700;
+  }
+
+  .ok-ie-contrast .row.pass,
+  .ok-ie-contrast .row.great {
+    color: #2c6e3f;
+  }
+
+  .ok-ie-fix {
+    margin-top: .35rem;
+    width: 100%;
+    border: 0;
+    border-radius: 7px;
+    background: #FFC72C;
+    color: #101820;
+    font: 700 11px/1.2 Quicksand, sans-serif;
+    padding: .42rem .5rem;
+    cursor: pointer;
+  }
+
+  .ok-ie-suggest {
+    margin-top: .35rem;
+  }
+
+  .ok-ie-suggest button {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    width: 100%;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    border-radius: 7px;
+    padding: .3rem .45rem;
+    margin-bottom: .25rem;
+    font: 600 11px/1.2 Quicksand, sans-serif;
+    cursor: pointer;
+  }
+
+  .ok-ie-suggest .sw {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, .15);
+  }
+
+  .ok-ie-suggest em {
+    margin-left: auto;
+    font-style: normal;
+    color: #777;
+  }
+
   /* a brief outline so it is obvious which words the text controls will move */
-  .ok-ie-roleflash{ outline:2px dashed #FFC72C !important; outline-offset:2px; }
-  #okIeSheet input[type=url], #okIeSheet input[type=file]{
-    width:100%; border:1px solid #dcdcdc; border-radius:8px; padding:.6rem .7rem; margin-bottom:.6rem; }
-  #okIeSheet .row{ display:flex; gap:.5rem; justify-content:flex-end; margin-top:.4rem; }
-  #okIeSheet button{ border:0; border-radius:8px; padding:.55rem 1rem; font-weight:700; cursor:pointer; }
-  #okIeSheet .go{ background:#FFC72C; color:#101820; }
-  #okIeSheet .cancel{ background:#eee; color:#333; }
+  .ok-ie-roleflash {
+    outline: 2px dashed #FFC72C !important;
+    outline-offset: 2px;
+  }
+
+  #okIeSheet input[type=url],
+  #okIeSheet input[type=file] {
+    width: 100%;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: .6rem .7rem;
+    margin-bottom: .6rem;
+  }
+
+  #okIeSheet .row {
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+    margin-top: .4rem;
+  }
+
+  #okIeSheet button {
+    border: 0;
+    border-radius: 8px;
+    padding: .55rem 1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #okIeSheet .go {
+    background: #FFC72C;
+    color: #101820;
+  }
+
+  #okIeSheet .cancel {
+    background: #eee;
+    color: #333;
+  }
+
   /* per-section design */
-  .ok-ie-secbtn{
-    position:absolute; top:8px; right:8px; z-index:7000;
-    background:#101820; color:#fff; border:0; border-radius:999px;
-    font:700 11px/1 Quicksand,sans-serif; padding:.45rem .75rem; cursor:pointer;
-    opacity:.35; transition:opacity .15s ease;
+  .ok-ie-secbtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 7000;
+    background: #101820;
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    font: 700 11px/1 Quicksand, sans-serif;
+    padding: .45rem .75rem;
+    cursor: pointer;
+    opacity: .35;
+    transition: opacity .15s ease;
   }
-  .pb-sec:hover > .ok-ie-secbtn{ opacity:1; }
-  #okIeDesign{
-    position:fixed; top:56px; right:10px; z-index:9400; width:270px; max-height:calc(100vh - 70px);
-    overflow:auto; background:#fff; border-radius:12px; box-shadow:0 18px 50px rgba(0,0,0,.30);
-    padding:.9rem; font:500 13px/1.45 Quicksand,sans-serif; display:none;
+
+  .pb-sec:hover>.ok-ie-secbtn {
+    opacity: 1;
   }
-  #okIeDesign.is-open{ display:block; }
-  #okIeDesign h4{ margin:0 0 .1rem; font:800 14px/1.2 Poppins,sans-serif; }
-  #okIeDesign .sub{ color:#6B6B6B; font-size:11.5px; margin:0 0 .7rem; }
-  #okIeDesign label{ display:block; font-size:11.5px; color:#6B6B6B; margin:.55rem 0 .15rem; }
-  #okIeDesign input[type=color]{ width:100%; height:30px; border:1px solid #e2e2e2; border-radius:7px; padding:2px; background:#fff; }
-  #okIeDesign input[type=range]{ width:100%; accent-color:#FFC72C; }
-  #okIeDesign select{ width:100%; border:1px solid #dcdcdc; border-radius:7px; padding:.35rem .45rem; font:inherit; }
-  #okIeDesign .grp{ font:800 10.5px/1 Poppins,sans-serif; letter-spacing:.12em;
-    text-transform:uppercase; color:#101820; margin:.9rem 0 .1rem;
-    padding-top:.6rem; border-top:1px solid #eee; }
-  #okIeDesign .grp:first-child{ border-top:0; padding-top:0; margin-top:0; }
-  #okIeDesign .ie-reset{ margin-top:1rem; padding-top:.8rem; border-top:1px solid #eee;
-    display:flex; flex-direction:column; gap:.4rem; }
-  #okIeDesign .ie-reset button{ border:1px solid #f0caca; background:#fff; color:#C62828;
-    border-radius:8px; padding:.5rem; font:700 12px/1 Quicksand,sans-serif; cursor:pointer; }
-  #okIeDesign .ie-reset button:hover{ background:#fff5f5; }
-  #okIeDesign .close{ float:right; border:0; background:none; font-size:16px; cursor:pointer; color:#888; }
-  #okIeSheet .reset{ background:#fff; color:#C62828; box-shadow:inset 0 0 0 1px #f0caca; margin-right:auto; }
-  @keyframes okIeFlash{ 0%{ background:rgba(46,125,50,.30) } 100%{ background:transparent } }
+
+  #okIeDesign {
+    position: fixed;
+    top: 56px;
+    right: 10px;
+    z-index: 9400;
+    width: 270px;
+    max-height: calc(100vh - 70px);
+    overflow: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .30);
+    padding: .9rem;
+    font: 500 13px/1.45 Quicksand, sans-serif;
+    display: none;
+  }
+
+  #okIeDesign.is-open {
+    display: block;
+  }
+
+  #okIeDesign h4 {
+    margin: 0 0 .1rem;
+    font: 800 14px/1.2 Poppins, sans-serif;
+  }
+
+  #okIeDesign .sub {
+    color: #6B6B6B;
+    font-size: 11.5px;
+    margin: 0 0 .7rem;
+  }
+
+  #okIeDesign label {
+    display: block;
+    font-size: 11.5px;
+    color: #6B6B6B;
+    margin: .55rem 0 .15rem;
+  }
+
+  #okIeDesign .range-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: .55rem 0 .15rem;
+  }
+
+  #okIeDesign .range-head label {
+    margin: 0;
+  }
+
+  #okIeDesign .range-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: #141414;
+  }
+
+  #okIeDesign input[type=color] {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #e2e2e2;
+    border-radius: 7px;
+    padding: 2px;
+    background: #fff;
+  }
+
+  #okIeDesign input[type=range] {
+    width: 100%;
+    accent-color: #FFC72C;
+  }
+
+  #okIeDesign select {
+    width: 100%;
+    border: 1px solid #dcdcdc;
+    border-radius: 7px;
+    padding: .35rem .45rem;
+    font: inherit;
+  }
+
+  #okIeDesign .grp {
+    font: 800 10.5px/1 Poppins, sans-serif;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #101820;
+    margin: .9rem 0 .1rem;
+    padding-top: .6rem;
+    border-top: 1px solid #eee;
+  }
+
+  #okIeDesign .grp:first-child {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  #okIeDesign .ie-reset {
+    margin-top: 1rem;
+    padding-top: .8rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  #okIeDesign .ie-reset button {
+    border: 1px solid #f0caca;
+    background: #fff;
+    color: #C62828;
+    border-radius: 8px;
+    padding: .5rem;
+    font: 700 12px/1 Quicksand, sans-serif;
+    cursor: pointer;
+  }
+
+  #okIeDesign .ie-reset button:hover {
+    background: #fff5f5;
+  }
+
+  #okIeDesign .close {
+    float: right;
+    border: 0;
+    background: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #888;
+  }
+
+  #okIeSheet .reset {
+    background: #fff;
+    color: #C62828;
+    box-shadow: inset 0 0 0 1px #f0caca;
+    margin-right: auto;
+  }
+
+  @keyframes okIeFlash {
+    0% {
+      background: rgba(46, 125, 50, .30)
+    }
+
+    100% {
+      background: transparent
+    }
+  }
 </style>
 
 <script>
-(function () {
-  var status = document.getElementById("okIeStatus");
-  var timer;
-  function say(msg, ms) {
-    status.textContent = msg;
-    clearTimeout(timer);
-    if (ms) timer = setTimeout(function () { status.textContent = ""; }, ms);
-  }
+  (function () {
+    var status = document.getElementById("okIeStatus");
+    var timer;
+    function say(msg, ms) {
+      status.textContent = msg;
+      clearTimeout(timer);
+      if (ms) timer = setTimeout(function () { status.textContent = ""; }, ms);
+    }
 
-  /* ---------- pictures ---------- */
-  // Every admin-set image arrives with its slot key tagged onto the URL as a
-  // fragment (see _Marked in the context processor), so the editor can find
-  // them all without any template knowing about edit mode.
-  var sheet = document.getElementById("okIeSheet");
-  var sheetWhere = document.getElementById("okIeSheetWhere");
-  var urlBox = document.getElementById("okIeUrl");
-  var fileBox = document.getElementById("okIeFile");
-  var current = null;
+    /* ---------- pictures ---------- */
+    // Every admin-set image arrives with its slot key tagged onto the URL as a
+    // fragment (see _Marked in the context processor), so the editor can find
+    // them all without any template knowing about edit mode.
+    var sheet = document.getElementById("okIeSheet");
+    var sheetWhere = document.getElementById("okIeSheetWhere");
+    var urlBox = document.getElementById("okIeUrl");
+    var fileBox = document.getElementById("okIeFile");
+    var current = null;
 
-  function keyOf(src) {
-    var i = (src || "").indexOf("#ie=");
-    return i < 0 ? null : src.slice(i + 4);
-  }
-  function label(k) {
-    return k.replace(/_/g, " ").replace(/img/, "image").replace(/^\w/, function (c) { return c.toUpperCase(); });
-  }
-  function openSheet(el, k) {
-    current = { el: el, key: k };
-    sheetWhere.textContent = label(k);
-    urlBox.value = ""; fileBox.value = "";
-    sheet.classList.add("is-open");
-    urlBox.focus();
-  }
-  function closeSheet() { sheet.classList.remove("is-open"); current = null; }
+    function keyOf(src) {
+      var i = (src || "").indexOf("#ie=");
+      return i < 0 ? null : src.slice(i + 4);
+    }
+    function label(k) {
+      return k.replace(/_/g, " ").replace(/img/, "image").replace(/^\w/, function (c) { return c.toUpperCase(); });
+    }
+    function openSheet(el, k) {
+      current = { el: el, key: k };
+      sheetWhere.textContent = label(k);
+      urlBox.value = ""; fileBox.value = "";
+      sheet.classList.add("is-open");
+      urlBox.focus();
+    }
+    function closeSheet() { sheet.classList.remove("is-open"); current = null; }
 
-  document.querySelectorAll("img, video").forEach(function (el) {
-    // a slot with nothing in it yet renders the styled placeholder, which
-    // carries its key as an attribute instead of on the URL
-    var k = keyOf(el.getAttribute("src") || el.getAttribute("poster") || "")
-            || el.getAttribute("data-ie-slot");
-    if (!k) return;
-    el.classList.add("ok-ie-img");
-    el.setAttribute("data-ie-img", k);
-    el.setAttribute("title", "Click to change this picture");
-    el.addEventListener("click", function (e) {
-      e.preventDefault(); e.stopPropagation();
-      openSheet(el, k);
+    document.querySelectorAll("img, video").forEach(function (el) {
+      // a slot with nothing in it yet renders the styled placeholder, which
+      // carries its key as an attribute instead of on the URL
+      var k = keyOf(el.getAttribute("src") || el.getAttribute("poster") || "")
+        || el.getAttribute("data-ie-slot");
+      if (!k) return;
+      el.classList.add("ok-ie-img");
+      el.setAttribute("data-ie-img", k);
+      el.setAttribute("title", "Click to change this picture");
+      el.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        openSheet(el, k);
+      });
     });
-  });
 
-  function saveImage(body) {
-    say("Saving…");
-    return fetch("/admin/inline-image", { method: "POST", headers: { "X-CSRF-Token": "{{ csrf_token }}" }, body: body })
-      .then(function (r) {
-        if (r.status === 413) throw new Error("That file is too big to upload.");
-        // the server explains a refusal (wrong file type, unknown slot) in the
-        // body — showing a bare status code instead sent the admin hunting
-        return r.json().then(function (d) {
-          if (!r.ok || !d.ok) throw new Error(d && d.error ? d.error : "Could not save (" + r.status + ")");
-          return d;
-        }, function () { throw new Error("Could not save (" + r.status + ")"); });
-      })
-      .then(function (d) {
-        if (current && current.el) {
-          var next = (d.url || "") + "?v=" + Date.now() + "#ie=" + d.key;
-          if (current.el.tagName === "VIDEO") current.el.setAttribute("poster", next);
-          else current.el.src = next;
-        }
-        say("Saved", 1600);
-        closeSheet();
-        if (!d.url) location.reload();       // back to the built-in default
-      })
-      .catch(function (err) { say(err.message || "Could not save", 4000); });
-  }
-  document.getElementById("okIeGo").addEventListener("click", function () {
-    if (!current) return;
-    var fd = new FormData();
-    fd.append("key", current.key);
-    if (fileBox.files && fileBox.files[0]) fd.append("file", fileBox.files[0]);
-    else fd.append("url", urlBox.value.trim());
-    saveImage(fd);
-  });
-  document.getElementById("okIeReset").addEventListener("click", function () {
-    if (!current) return;
-    var fd = new FormData(); fd.append("key", current.key); fd.append("url", "");
-    saveImage(fd);
-  });
-  document.getElementById("okIeCancel").addEventListener("click", closeSheet);
-  sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });
+    function saveImage(body) {
+      say("Saving…");
+      return fetch("/admin/inline-image", { method: "POST", headers: { "X-CSRF-Token": "{{ csrf_token }}" }, body: body })
+        .then(function (r) {
+          if (r.status === 413) throw new Error("That file is too big to upload.");
+          // the server explains a refusal (wrong file type, unknown slot) in the
+          // body — showing a bare status code instead sent the admin hunting
+          return r.json().then(function (d) {
+            if (!r.ok || !d.ok) throw new Error(d && d.error ? d.error : "Could not save (" + r.status + ")");
+            return d;
+          }, function () { throw new Error("Could not save (" + r.status + ")"); });
+        })
+        .then(function (d) {
+          if (current && current.el) {
+            var next = (d.url || "") + "?v=" + Date.now() + "#ie=" + d.key;
+            if (current.el.tagName === "VIDEO") current.el.setAttribute("poster", next);
+            else current.el.src = next;
+          }
+          say("Saved", 1600);
+          closeSheet();
+          if (!d.url) location.reload();       // back to the built-in default
+        })
+        .catch(function (err) { say(err.message || "Could not save", 4000); });
+    }
+    document.getElementById("okIeGo").addEventListener("click", function () {
+      if (!current) return;
+      var fd = new FormData();
+      fd.append("key", current.key);
+      if (fileBox.files && fileBox.files[0]) fd.append("file", fileBox.files[0]);
+      else fd.append("url", urlBox.value.trim());
+      saveImage(fd);
+    });
+    document.getElementById("okIeReset").addEventListener("click", function () {
+      if (!current) return;
+      var fd = new FormData(); fd.append("key", current.key); fd.append("url", "");
+      saveImage(fd);
+    });
+    document.getElementById("okIeCancel").addEventListener("click", closeSheet);
+    sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });
 
-  /* ---------- while editing, clicks must not navigate ----------
-     A link or a button is a thing to edit here, not a thing to follow. The
-     listener runs in the capture phase so it wins before the site's own
-     handlers, and it deliberately ignores anything belonging to the editor
-     itself — its bar, its panels and its Design buttons still work. */
-  function inEditorChrome(el) {
-    return !!(el.closest && el.closest("#okIeBar, #okIeDesign, #okIeSheet, .ok-ie-secbtn"));
-  }
-  // things whose whole job is to reveal more of the page — a modal, the cart
-  // drawer, a menu, an accordion. Those must keep working, or half the design
-  // could never be reached to edit it.
-  var OPENERS = "[data-open], [data-item], [data-add], [data-sched-edit], [data-bs-toggle], [data-toggle]";
+    /* ---------- while editing, clicks must not navigate ----------
+       A link or a button is a thing to edit here, not a thing to follow. The
+       listener runs in the capture phase so it wins before the site's own
+       handlers, and it deliberately ignores anything belonging to the editor
+       itself — its bar, its panels and its Design buttons still work. */
+    function inEditorChrome(el) {
+      return !!(el.closest && el.closest("#okIeBar, #okIeDesign, #okIeSheet, .ok-ie-secbtn"));
+    }
+    // things whose whole job is to reveal more of the page — a modal, the cart
+    // drawer, a menu, an accordion. Those must keep working, or half the design
+    // could never be reached to edit it.
+    var OPENERS = "[data-open], [data-item], [data-add], [data-sched-edit], [data-bs-toggle], [data-toggle]";
 
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (!t || !t.closest || inEditorChrome(t)) return;
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t || !t.closest || inEditorChrome(t)) return;
 
-    // clicking the words themselves means "edit these words", never "follow me"
-    // the browser has already put the caret where the click landed, so only
-    // take focus when something else still holds it
-    var ie = t.closest(".ok-ie");
-    if (ie) {
-      e.preventDefault(); e.stopPropagation();
-      if (document.activeElement !== ie) ie.focus();
-      return;
+      // clicking the words themselves means "edit these words", never "follow me"
+      // the browser has already put the caret where the click landed, so only
+      // take focus when something else still holds it
+      var ie = t.closest(".ok-ie");
+      if (ie) {
+        e.preventDefault(); e.stopPropagation();
+        if (document.activeElement !== ie) ie.focus();
+        return;
+      }
+
+      /* A button that opens a modal is still a button you want to restyle.
+         Clicking the hero's "Start Your Order" to reach its colours threw the
+         Location picker over the whole page instead; the modals have their own
+         way in ("Design a shared part…" in the bar above), so while editing the
+         click just selects the button. Links are handled below, because some of
+         them open menus that hold the design you came to change. */
+      var opener = t.closest("button" + OPENERS.split(", ").join(", button"));
+      if (opener && !opener.closest("a[href]")) {
+        e.preventDefault(); e.stopPropagation();
+        return;
+      }
+
+      var link = t.closest("a[href]");
+      if (!link) return;                       // other buttons are left alone
+      var href = link.getAttribute("href") || "";
+      if (href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
+
+      // stop the page from changing, but let whatever else is bound to this link
+      // still run — some links open modals rather than navigate
+      e.preventDefault();
+      if (link.matches(OPENERS)) return;
+      var inner = link.querySelector(".ok-ie");
+      if (inner) inner.focus();
+    }, true);
+
+    // forms must not submit either — Enter in a field would reload the page
+    document.addEventListener("submit", function (e) {
+      if (inEditorChrome(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+
+    /* Clicking words while the design panel is open points the text controls at
+       THOSE words — the heading, the sub-heading, the button label and the small
+       print each keep their own settings, and this is how you reach them. */
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (!t || !t.closest || inEditorChrome(t)) return;
+      if (!dPanel || !dPanel.classList.contains("is-open")) return;
+      var sec = t.closest(".pb-sec[data-section]");
+      if (!sec) return;
+      var role = roleOf(t);
+      if (!role) return;
+      if (sec !== currentSec) buildPanel(sec);
+      if (role === currentRole) return;
+      currentRole = role;
+      var picker = document.getElementById("ie_textrole");
+      if (picker) picker.value = role;
+      renderRole(sec);
+      fillFromSaved(sec);
+      // bring the controls for those words into view: the panel may be scrolled
+      // anywhere, and a client who clicked their sub-heading should not have to
+      // go looking for what just changed
+      if (picker && picker.scrollIntoView) {
+        try { picker.scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) { }
+      }
+      say("Styling: " + roleLabel(role), 1800);
+    }, true);
+
+    function roleLabel(role) {
+      for (var i = 0; i < TEXT_ROLES.length; i++) {
+        if (TEXT_ROLES[i][0] === role) return TEXT_ROLES[i][1];
+      }
+      return role;
     }
 
-    /* A button that opens a modal is still a button you want to restyle.
-       Clicking the hero's "Start Your Order" to reach its colours threw the
-       Location picker over the whole page instead; the modals have their own
-       way in ("Design a shared part…" in the bar above), so while editing the
-       click just selects the button. Links are handled below, because some of
-       them open menus that hold the design you came to change. */
-    var opener = t.closest("button" + OPENERS.split(", ").join(", button"));
-    if (opener && !opener.closest("a[href]")) {
-      e.preventDefault(); e.stopPropagation();
-      return;
-    }
+    // the same answer the panel uses, reachable from outside so a test can check
+    // that a role's settings really do move that role's text and nothing else
+    window.okIeRoleOf = roleOf;
 
-    var link = t.closest("a[href]");
-    if (!link) return;                       // other buttons are left alone
-    var href = link.getAttribute("href") || "";
-    if (href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
+    /* ---------- section design, on the page itself ----------
+       Writes the same style_* keys the Visual editor and Page design write, to
+       the same PageSection row — one place the style lives, so the three ways
+       of reaching it can never drift apart. */
+    var dPanel = document.getElementById("okIeDesign");
+    var dBody = document.getElementById("okIeDesignBody");
+    var dName = document.getElementById("okIeDesignName");
 
-    // stop the page from changing, but let whatever else is bound to this link
-    // still run — some links open modals rather than navigate
-    e.preventDefault();
-    if (link.matches(OPENERS)) return;
-    var inner = link.querySelector(".ok-ie");
-    if (inner) inner.focus();
-  }, true);
-
-  // forms must not submit either — Enter in a field would reload the page
-  document.addEventListener("submit", function (e) {
-    if (inEditorChrome(e.target)) return;
-    e.preventDefault();
-    e.stopPropagation();
-  }, true);
-
-  /* Clicking words while the design panel is open points the text controls at
-     THOSE words — the heading, the sub-heading, the button label and the small
-     print each keep their own settings, and this is how you reach them. */
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (!t || !t.closest || inEditorChrome(t)) return;
-    if (!dPanel || !dPanel.classList.contains("is-open")) return;
-    var sec = t.closest(".pb-sec[data-section]");
-    if (!sec) return;
-    var role = roleOf(t);
-    if (!role) return;
-    if (sec !== currentSec) buildPanel(sec);
-    if (role === currentRole) return;
-    currentRole = role;
-    var picker = document.getElementById("ie_textrole");
-    if (picker) picker.value = role;
-    renderRole(sec);
-    fillFromSaved(sec);
-    // bring the controls for those words into view: the panel may be scrolled
-    // anywhere, and a client who clicked their sub-heading should not have to
-    // go looking for what just changed
-    if (picker && picker.scrollIntoView) {
-      try { picker.scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {}
-    }
-    say("Styling: " + roleLabel(role), 1800);
-  }, true);
-
-  function roleLabel(role) {
-    for (var i = 0; i < TEXT_ROLES.length; i++) {
-      if (TEXT_ROLES[i][0] === role) return TEXT_ROLES[i][1];
-    }
-    return role;
-  }
-
-  // the same answer the panel uses, reachable from outside so a test can check
-  // that a role's settings really do move that role's text and nothing else
-  window.okIeRoleOf = roleOf;
-
-  /* ---------- section design, on the page itself ----------
-     Writes the same style_* keys the Visual editor and Page design write, to
-     the same PageSection row — one place the style lives, so the three ways
-     of reaching it can never drift apart. */
-  var dPanel = document.getElementById("okIeDesign");
-  var dBody = document.getElementById("okIeDesignBody");
-  var dName = document.getElementById("okIeDesignName");
-
-  var FONTS = {{ canvas_fonts|tojson }};
-  var WEIGHTS = {{ canvas_weights|tojson }};
-  var CASES = {{ canvas_cases|tojson }};
-  var SHADOWS = {{ canvas_shadows|tojson }};
-  var TSSIDES = {{ canvas_tssides|tojson }};
-  var ITALICS = {{ canvas_italics|tojson }};
-  var BGSIZES = {{ canvas_bgsizes|tojson }};
-  var BGPOSES = {{ canvas_bgposes|tojson }};
-  var GRADDIRS = {{ canvas_graddirs|tojson }};
-  var FILTERS = {{ canvas_filters|tojson }};
-  var VALIGNS = {{ canvas_valigns|tojson }};
-  var IMGFITS = {{ canvas_imgfits|tojson }};
-  var COLSS = {{ canvas_colss|tojson }};
-  var XTRAPOSES = {{ canvas_xtraposes|tojson }};
-  var XTRAALIGNS = {{ canvas_xtraaligns|tojson }};
+    var FONTS = {{ canvas_fonts| tojson
+  }};
+  var WEIGHTS = {{ canvas_weights| tojson }};
+  var CASES = {{ canvas_cases| tojson }};
+  var SHADOWS = {{ canvas_shadows| tojson }};
+  var TSSIDES = {{ canvas_tssides| tojson }};
+  var ITALICS = {{ canvas_italics| tojson }};
+  var BGSIZES = {{ canvas_bgsizes| tojson }};
+  var BGPOSES = {{ canvas_bgposes| tojson }};
+  var GRADDIRS = {{ canvas_graddirs| tojson }};
+  var FILTERS = {{ canvas_filters| tojson }};
+  var VALIGNS = {{ canvas_valigns| tojson }};
+  var IMGFITS = {{ canvas_imgfits| tojson }};
+  var COLSS = {{ canvas_colss| tojson }};
+  var XTRAPOSES = {{ canvas_xtraposes| tojson }};
+  var XTRAALIGNS = {{ canvas_xtraaligns| tojson }};
   var ALIGNS = [["", "Default"], ["left", "Left"], ["center", "Centre"], ["right", "Right"]];
 
   /* ---------- one set of controls per KIND of text ----------
@@ -387,63 +780,63 @@
      panel shows ONE set and a picker for which text it belongs to — and
      clicking a piece of text on the page selects its role for you. */
   var TEXT_ROLES = [
-    ["title",     "Main heading",     ".pb-t-title,.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,h1,h2"],
-    ["titlehl",   "Highlighted words", ".pb-t-titlehl,.ok-hl,:is(h1,h2,h3,h4,h5,h6) :is(span,mark,em,b,strong):not(.ok-ie)"],
-    ["sub",       "Sub heading",      ".pb-t-sub,.ok-hero-sub,.ok-subtitle,.ok-lead,h4,h5,h6"],
-    ["body",      "Paragraph text",   ".pb-t-body,.ok-abt-body,p,li"],
-    ["eyebrow",   "Label / badge",    ".pb-t-eyebrow,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,span.chip,label"],
-    ["cardtitle", "Card heading",     ".pb-t-cardtitle,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,h3"],
-    ["cardtext",  "Card text",        ".pb-t-cardtext,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm"],
-    ["btn",       "Button text",      ".pb-t-btn,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,button"],
-    ["nav",       "Navigation link",  ".pb-t-nav,.nav-link,.ok-flink"],
-    ["meta",      "Price / caption",  ".pb-t-meta,.ok-hint,.ok-stat,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-cater-amount,.ok-cater-unit,.ok-cater-words"]
+    ["title", "Main heading", ".pb-t-title,.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,h1,h2"],
+    ["titlehl", "Highlighted words", ".pb-t-titlehl,.ok-hl,:is(h1,h2,h3,h4,h5,h6) :is(span,mark,em,b,strong):not(.ok-ie)"],
+    ["sub", "Sub heading", ".pb-t-sub,.ok-hero-sub,.ok-subtitle,.ok-lead,h4,h5,h6"],
+    ["body", "Paragraph text", ".pb-t-body,.ok-abt-body,p,li"],
+    ["eyebrow", "Label / badge", ".pb-t-eyebrow,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,span.chip,label"],
+    ["cardtitle", "Card heading", ".pb-t-cardtitle,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,h3"],
+    ["cardtext", "Card text", ".pb-t-cardtext,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm"],
+    ["btn", "Button text", ".pb-t-btn,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,button"],
+    ["nav", "Navigation link", ".pb-t-nav,.nav-link,.ok-flink"],
+    ["meta", "Price / caption", ".pb-t-meta,.ok-hint,.ok-stat,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-cater-amount,.ok-cater-unit,.ok-cater-words"]
   ];
 
   // key suffix, kind, label, options / [min,max,step,default,unit]
   var TEXT_PROPS = [
-    ["family", "font",   "Font",              null],
-    ["size",   "range",  "Size",              [8, 140, 1, 32, "px"]],
-    ["sizemd", "range",  "Size from 768px",   [8, 160, 1, 40, "px"]],
-    ["sizelg", "range",  "Size from 1024px",  [8, 200, 1, 48, "px"]],
-    ["weight", "select", "Weight",            WEIGHTS],
-    ["lh",     "range",  "Line height",       [0.8, 2.4, 0.05, 1.3, ""]],
-    ["track",  "range",  "Letter spacing",    [-5, 16, 0.5, 0, "px"]],
-    ["case",   "select", "Capitals",          CASES],
-    ["italic", "select", "Slant",             ITALICS],
-    ["color",  "color",  "Colour",            "#141414"],
-    ["maxw",   "range",  "Text width",        [120, 1600, 20, 720, "px"]],
-    ["align",  "select", "Alignment",         ALIGNS],
+    ["family", "font", "Font", null],
+    ["size", "range", "Size", [8, 140, 1, 32, "px"]],
+    ["sizemd", "range", "Size from 768px", [8, 160, 1, 40, "px"]],
+    ["sizelg", "range", "Size from 1024px", [8, 200, 1, 48, "px"]],
+    ["weight", "select", "Weight", WEIGHTS],
+    ["lh", "range", "Line height", [0.8, 2.4, 0.05, 1.3, ""]],
+    ["track", "range", "Letter spacing", [-5, 16, 0.5, 0, "px"]],
+    ["case", "select", "Capitals", CASES],
+    ["italic", "select", "Slant", ITALICS],
+    ["color", "color", "Colour", "#141414"],
+    ["maxw", "range", "Text width", [120, 1600, 20, 720, "px"]],
+    ["align", "select", "Alignment", ALIGNS],
     // spacing belongs to the element as well: the gap under a heading is not
     // the gap under the paragraph below it
-    ["mt",     "range",  "Space above",       [0, 200, 2, 0, "px"]],
-    ["mb",     "range",  "Space below",       [0, 200, 2, 0, "px"]],
+    ["mt", "range", "Space above", [0, 200, 2, 0, "px"]],
+    ["mb", "range", "Space below", [0, 200, 2, 0, "px"]],
     // A shadow belongs to the words it sits under. These four make one value,
     // composed on the server, which is why they carry no variable of their own.
-    ["tsside", "select", "Shadow",            TSSIDES],
-    ["tsdist", "range",  "Shadow distance",   [0, 24, 1, 2, "px"]],
-    ["tsblur", "range",  "Shadow softness",   [0, 60, 1, 4, "px"]],
-    ["tscolor", "color", "Shadow colour",     "#000000"]
+    ["tsside", "select", "Shadow", TSSIDES],
+    ["tsdist", "range", "Shadow distance", [0, 24, 1, 2, "px"]],
+    ["tsblur", "range", "Shadow softness", [0, 60, 1, 4, "px"]],
+    ["tscolor", "color", "Shadow colour", "#000000"]
   ];
 
   // group, kind, config key, label, css variable, options / [min,max,step,default,unit]
   // Everything the section-style system can do is here — the same keys the
   // Visual editor and Page design write, so all three stay in step.
   var CONTROLS = [
-    ["Section", "color",  "style_bg",           "Background colour", "--pb-bg",           "#ffffff"],
-    ["Section", "image",  "style_bgimage",      "Background picture","--pb-bgimage",      null],
-    ["Section", "select", "style_bgsize",       "How it sits",       "--pb-bgsize",       BGSIZES],
-    ["Section", "select", "style_bgpos",        "Where it sits",     "--pb-bgpos",        BGPOSES],
-    ["Section", "color",  "style_gradfrom",     "Gradient from",     "--pb-gradfrom",     "#000000"],
-    ["Section", "color",  "style_gradto",       "Gradient to",       "--pb-gradto",       "#ffffff"],
-    ["Section", "select", "style_graddir",      "Gradient direction","--pb-graddir",      GRADDIRS],
-    ["Section", "color",  "style_divider",      "Divider line",      "--pb-divider",      "#ececec"],
-    ["Section", "range",  "style_minh",         "Minimum height",    "--pb-minh",         [0, 900, 20, 0, "px"]],
-    ["Section", "range",  "style_maxw",         "Content width",     "--pb-maxw",         [720, 1600, 20, 1200, "px"]],
-    ["Section", "range",  "style_px",           "Side padding",      "--pb-px",           [0, 120, 4, 16, "px"]],
-    ["Section", "range",  "style_pt",           "Space above",       null,                [0, 200, 4, 0, "px"]],
-    ["Section", "range",  "style_pb",           "Space below",       null,                [0, 200, 4, 0, "px"]],
-    ["Section", "select", "style_valign",       "Vertical position", "--pb-valign",       VALIGNS],
-    ["Section", "select", "style_align",        "Text alignment",    null,                ALIGNS],
+    ["Section", "color", "style_bg", "Background colour", "--pb-bg", "#ffffff"],
+    ["Section", "image", "style_bgimage", "Background picture", "--pb-bgimage", null],
+    ["Section", "select", "style_bgsize", "How it sits", "--pb-bgsize", BGSIZES],
+    ["Section", "select", "style_bgpos", "Where it sits", "--pb-bgpos", BGPOSES],
+    ["Section", "color", "style_gradfrom", "Gradient from", "--pb-gradfrom", "#000000"],
+    ["Section", "color", "style_gradto", "Gradient to", "--pb-gradto", "#ffffff"],
+    ["Section", "select", "style_graddir", "Gradient direction", "--pb-graddir", GRADDIRS],
+    ["Section", "color", "style_divider", "Divider line", "--pb-divider", "#ececec"],
+    ["Section", "range", "style_minh", "Minimum height", "--pb-minh", [0, 900, 20, 0, "px"]],
+    ["Section", "range", "style_maxw", "Content width", "--pb-maxw", [720, 1600, 20, 1200, "px"]],
+    ["Section", "range", "style_px", "Side padding", "--pb-px", [0, 120, 4, 16, "px"]],
+    ["Section", "range", "style_pt", "Space above", null, [0, 200, 4, 0, "px"]],
+    ["Section", "range", "style_pb", "Space below", null, [0, 200, 4, 0, "px"]],
+    ["Section", "select", "style_valign", "Vertical position", "--pb-valign", VALIGNS],
+    ["Section", "select", "style_align", "Text alignment", null, ALIGNS],
 
     /* The "Type" group used to live here: one heading font, one heading size,
        one body size for the whole section. That is what tied a hero heading to
@@ -455,50 +848,50 @@
        p, li, span and link in the section. Each kind of text carries its own
        four in Text styles now. */
 
-    ["Colour",  "color",  "style_accent",       "Accent",            "--pb-accent",       "#ffc72c"],
-    ["Colour",  "color",  "style_link",         "Link colour",       "--pb-link",         "#141414"],
+    ["Colour", "color", "style_accent", "Accent", "--pb-accent", "#ffc72c"],
+    ["Colour", "color", "style_link", "Link colour", "--pb-link", "#141414"],
 
-    ["Photos",  "range",  "style_overlay",      "Banner darkness",   "--pb-overlay",      [0, 1, 0.05, 0.35, ""]],
-    ["Photos",  "color",  "style_overlaycolor", "Banner tint",       "--pb-overlaycolor", "#000000"],
-    ["Photos",  "color",  "style_imgoverlay",   "Overlay on photos", "--pb-imgoverlay",   "#000000"],
-    ["Photos",  "select", "style_imgfilter",    "Photo effect",      "--pb-imgfilter",    FILTERS],
-    ["Photos",  "range",  "style_imgradius",    "Photo corners",     "--pb-imgradius",    [0, 40, 2, 0, "px"]],
-    ["Photos",  "range",  "style_imgh",         "Picture height",    "--pb-imgh",         [80, 700, 10, 240, "px"]],
-    ["Photos",  "select", "style_imgfit",       "Picture fit",       "--pb-imgfit",       IMGFITS],
+    ["Photos", "range", "style_overlay", "Banner darkness", "--pb-overlay", [0, 1, 0.05, 0.35, ""]],
+    ["Photos", "color", "style_overlaycolor", "Banner tint", "--pb-overlaycolor", "#000000"],
+    ["Photos", "color", "style_imgoverlay", "Overlay on photos", "--pb-imgoverlay", "#000000"],
+    ["Photos", "select", "style_imgfilter", "Photo effect", "--pb-imgfilter", FILTERS],
+    ["Photos", "range", "style_imgradius", "Photo corners", "--pb-imgradius", [0, 40, 2, 0, "px"]],
+    ["Photos", "range", "style_imgh", "Picture height", "--pb-imgh", [80, 700, 10, 240, "px"]],
+    ["Photos", "select", "style_imgfit", "Picture fit", "--pb-imgfit", IMGFITS],
 
-    ["Cards",   "color",  "style_cardbg",       "Card background",   "--pb-cardbg",       "#ffffff"],
-    ["Cards",   "color",  "style_cardborder",   "Card border",       "--pb-cardborder",   "#ececec"],
-    ["Cards",   "range",  "style_cardborderw",  "Border width",      "--pb-cardborderw",  [0, 6, 1, 1, "px"]],
-    ["Cards",   "color",  "style_cardhead",     "Card heading",      "--pb-cardhead",     "#141414"],
-    ["Cards",   "color",  "style_cardtext",     "Card text",         "--pb-cardtext",     "#6b6b6b"],
-    ["Cards",   "range",  "style_cardradius",   "Card corners",      "--pb-cardradius",   [0, 40, 2, 20, "px"]],
-    ["Cards",   "range",  "style_cardpad",      "Card padding",      "--pb-cardpad",      [0, 60, 2, 20, "px"]],
-    ["Cards",   "select", "style_shadow",       "Card shadow",       "--pb-shadow",       SHADOWS],
-    ["Cards",   "select", "style_cardcols",     "Cards per row",     "--pb-cardcols",     COLSS],
-    ["Cards",   "range",  "style_cardw",        "Card width",        "--pb-cardw",        [120, 900, 10, 320, "px"]],
-    ["Cards",   "range",  "style_cardh",        "Card min height",   "--pb-cardh",        [80, 700, 10, 200, "px"]],
-    ["Cards",   "range",  "style_cardminw",     "Card min width",    "--pb-cardminw",     [120, 600, 10, 240, "px"]],
-    ["Cards",   "range",  "style_gap",          "Gap between items", "--pb-gap",          [0, 80, 2, 20, "px"]],
+    ["Cards", "color", "style_cardbg", "Card background", "--pb-cardbg", "#ffffff"],
+    ["Cards", "color", "style_cardborder", "Card border", "--pb-cardborder", "#ececec"],
+    ["Cards", "range", "style_cardborderw", "Border width", "--pb-cardborderw", [0, 6, 1, 1, "px"]],
+    ["Cards", "color", "style_cardhead", "Card heading", "--pb-cardhead", "#141414"],
+    ["Cards", "color", "style_cardtext", "Card text", "--pb-cardtext", "#6b6b6b"],
+    ["Cards", "range", "style_cardradius", "Card corners", "--pb-cardradius", [0, 40, 2, 20, "px"]],
+    ["Cards", "range", "style_cardpad", "Card padding", "--pb-cardpad", [0, 60, 2, 20, "px"]],
+    ["Cards", "select", "style_shadow", "Card shadow", "--pb-shadow", SHADOWS],
+    ["Cards", "select", "style_cardcols", "Cards per row", "--pb-cardcols", COLSS],
+    ["Cards", "range", "style_cardw", "Card width", "--pb-cardw", [120, 900, 10, 320, "px"]],
+    ["Cards", "range", "style_cardh", "Card min height", "--pb-cardh", [80, 700, 10, 200, "px"]],
+    ["Cards", "range", "style_cardminw", "Card min width", "--pb-cardminw", [120, 600, 10, 240, "px"]],
+    ["Cards", "range", "style_gap", "Gap between items", "--pb-gap", [0, 80, 2, 20, "px"]],
 
     /* Button colours are set per state in Button states below. They used to be
        here as well, and the state always won, so this set looked broken. */
 
-    ["Details", "color",  "style_squigcolor",   "Squiggle colour",   "--pb-squigcolor",   "#e0a200"],
-    ["Details", "range",  "style_squigw",       "Squiggle width",    "--pb-squigw",       [20, 200, 5, 68, "px"]],
+    ["Details", "color", "style_squigcolor", "Squiggle colour", "--pb-squigcolor", "#e0a200"],
+    ["Details", "range", "style_squigw", "Squiggle width", "--pb-squigw", [20, 200, 5, 68, "px"]],
 
-    ["Header",  "color",  "style_navlink",      "Nav link colour",   "--pb-navlink",      "#141414"],
-    ["Header",  "color",  "style_iconcolor",    "Icon colour",       "--pb-iconcolor",    "#141414"],
-    ["Header",  "range",  "style_logoh",        "Logo height",       "--pb-logoh",        [20, 120, 2, 48, "px"]],
+    ["Header", "color", "style_navlink", "Nav link colour", "--pb-navlink", "#141414"],
+    ["Header", "color", "style_iconcolor", "Icon colour", "--pb-iconcolor", "#141414"],
+    ["Header", "range", "style_logoh", "Logo height", "--pb-logoh", [20, 120, 2, 48, "px"]],
 
-    ["Add a picture", "image",  "style_xtraimg",    "Picture",        "--pb-xtraimg",      null],
-    ["Add a picture", "select", "style_xtrapos",    "Where it goes",  "--pb-xtrapos",      XTRAPOSES],
-    ["Add a picture", "select", "style_xtraalign",  "Its position",   "--pb-xtraalign",    XTRAALIGNS],
-    ["Add a picture", "range",  "style_xtraw",      "Its width",      "--pb-xtraw",        [100, 1600, 20, 600, "px"]],
-    ["Add a picture", "range",  "style_xtrah",      "Its height",     "--pb-xtrah",        [60, 800, 10, 260, "px"]],
-    ["Add a picture", "range",  "style_xtraradius", "Its corners",    "--pb-xtraradius",   [0, 60, 2, 0, "px"]],
-    ["Add a picture", "color",  "style_xtraborder", "Its border",     "--pb-xtraborder",   "#141414"],
-    ["Add a picture", "range",  "style_xtraborderw","Its border width","--pb-xtraborderw", [0, 12, 1, 0, "px"]],
-    ["Add a picture", "select", "style_xtrashadow", "Its shadow",     "--pb-xtrashadow",   SHADOWS]
+    ["Add a picture", "image", "style_xtraimg", "Picture", "--pb-xtraimg", null],
+    ["Add a picture", "select", "style_xtrapos", "Where it goes", "--pb-xtrapos", XTRAPOSES],
+    ["Add a picture", "select", "style_xtraalign", "Its position", "--pb-xtraalign", XTRAALIGNS],
+    ["Add a picture", "range", "style_xtraw", "Its width", "--pb-xtraw", [100, 1600, 20, 600, "px"]],
+    ["Add a picture", "range", "style_xtrah", "Its height", "--pb-xtrah", [60, 800, 10, 260, "px"]],
+    ["Add a picture", "range", "style_xtraradius", "Its corners", "--pb-xtraradius", [0, 60, 2, 0, "px"]],
+    ["Add a picture", "color", "style_xtraborder", "Its border", "--pb-xtraborder", "#141414"],
+    ["Add a picture", "range", "style_xtraborderw", "Its border width", "--pb-xtraborderw", [0, 12, 1, 0, "px"]],
+    ["Add a picture", "select", "style_xtrashadow", "Its shadow", "--pb-xtrashadow", SHADOWS]
   ];
 
   function applyLive(el, cssvar, key, val) {
@@ -553,7 +946,7 @@
            reload threw it away — so say so, and say what to do about it. */
         if (e === 400) {
           say("This page is out of date — press Ctrl+Shift+R to reload the editor," +
-              " then try again. Nothing was saved.", 9000);
+            " then try again. Nothing was saved.", 9000);
           if (window.console) console.warn("inline-style refused key:", key);
         } else {
           say("Could not save (" + e + ")", 4000);
@@ -585,8 +978,8 @@
      grouped list where every name is set in its own face. Nothing is downloaded
      until you look at it: a family's stylesheet is fetched the first time it
      appears in the list or is chosen, never all at once. */
-  var FONTS_FULL = {{ canvas_font_picker|tojson }};   // [stack, name, category, [weights]]
-  var FONT_CATS = {{ canvas_font_categories|tojson }};
+  var FONTS_FULL = {{ canvas_font_picker| tojson }};   // [stack, name, category, [weights]]
+  var FONT_CATS = {{ canvas_font_categories| tojson }};
   var fontLoaded = {};
 
   function loadFontFace(stack) {
@@ -599,7 +992,7 @@
     l.href = "https://fonts.googleapis.com/css2?family=" + spec + "&display=swap";
     document.head.appendChild(l);
   }
-  var FONT_SPECS = {{ canvas_font_specs|tojson }};
+  var FONT_SPECS = {{ canvas_font_specs| tojson }};
 
   /* One dropdown with every font in it, grouped by the kind of face.
 
@@ -615,7 +1008,7 @@
     var groups = FONT_CATS.filter(function (c) { return byCat[c]; }).map(function (c) {
       return '<optgroup label="' + esc(c) + '">' + byCat[c].map(function (f) {
         return '<option value="' + esc(f[0]) + '"' +
-               (f[0] === cur ? " selected" : "") + ">" + esc(f[1]) + "</option>";
+          (f[0] === cur ? " selected" : "") + ">" + esc(f[1]) + "</option>";
       }).join("") + "</optgroup>";
     }).join("");
     return '<select class="ok-ie-fontsel" id="' + id + '" aria-label="Font">' +
@@ -641,7 +1034,7 @@
     if (!stack) return;
     var r = recentFonts().filter(function (s) { return s !== stack; });
     r.unshift(stack);
-    try { localStorage.setItem("okIeFontsRecent", JSON.stringify(r.slice(0, 8))); } catch (e) {}
+    try { localStorage.setItem("okIeFontsRecent", JSON.stringify(r.slice(0, 8))); } catch (e) { }
   }
 
   function wireFontPicker(sel, onPick) {
@@ -657,57 +1050,72 @@
   }
 
   function addControl(el, kind, key, label, cssvar, extra, into) {
-      var cur = cssvar ? (el.style.getPropertyValue(cssvar) || "") : "";
-      var wrap = document.createElement("div");
-      var id = "ie_" + key;
-      var html = '<label for="' + id + '">' + label + "</label>";
-      if (kind === "color") {
-        // the value is set as a property below, never glued into markup: it is
-        // a saved string, and a quote inside it would otherwise close the
-        // attribute and let the rest of it become attributes of its own
-        html += '<input type="color" id="' + id + '">';
-      } else if (kind === "image") {
-        html += '<input type="file" id="' + id + '" accept="image/*" aria-label="' + label + '">';
-      } else if (kind === "font") {
-        html += fontPickerHtml(id, cur);
-      } else if (kind === "select") {
-        html += '<select id="' + id + '">' + extra.map(function (o) {
-          var v = String(o[0]).replace(/"/g, "&quot;");
-          return '<option value="' + v + '"' + (cur === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
-        }).join("") + "</select>";
-      } else {
-        html += '<input type="range" id="' + id + '" min="' + extra[0] + '" max="' + extra[1] +
-                '" step="' + extra[2] + '" value="' + (parseFloat(cur) || extra[3]) + '">';
-      }
-      wrap.innerHTML = html;
-      var input = wrap.querySelector("input,select");
-      if (kind === "color") input.value = cur || extra;
-      if (kind === "image") {
-        input.addEventListener("change", function () {
-          if (input.files && input.files[0]) uploadSectionBg(el, input.files[0]);
-        });
-      } else if (kind === "font") {
-        wireFontPicker(wrap.querySelector(".ok-ie-fontsel"), function (stack) {
-          applyLive(el, cssvar, key, stack);
-          saveStyle(el, key, stack);
-          // a family only ships some weights; offering the rest would just ask
-          // the browser to fake them
-          trimWeights(key.replace(/_family$/, "_weight"), stack);
-        });
-      } else {
-        input.addEventListener("input", function () {
-          var unit = (kind === "range") ? extra[4] : "";
-          applyLive(el, cssvar, key, input.value === "" ? "" : input.value + unit);
-          if (key.indexOf("style_cta_") === 0) checkContrast(el);
-        });
-        input.addEventListener("change", function () {
-          var unit = (kind === "range") ? extra[4] : "";
-          saveStyle(el, key, input.value === "" ? "" : input.value + unit);
-          if (key.indexOf("style_cta_") === 0) checkContrast(el);
-        });
-      }
-      wrap.querySelector("input,select").setAttribute("data-ie-key", key);
-      (into || dBody).appendChild(wrap);
+    var cur = cssvar ? (el.style.getPropertyValue(cssvar) || "") : "";
+    var wrap = document.createElement("div");
+    var id = "ie_" + key;
+    var html = "";
+    if (kind === "range") {
+      var parsed = parseFloat(cur);
+      var startVal = (cur !== "" && !isNaN(parsed)) ? parsed : extra[3];
+      var unit = extra[4] || "";
+      html += '<div class="range-head"><label for="' + id + '">' + label + '</label>';
+      html += '<span class="range-val" id="' + id + '_val">' + startVal + unit + '</span></div>';
+    } else {
+      html = '<label for="' + id + '">' + label + "</label>";
+    }
+    if (kind === "color") {
+      // the value is set as a property below, never glued into markup: it is
+      // a saved string, and a quote inside it would otherwise close the
+      // attribute and let the rest of it become attributes of its own
+      html += '<input type="color" id="' + id + '">';
+    } else if (kind === "image") {
+      html += '<input type="file" id="' + id + '" accept="image/*" aria-label="' + label + '">';
+    } else if (kind === "font") {
+      html += fontPickerHtml(id, cur);
+    } else if (kind === "select") {
+      html += '<select id="' + id + '">' + extra.map(function (o) {
+        var v = String(o[0]).replace(/"/g, "&quot;");
+        return '<option value="' + v + '"' + (cur === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
+      }).join("") + "</select>";
+    } else {
+      var parsedVal = parseFloat(cur);
+      var defVal = (cur !== "" && !isNaN(parsedVal)) ? parsedVal : extra[3];
+      html += '<input type="range" id="' + id + '" min="' + extra[0] + '" max="' + extra[1] +
+        '" step="' + extra[2] + '" value="' + defVal + '">';
+    }
+    wrap.innerHTML = html;
+    var input = wrap.querySelector("input,select");
+    if (kind === "color") input.value = cur || extra;
+    if (kind === "image") {
+      input.addEventListener("change", function () {
+        if (input.files && input.files[0]) uploadSectionBg(el, input.files[0]);
+      });
+    } else if (kind === "font") {
+      wireFontPicker(wrap.querySelector(".ok-ie-fontsel"), function (stack) {
+        applyLive(el, cssvar, key, stack);
+        saveStyle(el, key, stack);
+        // a family only ships some weights; offering the rest would just ask
+        // the browser to fake them
+        trimWeights(key.replace(/_family$/, "_weight"), stack);
+      });
+    } else {
+      input.addEventListener("input", function () {
+        var unit = (kind === "range") ? extra[4] : "";
+        applyLive(el, cssvar, key, input.value === "" ? "" : input.value + unit);
+        if (kind === "range") {
+          var valSpan = document.getElementById(id + "_val");
+          if (valSpan) valSpan.textContent = input.value + unit;
+        }
+        if (key.indexOf("style_cta_") === 0) checkContrast(el);
+      });
+      input.addEventListener("change", function () {
+        var unit = (kind === "range") ? extra[4] : "";
+        saveStyle(el, key, input.value === "" ? "" : input.value + unit);
+        if (key.indexOf("style_cta_") === 0) checkContrast(el);
+      });
+    }
+    wrap.querySelector("input,select").setAttribute("data-ie-key", key);
+    (into || dBody).appendChild(wrap);
   }
 
   // narrow the weight menu to the weights the chosen family actually has
@@ -783,7 +1191,7 @@
     ["opacity", "range", "Opacity", [0.1, 1, 0.05, 1, ""]],
     ["weight", "select", "Weight", WEIGHTS],
     ["decoration", "select", "Underline", [["", "Default"], ["none", "None"],
-      ["underline", "Underline"], ["line-through", "Strikethrough"]]],
+    ["underline", "Underline"], ["line-through", "Strikethrough"]]],
     ["lift", "range", "Lift", [-10, 10, 1, 0, "px"]],
     ["scale", "range", "Scale", [0.9, 1.15, 0.01, 1, ""]]
   ];
@@ -800,7 +1208,7 @@
     ctaTabs.className = "ok-ie-states";
     ctaTabs.innerHTML = CTA_STATES.map(function (s) {
       return '<button type="button" data-state="' + s[0] + '"' +
-             (s[0] === currentState ? ' class="on"' : "") + ">" + s[1] + "</button>";
+        (s[0] === currentState ? ' class="on"' : "") + ">" + s[1] + "</button>";
     }).join("");
     dBody.appendChild(ctaTabs);
 
@@ -829,7 +1237,7 @@
     ctaHost.innerHTML = "";
     CTA_PROPS.forEach(function (p) {
       addControl(el, p[1], "style_cta_" + currentState + "_" + p[0], p[2],
-                 "--pb-cta-" + currentState + "-" + p[0], p[3], ctaHost);
+        "--pb-cta-" + currentState + "-" + p[0], p[3], ctaHost);
     });
     checkContrast(el);
   }
@@ -846,7 +1254,7 @@
     el.querySelectorAll(CTA_SELECTOR).forEach(function (n) { n.classList.add(cls); });
   }
   var CTA_SELECTOR = ".btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe," +
-                     ".ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order";
+    ".ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order";
 
   /* The button's own colours, read once before any state is previewed. Reading
      them live would mean measuring whatever state the client happens to be
@@ -887,11 +1295,11 @@
       var r = okContrast.ratio(fg, bg);
       var v = okContrast.verdict(r);
       var mark = v.level === "pass" || v.level === "great" ? "✓"
-               : v.level === "unknown" ? "·" : "⚠";
+        : v.level === "unknown" ? "·" : "⚠";
       return '<div class="row ' + v.level + '" data-state="' + state + '">' +
-             '<span class="m">' + mark + "</span>" +
-             '<span class="n">' + s[1] + "</span>" +
-             '<span class="r">' + okContrast.show(r) + "</span></div>";
+        '<span class="m">' + mark + "</span>" +
+        '<span class="n">' + s[1] + "</span>" +
+        '<span class="r">' + okContrast.show(r) + "</span></div>";
     }).join("");
     var worst = CTA_STATES.map(function (s) {
       return okContrast.ratio(effective(el, s[0], "text"), effective(el, s[0], "bg"));
@@ -917,8 +1325,8 @@
     box.innerHTML = '<p class="hint">Readable on ' + (bg || "this background") + ":</p>" +
       picks.map(function (p) {
         return '<button type="button" data-color="' + p.color + '">' +
-               '<span class="sw" style="background:' + p.color + '"></span>' +
-               p.color + ' <em>' + okContrast.show(p.ratio) + "</em></button>";
+          '<span class="sw" style="background:' + p.color + '"></span>' +
+          p.color + ' <em>' + okContrast.show(p.ratio) + "</em></button>";
       }).join("");
     ctaReport.appendChild(box);
     box.addEventListener("click", function (e) {
@@ -960,7 +1368,7 @@
       // off with d-none and the ratings row is hidden on a phone, so offering
       // their controls means changing four settings and watching nothing move
       if (nodes[i].offsetParent === null &&
-          getComputedStyle(nodes[i]).position !== "fixed") continue;
+        getComputedStyle(nodes[i]).position !== "fixed") continue;
       if (roleOf(nodes[i]) === role) n++;
     }
     return n;
@@ -982,7 +1390,7 @@
     pick.innerHTML = '<label for="ie_textrole">Which text</label><select id="ie_textrole">' +
       present.map(function (r) {
         return '<option value="' + r[0] + '"' + (r[0] === currentRole ? " selected" : "") +
-               ">" + r[1] + " (" + roleCount(el, r[0]) + ")</option>";
+          ">" + r[1] + " (" + roleCount(el, r[0]) + ")</option>";
       }).join("") + "</select>";
     dBody.appendChild(pick);
 
@@ -1020,7 +1428,7 @@
     TEXT_PROPS.forEach(function (p) {
       var suffix = p[0], kind = p[1], label = p[2], extra = p[3];
       addControl(el, kind, "style_" + currentRole + "_" + suffix, label,
-                 "--pb-" + currentRole + "-" + suffix, extra, textHost);
+        "--pb-" + currentRole + "-" + suffix, extra, textHost);
     });
   }
 
@@ -1030,7 +1438,7 @@
   function flashRole(el, role) {
     var hit = [].slice.call(el.querySelectorAll("*")).filter(function (n) {
       return (n.textContent || "").trim() && !n.matches(".ok-ie") &&
-             roleOf(n) === role;
+        roleOf(n) === role;
     });
     hit.forEach(function (n) {
       n.classList.add("ok-ie-roleflash");
@@ -1043,16 +1451,16 @@
      answer depends on whether the words sit inside a card, because that is
      what separates a card's heading from a section's. */
   var ROLE_CLASSES = [
-    ["titlehl",   ".ok-hl"],
-    ["title",     ".ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h"],
-    ["sub",       ".ok-hero-sub,.ok-subtitle,.ok-lead"],
+    ["titlehl", ".ok-hl"],
+    ["title", ".ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h"],
+    ["sub", ".ok-hero-sub,.ok-subtitle,.ok-lead"],
     ["cardtitle", ".ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q"],
-    ["cardtext",  ".ok-card-text,.ok-gcard-text,.ok-abt-body-sm"],
-    ["eyebrow",   ".ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge"],
-    ["meta",      ".ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-cater-amount,.ok-cater-unit,.ok-cater-words"],
-    ["btn",       ".btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta"],
-    ["nav",       ".nav-link,.ok-flink"],
-    ["body",      ".ok-abt-body"]
+    ["cardtext", ".ok-card-text,.ok-gcard-text,.ok-abt-body-sm"],
+    ["eyebrow", ".ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge"],
+    ["meta", ".ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-cater-amount,.ok-cater-unit,.ok-cater-words"],
+    ["btn", ".btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta"],
+    ["nav", ".nav-link,.ok-flink"],
+    ["body", ".ok-abt-body"]
   ];
   var CARD_SEL = ".ok-card,.ok-loccard,.ok-gcard";
 
@@ -1084,7 +1492,7 @@
     // role. The editor's own wrapper is not such a span: it holds the whole
     // heading, so it belongs to the heading.
     if (node.matches && node.matches("span,mark,em,b,strong") &&
-        !node.matches(".ok-ie") && node.closest("h1,h2,h3,h4,h5,h6")) return "titlehl";
+      !node.matches(".ok-ie") && node.closest("h1,h2,h3,h4,h5,h6")) return "titlehl";
     for (var j = 0; j < ROLE_CLASSES.length; j++) {
       if (node.closest(ROLE_CLASSES[j][1])) return ROLE_CLASSES[j][0];
     }
@@ -1113,7 +1521,7 @@
     var page = el.getAttribute("data-page"), sec = el.getAttribute("data-section");
     if (!page || !sec) return;
     fetch("/admin/inline-style?page=" + encodeURIComponent(page) +
-          "&section=" + encodeURIComponent(sec), { credentials: "same-origin" })
+      "&section=" + encodeURIComponent(sec), { credentials: "same-origin" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.config || currentSec !== el) return;
@@ -1125,11 +1533,24 @@
           // list kept whatever it had rather than what is saved
           if (input.type === "file") return;
           var v = String(d.config[k]);
-          input.value = input.type === "range" ? parseFloat(v) : v;
+          if (input.type === "range") {
+            var parsed = parseFloat(v);
+            if (!isNaN(parsed)) {
+              input.value = parsed;
+              var valSpan = dBody.querySelector('#ie_' + k + '_val');
+              if (valSpan) {
+                var oldText = valSpan.textContent;
+                var unit = oldText.replace(/^[-\d.]+/, "");
+                valSpan.textContent = parsed + unit;
+              }
+            }
+          } else {
+            input.value = v;
+          }
         });
         showOldSettings(el, d.config);
       })
-      .catch(function () {});
+      .catch(function () { });
   }
 
   /* Settings from before every kind of text had its own controls.
@@ -1139,7 +1560,7 @@
      58%. They still render, so nothing changed under anyone's feet, but they
      are not offered any more and would otherwise be invisible: a section
      carrying one behaves oddly with no way to see why or undo it. */
-  var OLD_KEYS = {{ retired_style_fields|tojson }};
+  var OLD_KEYS = {{ retired_style_fields| tojson }};
   var OLD_LABELS = {
     style_hsize: "Heading size", style_font: "Heading font",
     style_hcolor: "Heading colour", style_hweight: "Heading weight",
@@ -1241,14 +1662,16 @@
   function resetDesign(el, wholePage) {
     var what = wholePage ? "every section on this page" : "this section";
     var msg = "Put " + what + " back to the built-in design?"
-            + "\n\nYour words and pictures are kept — only the styling is undone.";
+      + "\n\nYour words and pictures are kept — only the styling is undone.";
     if (!confirm(msg)) return;
     say("Resetting…");
     fetch("/admin/inline-style-reset", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
-      body: JSON.stringify({ page: el.getAttribute("data-page"),
-                             section: wholePage ? "" : el.getAttribute("data-section") })
+      body: JSON.stringify({
+        page: el.getAttribute("data-page"),
+        section: wholePage ? "" : el.getAttribute("data-section")
+      })
     })
       .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function () { location.reload(); })
@@ -1268,52 +1691,52 @@
 
   /* ---------- text ---------- */
   function wireText(root) {
-  (root || document).querySelectorAll(".ok-ie").forEach(function (el) {
-    if (el.dataset.ieWired) return;
-    el.dataset.ieWired = "1";
-    el.setAttribute("contenteditable", "true");
-    el.setAttribute("spellcheck", "false");
-    var original = el.textContent;
+    (root || document).querySelectorAll(".ok-ie").forEach(function (el) {
+      if (el.dataset.ieWired) return;
+      el.dataset.ieWired = "1";
+      el.setAttribute("contenteditable", "true");
+      el.setAttribute("spellcheck", "false");
+      var original = el.textContent;
 
-    // Enter commits rather than inserting a newline — these are single strings,
-    // not rich text, and a stray <br> would end up in the saved value.
-    el.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); el.blur(); }
-      if (e.key === "Escape") { el.textContent = original; el.blur(); }
-    });
+      // Enter commits rather than inserting a newline — these are single strings,
+      // not rich text, and a stray <br> would end up in the saved value.
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+        if (e.key === "Escape") { el.textContent = original; el.blur(); }
+      });
 
-    el.addEventListener("blur", function () {
-      var val = el.textContent.trim();
-      if (val === original.trim()) return;
-      say("Saving…");
-      // two kinds of editable string: a Page Content field, and a home
-      // section's own words. They save to different places.
-      var isSection = el.hasAttribute("data-sc");
-      fetch(isSection ? "/admin/inline-section-text" : "/admin/inline-save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
-        body: JSON.stringify(isSection
-          ? { section: el.getAttribute("data-scsec"), field: el.getAttribute("data-sc"), value: val }
-          : { key: el.getAttribute("data-pc"), value: val })
-      })
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
-        .then(function () {
-          original = val;
-          el.classList.remove("ok-ie-saved");
-          void el.offsetWidth;                 // restart the flash animation
-          el.classList.add("ok-ie-saved");
-          say("Saved", 1600);
+      el.addEventListener("blur", function () {
+        var val = el.textContent.trim();
+        if (val === original.trim()) return;
+        say("Saving…");
+        // two kinds of editable string: a Page Content field, and a home
+        // section's own words. They save to different places.
+        var isSection = el.hasAttribute("data-sc");
+        fetch(isSection ? "/admin/inline-section-text" : "/admin/inline-save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
+          body: JSON.stringify(isSection
+            ? { section: el.getAttribute("data-scsec"), field: el.getAttribute("data-sc"), value: val }
+            : { key: el.getAttribute("data-pc"), value: val })
         })
-        .catch(function (err) {
-          el.textContent = original;           // never leave a lie on screen
-          say("Could not save (" + err + ")", 4000);
-        });
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function () {
+            original = val;
+            el.classList.remove("ok-ie-saved");
+            void el.offsetWidth;                 // restart the flash animation
+            el.classList.add("ok-ie-saved");
+            say("Saved", 1600);
+          })
+          .catch(function (err) {
+            el.textContent = original;           // never leave a lie on screen
+            say("Could not save (" + err + ")", 4000);
+          });
+      });
     });
-  });
   }
   wireText(document);
   window.okIeRefresh = wireText;
 
   say(document.querySelectorAll(".ok-ie").length + " editable areas", 2600);
-})();
+}) ();
 </script>
