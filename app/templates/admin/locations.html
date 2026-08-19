@@ -102,7 +102,7 @@
     <details class="ok-mt-3">
       <summary class="ok-pointer ok-fs-xs fw-semibold text-muted-warm d-inline-flex align-items-center ok-gap-15"><i
           class="fa-solid fa-pen"></i> Edit details</summary>
-      <form method="post" action="/admin/locations/{{ r.store.id }}/edit{{ qs }}"
+      <form method="post" action="/admin/locations/{{ r.store.id }}/edit{{ qs }}" enctype="multipart/form-data"
         class="ok-grid ok-grid-2 gap-2 ok-mt-3">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <div class="ok-col-span-2"><label class="ok-label ok-fs-xs">Name</label><input name="name"
@@ -121,6 +121,16 @@
             class="ok-input ok-py-15 ok-fs-sm"></div>
         <div><label class="ok-label ok-fs-xs">Tax rate</label><input name="tax_rate" value="{{ r.store.tax_rate }}"
             class="ok-input ok-py-15 ok-fs-sm"></div>
+        <div class="ok-col-span-2">
+          <label class="ok-label ok-fs-xs">Location photo</label>
+          {% if r.store.image_url %}
+          <img src="{{ r.store.image_url }}" class="d-block ok-w-32 ok-rounded-lg ok-cover mb-2"
+            style="height:80px;object-fit:cover" alt="Current photo">
+          {% endif %}
+          <input name="image_url" value="{{ r.store.image_url or '' }}" placeholder="https://… or upload below"
+            class="ok-input ok-py-15 ok-fs-sm mb-1">
+          <input name="image_file" type="file" accept="image/*" class="ok-input py-1 ok-fs-xs">
+        </div>
         <div class="ok-col-span-2"><button class="btn btn-primary btn-sm">Save changes</button></div>
       </form>
     </details>

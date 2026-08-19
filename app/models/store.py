@@ -39,6 +39,7 @@ class Store(TimestampMixin, db.Model):
     city = db.Column(db.String(80), default="Philadelphia")
     state = db.Column(db.String(40), default="PA")
     zip_code = db.Column(db.String(12))
+    image_url = db.Column(db.String(500))           # optional location photo
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     timezone = db.Column(db.String(40), default="America/New_York")
