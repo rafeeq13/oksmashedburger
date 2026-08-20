@@ -274,19 +274,32 @@
 
       e.preventDefault();
 
-      var icon = a.querySelector("i");
-      var oldClass = icon ? icon.className : "";
-      if (icon) {
+      // Lucide swap turns <i> into <svg.ok-i>; color classes must follow both.
+      function sbIcon(el) { return el.querySelector("svg.ok-i, i"); }
+      function sbIconClass(node, cls) {
+        if (!node) return;
+        if (node.tagName && node.tagName.toLowerCase() === "svg") node.setAttribute("class", cls);
+        else node.className = cls;
+      }
+      function sbIconColor(node, on) {
+        if (!node || !node.classList) return;
+        node.classList.remove("text-ink", "text-white");
+        node.classList.add(on ? "text-ink" : "text-white");
+      }
+
+      var icon = sbIcon(a);
+      var oldClass = icon ? (icon.getAttribute("class") || icon.className || "") : "";
+      if (icon && icon.tagName && icon.tagName.toLowerCase() !== "svg") {
         icon.className = "fa-solid fa-circle-notch fa-spin ok-w-5 text-center ok-fs-95rem flex-shrink-0 text-white";
       }
 
       document.querySelectorAll("a.sb-navlink").forEach(function (el) {
         if (!el.closest(".adm-sidebar")) return;
         el.className = el.className.replace("bg-yellow", "").replace("text-ink", "text-white").replace("fw-semibold", "fw-medium").replace("ok-shadow-sm", "").replace("ok-hov-bg-w-10", "") + " ok-hov-bg-w-10";
-        var elIcon = el.querySelector("i");
-        if (elIcon && el !== a) elIcon.classList.replace("text-ink", "text-white");
+        sbIconColor(sbIcon(el), el === a);
       });
       a.className = a.className.replace("text-white", "text-ink").replace("fw-medium", "fw-semibold").replace("ok-hov-bg-w-10", "") + " bg-yellow ok-shadow-sm";
+      sbIconColor(icon, true);
 
       fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(function (r) {
@@ -318,7 +331,7 @@
 
             document.dispatchEvent(new Event("pjax:complete"));
           }
-          if (icon) icon.className = oldClass.replace("text-white", "text-ink");
+          if (icon) sbIconClass(icon, String(oldClass).replace("text-white", "text-ink"));
         })
         .catch(function () {
           location.href = url;

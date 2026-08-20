@@ -1766,7 +1766,7 @@ def category_add():
     if not name:
         flash("Category name is required.", "error")
         return redirect("/admin/menu" + _qs(store))
-    _img = _save_image(request.files.get("image_file"), f"cat-{_unique_slug(name, Category)}", quiet=True)
+    _img = _save_image(request.files.get("image_file"), f"cat-{_unique_slug(name, Category)}")
     _img = _img or request.form.get("image_url", "").strip() or None
     db.session.add(Category(slug=_unique_slug(name, Category), name=name,
                             icon=request.form.get("icon", "").strip() or "utensils",
@@ -1788,7 +1788,7 @@ def category_edit(cid):
     if "description" in request.form:
         c.description = request.form.get("description", "").strip() or None
     # Uploaded file wins; fallback to URL field; keep existing if neither given
-    _uploaded = _save_image(request.files.get("image_file"), f"cat-{c.slug}", quiet=True)
+    _uploaded = _save_image(request.files.get("image_file"), f"cat-{c.slug}")
     if _uploaded:
         c.image_url = _uploaded
     elif "image_url" in request.form:
@@ -1910,7 +1910,7 @@ def location_add():
     db.session.add(s)
     db.session.flush()
     # Optional location photo
-    uploaded = _save_image(request.files.get("image_file"), f"store-{s.slug}", quiet=True)
+    uploaded = _save_image(request.files.get("image_file"), f"store-{s.slug}")
     if uploaded:
         s.image_url = uploaded
     elif request.form.get("image_url", "").strip():
@@ -1961,7 +1961,7 @@ def location_edit(sid):
         pass
     s.avg_prep_minutes = int(request.form.get("avg_prep_minutes") or s.avg_prep_minutes)
     # Location photo: uploaded file wins over URL
-    uploaded = _save_image(request.files.get("image_file"), f"store-{s.slug}", quiet=True)
+    uploaded = _save_image(request.files.get("image_file"), f"store-{s.slug}")
     if uploaded:
         s.image_url = uploaded
     elif "image_url" in request.form:
