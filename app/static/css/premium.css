@@ -3460,21 +3460,8 @@ label i.text-gold, label i.text-yellow,
 
 /* =========================================================
    LOCATIONS PAGE ROW
-   The whole card used to flood on hover; the client wants only
-   the details column (the RIGHT half on md+) to take the fill,
-   and the actions to read as plain links.
+   No card hover (no yellow fill / shadow). Link underline only.
    ========================================================= */
-.ok-locrow{
-  transition:box-shadow var(--t-mid,.18s) var(--e-out,ease);
-}
-.ok-locrow:hover{
-  background:#fff !important;          /* never the whole card */
-  box-shadow:var(--sh-4,0 18px 40px rgba(20,20,20,.14));
-}
-.ok-locinfo{ transition:background-color var(--t-mid,.18s) var(--e-out,ease); }
-.ok-locrow:hover .ok-locinfo{ background:var(--ok-yellow); }
-
-/* actions: no chrome, underline on hover */
 .ok-loclink{
   background:none !important;
   border:0 !important;
@@ -3497,14 +3484,6 @@ label i.text-gold, label i.text-yellow,
   text-underline-offset:3px;
   background:none !important;
   transform:none !important;
-}
-
-/* On hover the details column fills with brand yellow, so everything inside it
-   has to go black — the status line is amber/red/green and disappears on that
-   fill otherwise. */
-.ok-locrow:hover .ok-locinfo,
-.ok-locrow:hover .ok-locinfo *{
-  color:#000 !important;
 }
 
 /* Store status line: the WORD carries the warning (red), the detail beside it

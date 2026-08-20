@@ -30,54 +30,53 @@
         data-zip="{{ s.zip_code }}" role="button" tabindex="0"
         aria-label="Select {{ brand_name }}, {{ s.name }} as my store"
         class="ok-card ok-locrow ok-pointer overflow-hidden{% if current_store and s.id == current_store.id %} ok-ring-2 ring-okyellow{% endif %}">
-        {# Layout: desktop = [text on top | image + map below], mobile = image / text / map stacked #}
+        {# Mobile: image → text → map. Desktop: photo left (full height) | text + map stacked right #}
         <div class="row g-0">
           {% if s.image_url %}
-          <!-- location image: TOP on mobile, LEFT on desktop (row 2) -->
-          <div class="col-12 col-md-6 order-1 order-md-2 ok-p-3 ok-paddin-125rem-md">
+          <div class="col-12 col-md-6 order-1 ok-p-3 ok-paddin-125rem-md">
             <div class="h-100 ok-minh-220px ok-minh-260px-md ok-rounded-xl overflow-hidden">
               <img src="{{ s.image_url }}" alt="{{ s.name }}" class="w-100 h-100 ok-cover" loading="lazy">
             </div>
           </div>
           {% endif %}
 
-          <!-- text info: MIDDLE on mobile, TOP center on desktop -->
           <div
-            class="col-12 order-2 order-md-1 ok-locinfo ok-p-3 ok-paddin-175rem-md d-flex flex-column align-items-md-center text-md-center justify-content-center">
-            <div class="d-flex flex-column align-items-md-center ok-gap-3 w-100">
-              <div>
-                <h3 class="font-display fw-bold ok-fs-lg">{{ brand_name }}, {{ s.name }}</h3>
-                <p class="ok-fs-sm text-muted-warm">{{ s.full_address }}</p>
-                <div
-                  class="d-flex flex-wrap justify-content-md-center align-items-center gap-x-2 gap-y-1 ok-fs-xs mt-2 fw-semibold {% if s.open_now %}text-ok-green{% elif s.scheduling_open %}text-gold{% else %}text-ok-red{% endif %}">
-                  <span class="d-inline-flex align-items-center ok-gap-15"><span class="status-dot"
-                      style="background:currentColor"></span>
-                    {% if s.open_now %}Open now · ~{{ s.avg_prep_minutes }} min prep · Today {{ s.today_hours }}{% elif
-                    s.scheduling_open %}<span class="ok-status-closed">Closed now</span><span class="ok-status-rest"> ·
-                      schedule ahead · Today {{ s.today_hours }}</span>{% else %}<span
-                      class="ok-status-closed">Closed</span><span class="ok-status-rest"> · Today {{ s.today_hours
-                      }}</span>{% endif %}</span>
-                  <span data-distance-label class="badge badge-soft !text-jet" style="display:none"></span>
+            class="col-12 {% if s.image_url %}col-md-6{% else %}col-md-12{% endif %} order-2 d-flex flex-column">
+            <div
+              class="ok-locinfo ok-p-3 ok-paddin-175rem-md d-flex flex-column align-items-md-center text-md-center justify-content-center">
+              <div class="d-flex flex-column align-items-md-center ok-gap-3 w-100">
+                <div>
+                  <h3 class="font-display fw-bold ok-fs-lg">{{ brand_name }}, {{ s.name }}</h3>
+                  <p class="ok-fs-sm text-muted-warm">{{ s.full_address }}</p>
+                  <div
+                    class="d-flex flex-wrap justify-content-md-center align-items-center gap-x-2 gap-y-1 ok-fs-xs mt-2 fw-semibold {% if s.open_now %}text-ok-green{% elif s.scheduling_open %}text-gold{% else %}text-ok-red{% endif %}">
+                    <span class="d-inline-flex align-items-center ok-gap-15"><span class="status-dot"
+                        style="background:currentColor"></span>
+                      {% if s.open_now %}Open now · ~{{ s.avg_prep_minutes }} min prep · Today {{ s.today_hours }}{% elif
+                      s.scheduling_open %}<span class="ok-status-closed">Closed now</span><span class="ok-status-rest"> ·
+                        schedule ahead · Today {{ s.today_hours }}</span>{% else %}<span
+                        class="ok-status-closed">Closed</span><span class="ok-status-rest"> · Today {{ s.today_hours
+                        }}</span>{% endif %}</span>
+                    <span data-distance-label class="badge badge-soft !text-jet" style="display:none"></span>
+                  </div>
                 </div>
               </div>
+              <div class="d-flex flex-wrap justify-content-md-center ok-gap-5 ok-mt-3">
+                <a href="{{ url_for('menu.menu_for_store', store_slug=s.slug) }}" class="ok-loclink">Order Now</a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ s.full_address|urlencode }}"
+                  target="_blank" rel="noopener" class="ok-loclink"><i class="fa-solid fa-location-arrow"></i>
+                  Directions</a>
+                <button type="button" data-select class="ok-loclink">Set as my store</button>
+              </div>
             </div>
-            <div class="d-flex flex-wrap justify-content-md-center ok-gap-5 ok-mt-3">
-              <a href="{{ url_for('menu.menu_for_store', store_slug=s.slug) }}" class="ok-loclink">Order Now</a>
-              <a href="https://www.google.com/maps/dir/?api=1&destination={{ s.full_address|urlencode }}"
-                target="_blank" rel="noopener" class="ok-loclink"><i class="fa-solid fa-location-arrow"></i>
-                Directions</a>
-              <button type="button" data-select class="ok-loclink">Set as my store</button>
-            </div>
-          </div>
 
-          <!-- map: BOTTOM on mobile, RIGHT on desktop (row 2) -->
-          <div
-            class="col-12 {% if s.image_url %}col-md-6{% else %}col-md-12{% endif %} order-3 order-md-3 ok-p-3 ok-paddin-125rem-md">
-            <div
-              class="position-relative h-100 ok-minh-220px ok-minh-260px-md ok-rounded-xl overflow-hidden bg-cream-40 border ok-bc-varokline">
-              <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed"
-                class="position-absolute ok-fill w-100 h-100 border-0" loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
+            <div class="ok-p-3 ok-paddin-125rem-md flex-grow-1 d-none d-md-flex flex-column">
+              <div
+                class="position-relative flex-grow-1 ok-minh-220px ok-minh-260px-md ok-rounded-xl overflow-hidden bg-cream-40 border ok-bc-varokline">
+                <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed"
+                  class="position-absolute ok-fill w-100 h-100 border-0" loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
+              </div>
             </div>
           </div>
         </div>
