@@ -130,8 +130,11 @@ def checkout():
         flash(f"Order {order.number} placed! 🎉", "success")
         return redirect("/order-confirmed")
 
-    # GET
-    s = cartlib.summary(store)
+    # GET — price for the customer's current Delivery/Pickup choice
+    ot = session.get("order_type", "delivery")
+    s = cartlib.summary(store, order_type=ot)
+    s_delivery = s if ot == "delivery" else cartlib.summary(store, order_type="delivery")
+    s_pickup = s if ot == "pickup" else cartlib.summary(store, order_type="pickup")
     u = current_user()
     default_address = None
     if u:
@@ -146,6 +149,10 @@ def checkout():
         default_schedule=(now + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M"),
         stripe_pub_key=store_stripe_config(store).get("publishable_key", ""),
         stripe_connected=is_connected(store),
+        checkout_delivery_fee=s_delivery["delivery_fee"],
+        checkout_delivery_free=bool(s_delivery["promo"].get("delivery_discount")),
+        checkout_total_delivery=s_delivery["total"],
+        checkout_total_pickup=s_pickup["total"],
     )
 
 

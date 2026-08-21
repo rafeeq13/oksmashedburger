@@ -50,7 +50,7 @@
           </label>
           {% endif %}
         </div>
-        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 !text-okamber"><i class="fa-solid fa-circle-info"></i> Closed for immediate orders, schedule one within opening hours (today: {{ store.today_hours }}).</p>{% endif %}
+        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 text-ok-red"><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: {{ store.today_hours }}).</p>{% endif %}
         {% endif %}
       </section>
 
@@ -156,7 +156,7 @@
           <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
           {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount{% if summary.promo.code %} ({{ summary.promo.code }}){% endif %}</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
           <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
-          <div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>
+          <div class="d-flex justify-content-between" data-delivery-line><span class="text-muted-warm">Delivery</span><span class="fw-semibold" data-delivery-amount>{% if order_type == 'pickup' %}$0.00{% elif checkout_delivery_free %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(checkout_delivery_fee) }}{% endif %}</span></div>
           <div class="d-flex justify-content-between" data-tip-line{% if not summary.tip %} hidden{% endif %}><span class="text-muted-warm">Tip</span><span class="fw-semibold" data-tip-amount>${{ '%.2f'|format(summary.tip) }}</span></div>
           {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
         </div>
@@ -165,7 +165,7 @@
         <div class="ok-px-5 ok-py-3 bg-ink text-white">
           <div class="d-flex justify-content-between align-items-center ok-mb-3">
             <div><div class="text-white ok-fs-base text-uppercase tracking-wide fw-bold">Total</div>{% if user %}<div class="ok-fs-sm text-yellow fw-semibold">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
-            <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}">${{ '%.2f'|format(summary.total) }}</span>
+            <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}" data-total-delivery="{{ '%.2f'|format(checkout_total_delivery) }}" data-total-pickup="{{ '%.2f'|format(checkout_total_pickup) }}" data-delivery-fee="{{ '%.2f'|format(checkout_delivery_fee) }}" data-delivery-free="{{ '1' if checkout_delivery_free else '0' }}">${{ '%.2f'|format(summary.total) }}</span>
           </div>
           {% if store and store.can_order %}
           <button type="submit" class="btn btn-primary btn-block btn-lg ok-btn-invert"><span data-total-btn>Place order · ${{ '%.2f'|format(summary.total) }}</span></button>
@@ -190,18 +190,41 @@
   var form = document.querySelector('form[action="/checkout"]');
   if (!form) return;
 
-  // ----- Tip: reflect selection in the summary total, live -----
+  // ----- Tip + Delivery/Pickup: keep summary totals live -----
   var totalEl = form.querySelector("[data-total-display]");
   var btnEl = form.querySelector("[data-total-btn]");
   var tipLine = form.querySelector("[data-tip-line]");
   var tipAmt = form.querySelector("[data-tip-amount]");
-  var base = totalEl ? parseFloat(totalEl.getAttribute("data-base-total")) || 0 : 0;
+  var deliveryAmt = form.querySelector("[data-delivery-amount]");
   var customRadio = form.querySelector("[data-tip-custom-radio]");
   var customWrap = form.querySelector("[data-tip-custom-wrap]");
   var customInput = form.querySelector("[data-tip-custom-input]");
   function money(n) { return "$" + n.toFixed(2); }
+  function isDelivery() {
+    var picked = form.querySelector('input[name="order_type"]:checked');
+    return !picked || picked.value === "delivery";
+  }
+  function baseTotal() {
+    if (!totalEl) return 0;
+    var del = parseFloat(totalEl.getAttribute("data-total-delivery"));
+    var pick = parseFloat(totalEl.getAttribute("data-total-pickup"));
+    if (!isNaN(del) && !isNaN(pick)) return isDelivery() ? del : pick;
+    return parseFloat(totalEl.getAttribute("data-base-total")) || 0;
+  }
+  function syncDeliveryLine() {
+    if (!deliveryAmt || !totalEl) return;
+    if (!isDelivery()) {
+      deliveryAmt.innerHTML = "$0.00";
+      return;
+    }
+    if (totalEl.getAttribute("data-delivery-free") === "1") {
+      deliveryAmt.innerHTML = '<span class="text-ok-green">FREE</span>';
+      return;
+    }
+    var fee = parseFloat(totalEl.getAttribute("data-delivery-fee")) || 0;
+    deliveryAmt.textContent = money(fee);
+  }
   function applyTip() {
-    // when Custom is chosen, its value tracks the typed amount
     if (customRadio && customRadio.checked && customInput) {
       customRadio.value = String(Math.max(0, parseFloat(customInput.value) || 0));
     }
@@ -210,15 +233,27 @@
     var tip = sel ? (parseFloat(sel.value) || 0) : 0;
     if (tipAmt) tipAmt.textContent = money(tip);
     if (tipLine) tipLine.hidden = tip <= 0;
-    var total = base + tip;
+    var total = baseTotal() + tip;
     if (totalEl) totalEl.textContent = money(total);
     if (btnEl) btnEl.textContent = "Place order · " + money(total);
+  }
+  function syncOrderType() {
+    syncDeliveryLine();
+    applyTip();
+    var picked = form.querySelector('input[name="order_type"]:checked');
+    if (picked && picked.value) {
+      fetch("/api/order-type/" + encodeURIComponent(picked.value), { credentials: "same-origin" }).catch(function () {});
+    }
   }
   form.querySelectorAll('input[name="tip"]').forEach(function (r) {
     r.addEventListener("change", function () { applyTip(); if (r === customRadio && customInput) setTimeout(function () { customInput.focus(); }, 40); });
   });
   if (customInput) customInput.addEventListener("input", function () { if (customRadio) customRadio.checked = true; applyTip(); });
+  form.querySelectorAll('input[name="order_type"]').forEach(function (r) {
+    r.addEventListener("change", syncOrderType);
+  });
 
+  syncDeliveryLine();
   applyTip();
 })();
 </script>

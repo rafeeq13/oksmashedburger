@@ -27,7 +27,7 @@
           <svg viewBox="0 0 80 10" class="ok-hero-rule d-none" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" data-hero-rule><path d="M3 7 L11 3 L19 7 L27 3 L35 7 L43 3 L51 7 L59 3 L67 7 L75 3"/></svg>
 
           <div class="ok-hero-cta" data-elw="btn" data-hero-cta{% set _bw = pb_btnwrap_style(cfg) %}{% if _bw %} style="{{ _bw }}"{% endif %}>
-            <button data-open="location" data-el="btn" class="btn btn-primary btn-lg btn-rect">
+            <button data-open="location" data-loc-next="/menu" data-el="btn" class="btn btn-primary btn-lg btn-rect">
               <i class="fa-solid fa-bag-shopping"></i> {{ cfg.get('cta_text') or 'Start Your Order' }}
             </button>
           </div>

@@ -261,6 +261,8 @@
     if (open && _storeSlug) highlightStore(_storeSlug);      // reflect the current choice
     showModal(m, b, open);
   }
+  // When set (e.g. hero "Start Your Order"), picking a store goes here after close.
+  var _locNext = null;
   function openItem(open) {
     var m = document.getElementById("itemModal"), b = document.getElementById("itemBackdrop");
     showModal(m, b, open);
@@ -334,6 +336,14 @@
     var storeInput = m.querySelector("[data-loc-store]"), nameEl = m.querySelector("[data-loc-storename]");
     if (storeInput) storeInput.value = card.dataset.locPick || "";
     if (nameEl) nameEl.textContent = card.dataset.locName || "your store";
+    var next = _locNext;
+    _locNext = null;
+    // Hero "Start Your Order" (and any opener with data-loc-next): set store then go there
+    if (next && card.dataset.locPick) {
+      window.location.href = "/set-location/" + encodeURIComponent(card.dataset.locPick)
+        + "?next=" + encodeURIComponent(next);
+      return;
+    }
     // choosing a store in the modal selects it everywhere too (header, cards, …)
     selectStore(card.dataset.locPick, { name: card.dataset.locName, city: card.dataset.city, zip: card.dataset.zip });
     // the location is the thing the visitor came here to change, so close on
@@ -470,8 +480,8 @@
 
     document.addEventListener("click", function (e) {
       var openT = e.target.closest("[data-open]"), closeT = e.target.closest("[data-close]");
-      if (openT) { e.preventDefault(); if (openT.dataset.open === "drawer") openDrawer(true); if (openT.dataset.open === "location") openLocation(true); }
-      if (closeT) { if (closeT.dataset.close === "drawer") openDrawer(false); if (closeT.dataset.close === "location") openLocation(false); if (closeT.dataset.close === "item") openItem(false); }
+      if (openT) { e.preventDefault(); if (openT.dataset.open === "drawer") openDrawer(true); if (openT.dataset.open === "location") { _locNext = openT.getAttribute("data-loc-next") || null; openLocation(true); } }
+      if (closeT) { if (closeT.dataset.close === "drawer") openDrawer(false); if (closeT.dataset.close === "location") { _locNext = null; openLocation(false); } if (closeT.dataset.close === "item") openItem(false); }
 
       // read more / less — handle BEFORE data-item so it doesn't open the modal
       var rmT = e.target.closest("[data-rm-toggle]");
