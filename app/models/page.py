@@ -85,7 +85,7 @@ for _i, (_t, _x) in enumerate(HERO_SLIDES, 1):
 # Registry of the home page's sections: the canonical order, human label, which
 # text fields the admin may override, an optional theme choice, and the built-in
 # default text (used as the admin field placeholder; templates hold the same
-# fallback). `config` on a row stores ONLY overrides — empty means "use default".
+# fallback). `config` on a row stores ONLY overrides | empty means "use default".
 HOME_SECTIONS = [
     {"key": "hero", "label": "Hero carousel", "theme": False, "fields": _hero_fields},
     {"key": "explore_menu", "label": "Explore the menu", "theme": True,
@@ -163,7 +163,7 @@ def is_custom_key(key):
 
 
 def spec_for(key):
-    """Field/theme spec for a section key — a registry entry, or a synthetic
+    """Field/theme spec for a section key | a registry entry, or a synthetic
     spec for an admin-added custom block."""
     for s in HOME_SECTIONS:
         if s["key"] == key:
@@ -189,7 +189,7 @@ def next_custom_key():
 # A field is (key, label, default) or (key, label, default, "area") when it is
 # long enough to want a textarea in the admin.
 PAGE_CONTENT = [
-    # The footer is on every page, so it is listed first — a change here is the
+    # The footer is on every page, so it is listed first | a change here is the
     # single highest-reach edit the client can make.
     {"key": "footer", "label": "Footer (every page)", "url": "/", "fields": [
         ("footer_news_heading", "Newsletter heading", "Get the good stuff first"),
@@ -205,20 +205,20 @@ PAGE_CONTENT = [
         ("footer_facebook_url", "Facebook link", "#"),
         ("footer_youtube_url", "YouTube link", "#")]},
     {"key": "chrome", "label": "Navigation & pop-ups", "url": "/", "fields": [
-        ("nav_menu", "Nav — Menu", "Menu"),
-        ("nav_deals", "Nav — Deals", "Deals"),
-        ("nav_catering", "Nav — Catering", "Catering"),
-        ("nav_locations", "Nav — Locations", "Locations"),
-        ("nav_about", "Nav — About", "About Us"),
-        ("nav_more", "Nav — More", "More"),
-        ("modal_size_label", "Item sheet — size heading", "Choose a size"),
-        ("modal_addons_label", "Item sheet — add-ons heading", "Add-ons"),
-        ("modal_notes_label", "Item sheet — notes heading", "Special instructions"),
-        ("modal_notes_ph", "Item sheet — notes placeholder", "No pickles, extra sauce…"),
-        ("modal_add_label", "Item sheet — button", "Add to cart"),
-        ("modal_soldout", "Item sheet — sold out", "Sold out at this store right now."),
-        ("loc_modal_heading", "Location picker — heading", "Find your store"),
-        ("loc_modal_text", "Location picker — sub-text",
+        ("nav_menu", "Nav | Menu", "Menu"),
+        ("nav_deals", "Nav | Deals", "Deals"),
+        ("nav_catering", "Nav | Catering", "Catering"),
+        ("nav_locations", "Nav | Locations", "Locations"),
+        ("nav_about", "Nav | About", "About Us"),
+        ("nav_more", "Nav | More", "More"),
+        ("modal_size_label", "Item sheet | size heading", "Choose a size"),
+        ("modal_addons_label", "Item sheet | add-ons heading", "Add-ons"),
+        ("modal_notes_label", "Item sheet | notes heading", "Special instructions"),
+        ("modal_notes_ph", "Item sheet | notes placeholder", "No pickles, extra sauce…"),
+        ("modal_add_label", "Item sheet | button", "Add to cart"),
+        ("modal_soldout", "Item sheet | sold out", "Sold out at this store right now."),
+        ("loc_modal_heading", "Location picker | heading", "Find your store"),
+        ("loc_modal_text", "Location picker | sub-text",
          "Enter your address to see the nearest location.", "area")]},
     {"key": "newspage", "label": "News page copy", "url": "/news", "fields": [
         ("news_grid_heading", "Story grid heading", "More stories"),
@@ -231,29 +231,29 @@ PAGE_CONTENT = [
          "No stories yet. Check back soon.", "area")]},
     {"key": "storefront", "label": "Deals, Rewards & Gift cards copy", "url": "/deals", "fields": [
         # /deals
-        ("deals_strip_lead", "Deals — banner lead-in", "New here? Enjoy"),
-        ("deals_code_hint", "Deals — promo code hint", "Have a promo code? Apply it before you order."),
-        ("deals_terms", "Deals — small print", "One offer per order. Deals cannot be combined and are available at participating locations for a limited time.", "area"),
-        ("deals_terms_link", "Deals — small print link text", "See full terms & conditions"),
+        ("deals_strip_lead", "Deals | banner lead-in", "New here? Enjoy"),
+        ("deals_code_hint", "Deals | promo code hint", "Have a promo code? Apply it before you order."),
+        ("deals_terms", "Deals | small print", "One offer per order. Deals cannot be combined and are available at participating locations for a limited time.", "area"),
+        ("deals_terms_link", "Deals | small print link text", "See full terms & conditions"),
         # /rewards
-        ("rewards_join_prompt", "Rewards — join prompt", "Not a member yet?"),
-        ("rewards_join_link", "Rewards — join link text", "Join free"),
-        ("rewards_tab_earn", "Rewards — tab 1", "Earn"),
-        ("rewards_tab_redeem", "Rewards — tab 2", "Redeem"),
-        ("rewards_tab_history", "Rewards — tab 3", "History"),
-        ("rewards_earn_cta", "Rewards — Earn panel button", "Start Your Order"),
-        ("rewards_redeem_note", "Rewards — Redeem panel note", "to spend. Rewards you can't afford yet are greyed out."),
+        ("rewards_join_prompt", "Rewards | join prompt", "Not a member yet?"),
+        ("rewards_join_link", "Rewards | join link text", "Join free"),
+        ("rewards_tab_earn", "Rewards | tab 1", "Earn"),
+        ("rewards_tab_redeem", "Rewards | tab 2", "Redeem"),
+        ("rewards_tab_history", "Rewards | tab 3", "History"),
+        ("rewards_earn_cta", "Rewards | Earn panel button", "Start Your Order"),
+        ("rewards_redeem_note", "Rewards | Redeem panel note", "to spend. Rewards you can't afford yet are greyed out."),
         # /gift-cards
-        ("gc_step1", "Gift cards — step 1", "1 · Choose a design"),
-        ("gc_step2", "Gift cards — step 2", "2 · Choose an amount"),
-        ("gc_step3", "Gift cards — step 3", "3 · Who's it for?"),
-        ("gc_step4", "Gift cards — step 4", "4 · Personal message"),
-        ("gc_step5", "Gift cards — step 5", "5 · Delivery"),
-        ("gc_design1", "Gift cards — design 1 name", "Classic"),
-        ("gc_design2", "Gift cards — design 2 name", "Birthday"),
-        ("gc_design3", "Gift cards — design 3 name", "Thank You"),
-        ("gc_design4", "Gift cards — design 4 name", "Congrats"),
-        ("gc_message_hint", "Gift cards — message hint", "Up to 200 characters.")]},
+        ("gc_step1", "Gift cards | step 1", "1 · Choose a design"),
+        ("gc_step2", "Gift cards | step 2", "2 · Choose an amount"),
+        ("gc_step3", "Gift cards | step 3", "3 · Who's it for?"),
+        ("gc_step4", "Gift cards | step 4", "4 · Personal message"),
+        ("gc_step5", "Gift cards | step 5", "5 · Delivery"),
+        ("gc_design1", "Gift cards | design 1 name", "Classic"),
+        ("gc_design2", "Gift cards | design 2 name", "Birthday"),
+        ("gc_design3", "Gift cards | design 3 name", "Thank You"),
+        ("gc_design4", "Gift cards | design 4 name", "Congrats"),
+        ("gc_message_hint", "Gift cards | message hint", "Up to 200 characters.")]},
     {"key": "about", "label": "About", "url": "/about", "fields": [
         ("about_hero_heading", "Hero heading", "About Us"),
         ("about_story_heading", "Intro heading", "Start the day off right with one of our delicious smash burgers"),
@@ -502,6 +502,6 @@ def inner_sections(page):
 
 
 def inner_section_config(page, key):
-    """Saved style config for one section, or {} — used by pb_page_style()."""
+    """Saved style config for one section, or {} | used by pb_page_style()."""
     row = PageSection.query.filter_by(page=page, key=key).first()
     return (row.config if row else None) or {}

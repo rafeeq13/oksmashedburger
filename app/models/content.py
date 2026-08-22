@@ -1,6 +1,6 @@
 """Editable content lists.
 
-Several parts of the site are *lists of small records* — hero slides, reviews,
+Several parts of the site are *lists of small records* | hero slides, reviews,
 job openings, news posts. They were literal `{% set … = [ … ] %}` blocks inside
 the templates, so the client could change a heading from Page Content but not
 the actual items. One generic row type plus a registry covers all of them
@@ -135,7 +135,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "rewards_earn",
-        "label": "Rewards — ways to earn",
+        "label": "Rewards | ways to earn",
         "where": "Rewards page, Earn tab",
         "fields": [("title", "What they do", TEXT), ("badge", "Badge", TEXT), ("icon", "Icon name", TEXT), ("desc", "Description", AREA)],
         "defaults": [
@@ -148,7 +148,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "rewards_faq",
-        "label": "Rewards — FAQ",
+        "label": "Rewards | FAQ",
         "where": "Rewards page",
         "fields": [("q", "Question", TEXT), ("a", "Answer", AREA)],
         "defaults": [
@@ -160,7 +160,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "giftcard_steps",
-        "label": "Gift cards — how it works",
+        "label": "Gift cards | how it works",
         "where": "Gift Cards page",
         "fields": [("title", "Step", TEXT), ("desc", "Description", AREA)],
         "defaults": [
@@ -171,7 +171,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "giftcard_amounts",
-        "label": "Gift cards — amounts",
+        "label": "Gift cards | amounts",
         "where": "Gift Cards page, the preset buttons",
         "fields": [("amount", "Amount in dollars", NUM)],
         "defaults": [
@@ -183,7 +183,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "rewards_tiers",
-        "label": "Rewards — membership tiers",
+        "label": "Rewards | membership tiers",
         "where": "Rewards page. The points thresholds here also drive the progress bar.",
         "fields": [("name", "Tier name", TEXT), ("min_points", "Starts at (points)", NUM),
                    ("tagline", "Tagline", TEXT), ("perks", "Perks, one per line", AREA)],
@@ -195,7 +195,7 @@ CONTENT_LISTS = [
     },
     {
         "kind": "rewards_catalog",
-        "label": "Rewards — what points buy",
+        "label": "Rewards | what points buy",
         "where": "Rewards page, the Redeem panel. A reward locks itself when the customer "
                  "does not have enough points, so the order here is the ladder they climb.",
         "fields": [("name", "Reward", TEXT), ("points", "Costs (points)", NUM),

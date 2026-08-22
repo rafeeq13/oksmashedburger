@@ -8,7 +8,7 @@
    middle at a real screen width, and the settings for whatever is selected on
    the right. It used to be a page-styled header with three equal columns, so
    the preview was 688px wide on a 1600px screen and showed the site in its
-   tablet layout — nothing looked like the site the owner knows. #}
+   tablet layout | nothing looked like the site the owner knows. #}
 <div class="cv-shell">
   <header class="cv-bar">
     <div class="cv-bar-title">
@@ -51,7 +51,7 @@
         {% endfor %}
       </div>
       {# The header, footer and modals are on every page, so they are not part of
-         this page's running order — they are edited where they live. #}
+         this page's running order | they are edited where they live. #}
       <div class="cv-shared">
         <div class="cv-pane-head cv-pane-head-sub">On every page</div>
         <a href="/?edit=1" target="_blank" rel="noopener" class="cv-sharedlink"><i class="fa-solid fa-window-maximize"></i> Header &amp; navigation</a>
@@ -69,7 +69,7 @@
         </form>
       </details>{% endif %}
       {# the words on this page, and every setting in one long list, still live
-         on the older screen — this one is about seeing what you change #}
+         on the older screen | this one is about seeing what you change #}
       <a class="cv-sharedlink" href="/admin/design?page={{ page }}{{ ('&store=' ~ request.args.get('store')) if request.args.get('store') else '' }}"><i class="fa-solid fa-list-check"></i> Words &amp; all settings</a>
     </div>
 
@@ -226,7 +226,7 @@
   /* Put the preview's sections in the order the layer list shows.
 
      The anchor has to be one of the page's OWN sections. It used to be
-     `doc.querySelector('.pb-sec')` — the first one in the document — which
+     `doc.querySelector('.pb-sec')` | the first one in the document | which
      stopped being the hero the day the header and footer became design targets
      of their own. From then on the parent was <body>, so every section was
      appended after the footer and the modals: the preview showed the footer at
@@ -365,7 +365,7 @@
       h += '<div><span class="ok-fs-xs text-muted-warm">Card corner radius</span><input type="range" min="0" max="40" step="2" data-ctl="style_cardradius" value="' + (c.style_cardradius != null && c.style_cardradius !== '' ? c.style_cardradius : 20) + '" class="w-100 ok-accent-yellow"></div>';
       h += '<p class="ok-hint">Applies to every card in this section.</p></div>';
     }
-    // Element controls (button / image) — only if the section has them.
+    // Element controls (button / image) | only if the section has them.
     var hasBtn = secEl && secEl.querySelector('[data-el="btn"]');
     var hasImg = secEl && secEl.querySelector('[data-el="img"]');
     if (hasBtn || hasImg) {

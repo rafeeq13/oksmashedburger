@@ -63,8 +63,8 @@
           <label class="ok-label">Add-ons</label>
           <div class="ok-stack-2">
             {% for a in product.addons %}
-            <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer">
-              <span class="fw-medium">{{ a.name }}</span>
+            <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer" data-addon{% if a.is_required %} data-required="1"{% endif %}>
+              <span class="fw-medium">{{ a.name }}{% if a.is_required %}<span class="text-ok-red" aria-hidden="true"> *</span>{% endif %}</span>
               <span class="d-flex align-items-center ok-gap-3"><span class="text-muted-warm ok-fs-sm">+${{ '%.2f'|format(a.price) }}</span><input type="checkbox" name="addon_ids" value="{{ a.id }}" class="ok-w-5 ok-h-5 accent-okyellow"></span>
             </label>
             {% endfor %}
@@ -95,10 +95,26 @@
 <script>
   // Sync the quantity stepper into the hidden field on submit.
   var addForm = document.getElementById("addForm");
-  if (addForm) addForm.addEventListener("submit", function () {
-    var span = addForm.querySelector(".qty span");
-    var field = document.getElementById("qtyField");
-    if (span && field) field.value = parseInt(span.textContent, 10) || 1;
-  });
+  if (addForm) {
+    addForm.querySelectorAll('[data-addon] input[type="checkbox"]').forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var row = cb.closest("[data-addon]");
+        if (row && cb.checked) row.classList.remove("is-invalid");
+      });
+    });
+    addForm.addEventListener("submit", function (e) {
+      var invalid = false;
+      addForm.querySelectorAll("[data-addon][data-required]").forEach(function (row) {
+        var cb = row.querySelector('input[type="checkbox"]');
+        var bad = !cb || !cb.checked;
+        row.classList.toggle("is-invalid", bad);
+        if (bad) invalid = true;
+      });
+      if (invalid) { e.preventDefault(); return; }
+      var span = addForm.querySelector(".qty span");
+      var field = document.getElementById("qtyField");
+      if (span && field) field.value = parseInt(span.textContent, 10) || 1;
+    });
+  }
 </script>
 {% endblock %}

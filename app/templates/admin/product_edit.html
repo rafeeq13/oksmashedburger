@@ -41,9 +41,9 @@
   </form>
 </div>
 
-{# outside the edit form on purpose — a form cannot be nested inside another #}
+{# outside the edit form on purpose | a form cannot be nested inside another #}
 <form id="deleteItem" method="post" action="/admin/menu/{{ product.id }}/delete{{ qs }}"
-      onsubmit="return confirm('Delete {{ product.name }}? (It is archived instead if it has order history.)')" class="d-none">
+      onsubmit="return confirm('Permanently delete {{ product.name }}? This cannot be undone.')" class="d-none">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
 </form>
 {% endblock %}

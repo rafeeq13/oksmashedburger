@@ -24,7 +24,7 @@
 </div>
 <p class="text-muted-warm ok-fs-sm ok-mb-4">Use the built-in layout fields, or paste a <b>complete HTML email</b> per template. Images accept URL or upload. Leave HTML blank to keep the auto-designed layout.</p>
 <div class="ok-card ok-p-3 ok-mb-4 ok-fs-sm text-muted-warm">
-  <strong class="text-ink">Placeholders</strong> — use in text fields or custom HTML:
+  <strong class="text-ink">Placeholders</strong> | use in text fields or custom HTML:
   {% for ph in placeholders %}<code class="ms-1">{{ ph }}</code>{% endfor %}
 </div>
 
@@ -43,7 +43,7 @@
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <input type="hidden" name="save_kind" value="layout">
         <h3 class="font-display fw-bold ok-fs-lg mb-1">Shared email design</h3>
-        <p class="ok-fs-sm text-muted-warm ok-mb-4">Header logo, footer block and legal line — used on every customer email.</p>
+        <p class="ok-fs-sm text-muted-warm ok-mb-4">Header logo, footer block and legal line | used on every customer email.</p>
         <div class="ok-stack-4">
           {% for field, label, _def, kind, hint in layout_fields %}
           {% set key = 'email_layout_' ~ field %}
@@ -113,7 +113,7 @@
                 {% if hint %}<p class="ok-fs-62rem text-muted-warm ok-mb-15">{{ hint }}</p>{% endif %}
                 {% if kind == 'image' %}
                 <div class="et-img-prev" data-et-preview="{{ key }}">
-                  {% if _val %}<img src="{{ _val }}" alt="">{% else %}<span class="ok-fs-xs text-muted-warm">Optional — leave blank for no banner</span>{% endif %}
+                  {% if _val %}<img src="{{ _val }}" alt="">{% else %}<span class="ok-fs-xs text-muted-warm">Optional | leave blank for no banner</span>{% endif %}
                 </div>
                 <input id="f-{{ key }}" name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… or upload"
                        class="ok-input ok-py-15 ok-fs-sm ok-mb-15" data-et-url="{{ key }}">

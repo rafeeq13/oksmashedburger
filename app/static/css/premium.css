@@ -4172,6 +4172,133 @@ input[type="radio"]:focus-visible{
 [data-addon]{ transition: border-color .15s ease, background-color .15s ease; }
 [data-addon].is-on{ border-color: var(--ok-ink); background: #fff; }
 [data-addon].is-on .qty.qty-sm{ border-color: var(--ok-ink); }
+[data-addon].is-invalid{ border: 1px solid var(--ok-red) !important; }
+
+/* Account sidebar: horizontal scroll tabs on mobile, vertical on desktop */
+.ok-account-page-grid{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+.ok-account-sidebar{
+  display: contents;
+}
+.ok-account-main{
+  min-width: 0;
+  max-width: 100%;
+}
+.ok-account-nav{
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.ok-account-nav::-webkit-scrollbar{ display: none; }
+.ok-account-nav__link{
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: #141414;
+  background: rgba(20, 20, 20, .06);
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.ok-account-nav__link:hover{
+  background: rgba(20, 20, 20, .1);
+  color: #141414;
+}
+.ok-account-nav__link.is-active,
+.ok-account-nav__link[aria-current="page"]{
+  background-color: #141414 !important;
+  color: #fff !important;
+}
+.ok-account-nav__link.is-active *,
+.ok-account-nav__link[aria-current="page"] *{
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+.ok-account-nav__link.is-active:hover,
+.ok-account-nav__link[aria-current="page"]:hover{
+  background-color: #141414 !important;
+  color: #fff !important;
+}
+@media (max-width: 991.98px){
+  .ok-account-layout{
+    max-width: 100%;
+  }
+  .ok-account-nav-shell{
+    position: sticky;
+    top: 4rem;
+    z-index: 40;
+    order: 2;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    background: rgba(255, 255, 255, .96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    margin-inline: -.25rem;
+    padding: .35rem .25rem .5rem;
+    border-bottom: 1px solid var(--ok-hairline);
+    box-shadow: 0 8px 18px -14px rgba(20, 20, 20, .28);
+    scroll-padding-inline: 12px 64px;
+    scrollbar-width: none;
+  }
+  .ok-account-nav-shell::-webkit-scrollbar{ display: none; }
+  .ok-account-sidebar__head{
+    order: 1;
+  }
+  .ok-account-main{
+    order: 3;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .ok-account-nav{
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: max-content;
+    min-width: 100%;
+    overflow: visible;
+    padding-bottom: .15rem;
+  }
+  .ok-account-nav__spacer{
+    flex: 0 0 64px;
+    width: 64px;
+    height: 1px;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px){
+  .ok-account-nav-shell{ top: 5rem; }
+}
+@media (min-width: 992px){
+  .ok-account-page-grid{
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    align-items: start;
+  }
+  .ok-account-sidebar{
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+  }
+  .ok-account-nav-shell{
+    background: transparent;
+    box-shadow: none;
+    border-bottom: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .ok-account-nav{
+    flex-direction: column;
+    overflow: visible;
+  }
+  .ok-account-nav__link{ width: 100%; }
+  .ok-account-nav__spacer{ display: none; }
+}
 
 
 /* The sticky Add-to-cart button matches the quantity pill exactly: the row

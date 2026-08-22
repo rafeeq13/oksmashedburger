@@ -44,6 +44,81 @@
   }
   function smoothScrollToEl(el) { animateScrollTo(window.scrollY + el.getBoundingClientRect().top - stickyOffset(), 900); }
 
+  function initAccountNav() {
+    var nav = document.querySelector(".ok-account-nav");
+    if (!nav) return;
+    var onAccount = !!document.querySelector("[data-account-nav-page]");
+    var hashTabs = nav.querySelectorAll("[data-account-tab]");
+    var sections = ["addresses", "profile"];
+
+    function scrollerEl() {
+      return nav.closest(".ok-account-nav-shell") || nav;
+    }
+
+    function revealTab(link) {
+      if (!link || window.matchMedia("(min-width: 992px)").matches) return;
+      var scroller = scrollerEl();
+      var pad = 12;
+      var peek = 56;
+      var max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+      var linkLeft = link.offsetLeft;
+      if (scroller !== nav) {
+        linkLeft = link.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
+      }
+      var next = link.nextElementSibling;
+      while (next && !next.classList.contains("ok-account-nav__link")) next = next.nextElementSibling;
+      var left = linkLeft - pad;
+      if (next) {
+        var showNext = linkLeft + link.offsetWidth + peek - scroller.clientWidth;
+        if (showNext > scroller.scrollLeft) left = Math.min(max, showNext);
+        else if (linkLeft < scroller.scrollLeft + pad) left = Math.max(0, linkLeft - pad);
+      } else {
+        left = Math.min(max, linkLeft + link.offsetWidth + pad - scroller.clientWidth);
+      }
+      scroller.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }
+
+    function setHashActive(tab) {
+      var activeLink = null;
+      hashTabs.forEach(function (link) {
+        var on = link.dataset.accountTab === tab;
+        link.classList.toggle("is-active", on);
+        if (on) {
+          link.setAttribute("aria-current", "page");
+          activeLink = link;
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+      if (activeLink) requestAnimationFrame(function () { revealTab(activeLink); });
+    }
+
+    function activeTabFromHash() {
+      var hash = (location.hash || "").replace("#", "");
+      return sections.indexOf(hash) >= 0 ? hash : "";
+    }
+
+    nav.addEventListener("click", function (e) {
+      var link = e.target.closest(".ok-account-nav__link");
+      if (link) requestAnimationFrame(function () { revealTab(link); });
+    });
+
+    if (onAccount) {
+      setHashActive(activeTabFromHash());
+      window.addEventListener("hashchange", function () { setHashActive(activeTabFromHash()); });
+      var hash = (location.hash || "").replace("#", "");
+      if (hash && document.getElementById(hash)) {
+        requestAnimationFrame(function () {
+          smoothScrollToEl(document.getElementById(hash));
+          setHashActive(activeTabFromHash());
+        });
+      }
+    } else {
+      var current = nav.querySelector(".ok-account-nav__link.is-active");
+      if (current) requestAnimationFrame(function () { revealTab(current); });
+    }
+  }
+
   /* ---------- decorative placeholder images (data-ph) ---------- */
   function svgURI(s) { return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s); }
   var PALETTE = ["#FFC72C", "#FFE08A", "#FFD75E", "#F4B23E", "#FFF3CC"];
@@ -528,6 +603,7 @@
         cSpan.textContent = n;
         if (hidden) hidden.value = n;
         row.classList.toggle("is-on", n > 0);
+        if (row.dataset.required === "1" && n > 0) row.classList.remove("is-invalid");
         recalcItem(aBtn.closest("[data-item-form]"));
       }
 
@@ -665,6 +741,14 @@
       var form = e.target.closest("[data-item-form]");
       if (!form) return;
       e.preventDefault();
+      var invalid = false;
+      form.querySelectorAll("[data-addon][data-required]").forEach(function (row) {
+        var n = parseInt((row.querySelector("[data-acount]") || {}).textContent, 10) || 0;
+        var bad = n < 1;
+        row.classList.toggle("is-invalid", bad);
+        if (bad) invalid = true;
+      });
+      if (invalid) return;
       var qtySpan = form.querySelector(".qty span");
       var fd = new FormData(form);
       if (qtySpan) fd.set("qty", parseInt(qtySpan.textContent, 10) || 1);
@@ -760,6 +844,7 @@
     hydratePlaceholders(document);
     wire();
     initReadMore(document);
+    initAccountNav();
     // Admin tables are enhanced by DataTables (loaded in the admin layout).
   });
   window.addEventListener("resize", function () { initReadMore(document); });

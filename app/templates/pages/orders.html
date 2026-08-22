@@ -39,25 +39,12 @@
   </div>
 </section>
 
-<div class="ok-container ok-py-8 ok-paddin-25rem-md">
-  <div class="ok-grid ok-gc-260px1fr-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
-    <!-- sidebar -->
-    <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
-      <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
-        {% set av_size = 'ok-w-11 ok-h-11' %}{% include 'partials/user_avatar.html' %}
-        <div class="ok-min-w-0"><div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div><div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.loyalty_points }} pts</div></div>
-      </div>
-      <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar">
-        <a href="/account" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-        <a href="/orders" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
-        <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
-        {% if features.rewards %}<a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>{% endif %}
-      </nav>
-      <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline"><a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a></div>
-    </aside>
+<div class="ok-container ok-py-8 ok-paddin-25rem-md ok-account-layout">
+  <div class="ok-account-page-grid ok-gap-3 ok-gap-2rem-lg align-items-start min-w-0">
+    {% include 'partials/account_sidebar.html' %}
 
     <!-- main -->
-    <div class="ok-min-w-0">
+    <div class="ok-account-main ok-min-w-0 max-w-100">
       {# One list, newest first. The Active/Past pills split six orders across
          two tabs and hid half of them behind a click; each card already carries
          its own status badge, so the split earned nothing. #}

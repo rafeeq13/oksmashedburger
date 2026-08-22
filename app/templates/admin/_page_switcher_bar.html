@@ -4,7 +4,7 @@
    which page am I editing, and what can I do to it. It replaces a wrapping
    strip of a dozen identical pills that mixed the two together.
 
-   Expects `current` — 'home', 'site', or an inner page key. #}
+   Expects `current` | 'home', 'site', or an inner page key. #}
 {% set _store = ('&store=' ~ request.args.get('store')) if request.args.get('store') else '' %}
 {% set _pages = pages if pages is defined else inner_pages %}
 {% set _here = _pages | selectattr('page', 'equalto', current) | list | first %}

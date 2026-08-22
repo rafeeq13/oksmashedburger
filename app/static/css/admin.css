@@ -241,6 +241,41 @@ h1,h2,h3,h4,h5,h6{ font-size:inherit; font-weight:inherit; line-height:inherit; 
   #okNavToggle:checked ~ .adm-backdrop{ display:none; }
 }
 
+/* Sidebar tab navigation — loading overlay while the next page fetches */
+.adm-content{ position:relative; }
+.adm-nav-loader{
+  position:absolute;
+  inset:0;
+  z-index:25;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(244,245,247,.82);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  pointer-events:none;
+}
+.adm-content.is-nav-loading .adm-nav-loader{ display:flex; pointer-events:auto; }
+.adm-nav-loader__inner{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.65rem;
+  padding:1.1rem 1.35rem;
+  border-radius:14px;
+  background:#fff;
+  border:1px solid var(--ok-line,#e8e6e3);
+  box-shadow:0 8px 28px rgba(16,24,32,.12);
+  color:var(--ok-jet,#141414);
+  font:600 13px/1.2 Inter,sans-serif;
+}
+.adm-nav-loader__inner i,
+.adm-nav-loader__inner svg.ok-i{
+  font-size:1.35rem;
+  color:var(--ok-yellow,#ffc72c);
+}
+a.sb-navlink.is-loading{ pointer-events:none; opacity:.92; }
+
 /* ── Page switcher ──────────────────────────────────────────────────────
    One control that says which page you are editing and lets you change it,
    with the page's own actions kept on the other side. Replaces a wrapping

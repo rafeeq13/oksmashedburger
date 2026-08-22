@@ -11,7 +11,7 @@
   <b>Designing a replacement?</b> Every slot below lists the size to build it at and where it appears.
   The size is the space the website gives that picture, at double resolution so it stays sharp on a
   phone or a retina screen. Every picture is cropped to fill its space, so keep the subject
-  near the middle — on a full-width banner a phone only keeps the middle third of the width.
+  near the middle | on a full-width banner a phone only keeps the middle third of the width.
   Match the pixel size and the shape; the file size is not something you need to worry about.
 </div>
 
@@ -87,7 +87,7 @@
 
   <div class="position-sticky bottom-0 ok-bgc-f4f5f7 ok-py-3 -mx-4 px-3 border-top ok-bc-varokline">
     <button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save image links</button>
-    <span class="ok-fs-xs text-muted-warm ok-ml-3">Uploaded pictures save themselves — this is for the link
+    <span class="ok-fs-xs text-muted-warm ok-ml-3">Uploaded pictures save themselves | this is for the link
       boxes.</span>
     <a href="/" target="_blank" rel="noopener" class="link-underline ok-fs-sm ok-ml-3">Preview site <i
         class="fa-solid fa-arrow-up-right-from-square"></i></a>
@@ -154,8 +154,8 @@
 
       if (file.size > cap) {
         say(msg, isVideo
-          ? size(file.size) + " is too big to upload — trim or compress the clip."
-          : size(file.size) + " is far bigger than this slot needs — save it at a smaller size.", "bad");
+          ? size(file.size) + " is too big to upload | trim or compress the clip."
+          : size(file.size) + " is far bigger than this slot needs | save it at a smaller size.", "bad");
         input.value = "";
         return;
       }
@@ -171,9 +171,9 @@
         .then(function (r) {
           if (r.status === 413) throw new Error("The server would not take a file this big.");
           var isJson = (r.headers.get("content-type") || "").indexOf("json") > -1;
-          if (r.redirected || !isJson) throw new Error("Signed out — open admin in a new tab, sign in, then try again.");
+          if (r.redirected || !isJson) throw new Error("Signed out | open admin in a new tab, sign in, then try again.");
           if (r.status === 400 || r.status === 403) {
-            return r.json().then(function (d) { throw new Error((d && d.error) || "Page stale — reload and try again."); }, function () { throw new Error("Page stale — reload and try again."); });
+            return r.json().then(function (d) { throw new Error((d && d.error) || "Page stale | reload and try again."); }, function () { throw new Error("Page stale | reload and try again."); });
           }
           if (!r.ok) throw new Error("Upload failed (" + r.status + ").");
           return r.json();

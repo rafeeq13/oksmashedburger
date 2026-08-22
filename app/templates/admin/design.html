@@ -32,7 +32,7 @@
     <input type="number" name="{{ key }}" value="{{ val }}" min="-20" max="40" step="0.5"
            placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
     {% elif kind == 'ratio' %}
-    {# a line height or a scale runs past 1 — an opacity box would cap it there #}
+    {# a line height or a scale runs past 1 | an opacity box would cap it there #}
     <input type="number" name="{{ key }}" value="{{ val }}" min="0.5" max="3" step="0.05"
            placeholder="default" class="ok-input ok-fs-xs w-100 text-center">
     {% elif kind == 'seconds' %}
@@ -46,7 +46,7 @@
       <input type="text" name="{{ key }}" value="{{ val }}" placeholder="Paste an image link"
              class="ok-input ok-fs-xs w-100">
       <input type="file" name="{{ key }}_file" accept="image/*" class="ok-input ok-fs-xs w-100"
-             aria-label="{{ label }} — upload">
+             aria-label="{{ label }} | upload">
     </span>
     {% elif kind in ('shadow', 'tsside', 'italic', 'bgsize', 'bgpos', 'graddir', 'filter', 'valign', 'imgfit', 'cols', 'xtrapos', 'xtraalign') %}
     {% set _opts = shadows if kind == 'shadow' else tssides if kind == 'tsside'
@@ -93,7 +93,7 @@
   <div>
     <h2 class="ok-h2 mb-1">Page design</h2>
     <p class="text-muted-warm ok-fs-sm">
-      Restyle any section on any page — background, colours, spacing, cards.
+      Restyle any section on any page | background, colours, spacing, cards.
       Leave a box empty to keep the built-in design.
     </p>
   </div>
@@ -166,7 +166,7 @@
             class="ok-grid ok-grid-sm-3 ok-gap-3 ok-design-form">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% for f in fields %}{{ control(f, s.config) }}{% endfor %}
-        {# Each kind of text keeps its own settings — changing the heading here
+        {# Each kind of text keeps its own settings | changing the heading here
            cannot reach the sub-heading, the body copy or the card titles. #}
         <div class="ok-col-span-sm-3 ok-stack-2">
           <b class="d-block ok-fs-xs fw-bold text-ink ok-mt-2">Text styles</b>
@@ -238,7 +238,7 @@
      and scale the whole frame, so the layout is the real one rather than the
      mobile breakpoint. */
   /* Controls on the left at a workable width, and the rest of the row given to
-     the preview — it used to sit in half a row at a fixed scale, which left a
+     the preview | it used to sit in half a row at a fixed scale, which left a
      wide empty gutter beside a letterboxed page. */
   .ok-design-layout{ display: grid; grid-template-columns: 1fr; }
   @media (min-width: 992px){
@@ -345,7 +345,7 @@
     });
   });
 
-  // typing a value marks the control straight away, clearing it unmarks it —
+  // typing a value marks the control straight away, clearing it unmarks it |
   // the page should not have to be saved before it tells the truth
   document.querySelectorAll(".ok-design-form [data-ctl]").forEach(function (ctl) {
     var field = ctl.querySelector("select, input[type=text], input[type=number]");

@@ -12,39 +12,13 @@
       </div>
     </section>
 
-    <div class="ok-container ok-py-8 ok-paddin-25rem-md">
-      <div class="ok-grid ok-gc-260px1fr-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
+    <div class="ok-container ok-py-8 ok-paddin-25rem-md ok-account-layout">
+      <div class="ok-account-page-grid ok-gap-3 ok-gap-2rem-lg align-items-start min-w-0">
 
-        <!-- ============ SIDEBAR ============ -->
-        <aside class="ok-card ok-p-3 ok-positi-sticky-lg ok-top-6rem-lg">
-          <div class="d-flex align-items-center ok-gap-3 ok-pb-3 ok-mb-3 border-bottom ok-bc-varokline">
-            {% if current_user.avatar_url %}
-            <img src="{{ current_user.avatar_url }}" class="ok-w-11 ok-h-11 rounded-pill flex-shrink-0 ok-cover" alt="{{ current_user.full_name }}">
-            {% else %}
-            <span class="ok-avatar ok-w-11 ok-h-11 flex-shrink-0" aria-hidden="true">{{ current_user.initials }}</span>
-            {% endif %}
-            <div class="ok-min-w-0">
-              <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
-              <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }} · {{ current_user.loyalty_points }} pts</div>
-            </div>
-          </div>
-          <nav class="d-flex flex-lg-column gap-1 overflow-x-auto hide-scrollbar" aria-label="Account menu">
-            <a href="/account" aria-current="page" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm bg-ink text-white text-nowrap"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-            <a href="/orders" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-receipt"></i> My Orders</a>
-            <a href="/favorites" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-heart"></i> Favorites</a>
-            <a href="/account#addresses" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-location-dot"></i> Addresses</a>
-            <a href="/account#payment" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-credit-card"></i> Payment Methods</a>
-            {% if features.rewards %}<a href="/rewards" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-gift"></i> Rewards</a>{% endif %}
-            <a href="/account#profile" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-user"></i> Profile</a>
-            <a href="/account#notifications" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ink text-nowrap"><i class="fa-solid fa-bell"></i> Notifications</a>
-          </nav>
-          <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
-            <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red text-nowrap"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
-          </div>
-        </aside>
+        {% include 'partials/account_sidebar.html' %}
 
         <!-- ============ MAIN ============ -->
-        <div class="ok-stack-8">
+        <div id="dashboard" class="ok-account-main ok-stack-8 ok-min-w-0">
 
           <!-- Welcome header -->
           <div class="ok-card overflow-hidden position-relative bg-ink text-white d-none">
@@ -138,7 +112,7 @@
               <div class="divider ok-mb-3"></div>
               <div class="d-flex flex-wrap align-items-center ok-gap-3">
                 <span class="ok-fs-sm fw-semibold text-ok-green d-flex align-items-center ok-gap-15"><span class="ok-w-2 ok-h-2 rounded-pill bg-ok-green d-inline-block"></span> {{ o.status.replace('_',' ')|title }}{% if o.status not in ['completed','cancelled'] %} · ETA ~{{ o.store.avg_prep_minutes }} min{% endif %}</span>
-                <div class="d-flex gap-2 ml-auto">
+                <div class="d-flex flex-wrap gap-2 ms-auto">
                   {% if o.status not in ['completed','cancelled'] %}<a href="/tracking/{{ o.number }}" class="btn btn-dark btn-sm">Track order</a>{% endif %}
                   <form method="post" action="/orders/{{ o.number }}/reorder"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="btn btn-primary btn-sm">Reorder</button></form>
                 </div>
@@ -203,25 +177,25 @@
               <button data-add-cart="New card" class="btn btn-secondary btn-sm">+ Add card</button>
             </div>
             <div class="ok-card divide-y ok-divide-y">
-              <div class="ok-p-3 ok-paddin-125rem-md d-flex align-items-center ok-gap-3">
+              <div class="ok-p-3 ok-paddin-125rem-md d-flex flex-wrap align-items-center ok-gap-3">
                 <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-7rem fw-bold tracking-wider flex-shrink-0">VISA</div>
-                <div class="ok-min-w-0">
+                <div class="ok-min-w-0 flex-grow-1">
                   <div class="fw-semibold">Visa •••• 4242</div>
                   <div class="ok-fs-xs text-muted-warm">Expires 08/27</div>
                 </div>
-                <span class="badge badge-soft ms-2 d-none d-sm-inline-flex">Default</span>
-                <div class="d-flex ok-gap-3 ok-fs-sm ml-auto">
+                <span class="badge badge-soft d-none d-sm-inline-flex">Default</span>
+                <div class="d-flex flex-wrap ok-gap-3 ok-fs-sm">
                   <button class="link-underline">Edit</button>
                   <button class="link-underline !text-okred">Remove</button>
                 </div>
               </div>
-              <div class="ok-p-3 ok-paddin-125rem-md d-flex align-items-center ok-gap-3">
+              <div class="ok-p-3 ok-paddin-125rem-md d-flex flex-wrap align-items-center ok-gap-3">
                 <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-62rem fw-bold tracking-wide flex-shrink-0">MC</div>
-                <div class="ok-min-w-0">
+                <div class="ok-min-w-0 flex-grow-1">
                   <div class="fw-semibold">Mastercard •••• 8888</div>
                   <div class="ok-fs-xs text-muted-warm">Expires 11/26</div>
                 </div>
-                <div class="d-flex ok-gap-3 ok-fs-sm ml-auto">
+                <div class="d-flex flex-wrap ok-gap-3 ok-fs-sm">
                   <button class="link-underline">Set default</button>
                   <button class="link-underline !text-okred">Remove</button>
                 </div>

@@ -34,13 +34,13 @@
     <form method="post" action="/admin/builder/new{{ qs }}" class="d-flex align-items-center gap-2">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <select name="override" class="ok-input py-2 ok-fs-sm ok-w-40">
-        {% for path, label, tpl, live in overridable %}<option value="{{ path }}"{% if live %} data-live="1"{% endif %}>{{ label }} ({{ path }}){% if live %} — live data{% endif %}</option>{% endfor %}
+        {% for path, label, tpl, live in overridable %}<option value="{{ path }}"{% if live %} data-live="1"{% endif %}>{{ label }} ({{ path }}){% if live %} | live data{% endif %}</option>{% endfor %}
       </select>
       <button class="btn btn-secondary btn-sm flex-shrink-0"
               onclick="var o=this.form.override.options[this.form.override.selectedIndex];
                 return confirm((o.dataset.live ? 'THIS PAGE SHOWS LIVE DATA.
 
-Rebuilding freezes today's menu / store list / cart into fixed HTML — it will stop updating when the data changes.
+Rebuilding freezes today's menu / store list / cart into fixed HTML | it will stop updating when the data changes.
 
 ' : '')
                   + 'Rebuilding takes a copy of that page as it looks right now and serves the copy from then on.
@@ -56,7 +56,7 @@ Continue?');">
   </div>
   <p class="ok-fs-xs text-muted-warm mt-2 mb-0">
     <i class="fa-solid fa-triangle-exclamation text-gold"></i>
-    A rebuilt page becomes a fixed copy — it no longer picks up images, text or lists from
+    A rebuilt page becomes a fixed copy | it no longer picks up images, text or lists from
     the rest of the admin. To restyle a page <b>and</b> keep it connected, use
     <a href="/admin/canvas{{ qs }}" class="link-underline">Pages</a> instead.
   </p>
@@ -95,7 +95,7 @@ Continue?');">
       {% endif %}
       {% if p.override_path %}
       <form method="post" action="/admin/builder/{{ p.id }}/meta{{ qs }}"
-            onsubmit="return confirm('Give {{ p.override_path }} back to the website? Your built copy is kept — it just stops replacing the real page, which starts following the admin again.')">
+            onsubmit="return confirm('Give {{ p.override_path }} back to the website? Your built copy is kept | it just stops replacing the real page, which starts following the admin again.')">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         <input type="hidden" name="detach_override" value="1">
         <input type="hidden" name="title" value="{{ p.title }}">

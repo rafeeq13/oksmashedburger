@@ -37,7 +37,10 @@ class Product(TimestampMixin, db.Model):
 
     category = db.relationship("Category", back_populates="products")
     variants = db.relationship("ProductVariant", back_populates="product", cascade="all, delete-orphan")
-    addons = db.relationship("ProductAddon", back_populates="product", cascade="all, delete-orphan")
+    addons = db.relationship(
+        "ProductAddon", back_populates="product", cascade="all, delete-orphan",
+        order_by="ProductAddon.sort_order",
+    )
     store_items = db.relationship("StoreMenuItem", back_populates="product", cascade="all, delete-orphan")
 
 
@@ -52,14 +55,30 @@ class ProductVariant(db.Model):
     product = db.relationship("Product", back_populates="variants")
 
 
+class AddonLibrary(db.Model):
+    """Brand-wide add-on catalog — create once, attach to any menu item."""
+    __tablename__ = "addon_library"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False, unique=True)
+    price = db.Column(db.Numeric(8, 2), default=0)
+    sort_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+
+    product_links = db.relationship("ProductAddon", back_populates="library")
+
+
 class ProductAddon(db.Model):
-    """Optional extras (bacon, avocado, fried egg…)."""
+    """Per-item link to a shared add-on (or a one-off extra)."""
     __tablename__ = "product_addons"
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
+    library_id = db.Column(db.Integer, db.ForeignKey("addon_library.id"))
     name = db.Column(db.String(80), nullable=False)
     price = db.Column(db.Numeric(8, 2), default=0)
+    is_required = db.Column(db.Boolean, default=False, nullable=False)
+    sort_order = db.Column(db.Integer, default=0)
     product = db.relationship("Product", back_populates="addons")
+    library = db.relationship("AddonLibrary", back_populates="product_links")
 
 
 class StoreMenuItem(db.Model):

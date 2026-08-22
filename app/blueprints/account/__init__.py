@@ -65,7 +65,8 @@ def orders():
     all_orders = orders_for_user(current_user().id)
     active = [o for o in all_orders if o.status not in ("completed", "cancelled")]
     past = [o for o in all_orders if o.status in ("completed", "cancelled")]
-    return render_template("pages/orders.html", active=active, past=past, stage_meta=STAGE_META)
+    return render_template("pages/orders.html", active=active, past=past, stage_meta=STAGE_META,
+                           account_nav_active="orders")
 
 
 @bp.get("/orders/<number>/receipt.pdf")
@@ -231,7 +232,8 @@ def favorites():
             .order_by(Favorite.created_at.desc()).all())
     products = [f.product for f in favs if f.product and f.product.is_active]
     recent_orders = orders_for_user(u.id)[:4]
-    return render_template("pages/favorites.html", products=products, recent_orders=recent_orders)
+    return render_template("pages/favorites.html", products=products, recent_orders=recent_orders,
+                           account_nav_active="favorites")
 
 
 @bp.post("/favorites/toggle")

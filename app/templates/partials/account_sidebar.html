@@ -1,0 +1,28 @@
+{# Shared account area sidebar — keep nav identical on /account and /orders. #}
+{% set nav_active = account_nav_active|default('') %}
+{% set on_account = request.path == '/account' %}
+
+<div class="ok-account-sidebar">
+  <div class="ok-account-sidebar__head ok-card ok-p-3 ok-min-w-0 max-w-100">
+    <div class="d-flex align-items-center ok-gap-3">
+      {% set av_size = 'ok-w-11 ok-h-11' %}{% include 'partials/user_avatar.html' %}
+      <div class="ok-min-w-0">
+        <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
+        <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }} · {{ current_user.loyalty_points }} pts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ok-account-nav-shell">
+    <nav class="ok-account-nav d-flex flex-lg-column gap-1" aria-label="Account menu"{% if on_account %} data-account-nav-page{% endif %}>
+      <a href="/orders" class="ok-account-nav__link d-flex align-items-center ok-gap-2 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm{% if nav_active == 'orders' %} is-active{% endif %}"{% if nav_active == 'orders' %} aria-current="page"{% endif %}><i class="fa-solid fa-receipt"></i> My Orders</a>
+      <a href="{% if on_account %}#addresses{% else %}/account#addresses{% endif %}" data-account-tab="addresses" class="ok-account-nav__link d-flex align-items-center ok-gap-2 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm{% if nav_active == 'addresses' %} is-active{% endif %}"{% if nav_active == 'addresses' %} aria-current="page"{% endif %}><i class="fa-solid fa-location-dot"></i> Addresses</a>
+      <a href="{% if on_account %}#profile{% else %}/account#profile{% endif %}" data-account-tab="profile" class="ok-account-nav__link d-flex align-items-center ok-gap-2 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm{% if nav_active == 'profile' %} is-active{% endif %}"{% if nav_active == 'profile' %} aria-current="page"{% endif %}><i class="fa-solid fa-user"></i> Profile</a>
+      <span class="ok-account-nav__spacer" aria-hidden="true"></span>
+    </nav>
+  </div>
+
+  <div class="ok-account-sidebar__foot ok-mt-3 ok-pt-3 border-top ok-bc-varokline d-none d-lg-block">
+    <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
+  </div>
+</div>

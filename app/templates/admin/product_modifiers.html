@@ -5,13 +5,16 @@
 <div class="ok-mb-5"><a href="/admin/menu{{ qs }}" class="link-underline ok-fs-sm"><i class="fa-solid fa-arrow-left"></i> Back to menu</a></div>
 
 <div class="d-flex align-items-center gap-3 mb-4">
-  <img src="{{ product.image_url }}" alt="" class="ok-w-16 ok-h-16 ok-rounded-xl ok-cover flex-shrink-0">
+  <img src="{{ product.image_url or logo_url }}"
+    onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'"
+    alt="{{ product.name }}"
+    class="ok-w-16 ok-h-16 ok-rounded-xl ok-cover flex-shrink-0 bg-cream">
   <div>
     <h2 class="ok-h2">{{ product.name }}</h2>
     <p class="text-muted-warm ok-fs-sm">{{ product.category.name }} · base ${{ '%.2f'|format(product.base_price) }}</p>
   </div>
 </div>
-<p class="text-muted-warm ok-fs-sm mb-4 -mt-2">Modifiers belong to the brand item, so they appear wherever it's on the menu. They show on the item page and carry through cart, checkout and receipts.</p>
+<p class="text-muted-warm ok-fs-sm mb-4 -mt-2">Existing add-ons stay on this item. Attach shared ones from the library, or add an item-only extra below.</p>
 
 <div class="ok-grid ok-grid-lg-2 gap-4 align-items-start">
   <!-- Sizes / variants (single-select) -->
@@ -47,28 +50,78 @@
     </form>
   </div>
 
-  <!-- Add-ons (multi-select) -->
+  <!-- Add-ons -->
   <div class="ok-card ok-p-5">
     <h3 class="font-display fw-bold ok-fs-lg mb-1">Add-ons / extras</h3>
-    <p class="ok-fs-xs text-muted-warm mb-3">Optional extras, customers can pick any number; each adds its price.</p>
+    <p class="ok-fs-xs text-muted-warm mb-3">Shared add-ons sync from the library. Item-only add-ons stay on this product only.</p>
     {% if product.addons %}
     <div class="ok-divide-y mb-3">
       {% for a in product.addons %}
-      <div class="ok-py-25 d-flex align-items-center ok-gap-3">
-        <div class="ok-flex-1"><span class="fw-semibold">{{ a.name }}</span> <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(a.price) }}</span></div>
-        <form method="post" action="/admin/menu/addons/{{ a.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Delete</button></form>
+      <div class="ok-py-25">
+        {% if a.library_id %}
+        <div class="d-flex flex-wrap align-items-center ok-gap-3">
+          <div class="ok-flex-1 ok-min-w-0">
+            <span class="fw-semibold">{{ a.name }}</span>
+            <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(a.price) }}</span>
+            <span class="badge badge-soft ms-1">Shared</span>
+            {% if a.is_required %}<span class="badge badge-yellow ms-1">Required</span>{% endif %}
+          </div>
+          <form method="post" action="/admin/menu/addons/{{ a.id }}/required{{ qs }}" class="d-flex align-items-center gap-2 ok-fs-xs">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <label class="d-flex align-items-center gap-1 ok-pointer mb-0">
+              <input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} onchange="this.form.submit()"> Required
+            </label>
+          </form>
+          <form method="post" action="/admin/menu/addons/{{ a.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Detach</button></form>
+        </div>
+        {% else %}
+        <form method="post" action="/admin/menu/addons/{{ a.id }}/edit{{ qs }}" class="d-flex flex-wrap align-items-center gap-2">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <span class="badge badge-soft flex-shrink-0">Item-only</span>
+          <input name="name" value="{{ a.name }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-min-w-0" required>
+          <div class="d-flex align-items-center gap-1 flex-shrink-0"><span class="text-muted-warm">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(a.price) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-24"></div>
+          <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0 flex-shrink-0"><input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+          <button class="btn btn-secondary btn-sm flex-shrink-0">Save</button>
+          <button formaction="/admin/menu/addons/{{ a.id }}/delete{{ qs }}" class="link-underline ok-fs-xs text-ok-red flex-shrink-0">Delete</button>
+        </form>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p class="ok-fs-sm text-muted-warm mb-3">No add-ons yet.</p>
+    <p class="ok-fs-sm text-muted-warm mb-3">No add-ons on this item yet.</p>
     {% endif %}
-    <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <div><label class="ok-label ok-fs-xs">Name</label><input name="name" required class="ok-input py-2 ok-fs-sm" placeholder="Add bacon"></div>
-      <div><label class="ok-label ok-fs-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 ok-fs-sm ok-w-24" placeholder="1.50"></div>
-      <button class="btn btn-primary btn-sm">Add</button>
-    </form>
+
+    {% if addon_library %}
+    <div class="border-top ok-bc-varokline pt-3 mb-3">
+      <p class="ok-fs-xs text-muted-warm mb-2">Attach from shared library</p>
+      <div class="ok-stack-2">
+        {% for lib in addon_library %}
+        {% if lib.id not in attached_lib_ids %}
+        <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="d-flex flex-wrap align-items-center gap-2">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="library_id" value="{{ lib.id }}">
+          <span class="fw-semibold ok-flex-1">{{ lib.name }}</span>
+          <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(lib.price) }}</span>
+          <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+          <button class="btn btn-secondary btn-sm">Attach</button>
+        </form>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="border-top ok-bc-varokline pt-3">
+      <p class="ok-fs-xs text-muted-warm mb-2">Add item-only extra (legacy)</p>
+      <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <div><label class="ok-label ok-fs-xs">Name</label><input name="name" class="ok-input py-2 ok-fs-sm" placeholder="Add bacon"></div>
+        <div><label class="ok-label ok-fs-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 ok-fs-sm ok-w-24" placeholder="1.50"></div>
+        <button class="btn btn-primary btn-sm">Add</button>
+        <label class="ok-col-span-3 d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required for this item</label>
+      </form>
+    </div>
   </div>
 </div>
 

@@ -18,7 +18,7 @@ from app.auth import current_user, roles_required
 from app.helpers import active_stores, get_current_store
 from app.security import style_value_ok
 from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone
-from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon, Category
+from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon, AddonLibrary, Category
 from app.models.order import Order, OrderItem
 from app.models.promo import Coupon, GiftCard, COUPON_KINDS
 from app.models.user import User, Role
@@ -84,8 +84,8 @@ def _admin_store():
     """Which shop this admin screen is about.
 
     Someone pinned to one shop never leaves it. ?store= is how head office
-    switches between shops — the same thing _can_switch() below allows only to
-    a user with no shop of their own — so reading it first let a pinned manager
+    switches between shops | the same thing _can_switch() below allows only to
+    a user with no shop of their own | so reading it first let a pinned manager
     open another shop's orders, exports and saved API keys just by editing the
     address bar. Nothing legitimate sends ?store= to a pinned user: _qs() gives
     them an empty query string.
@@ -242,8 +242,8 @@ _DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Su
 def hours():
     """Opening hours live in Store settings, and only there.
 
-    They used to be two screens editing the same seven rows — a tab inside
-    Store settings and a page of their own in the sidebar — so it was never
+    They used to be two screens editing the same seven rows | a tab inside
+    Store settings and a page of their own in the sidebar | so it was never
     clear which one was the real one. This keeps old links and bookmarks
     working by sending them to the tab that owns it.
     """
@@ -395,17 +395,17 @@ def zone_delete(zid):
 # fall back to their built-in default when a key isn't set.
 # (group title, [(setting key, label, where it shows, required size, ratio), …])
 # The size is the box the site actually paints the picture into, doubled for a
-# retina screen — measured in a browser, not guessed, so a designer can build
+# retina screen | measured in a browser, not guessed, so a designer can build
 # to it before uploading rather than after seeing it cropped.
 SITE_IMAGE_SLOTS = [
     ("Brand", [
         ("brand_logo", "Logo",
-         "Everywhere — site header, mobile menu, footer, the sign-in pages, the "
+         "Everywhere | site header, mobile menu, footer, the sign-in pages, the "
          "gift-card artwork and the admin panel. A transparent PNG or SVG works best.",
          "480×640", "any, it is scaled to fit"),
         ("brand_favicon", "Browser tab icon",
          "The little icon in the browser tab and in a bookmark. Square, and it has "
-         "to stay readable at 16 pixels — usually just the mark, not the full logo.",
+         "to stay readable at 16 pixels | usually just the mark, not the full logo.",
          "512×512", "1:1"),
         ("brand_app_icon", "Home-screen icon",
          "Used when someone saves the site to a phone home screen. Square, and it "
@@ -414,81 +414,81 @@ SITE_IMAGE_SLOTS = [
     ]),
     ("Home hero carousel", [
         ("hero_%d_img" % i, "Slide %d" % i,
-         "Home page — hero carousel, slide %d. The same picture is a wide band on "
+         "Home page | hero carousel, slide %d. The same picture is a wide band on "
          "a desktop and a tall one on a phone, so keep the subject in the middle "
          "third." % i, "2560×1440", "16:9") for i in range(1, 11)]),
     ("Home sections", [
         ("catering_img", "Catering banner",
-         "Home page — the full-width catering band. Also used as the band on the About page.",
+         "Home page | the full-width catering band. Also used as the band on the About page.",
          "2400×1200", "2:1"),
         ("about_img", "About / team photo",
-         "Home page — the story band. Also the photo and the video poster on the About page.",
+         "Home page | the story band. Also the photo and the video poster on the About page.",
          "1200×1500", "4:5 portrait"),
         ("franchise_img", "Franchise banner",
-         "Home page — the yellow franchise band, right-hand photo.",
+         "Home page | the yellow franchise band, right-hand photo.",
          "1600×1500", "16:15"),
     ]),
-    ("Home — Instagram grid", [
+    ("Home | Instagram grid", [
         ("ig_%d_img" % i, "Instagram tile %d" % i,
-         "Home page and About page — Instagram grid, tile %d. Square, nothing is cropped." % i,
+         "Home page and About page | Instagram grid, tile %d. Square, nothing is cropped." % i,
          "800×800", "1:1") for i in range(1, 9)]),
-    ("About page — Instagram grid", [
+    ("About page | Instagram grid", [
         ("about_ig_%d_img" % i, "About tile %d" % i,
-         "About page — Instagram grid, tile %d. Leave it empty and this tile "
+         "About page | Instagram grid, tile %d. Leave it empty and this tile "
          "shows whatever the home page's tile %d shows." % (i, i),
          "800×800", "1:1") for i in range(1, 9)]),
-    ("About page — Instagram reel links", [
+    ("About page | Instagram reel links", [
         ("about_ig_%d_reel" % i, "About reel link %d" % i,
-         "About page — tapping tile %d opens this link. Empty falls back to the "
+         "About page | tapping tile %d opens this link. Empty falls back to the "
          "home page's link for the same tile. A URL, not an image." % i,
          "", "") for i in range(1, 9)]),
     ("Page banners", [
-        ("catering_hero_img", "Catering page hero", "Catering page — the banner across the top.", "2560×1200", "21:10"),
-        ("careers_hero_img", "Careers page hero", "Join Our Team page — the banner across the top.", "2560×1200", "21:10"),
-        ("about_hero_img", "About page hero", "About page — the banner across the top.", "2560×1200", "21:10"),
-        ("contact_hero_img", "Contact page hero", "Contact page — the banner across the top.", "2560×1200", "21:10"),
-        ("deals_hero_img", "Deals page banner", "Deals page — the banner across the top.", "2560×1200", "21:10"),
-        ("giftcards_hero_img", "Gift cards page banner", "Gift cards page — the banner across the top.", "2560×1200", "21:10"),
-        ("rewards_hero_img", "Rewards page banner", "Rewards page — the banner across the top. This is the tallest banner on the site.", "2560×1440", "16:9"),
-        ("faq_hero_img", "FAQ / help hero", "Help centre page — the banner across the top.", "2560×1200", "21:10"),
+        ("catering_hero_img", "Catering page hero", "Catering page | the banner across the top.", "2560×1200", "21:10"),
+        ("careers_hero_img", "Careers page hero", "Join Our Team page | the banner across the top.", "2560×1200", "21:10"),
+        ("about_hero_img", "About page hero", "About page | the banner across the top.", "2560×1200", "21:10"),
+        ("contact_hero_img", "Contact page hero", "Contact page | the banner across the top.", "2560×1200", "21:10"),
+        ("deals_hero_img", "Deals page banner", "Deals page | the banner across the top.", "2560×1200", "21:10"),
+        ("giftcards_hero_img", "Gift cards page banner", "Gift cards page | the banner across the top.", "2560×1200", "21:10"),
+        ("rewards_hero_img", "Rewards page banner", "Rewards page | the banner across the top. This is the tallest banner on the site.", "2560×1440", "16:9"),
+        ("faq_hero_img", "FAQ / help hero", "Help centre page | the banner across the top.", "2560×1200", "21:10"),
     ]),
     ("About page photos", [
-        ("about_card1_img", "Story card 1 photo", "About page — the first of the two story cards.", "1200×900", "4:3"),
-        ("about_card2_img", "Story card 2 photo", "About page — the second story card.", "1200×900", "4:3"),
-        ("about_table_img", "“Meet us at the table” photo", "About page — the photo beside “Meet us at the table”.", "1200×900", "4:3"),
-        ("about_crew_img", "Team photo", "About page — the tilted team photo near the bottom.", "1200×1200", "1:1"),
+        ("about_card1_img", "Story card 1 photo", "About page | the first of the two story cards.", "1200×900", "4:3"),
+        ("about_card2_img", "Story card 2 photo", "About page | the second story card.", "1200×900", "4:3"),
+        ("about_table_img", "“Meet us at the table” photo", "About page | the photo beside “Meet us at the table”.", "1200×900", "4:3"),
+        ("about_crew_img", "Team photo", "About page | the tilted team photo near the bottom.", "1200×1200", "1:1"),
         ("about_kitchen_img", "Kitchen photo",
-         "About page — the “inside our kitchen” photo beside the story text. "
+         "About page | the “inside our kitchen” photo beside the story text. "
          "Until you set it, it borrows the home page’s story photo.",
          "1200×1500", "4:5 portrait"),
         ("about_video_poster", "Video poster",
-         "About page — the still shown before the video plays. Until you set it, "
+         "About page | the still shown before the video plays. Until you set it, "
          "it borrows the home page’s story photo.",
          "1920×1080", "16:9"),
         ("about_band_img", "Full-width band photo",
-         "About page — the full-width photo band lower down. Until you set it, it "
+         "About page | the full-width photo band lower down. Until you set it, it "
          "borrows the home page’s catering banner.",
          "2400×1200", "2:1"),
     ]),
     ("Other page photos", [
-        ("rewards_refer_img", "Rewards — refer a friend", "Rewards page — the “refer a friend” card.", "1200×900", "4:3"),
-        ("giftcards_corporate_img", "Gift cards — corporate gifting", "Gift cards page — the corporate gifting card.", "1000×625", "16:10"),
-        ("faq_support_img", "FAQ — support photo", "Help centre page — the photo beside the support text.", "1200×900", "4:3"),
-        ("tracking_map_img", "Order tracking — map picture", "Order tracking page — the picture standing in for the live map.", "1600×1000", "16:10"),
+        ("rewards_refer_img", "Rewards | refer a friend", "Rewards page | the “refer a friend” card.", "1200×900", "4:3"),
+        ("giftcards_corporate_img", "Gift cards | corporate gifting", "Gift cards page | the corporate gifting card.", "1000×625", "16:10"),
+        ("faq_support_img", "FAQ | support photo", "Help centre page | the photo beside the support text.", "1200×900", "4:3"),
+        ("tracking_map_img", "Order tracking | map picture", "Order tracking page | the picture standing in for the live map.", "1600×1000", "16:10"),
     ]),
     ("Instagram reels (paste a reel link per tile)", [
         ("ig_%d_reel" % i, "Reel link for tile %d" % i,
-         "Home page — tapping Instagram tile %d opens this link. A URL, not an image." % i,
+         "Home page | tapping Instagram tile %d opens this link. A URL, not an image." % i,
          "", "") for i in range(1, 9)]),
     ("Videos (self-hosted)", [
         ("about_video", "About page video (MP4/WEBM, or paste a YouTube/Vimeo link)",
-         "About page — plays in place of the photo. Upload MP4/WEBM or paste a YouTube/Vimeo link.",
+         "About page | plays in place of the photo. Upload MP4/WEBM or paste a YouTube/Vimeo link.",
          "1920×1080", "16:9"),
     ]),
     ("Sign in & sign up pages", [
-        ("login_img", "Sign-in panel photo", "Sign-in page — the photo panel beside the form. Hidden on phones.", "1024×1400", "3:4 portrait"),
-        ("register_img", "Sign-up panel photo", "Sign-up page — a very tall photo panel. Hidden on phones.", "1024×2200", "1:2 tall"),
-        ("forgot_img", "Forgot-password panel photo", "Forgot-password page — the photo panel. Hidden on phones.", "1024×1400", "3:4 portrait"),
+        ("login_img", "Sign-in panel photo", "Sign-in page | the photo panel beside the form. Hidden on phones.", "1024×1400", "3:4 portrait"),
+        ("register_img", "Sign-up panel photo", "Sign-up page | a very tall photo panel. Hidden on phones.", "1024×2200", "1:2 tall"),
+        ("forgot_img", "Forgot-password panel photo", "Forgot-password page | the photo panel. Hidden on phones.", "1024×1400", "3:4 portrait"),
     ]),
 ]
 
@@ -506,7 +506,7 @@ def site_images():
 @roles_required(*ADMIN_ROLES)
 def site_images_save():
     store = _admin_store()
-    # Pictures no longer travel with this form — each one is sent on its own to
+    # Pictures no longer travel with this form | each one is sent on its own to
     # /admin/inline-image the moment it is chosen, so one oversized file cannot
     # take the whole batch down with it. What is left here is the link boxes.
     for _title, slots in SITE_IMAGE_SLOTS:
@@ -578,7 +578,7 @@ def inline_image():
     if sent and getattr(sent, "filename", "") and not url:
         # a file WAS chosen and we refused it; falling through to the url field
         # here would quietly clear the slot instead of reporting the problem
-        return {"ok": False, "error": "That file type is not allowed here — use %s."
+        return {"ok": False, "error": "That file type is not allowed here | use %s."
                 % ", ".join(e.lstrip(".").upper() for e in exts)}, 400
     url = url or (request.form.get("url") or "").strip()
     row = SiteSetting.query.filter_by(key=key).first()
@@ -669,7 +669,7 @@ def inline_section_text():
 @bp.post("/admin/inline-style-reset")
 @roles_required(*ADMIN_ROLES)
 def inline_style_reset():
-    """Put a section — or a whole page — back to the design it shipped with.
+    """Put a section | or a whole page | back to the design it shipped with.
 
     Only the style_* keys are dropped. Words the client wrote and pictures they
     uploaded are theirs and stay; this is "undo my restyling", not "undo my
@@ -703,7 +703,7 @@ def inline_style_reset():
 def site_image_delete(key):
     """Remove a picture: forget the setting and delete the file we stored.
 
-    A pasted link is only forgotten — it is not ours to delete. An upload we
+    A pasted link is only forgotten | it is not ours to delete. An upload we
     made is removed from disk as well, so clearing a slot does not quietly
     leave megabytes behind.
     """
@@ -736,7 +736,7 @@ def site_image_delete(key):
         db.session.commit()
     if request.headers.get("X-Requested-With") == "fetch":
         return {"ok": True, "deleted": bool(row), "file_removed": removed_file}
-    flash("Picture removed — that slot is back to the built-in image.", "success")
+    flash("Picture removed | that slot is back to the built-in image.", "success")
     return redirect("/admin/site-images" + _qs(store))
 
 
@@ -771,7 +771,7 @@ def inline_style_read():
 
     The panel used to read its starting values back out of the CSS variables on
     the element, which cannot work for the controls that have no variable of
-    their own — the four heading-shadow fields are composed into a single
+    their own | the four heading-shadow fields are composed into a single
     variable on the server. Those controls came up blank after a reload and
     made a saved setting look lost.
     """
@@ -790,7 +790,7 @@ def inline_style():
     """Restyle one section from the page itself.
 
     Writes to the same PageSection.config the Visual editor and Page design
-    write to — one place the style lives, so the three ways of reaching it can
+    write to | one place the style lives, so the three ways of reaching it can
     never disagree.
     """
     data = request.get_json(silent=True) or {}
@@ -819,7 +819,7 @@ def inline_style():
 
     def _lock_other_breakpoints(cfg, key):
         """Before a phone (base) edit, copy base values into md/lg when those
-        keys are still missing — otherwise clearing a shared base style would
+        keys are still missing | otherwise clearing a shared base style would
         wipe tablet/desktop that had been inheriting it."""
         if key.endswith("md") or key.endswith("lg"):
             return
@@ -880,7 +880,7 @@ def inline_style():
 @bp.get("/admin/page-builder")
 @roles_required(*ADMIN_ROLES)
 def page_builder():
-    """Retired — the Visual editor does everything this screen did.
+    """Retired | the Visual editor does everything this screen did.
 
     This was a drag-to-reorder list with a show/hide checkbox. /admin/canvas
     reorders, shows/hides, edits each section's text AND restyles it, so two
@@ -893,7 +893,7 @@ def page_builder():
 
 def _apply_page_builder_form():
     """Persist the submitted order / visibility / text / theme onto the home
-    section rows (does NOT commit — the caller commits)."""
+    section rows (does NOT commit | the caller commits)."""
     order = request.form.getlist("order")         # section keys in the new order
     rows = {s.key: s for s in PageSection.query.filter_by(page="home").all()}
     defaults = resolved_defaults(current_app.config.get("BRAND_NAME", ""))
@@ -1014,7 +1014,7 @@ def page_content_save():
             # Only touch what this form actually carried. The loop used to walk
             # every field in the registry and delete any it could not find in
             # the request, so a form covering one page would wipe the copy on
-            # all the others — which is exactly what a per-page editor posts.
+            # all the others | which is exactly what a per-page editor posts.
             if key not in request.form:
                 continue
             val = (request.form.get(key) or "").strip()
@@ -1069,7 +1069,7 @@ def email_image():
     slug = "email-" + key.replace("_", "-")
     url = _save_image(sent, slug, quiet=True)
     if sent and getattr(sent, "filename", "") and not url:
-        return jsonify(ok=False, error="That file type is not allowed here — use JPG, PNG, GIF or WEBP."), 400
+        return jsonify(ok=False, error="That file type is not allowed here | use JPG, PNG, GIF or WEBP."), 400
     url = url or (request.form.get("url") or "").strip()
     row = SiteSetting.query.filter_by(key=key).first()
     if url:
@@ -1127,7 +1127,7 @@ def email_templates_save():
 # Only faces the page can actually render: the two brand webfonts plus stacks
 # built from what every OS already ships. A face nobody has installed would
 # silently fall back and the client would think the control was broken.
-# (css stack, label, Google family to load — blank means it needs no webfont)
+# (css stack, label, Google family to load | blank means it needs no webfont)
 #
 # A face the page never loads would silently fall back and the control would
 # look broken, so the families here are fetched on demand: a page only asks
@@ -1135,57 +1135,57 @@ def email_templates_save():
 CANVAS_FONTS = [
     ("", "Default", ""),
     # already loaded site-wide
-    ("'Poppins',sans-serif", "Poppins — bold display", "Poppins:wght@400;500;600;700;800;900"),
-    ("'Quicksand',sans-serif", "Quicksand — rounded", "Quicksand:wght@400;500;600;700"),
-    ("'Inter',sans-serif", "Inter — clean", "Inter:wght@300;400;500;600;700;800"),
+    ("'Poppins',sans-serif", "Poppins | bold display", "Poppins:wght@400;500;600;700;800;900"),
+    ("'Quicksand',sans-serif", "Quicksand | rounded", "Quicksand:wght@400;500;600;700"),
+    ("'Inter',sans-serif", "Inter | clean", "Inter:wght@300;400;500;600;700;800"),
     # display / headline faces
-    ("'Anton',sans-serif", "Anton — poster", "Anton"),
-    ("'Bebas Neue',sans-serif", "Bebas Neue — tall caps", "Bebas+Neue"),
-    ("'Oswald',sans-serif", "Oswald — condensed", "Oswald:wght@300;400;500;600;700"),
-    ("'Archivo Black',sans-serif", "Archivo Black — heavy", "Archivo+Black"),
-    ("'Righteous',cursive", "Righteous — retro diner", "Righteous"),
-    ("'Permanent Marker',cursive", "Permanent Marker — handwritten", "Permanent+Marker"),
+    ("'Anton',sans-serif", "Anton | poster", "Anton"),
+    ("'Bebas Neue',sans-serif", "Bebas Neue | tall caps", "Bebas+Neue"),
+    ("'Oswald',sans-serif", "Oswald | condensed", "Oswald:wght@300;400;500;600;700"),
+    ("'Archivo Black',sans-serif", "Archivo Black | heavy", "Archivo+Black"),
+    ("'Righteous',cursive", "Righteous | retro diner", "Righteous"),
+    ("'Permanent Marker',cursive", "Permanent Marker | handwritten", "Permanent+Marker"),
     # text faces
-    ("'Montserrat',sans-serif", "Montserrat — modern", "Montserrat:wght@300;400;500;600;700;800;900"),
-    ("'Work Sans',sans-serif", "Work Sans — neutral", "Work+Sans:wght@300;400;500;600;700;800"),
-    ("'Nunito',sans-serif", "Nunito — soft", "Nunito:wght@300;400;500;600;700;800;900"),
-    ("'Space Grotesk',sans-serif", "Space Grotesk — technical", "Space+Grotesk:wght@300;400;500;600;700"),
+    ("'Montserrat',sans-serif", "Montserrat | modern", "Montserrat:wght@300;400;500;600;700;800;900"),
+    ("'Work Sans',sans-serif", "Work Sans | neutral", "Work+Sans:wght@300;400;500;600;700;800"),
+    ("'Nunito',sans-serif", "Nunito | soft", "Nunito:wght@300;400;500;600;700;800;900"),
+    ("'Space Grotesk',sans-serif", "Space Grotesk | technical", "Space+Grotesk:wght@300;400;500;600;700"),
     # more display / headline
-    ("'Alfa Slab One',serif", "Alfa Slab — heavy slab", "Alfa+Slab+One"),
-    ("'Bungee',sans-serif", "Bungee — signage", "Bungee"),
-    ("'Fredoka',sans-serif", "Fredoka — friendly round", "Fredoka:wght@300;400;500;600;700"),
-    ("'Titan One',cursive", "Titan One — chunky", "Titan+One"),
-    ("'Bowlby One SC',cursive", "Bowlby — fat caps", "Bowlby+One+SC"),
-    ("'Passion One',cursive", "Passion One — condensed bold", "Passion+One:wght@400;700;900"),
-    ("'Staatliches',cursive", "Staatliches — poster caps", "Staatliches"),
-    ("'Rampart One',cursive", "Rampart — outlined", "Rampart+One"),
+    ("'Alfa Slab One',serif", "Alfa Slab | heavy slab", "Alfa+Slab+One"),
+    ("'Bungee',sans-serif", "Bungee | signage", "Bungee"),
+    ("'Fredoka',sans-serif", "Fredoka | friendly round", "Fredoka:wght@300;400;500;600;700"),
+    ("'Titan One',cursive", "Titan One | chunky", "Titan+One"),
+    ("'Bowlby One SC',cursive", "Bowlby | fat caps", "Bowlby+One+SC"),
+    ("'Passion One',cursive", "Passion One | condensed bold", "Passion+One:wght@400;700;900"),
+    ("'Staatliches',cursive", "Staatliches | poster caps", "Staatliches"),
+    ("'Rampart One',cursive", "Rampart | outlined", "Rampart+One"),
     # more text faces
-    ("'Rubik',sans-serif", "Rubik — rounded sans", "Rubik:wght@300;400;500;600;700;800;900"),
-    ("'DM Sans',sans-serif", "DM Sans — geometric", "DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700"),
-    ("'Manrope',sans-serif", "Manrope — modern sans", "Manrope:wght@300;400;500;600;700;800"),
-    ("'Karla',sans-serif", "Karla — grotesque", "Karla:wght@300;400;500;600;700;800"),
-    ("'Barlow',sans-serif", "Barlow — low contrast", "Barlow:wght@300;400;500;600;700;800;900"),
-    ("'Cabin',sans-serif", "Cabin — humanist", "Cabin:wght@400;500;600;700"),
+    ("'Rubik',sans-serif", "Rubik | rounded sans", "Rubik:wght@300;400;500;600;700;800;900"),
+    ("'DM Sans',sans-serif", "DM Sans | geometric", "DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700"),
+    ("'Manrope',sans-serif", "Manrope | modern sans", "Manrope:wght@300;400;500;600;700;800"),
+    ("'Karla',sans-serif", "Karla | grotesque", "Karla:wght@300;400;500;600;700;800"),
+    ("'Barlow',sans-serif", "Barlow | low contrast", "Barlow:wght@300;400;500;600;700;800;900"),
+    ("'Cabin',sans-serif", "Cabin | humanist", "Cabin:wght@400;500;600;700"),
     # more serif
-    ("'Merriweather',serif", "Merriweather — sturdy serif", "Merriweather:wght@300;400;700;900"),
-    ("'Bitter',serif", "Bitter — slab serif", "Bitter:wght@300;400;500;600;700;800"),
-    ("'Abril Fatface',serif", "Abril Fatface — display serif", "Abril+Fatface"),
+    ("'Merriweather',serif", "Merriweather | sturdy serif", "Merriweather:wght@300;400;700;900"),
+    ("'Bitter',serif", "Bitter | slab serif", "Bitter:wght@300;400;500;600;700;800"),
+    ("'Abril Fatface',serif", "Abril Fatface | display serif", "Abril+Fatface"),
     # handwriting
-    ("'Caveat',cursive", "Caveat — handwriting", "Caveat:wght@400;500;600;700"),
-    ("'Pacifico',cursive", "Pacifico — script", "Pacifico"),
-    ("'Shadows Into Light',cursive", "Shadows — light hand", "Shadows+Into+Light"),
+    ("'Caveat',cursive", "Caveat | handwriting", "Caveat:wght@400;500;600;700"),
+    ("'Pacifico',cursive", "Pacifico | script", "Pacifico"),
+    ("'Shadows Into Light',cursive", "Shadows | light hand", "Shadows+Into+Light"),
     # serif
-    ("'Playfair Display',serif", "Playfair — editorial serif", "Playfair+Display:wght@400;500;600;700;800;900"),
-    ("'Lora',serif", "Lora — readable serif", "Lora:wght@400;500;600;700"),
-    ("Georgia,'Times New Roman',serif", "Georgia — system serif", ""),
+    ("'Playfair Display',serif", "Playfair | editorial serif", "Playfair+Display:wght@400;500;600;700;800;900"),
+    ("'Lora',serif", "Lora | readable serif", "Lora:wght@400;500;600;700"),
+    ("Georgia,'Times New Roman',serif", "Georgia | system serif", ""),
     # system stacks, no download needed
-    ("'Trebuchet MS',sans-serif", "Trebuchet — friendly", ""),
+    ("'Trebuchet MS',sans-serif", "Trebuchet | friendly", ""),
     ("'Segoe UI',system-ui,sans-serif", "Segoe / system", ""),
-    ("'Helvetica Neue',Helvetica,Arial,sans-serif", "Helvetica — neutral", ""),
-    ("'Arial Black',Impact,sans-serif", "Arial Black — heavy", ""),
-    ("Impact,Haettenschweiler,sans-serif", "Impact — condensed", ""),
-    ("'Courier New',monospace", "Courier — mono", ""),
-    ("ui-monospace,'Cascadia Mono',Consolas,monospace", "Mono — modern", ""),
+    ("'Helvetica Neue',Helvetica,Arial,sans-serif", "Helvetica | neutral", ""),
+    ("'Arial Black',Impact,sans-serif", "Arial Black | heavy", ""),
+    ("Impact,Haettenschweiler,sans-serif", "Impact | condensed", ""),
+    ("'Courier New',monospace", "Courier | mono", ""),
+    ("ui-monospace,'Cascadia Mono',Consolas,monospace", "Mono | modern", ""),
 ]
 
 # The full library the designer offers: 160 families, each one checked against
@@ -1198,11 +1198,11 @@ from app.fonts import (FONT_LIBRARY, CATEGORIES as FONT_CATEGORIES,  # noqa: E40
 
 _LEGACY_STACKS = {f[0] for f in CANVAS_FONTS}
 
-# (stack, label, category, weights) — everything the picker needs in one place
+# (stack, label, category, weights) | everything the picker needs in one place
 FONT_PICKER = [(stack, family, category, weights)
                for family, stack, category, weights in FONT_LIBRARY]
 
-# what the admin <select>s show — (value, label) only
+# what the admin <select>s show | (value, label) only
 CANVAS_FONT_CHOICES = ([("", "Default")] +
                        [(stack, family) for stack, family, _c, _w in FONT_PICKER])
 
@@ -1226,7 +1226,7 @@ def canvas():
     It used to be the home page's screen alone, and every other page was a long
     form of a hundred boxes with no picture of what they did. The home page can
     also be reordered and its sections switched off, which the inner pages
-    cannot — their running order is part of what each page IS — so those two
+    cannot | their running order is part of what each page IS | so those two
     affordances simply do not appear there.
     """
     store = _admin_store()
@@ -1314,7 +1314,7 @@ def canvas_save():
             # know about: a tab opened before someone styled a heading on the
             # page would, on Save, quietly wipe that heading's settings. It
             # only offers section-level things now, so anything else it sends
-            # is just what it happened to load — the row keeps its own.
+            # is just what it happened to load | the row keeps its own.
             kept = dict(row.config or {})
             for k, v in cfg.items():
                 if not str(k).startswith("style_"):
@@ -1376,7 +1376,7 @@ BUILDER_TEMPLATES = {
 # registry rather than typed out, so a page added there shows up here on its
 # own instead of quietly missing from the list.
 #
-# `live` marks a page whose body is data — the menu, the store list, the cart.
+# `live` marks a page whose body is data | the menu, the store list, the cart.
 # Rebuilding one of those freezes today's data into static HTML, which is a
 # much bigger deal than freezing a copy block, so the screen says so per page.
 _BUILDER_TEMPLATES_BY_PAGE = {
@@ -1419,7 +1419,7 @@ def builder_new():
     opath = None
     if ov:
         if BuilderPage.query.filter_by(override_path=ov[0]).first():
-            flash("A builder page already replaces %s — edit or delete that one." % ov[0], "error")
+            flash("A builder page already replaces %s | edit or delete that one." % ov[0], "error")
             return redirect("/admin/builder" + _qs(store))
         opath = ov[0]
         title = ov[1] + " page"
@@ -1455,13 +1455,13 @@ def _home_placeholders():
 
     Every section is a `data-dyn` placeholder, so `expand_dynamic` renders it
     from its own PageSection config every time the page is served. Baking the
-    sections into static HTML here — which is what this used to do for the nine
-    sections that are not fed by the menu/store tables — froze the home page:
+    sections into static HTML here | which is what this used to do for the nine
+    sections that are not fed by the menu/store tables | froze the home page:
     from that moment `/` served a snapshot, so switching a section off,
     reordering, restyling or editing its words and pictures did nothing at all.
 
     The order comes from the Page Builder, not from the registry, and the
-    admin's own custom blocks are included — seeding from the static key list
+    admin's own custom blocks are included | seeding from the static key list
     would show them in a different order to the live page and leave custom
     blocks out of the builder altogether.
     """
@@ -1488,7 +1488,7 @@ def builder_new_home():
                        published=True, is_home=True)
     db.session.add(page)
     db.session.commit()
-    flash("Home page loaded into the builder — reorder its sections and drop new blocks around them.", "success")
+    flash("Home page loaded into the builder | reorder its sections and drop new blocks around them.", "success")
     return redirect("/admin/builder/%d" % page.id + _qs(store))
 
 
@@ -1504,7 +1504,7 @@ def builder_detach_home(pid):
 
     Nothing is thrown away: whatever was built here is kept as a draft page, so
     an admin who did mean to build a home by hand can get it back. Words and
-    pictures were never in this HTML anyway — they live in the sections.
+    pictures were never in this HTML anyway | they live in the sections.
     """
     store = _admin_store()
     page = BuilderPage.query.get_or_404(pid)
@@ -1656,7 +1656,12 @@ def menu():
     store = _admin_store()
     existing = {mi.product_id: mi for mi in store.menu_items} if store else {}
     rows = []
-    for p in Product.query.order_by(Product.category_id, Product.sort_order).all():
+    products = (
+        Product.query.join(Category, Product.category_id == Category.id)
+        .order_by(Category.sort_order, Product.sort_order, Product.name)
+        .all()
+    )
+    for p in products:
         mi = existing.get(p.id)
         rows.append({
             "product": p,
@@ -1665,7 +1670,9 @@ def menu():
             "price": float(mi.price_override) if (mi and mi.price_override is not None) else float(p.base_price),
         })
     return render_template("admin/menu.html", rows=rows,
-                           categories=Category.query.order_by(Category.sort_order).all(), **_shell(store))
+                           categories=Category.query.order_by(Category.sort_order).all(),
+                           addon_library=AddonLibrary.query.order_by(AddonLibrary.sort_order, AddonLibrary.name).all(),
+                           **_shell(store))
 
 
 @bp.post("/admin/menu/<int:pid>")
@@ -1684,6 +1691,9 @@ def menu_save(pid):
     mi.is_available = bool(request.form.get("available"))
     price = request.form.get("price", type=float)
     mi.price_override = round(price, 2) if (price is not None and abs(price - float(product.base_price)) > 0.001) else None
+    sort_order = request.form.get("sort_order", type=int)
+    if sort_order is not None:
+        product.sort_order = sort_order
     db.session.commit()
     flash(f"{product.name} updated.", "success")
     return redirect("/admin/menu" + _qs(store))
@@ -1697,7 +1707,15 @@ def menu_save(pid):
 def product_modifiers(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
-    return render_template("admin/product_modifiers.html", product=product, **_shell(store))
+    attached_lib_ids = {a.library_id for a in product.addons if a.library_id}
+    return render_template(
+        "admin/product_modifiers.html",
+        product=product,
+        addon_library=AddonLibrary.query.filter_by(is_active=True)
+        .order_by(AddonLibrary.sort_order, AddonLibrary.name).all(),
+        attached_lib_ids=attached_lib_ids,
+        **_shell(store),
+    )
 
 
 @bp.post("/admin/menu/<int:pid>/variants")
@@ -1753,21 +1771,139 @@ def variant_delete(vid):
 
 @bp.post("/admin/menu/<int:pid>/addons")
 @roles_required(*ADMIN_ROLES)
-def addon_add(pid):
+def addon_attach(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
+    lib_id = request.form.get("library_id", type=int)
+    if lib_id:
+        lib = AddonLibrary.query.get(lib_id)
+        if not lib or not lib.is_active:
+            flash("Pick a valid shared add-on.", "error")
+            return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+        if ProductAddon.query.filter_by(product_id=pid, library_id=lib.id).first():
+            flash(f"“{lib.name}” is already attached.", "error")
+            return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+        db.session.add(ProductAddon(
+            product=product, library=lib, name=lib.name, price=lib.price,
+            sort_order=lib.sort_order or 0,
+            is_required=bool(request.form.get("is_required")),
+        ))
+        db.session.commit()
+        flash(f"Attached “{lib.name}”.", "success")
+        return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+
+    # Legacy / item-only add-on (keeps existing production behaviour).
     name = request.form.get("name", "").strip()
     if not name:
-        flash("Enter an add-on name.", "error")
+        flash("Enter an add-on name or pick one from the library.", "error")
         return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
     try:
         price = Decimal(request.form.get("price") or "0")
     except InvalidOperation:
         price = Decimal("0")
-    db.session.add(ProductAddon(product=product, name=name, price=price))
+    db.session.add(ProductAddon(
+        product=product, name=name, price=price,
+        is_required=bool(request.form.get("is_required")),
+    ))
     db.session.commit()
-    flash(f"Added add-on “{name}”.", "success")
+    flash(f"Added item-only add-on “{name}”.", "success")
     return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/menu/addons/<int:aid>/edit")
+@roles_required(*ADMIN_ROLES)
+def addon_edit(aid):
+    store = _admin_store()
+    a = ProductAddon.query.get_or_404(aid)
+    if a.library_id:
+        flash("Shared add-ons are edited on the menu page | changes sync to every attached item.", "error")
+        return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
+    name = request.form.get("name", "").strip()
+    if name:
+        a.name = name
+    try:
+        a.price = Decimal(request.form.get("price") or str(a.price))
+    except InvalidOperation:
+        pass
+    a.is_required = bool(request.form.get("is_required"))
+    db.session.commit()
+    flash("Add-on updated.", "success")
+    return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/menu/addons/<int:aid>/required")
+@roles_required(*ADMIN_ROLES)
+def addon_required(aid):
+    store = _admin_store()
+    a = ProductAddon.query.get_or_404(aid)
+    a.is_required = bool(request.form.get("is_required"))
+    db.session.commit()
+    flash("Add-on updated.", "success")
+    return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/catalog/addons")
+@roles_required(*ADMIN_ROLES)
+def addon_library_add():
+    store = _admin_store()
+    name = request.form.get("name", "").strip()
+    if not name:
+        flash("Add-on name is required.", "error")
+        return redirect("/admin/menu" + _qs(store))
+    if AddonLibrary.query.filter(db.func.lower(AddonLibrary.name) == name.lower()).first():
+        flash(f"“{name}” already exists in the shared library.", "error")
+        return redirect("/admin/menu" + _qs(store))
+    try:
+        price = Decimal(request.form.get("price") or "0")
+    except InvalidOperation:
+        price = Decimal("0")
+    db.session.add(AddonLibrary(
+        name=name, price=price,
+        sort_order=request.form.get("sort_order", type=int) or 0,
+    ))
+    db.session.commit()
+    flash(f"Shared add-on “{name}” created.", "success")
+    return redirect("/admin/menu" + _qs(store))
+
+
+@bp.post("/admin/catalog/addons/<int:lid>/edit")
+@roles_required(*ADMIN_ROLES)
+def addon_library_edit(lid):
+    store = _admin_store()
+    lib = AddonLibrary.query.get_or_404(lid)
+    name = request.form.get("name", "").strip()
+    if name:
+        lib.name = name
+    try:
+        lib.price = Decimal(request.form.get("price") or str(lib.price))
+    except InvalidOperation:
+        pass
+    if request.form.get("sort_order") is not None:
+        lib.sort_order = request.form.get("sort_order", type=int) or 0
+    db.session.flush()
+    for link in ProductAddon.query.filter_by(library_id=lib.id).all():
+        link.name = lib.name
+        link.price = lib.price
+        link.sort_order = lib.sort_order or 0
+    db.session.commit()
+    flash(f"“{lib.name}” updated and synced to attached items.", "success")
+    return redirect("/admin/menu" + _qs(store))
+
+
+@bp.post("/admin/catalog/addons/<int:lid>/delete")
+@roles_required(*ADMIN_ROLES)
+def addon_library_delete(lid):
+    store = _admin_store()
+    lib = AddonLibrary.query.get_or_404(lid)
+    if ProductAddon.query.filter_by(library_id=lib.id).count():
+        lib.is_active = False
+        db.session.commit()
+        flash(f"“{lib.name}” is in use | deactivated instead of deleted.", "success")
+    else:
+        db.session.delete(lib)
+        db.session.commit()
+        flash(f"“{lib.name}” removed from the library.", "success")
+    return redirect("/admin/menu" + _qs(store))
 
 
 @bp.post("/admin/menu/addons/<int:aid>/delete")
@@ -1778,7 +1914,7 @@ def addon_delete(aid):
     pid = a.product_id
     db.session.delete(a)
     db.session.commit()
-    flash("Add-on removed.", "success")
+    flash("Add-on removed from this item.", "success")
     return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
 
 
@@ -1814,7 +1950,7 @@ def _save_image(file, slug, exts=IMAGE_EXTS, quiet=False):
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in exts:
         if not quiet:
-            flash("Unsupported file type — allowed: %s." % ", ".join(e.lstrip(".").upper() for e in exts), "error")
+            flash("Unsupported file type | allowed: %s." % ", ".join(e.lstrip(".").upper() for e in exts), "error")
         return None
     updir = os.path.join(current_app.static_folder, "img", "uploads")
     os.makedirs(updir, exist_ok=True)
@@ -1892,15 +2028,11 @@ def product_update(pid):
 def product_delete(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
-    if OrderItem.query.filter_by(product_id=pid).count():
-        product.is_active = False
-        db.session.commit()
-        flash(f"“{product.name}” has order history — archived instead of deleted.", "success")
-    else:
-        name = product.name
-        db.session.delete(product)  # cascades variants / add-ons / store listings
-        db.session.commit()
-        flash(f"“{name}” deleted from the catalog.", "success")
+    name = product.name
+    OrderItem.query.filter_by(product_id=pid).update({"product_id": None})
+    db.session.delete(product)  # cascades variants / add-ons / store listings
+    db.session.commit()
+    flash(f"“{name}” deleted from the catalog.", "success")
     return redirect("/admin/menu" + _qs(store))
 
 
@@ -2129,7 +2261,7 @@ def location_delete(sid):
         abort(403)
     s = Store.query.get_or_404(sid)
     if Order.query.filter_by(store_id=s.id).count():
-        flash("This location has orders — deactivate it instead of deleting.", "error")
+        flash("This location has orders | deactivate it instead of deleting.", "error")
         return redirect("/admin/locations" + _qs(_admin_store()))
     # Detach any staff / drivers pinned here, then delete (cascades menu/zones/hours/integrations).
     User.query.filter_by(store_id=s.id).update({"store_id": None})
@@ -2592,7 +2724,7 @@ def content_import(kind):
     _content_kind(kind)
     n = import_defaults(kind)
     if n:
-        flash("Imported %d items from the website — they are yours to edit now." % n, "success")
+        flash("Imported %d items from the website | they are yours to edit now." % n, "success")
     else:
         flash("This list already has items.", "error")
     return redirect("/admin/content?kind=" + kind)
@@ -2787,7 +2919,7 @@ def driver_delete(did):
     from app.models.delivery import Delivery
     d = Driver.query.get_or_404(did)
     if Delivery.query.filter_by(driver_id=d.id).count():
-        # never orphan delivery history — retire the driver instead
+        # never orphan delivery history | retire the driver instead
         d.is_active = False
         d.is_online = False
         db.session.commit()
@@ -2834,7 +2966,7 @@ def _moderate(rid, new_status):
 @roles_required(*ADMIN_ROLES)
 def review_approve(rid):
     row = _moderate(rid, "approved")
-    flash("Published — %s's review is live on the site." % row.display_name, "success")
+    flash("Published | %s's review is live on the site." % row.display_name, "success")
     return redirect(request.form.get("next") or "/admin/reviews")
 
 
@@ -2842,7 +2974,7 @@ def review_approve(rid):
 @roles_required(*ADMIN_ROLES)
 def review_reject(rid):
     _moderate(rid, "rejected")
-    flash("Rejected — it stays hidden from the site.", "success")
+    flash("Rejected | it stays hidden from the site.", "success")
     return redirect(request.form.get("next") or "/admin/reviews")
 
 
@@ -2882,7 +3014,7 @@ def theme_save():
         val = (request.form.get(key) or "").strip()
         row = SiteSetting.query.filter_by(key=key).first()
         # An empty box means "use the built-in value", so the row is removed
-        # rather than stored blank — that keeps theme_css() free of noise.
+        # rather than stored blank | that keeps theme_css() free of noise.
         if not val:
             if row:
                 db.session.delete(row)
@@ -2914,13 +3046,13 @@ def theme_reset():
 # ── Page design (per-section styling for every inner page) ───────────────
 # The Visual Editor only ever reached the home page. Every top-level section on
 # the other nine pages is wrapped in the same .pb-sec shell now, so the same
-# style vocabulary works there — this is the UI for it.
+# style vocabulary works there | this is the UI for it.
 from app.models.page import INNER_PAGES, INNER_PAGE_BY_KEY, inner_sections  # noqa: E402
 
 # ── Retired: one control that moved several unrelated things ────────────
 # These keys are still understood by pb_section_style(), so a section saved
 # before this change renders exactly as it did. They are no longer offered
-# anywhere, because each of them reached more than one kind of text at once —
+# anywhere, because each of them reached more than one kind of text at once |
 # "Heading size" set the section heading, the card headings at 70% and the
 # sub-headings at 58%, so sizing a hero heading moved the line underneath it.
 # Every one of them now has a per-element equivalent that moves one thing:
@@ -2946,7 +3078,7 @@ RETIRED_STYLE_FIELDS = [
     "style_tsside", "style_tsdist", "style_tsblur", "style_tscolor",
 ]
 
-# key, label, input type — matches what pb_section_style() understands
+# key, label, input type | matches what pb_section_style() understands
 DESIGN_FIELDS = [
     ("style_bg", "Section background", "color"),
     ("style_accent", "Accent colour", "color"),
@@ -3034,12 +3166,12 @@ TEXT_ROLE_PROP_SPECS = [
     ("mt", "Space above (px)", "px"),
     ("mb", "Space below (px)", "px"),
     # composed into one --pb-<role>-shadow by pb_section_style
-    ("tsside", "Shadow — which side", "tsside"),
-    ("tsdist", "Shadow — how far (px)", "px"),
-    ("tsblur", "Shadow — how soft (px)", "px"),
-    ("tscolor", "Shadow — colour", "color"),
+    ("tsside", "Shadow | which side", "tsside"),
+    ("tsdist", "Shadow | how far (px)", "px"),
+    ("tsblur", "Shadow | how soft (px)", "px"),
+    ("tscolor", "Shadow | colour", "color"),
 ]
-# Tablet (md) / desktop (lg) copies — size already has sizemd/sizelg.
+# Tablet (md) / desktop (lg) copies | size already has sizemd/sizelg.
 TEXT_ROLE_PROP_SPECS = TEXT_ROLE_PROP_SPECS + [
     (prop + bp, "%s (%s)" % (label, "tablet" if bp == "md" else "desktop"), kind)
     for prop, label, kind in TEXT_ROLE_PROP_SPECS
@@ -3048,7 +3180,7 @@ TEXT_ROLE_PROP_SPECS = TEXT_ROLE_PROP_SPECS + [
 ]
 
 TEXT_ROLE_FIELDS = [
-    ("style_%s_%s" % (role, prop), "%s — %s" % (role_label, prop_label), kind)
+    ("style_%s_%s" % (role, prop), "%s | %s" % (role_label, prop_label), kind)
     for role, role_label in TEXT_ROLE_LABELS
     for prop, prop_label, kind in TEXT_ROLE_PROP_SPECS
 ]
@@ -3090,7 +3222,7 @@ CTA_PROP_SPECS = [
 ]
 
 CTA_FIELDS = [
-    ("style_cta_%s_%s" % (state, prop), "%s — %s" % (state_label, prop_label), kind)
+    ("style_cta_%s_%s" % (state, prop), "%s | %s" % (state_label, prop_label), kind)
     for state, state_label in CTA_STATE_LABELS
     for prop, prop_label, kind in CTA_PROP_SPECS
 ] + [
@@ -3115,7 +3247,7 @@ DECORATION_CHOICES = [("", "Default"), ("none", "None"), ("underline", "Underlin
 def design():
     store = _admin_store()
     page = request.args.get("page") or INNER_PAGES[0]["page"]
-    # "site" is not a page — it is the copy that belongs to no single page
+    # "site" is not a page | it is the copy that belongs to no single page
     # (the footer, and text shared by Deals / Rewards / Gift cards). It used to
     # live on its own tab, which meant every page's words appeared twice.
     if page == "site":
@@ -3149,7 +3281,7 @@ def design():
     inuse = {s["key"]: sum(1 for k, v in s["config"].items()
                            if k.startswith("style_") and str(v).strip())
              for s in _secs}
-    # The words on this page live in the same screen as its design now — a
+    # The words on this page live in the same screen as its design now | a
     # client editing the Contact page should not have to work out that the
     # heading is on one tab and the section colour on another.
     current = {r.key: r.value for r in SiteSetting.query.all() if r.value}
@@ -3190,7 +3322,7 @@ def design_save(page, key):
     cfg = dict(row.config or {})
     for fkey, _label, _kind in DESIGN_FIELDS + TEXT_ROLE_FIELDS + CTA_FIELDS:
         val = (request.form.get(fkey) or "").strip()
-        # blank clears the override rather than storing "" — keeps the inline
+        # blank clears the override rather than storing "" | keeps the inline
         # style attribute (and therefore the CSS) free of dead declarations
         if val and not style_value_ok(val):
             flash("%s was left alone: that is not a valid value." % _label, "error")
@@ -3243,7 +3375,7 @@ def inline_save():
     key = (data.get("key") or "").strip()
     value = (data.get("value") or "").strip()
 
-    # Only keys the Page Content registry knows about — this endpoint must not
+    # Only keys the Page Content registry knows about | this endpoint must not
     # become a way to write arbitrary settings rows.
     allowed = {f[0] for p in PAGE_CONTENT for f in p["fields"]}
     if key not in allowed:

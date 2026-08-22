@@ -44,8 +44,8 @@
     <label class="ok-label">{{ pc('modal_addons_label') }}</label>
     <div class="ok-stack-2">
       {% for a in product.addons %}
-      <div class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-gap-3" data-addon data-price="{{ '%.2f'|format(a.price) }}">
-        <span class="fw-medium ok-min-w-0">{{ a.name }}</span>
+      <div class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-gap-3" data-addon data-price="{{ '%.2f'|format(a.price) }}"{% if a.is_required %} data-required="1"{% endif %}>
+        <span class="fw-medium ok-min-w-0">{{ a.name }}{% if a.is_required %}<span class="text-ok-red" aria-hidden="true"> *</span>{% endif %}</span>
         <span class="d-flex align-items-center ok-gap-3 flex-shrink-0">
           <span class="text-muted-warm ok-fs-sm text-nowrap">+${{ '%.2f'|format(a.price) }}</span>
           <span class="qty qty-sm">

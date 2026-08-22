@@ -36,8 +36,8 @@
       {% for s in rows %}
       <tr class="border-top border-ink-05">
         <td class="ok-p-3"><a href="mailto:{{ s.email }}" class="link-underline">{{ s.email }}</a></td>
-        <td class="ok-p-3 text-muted-warm">{{ s.source or '—' }}</td>
-        <td class="ok-p-3 text-muted-warm">{{ s.created_at.strftime('%b %d, %Y') if s.created_at else '—' }}</td>
+        <td class="ok-p-3 text-muted-warm">{{ s.source or '|' }}</td>
+        <td class="ok-p-3 text-muted-warm">{{ s.created_at.strftime('%b %d, %Y') if s.created_at else '|' }}</td>
         <td class="ok-p-3">
           {% if s.is_active %}<span class="badge badge-green">Subscribed</span>
           {% else %}<span class="badge badge-soft">Unsubscribed</span>{% endif %}

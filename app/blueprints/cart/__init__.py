@@ -62,6 +62,13 @@ def add():
         addon_ids.extend([aid] * max(0, min(n, 20)))
     notes = request.form.get("notes", "").strip()
 
+    required_ids = {a.id for a in product.addons if a.is_required}
+    selected = set(addon_ids)
+    missing = [a.name for a in product.addons if a.is_required and a.id not in selected]
+    if missing:
+        flash(f"Please select required add-on(s): {', '.join(missing)}.", "error")
+        return redirect(request.form.get("next") or f"/item/{product.slug}")
+
     cartlib.add_item(product, qty, variant, addon_ids, notes)
 
     if request.form.get("buy_now"):

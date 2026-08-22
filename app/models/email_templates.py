@@ -1,4 +1,4 @@
-"""Customer email copy + layout — stored in SiteSetting, edited in admin.
+"""Customer email copy + layout | stored in SiteSetting, edited in admin.
 
 Keys: email_{template_key}_{field}  e.g. email_welcome_subject
 Layout: email_layout_{field}  e.g. email_layout_footer_line1
@@ -11,7 +11,7 @@ from app.models.site import SiteSetting
 
 BRAND = "OK Smashed Burger"
 
-# Global email chrome — the Design tab in admin
+# Global email chrome | the Design tab in admin
 # (field, label, default, kind, hint)
 EMAIL_LAYOUT = [
     ("header_logo", "Header logo", "/static/img/logo.svg", "image",
@@ -26,7 +26,7 @@ EMAIL_LAYOUT = [
      "Unsubscribe links appear in marketing messages.", "area", ""),
 ]
 
-# Appended to every template in admin — optional full HTML override
+# Appended to every template in admin | optional full HTML override
 CUSTOM_HTML_FIELD = (
     "custom_html", "Full HTML email (optional)", "", "html",
     "Paste a complete designed HTML email. Leave blank to use the built-in layout "
@@ -75,7 +75,7 @@ EMAIL_TEMPLATE_GROUPS = [
             ("subject", "Subject", "Order {order_number} is being prepared", "text"),
             ("title", "Heading", "On the grill", "text"),
             ("hero_image", "Hero banner", "", "image"),
-            ("body", "Message", "Good news — order {order_number} is on the grill at {store}.", "area"),
+            ("body", "Message", "Good news | order {order_number} is on the grill at {store}.", "area"),
             ("footer_note", "Note above footer", "", "area"),
         ]),
         ("order_ready", "Ready for pickup", [
@@ -122,7 +122,7 @@ EMAIL_TEMPLATE_GROUPS = [
             ("hero_image", "Hero banner", "", "image"),
             ("body", "Message", "We got a request to reset the password on your account. This link works once and expires in 60 minutes.", "area"),
             ("cta", "Button label", "Reset your password", "text"),
-            ("footer_note", "Note above footer", "If this wasn't you, ignore this email — nothing has changed.", "area"),
+            ("footer_note", "Note above footer", "If this wasn't you, ignore this email | nothing has changed.", "area"),
         ]),
         ("password_changed", "Password changed", [
             ("subject", "Subject", "Your password was changed", "text"),
@@ -134,7 +134,7 @@ EMAIL_TEMPLATE_GROUPS = [
         ]),
     ]),
     ("marketing", "Contact & marketing", "bullhorn", [
-        ("contact_ack", "Contact form — customer receipt", [
+        ("contact_ack", "Contact form | customer receipt", [
             ("subject", "Subject", "We got your message, {customer_name}", "text"),
             ("title", "Heading", "Thanks, we've got it", "text"),
             ("hero_image", "Hero banner", "", "image"),
@@ -276,7 +276,7 @@ def _esc(text):
 
 
 def _url_attr(url):
-    """Safe for HTML attribute values — do not HTML-escape whole URLs for img src."""
+    """Safe for HTML attribute values | do not HTML-escape whole URLs for img src."""
     return str(url or "").replace('"', "&quot;")
 
 
@@ -380,7 +380,7 @@ def plain_text(intro, rows=None, cta=None, footer_note=None, brand=None):
         parts += [cta[0] + ": " + cta[1], ""]
     if footer_note:
         parts.append(footer_note)
-    parts += ["", "— " + brand]
+    parts += ["", "| " + brand]
     return "\n".join(parts)
 
 

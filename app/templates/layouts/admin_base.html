@@ -78,8 +78,8 @@
       {% if is_admin %}
       {# Three groups, by what someone is actually trying to do: run the
       business, change the website, or configure how it works. The website
-      tools used to sit in "Setup" as eight look-alike tabs — "Page Design",
-      "Page Builder", "Visual Editor", "Page Content", "Website Content" —
+      tools used to sit in "Setup" as eight look-alike tabs | "Page Design",
+      "Page Builder", "Visual Editor", "Page Content", "Website Content" |
       which gave no clue as to which one edits what. #}
       <div class="sb-group" data-group="management">
         {{ grouphead('Management') }}
@@ -197,6 +197,12 @@
     </header>
 
     <main class="ok-flex-1 {% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
+    <div id="admNavLoader" class="adm-nav-loader" hidden aria-live="polite" aria-busy="false">
+      <div class="adm-nav-loader__inner">
+        <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>
+        <span>Loading…</span>
+      </div>
+    </div>
   </div>
 
   {% include "partials/flash.html" %}
@@ -274,6 +280,24 @@
       if (!a.closest(".adm-sidebar")) return;
 
       e.preventDefault();
+      if (a.classList.contains("is-loading")) return;
+
+      var shell = document.querySelector(".adm-content");
+      var loader = document.getElementById("admNavLoader");
+
+      function showNavLoading() {
+        if (shell) shell.classList.add("is-nav-loading");
+        if (loader) { loader.hidden = false; loader.setAttribute("aria-busy", "true"); }
+        a.classList.add("is-loading");
+      }
+
+      function hideNavLoading() {
+        if (shell) shell.classList.remove("is-nav-loading");
+        if (loader) { loader.hidden = true; loader.setAttribute("aria-busy", "false"); }
+        a.classList.remove("is-loading");
+      }
+
+      showNavLoading();
 
       // Lucide swap turns <i> into <svg.ok-i>; color classes must follow both.
       function sbIcon(el) { return el.querySelector("svg.ok-i, i"); }
@@ -291,7 +315,7 @@
       var icon = sbIcon(a);
       var oldClass = icon ? (icon.getAttribute("class") || icon.className || "") : "";
       if (icon && icon.tagName && icon.tagName.toLowerCase() !== "svg") {
-        icon.className = "fa-solid fa-circle-notch fa-spin ok-w-5 text-center ok-fs-95rem flex-shrink-0 text-white";
+        icon.className = "fa-solid fa-circle-notch fa-spin ok-w-5 text-center ok-fs-95rem flex-shrink-0 text-ink";
       }
 
       document.querySelectorAll("a.sb-navlink").forEach(function (el) {
@@ -333,8 +357,10 @@
             document.dispatchEvent(new Event("pjax:complete"));
           }
           if (icon) sbIconClass(icon, String(oldClass).replace("text-white", "text-ink"));
+          hideNavLoading();
         })
         .catch(function () {
+          hideNavLoading();
           location.href = url;
         });
     });
