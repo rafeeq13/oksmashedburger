@@ -170,7 +170,7 @@ def run_seed():
 
     # ── Every location owns its integrations (demo keys) ──────────────────
     # Each store gets Stripe (payments), Google Maps, and both notification
-    # channels (Twilio SMS + SendGrid email) so checkout and order pings work.
+    # channels (Twilio SMS + SMTP email) so checkout and order pings work.
     for slug, s in stores.items():
         tag = slug.replace("-", "_")
         db.session.add_all([
@@ -181,8 +181,11 @@ def run_seed():
             StoreIntegration(store=s, provider="google_maps", enabled=True, config={"api_key": "gmaps_shared"}),
             StoreIntegration(store=s, provider="twilio", enabled=True,
                              config={"account_sid": f"AC_{tag}", "auth_token": f"tok_{tag}", "from_number": "+12155550100"}),
-            StoreIntegration(store=s, provider="sendgrid", enabled=True,
-                             config={"api_key": f"SG.{tag}", "from_email": f"{slug}@oksmashedburger.com"}),
+            StoreIntegration(store=s, provider="smtp", enabled=True,
+                             config={"smtp_host": "smtp.example.com", "smtp_port": "587",
+                                     "smtp_user": f"mailer@{slug}.oksmashedburger.com",
+                                     "from_email": f"{slug}@oksmashedburger.com",
+                                     "from_name": "OK Smashed Burger", "use_tls": "1"}),
         ])
 
     # ── Every location carries the full menu; feature the two classics ────
@@ -221,7 +224,7 @@ def run_seed():
         for name, price, qty in items:
             db.session.add(OrderItem(order=order, name=name, unit_price=Decimal(price), qty=qty,
                                      line_total=(Decimal(price) * qty), options={}))
-        # Store has Twilio + SendGrid → notify by SMS and email.
+        # Store has Twilio + SMTP → notify by SMS and email.
         notify_order_event(order, order.status)
 
     # ── Own-fleet drivers + a driver login ────────────────────────────────

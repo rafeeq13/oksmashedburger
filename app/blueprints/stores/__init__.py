@@ -34,7 +34,8 @@ def api_select_store(slug):
     session["store_slug"] = slug
     session["context_set"] = True
     return {"ok": True, "slug": store.slug, "name": store.name,
-            "city": store.city, "zip": store.zip_code}
+            "city": store.city, "zip": store.zip_code,
+            "address": store.full_address}
 
 
 @bp.get("/api/schedule")

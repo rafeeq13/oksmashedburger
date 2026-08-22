@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/builder.css') }}">
   {# Per-element typography and button states: only for a page that has set one
      of their values, and always while editing. Must come after builder.css. #}
-  {% if pb_parts_css() %}<link rel="stylesheet" href="{{ url_for('static', filename='css/builder-parts.css') }}">{% endif %}
+  {% if pb_parts_css() %}<link rel="stylesheet" href="{{ url_for('static', filename='css/builder-parts.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='css/builder-bp.css') }}">{% endif %}
   {# The client's theme goes LAST of all, after every stylesheet. It used to sit
      before radius.css, which re-declares --ok-radius and therefore silently
      beat the button/field radius control. #}

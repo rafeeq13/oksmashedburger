@@ -210,17 +210,24 @@
   <!-- ── live page preview ────────────────────────────────────── -->
   <div>
     <div class="ok-card ok-p-3 position-sticky ok-top-1rem">
-      <div class="d-flex align-items-center justify-content-between ok-mb-3">
+      <div class="d-flex align-items-center justify-content-between ok-mb-3 ok-gap-3 flex-wrap">
         <b class="ok-fs-sm">{{ spec.label }} preview</b>
-        <button type="button" id="reloadPreview" class="btn btn-secondary btn-sm">Refresh</button>
+        <div class="d-flex align-items-center ok-gap-2">
+          <div class="ok-design-devices" role="group" aria-label="Preview screen">
+            <button type="button" data-device="1280" class="is-on" title="Desktop"><i class="fa-solid fa-display"></i></button>
+            <button type="button" data-device="820" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>
+            <button type="button" data-device="390" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>
+          </div>
+          <button type="button" id="reloadPreview" class="btn btn-secondary btn-sm">Refresh</button>
+        </div>
       </div>
-      {# scaled down so a full desktop page fits in the panel #}
+      {# scaled so the chosen screen width fits in the panel #}
       <div class="ok-design-frame">
         <iframe id="designPreview" src="{{ spec.url }}" title="{{ spec.label }} preview"></iframe>
       </div>
       <p class="ok-fs-xs text-muted-warm ok-mt-3">
-        Save a section, then Refresh to see it. This is the real page at desktop
-        width, scaled to fill the panel.
+        Save a section, then Refresh to see it. Pick Desktop / Tablet / Phone to
+        redesign each screen on its own.
       </p>
     </div>
   </div>
@@ -260,6 +267,14 @@
     transform: scale(var(--pv-scale, .42));
     transform-origin: 0 0;
   }
+  .ok-design-devices{
+    display: flex; border: 1px solid var(--ok-line,#ececec); border-radius: .55rem; overflow: hidden;
+  }
+  .ok-design-devices button{
+    border: 0; background: #fff; padding: .3rem .55rem; color: #6b6b6b; cursor: pointer; line-height: 1;
+  }
+  .ok-design-devices button + button{ border-left: 1px solid var(--ok-line,#ececec); }
+  .ok-design-devices button.is-on{ background: #141414; color: #fff; }
   /* A control that is actually doing something reads differently from the
      dozens still on the built-in design: its label goes dark, it gets a dot,
      and its field carries the brand edge. */
@@ -296,7 +311,7 @@
     var box = pick.parentElement.querySelector('input[type="text"]');
     if (box) pick.addEventListener("input", function () { box.value = pick.value; });
   });
-  // fit the rendered page to the panel, and keep it fitted as the window moves
+  // fit the rendered page to the panel at the chosen screen width
   (function () {
     var box = document.querySelector(".ok-design-frame");
     if (!box) return;
@@ -307,9 +322,16 @@
       var scale = w / PAGE_W;
       box.style.setProperty("--pv-scale", scale.toFixed(4));
       box.style.setProperty("--pv-w", PAGE_W + "px");
-      // as tall as the panel, so the page fills it instead of letterboxing
       box.style.setProperty("--pv-h", Math.round(h / scale) + "px");
     }
+    document.querySelectorAll(".ok-design-devices button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        document.querySelectorAll(".ok-design-devices button").forEach(function (x) { x.classList.remove("is-on"); });
+        b.classList.add("is-on");
+        PAGE_W = parseInt(b.getAttribute("data-device"), 10) || 1280;
+        fit();
+      });
+    });
     fit();
     if (window.ResizeObserver) new ResizeObserver(fit).observe(box);
     window.addEventListener("resize", fit);

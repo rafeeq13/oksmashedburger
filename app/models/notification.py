@@ -1,7 +1,7 @@
 """Order notifications log — one row per message a store sends about an order.
 
 Which channel fires depends on the STORE's own integrations (Twilio for SMS,
-SendGrid for email), so two locations can notify differently. In demo mode the
+SMTP for email), so two locations can notify differently. In demo mode the
 send is simulated and recorded here with status="simulated" (SRS §5.2, FR-10)."""
 from app.extensions import db
 from .base import TimestampMixin
@@ -16,7 +16,7 @@ class Notification(TimestampMixin, db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey("orders.id"), index=True)
     store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), index=True)
     channel = db.Column(db.String(10), nullable=False)      # sms / email
-    provider = db.Column(db.String(20), nullable=False)     # twilio / sendgrid
+    provider = db.Column(db.String(20), nullable=False)     # twilio / smtp
     recipient = db.Column(db.String(255), nullable=False)   # phone or email
     subject = db.Column(db.String(160))                     # email only
     body = db.Column(db.Text, nullable=False)

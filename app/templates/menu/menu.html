@@ -21,7 +21,7 @@
         {# the address may wrap/truncate, but Change is a separate flex item so
            it can never be clipped off the end on a narrow screen #}
         <div class="ok-fs-sm text-muted-warm d-flex align-items-baseline ok-gap-15 ok-min-w-0">
-          <span class="text-truncate ok-min-w-0">{{ store.full_address }}</span>
+          <span class="text-truncate ok-min-w-0" data-store-address>{{ store.full_address }}</span>
           <button data-open="location" class="link-underline text-nowrap flex-shrink-0">Change</button>
         </div>
         {% if schedule_at %}

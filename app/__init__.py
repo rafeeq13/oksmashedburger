@@ -23,6 +23,14 @@ TEXT_ROLE_PROPS = (("family", ""), ("color", ""), ("size", "px"),
                    ("sizemd", "px"), ("sizelg", "px"), ("weight", ""),
                    ("lh", ""), ("track", "px"), ("case", ""), ("italic", ""),
                    ("align", ""), ("maxw", "px"), ("mt", "px"), ("mb", "px"))
+# Per-screen copies (tablet=md, desktop=lg) so redesigning one breakpoint
+# cannot change another. `size` already has sizemd/sizelg above.
+TEXT_ROLE_PROPS = TEXT_ROLE_PROPS + tuple(
+    (prop + bp, unit)
+    for prop, unit in TEXT_ROLE_PROPS
+    if prop not in ("size", "sizemd", "sizelg")
+    for bp in ("md", "lg")
+)
 
 # A button's five states, each holding its own colours and geometry. Nothing is
 # derived from anything else: the hover fill never implies a hover label colour,
@@ -80,11 +88,20 @@ def create_app(config_object=None):
     # engine or an old bookmark walks straight in. A switched-off area is
     # gone from the routing table's point of view too.
     FEATURE_PATHS = [
+        ("/menu", "menu"),
+        ("/item", "menu"),
+        ("/locations", "locations"),
         ("/deals", "deals"),
         ("/rewards", "rewards"),
         ("/gift-cards", "giftcards"),
         ("/giftcards", "giftcards"),
+        ("/catering", "catering"),
+        ("/about", "about"),
+        ("/contact", "contact"),
+        ("/careers", "careers"),
+        ("/faq", "faq"),
         ("/news", "news"),
+        ("/tracking", "tracking"),
     ]
 
     @app.before_request
@@ -210,8 +227,11 @@ def create_app(config_object=None):
                        ("style_xtraborder", "--pb-xtraborder"),
                        ("style_xtrashadow", "--pb-xtrashadow"),
                        ("style_xtraalign", "--pb-xtraalign")):
-            if cfg.get(k) not in (None, ""):
-                put(var, cfg[k])
+            for bp in ("", "md", "lg"):
+                kk = k + bp
+                vv = var + bp
+                if cfg.get(kk) not in (None, ""):
+                    put(vv, cfg[kk])
         # the ones that carry a unit
         for k, var, unit in (("style_cardradius", "--pb-cardradius", "px"),
                              ("style_btnradius", "--pb-btnradius", "px"),
@@ -239,15 +259,18 @@ def create_app(config_object=None):
                              ("style_xtrah", "--pb-xtrah", "px"),
                              ("style_xtraradius", "--pb-xtraradius", "px"),
                              ("style_xtraborderw", "--pb-xtraborderw", "px")):
-            if cfg.get(k) not in (None, ""):
-                # Two things write these keys: Page design saves a bare number,
-                # the on-page panel saves the number with its unit already on
-                # it. Appending blindly produced "28pxpx", which the browser
-                # throws away — the control looked like it did nothing after a
-                # reload. Only add the unit when the value is still just a
-                # number.
-                raw = str(cfg[k]).strip()
-                put(var, raw + unit if _BARE_NUMBER.match(raw) else raw)
+            for bp in ("", "md", "lg"):
+                kk = k + bp
+                vv = var + bp
+                if cfg.get(kk) not in (None, ""):
+                    # Two things write these keys: Page design saves a bare number,
+                    # the on-page panel saves the number with its unit already on
+                    # it. Appending blindly produced "28pxpx", which the browser
+                    # throws away — the control looked like it did nothing after a
+                    # reload. Only add the unit when the value is still just a
+                    # number.
+                    raw = str(cfg[kk]).strip()
+                    put(vv, raw + unit if _BARE_NUMBER.match(raw) else raw)
         # ── per-role typography ────────────────────────────────────
         # Every kind of text in a section carries its own settings, so restyling
         # a heading can no longer drag the sub-heading, the body copy, the card
@@ -281,21 +304,21 @@ def create_app(config_object=None):
         # sections carry a built-in shadow (the home hero stacks four of them),
         # and saying nothing left that shadow in place, so choosing No shadow
         # appeared to do nothing at all.
-        def compose_shadow(prefix):
-            side = (cfg.get(prefix + "tsside") or "").strip()
+        def compose_shadow(prefix, bp=""):
+            side = (cfg.get(prefix + "tsside" + bp) or "").strip()
             if side == "none":
                 return "none"
             if not side:
                 return ""
             try:
-                dist = int(float(cfg.get(prefix + "tsdist") or 2))
+                dist = int(float(cfg.get(prefix + "tsdist" + bp) or 2))
             except (TypeError, ValueError):
                 dist = 2
             try:
-                blur = int(float(cfg.get(prefix + "tsblur") or 4))
+                blur = int(float(cfg.get(prefix + "tsblur" + bp) or 4))
             except (TypeError, ValueError):
                 blur = 4
-            col = (cfg.get(prefix + "tscolor") or "rgba(0,0,0,.5)").strip()
+            col = (cfg.get(prefix + "tscolor" + bp) or "rgba(0,0,0,.5)").strip()
             offsets = {
                 "top":    [(0, -dist)],
                 "bottom": [(0, dist)],
@@ -310,12 +333,12 @@ def create_app(config_object=None):
         old_shadow = compose_shadow("style_")
         if old_shadow:
             put("--pb-textshadow", old_shadow)
-        # and one per kind of text, so a shadow on the heading is not a shadow
-        # on the line underneath it
+        # and one per kind of text × screen (base / tablet / desktop)
         for role in TEXT_ROLES:
-            value = compose_shadow("style_%s_" % role)
-            if value:
-                put("--pb-%s-shadow" % role, value)
+            for bp, var_bp in (("", ""), ("md", "md"), ("lg", "lg")):
+                value = compose_shadow("style_%s_" % role, bp)
+                if value:
+                    put("--pb-%s-shadow%s" % (role, var_bp), value)
 
         if cfg.get("style_bgimage") not in (None, ""):
             # strip the edit-mode tag so it never lands in the saved CSS
@@ -588,9 +611,10 @@ def create_app(config_object=None):
         more_children = [
             {"label": "Rewards", "href": "/rewards", "feature": "rewards"},
             {"label": "Gift Cards", "href": "/gift-cards", "feature": "giftcards"},
-            {"label": "Contact", "href": "/contact"},
-            {"label": "Join Our Team", "href": "/careers"},
+            {"label": "Contact", "href": "/contact", "feature": "contact"},
+            {"label": "Join Our Team", "href": "/careers", "feature": "careers"},
             {"label": "News", "href": "/news", "feature": "news"},
+            {"label": "Help / FAQ", "href": "/faq", "feature": "faq"},
         ]
         more_children = [c for c in more_children if feats.get(c.get("feature"), True)]
         for p in BuilderPage.query.filter_by(show_in_nav=True, published=True).order_by(BuilderPage.title).all():
@@ -629,11 +653,11 @@ def create_app(config_object=None):
             "site_defaults": (_Marked(SITE_IMAGE_DEFAULTS) if _inline else SITE_IMAGE_DEFAULTS),
             "features": feats,
             "nav_links": [n for n in [
-                {"label": pc("nav_menu"), "href": "/menu", "hot": False},
+                {"label": pc("nav_menu"), "href": "/menu", "hot": False, "feature": "menu"},
                 {"label": pc("nav_deals"), "href": "/deals", "hot": True, "feature": "deals"},
-                {"label": pc("nav_catering"), "href": "/catering", "hot": False},
-                {"label": pc("nav_locations"), "href": "/locations", "hot": False},
-                {"label": pc("nav_about"), "href": "/about", "hot": False},
+                {"label": pc("nav_catering"), "href": "/catering", "hot": False, "feature": "catering"},
+                {"label": pc("nav_locations"), "href": "/locations", "hot": False, "feature": "locations"},
+                {"label": pc("nav_about"), "href": "/about", "hot": False, "feature": "about"},
                 {"label": pc("nav_more"), "href": more_children[0]["href"] if more_children else "/contact",
                  "hot": False, "children": more_children},
             ] if feats.get(n.get("feature"), True) and n.get("children") != []],

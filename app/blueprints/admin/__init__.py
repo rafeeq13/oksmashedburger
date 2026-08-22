@@ -10,7 +10,7 @@ from decimal import Decimal, InvalidOperation
 from datetime import datetime, timezone, timedelta
 from collections import Counter
 
-from flask import Blueprint, render_template, request, redirect, flash, abort, Response, current_app
+from flask import Blueprint, render_template, request, redirect, flash, abort, Response, current_app, jsonify
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
@@ -27,6 +27,11 @@ from app.models.page import (
     PageSection, HOME_SECTIONS, SECTION_THEMES, home_sections_ordered, resolved_defaults,
     spec_for, is_custom_key, next_custom_key, PAGE_CONTENT, page_content_defaults,
     BuilderPage, unique_page_slug, slugify, DYNAMIC_SECTION_KEYS,
+)
+from app.models.email_templates import (
+    EMAIL_TEMPLATE_GROUPS, EMAIL_LAYOUT, EMAIL_PLACEHOLDERS, email_template_defaults,
+    email_layout_defaults, email_image_keys, preview_context, preview_rows,
+    render as render_email, templates_for_admin,
 )
 from app.models.favorite import Favorite
 from app.models.address import UserAddress
@@ -49,8 +54,17 @@ PROVIDERS = [
      "fields": [{"key": "api_key", "label": "API key", "secret": True}]},
     {"key": "twilio", "name": "Twilio", "icon": "comment-sms", "desc": "SMS notifications",
      "fields": [{"key": "account_sid", "label": "Account SID"}, {"key": "auth_token", "label": "Auth token", "secret": True}]},
-    {"key": "sendgrid", "name": "SendGrid", "icon": "envelope", "desc": "Transactional & marketing email",
-     "fields": [{"key": "api_key", "label": "API key", "secret": True}]},
+    {"key": "smtp", "name": "SMTP email", "icon": "envelope", "desc": "Order updates, sign-up & marketing email",
+     "fields": [
+         {"key": "smtp_host", "label": "SMTP host"},
+         {"key": "smtp_port", "label": "Port (587 STARTTLS, 465 SSL)"},
+         {"key": "smtp_user", "label": "Username"},
+         {"key": "smtp_password", "label": "Password", "secret": True},
+         {"key": "from_email", "label": "From email"},
+         {"key": "from_name", "label": "From name"},
+         {"key": "reply_to", "label": "Reply-to (optional)"},
+         {"key": "use_tls", "label": "Use STARTTLS (1=yes, 0=SSL on port 465)"},
+     ]},
 ]
 _PROVIDER_KEYS = [p["key"] for p in PROVIDERS]
 
@@ -80,6 +94,8 @@ def _admin_store():
     if u and u.store_id:
         return Store.query.get(u.store_id)
     slug = request.args.get("store")
+    if not slug and request.method == "POST":
+        slug = (request.form.get("store") or "").strip() or None
     if slug:
         s = Store.query.filter_by(slug=slug).first()
         if s:
@@ -517,9 +533,8 @@ def features_page():
     store = _admin_store()
     rows = {r.key: r.value for r in SiteSetting.query.all() if r.value}
     flags = features_from(rows)
-    current = {k: flags[k.replace("feature_", "")] for k in FEATURE_KEYS}
     return render_template("admin/features.html", features_spec=FEATURES,
-                           current=current, **_shell(store))
+                           current=flags, **_shell(store))
 
 
 @bp.post("/admin/features")
@@ -797,6 +812,41 @@ def inline_style():
         "style_xtrapos", "style_xtraw", "style_xtrah", "style_xtraradius",
         "style_xtraborder", "style_xtraborderw", "style_xtrashadow",
         "style_xtraalign"} | TEXT_ROLE_KEYS | CTA_KEYS
+    # tablet / desktop copies of every allowed section key
+    allowed |= {k + bp for k in list(allowed)
+                if not k.endswith(("md", "lg"))
+                for bp in ("md", "lg")}
+
+    def _lock_other_breakpoints(cfg, key):
+        """Before a phone (base) edit, copy base values into md/lg when those
+        keys are still missing — otherwise clearing a shared base style would
+        wipe tablet/desktop that had been inheriting it."""
+        if key.endswith("md") or key.endswith("lg"):
+            return
+        # style_title_tsside → prefix style_title_, prop tsside
+        # style_shadow → prefix style_, prop shadow
+        m = None
+        for role, _ in TEXT_ROLE_LABELS:
+            p = "style_%s_" % role
+            if key.startswith(p):
+                m = (p, key[len(p):])
+                break
+        if not m and key.startswith("style_"):
+            m = ("style_", key[len("style_"):])
+        if not m:
+            return
+        prefix, prop = m
+        # shadow is four keys; lock the whole group together
+        props = (("tsside", "tsdist", "tsblur", "tscolor")
+                 if prop in ("tsside", "tsdist", "tsblur", "tscolor")
+                 else (prop,))
+        for bp in ("md", "lg"):
+            for p in props:
+                src = prefix + p
+                dst = prefix + p + bp
+                if dst not in cfg and src in cfg:
+                    cfg[dst] = cfg[src]
+
     # A retired key may still be CLEARED, never set. A section saved before the
     # per-element system can carry one, and with no way to remove it the client
     # would be stuck with a setting that moves several kinds of text at once and
@@ -812,6 +862,7 @@ def inline_style():
         row = PageSection(page=page, key=section, label=section.replace("_", " ").title())
         db.session.add(row)
     cfg = dict(row.config or {})
+    _lock_other_breakpoints(cfg, key)
     if value:
         cfg[key] = value
     else:
@@ -978,6 +1029,98 @@ def page_content_save():
     db.session.commit()
     flash("Page content saved.", "success")
     return redirect(request.form.get("next") or ("/admin/page-content" + _qs(store)))
+
+
+# ── Email templates (subjects + body copy for customer emails) ───────────
+@bp.get("/admin/email-templates")
+@roles_required(*ADMIN_ROLES)
+def email_templates():
+    store = _admin_store()
+    current = {s.key: s.value for s in SiteSetting.query.all() if s.value}
+    brand = current_app.config.get("BRAND_NAME", "")
+    defaults = {**email_layout_defaults(brand), **email_template_defaults(brand)}
+    return render_template("admin/email_templates.html", groups=templates_for_admin(),
+                           layout_fields=EMAIL_LAYOUT, placeholders=EMAIL_PLACEHOLDERS,
+                           current=current, defaults=defaults, **_shell(store))
+
+
+@bp.get("/admin/email-templates/preview/<tpl_key>")
+@roles_required(*ADMIN_ROLES)
+def email_templates_preview(tpl_key):
+    known = {tpl[0] for _g, _l, _i, tpls in EMAIL_TEMPLATE_GROUPS for tpl in tpls}
+    if tpl_key not in known:
+        abort(404)
+    ctx = preview_context(tpl_key)
+    rows = preview_rows(tpl_key)
+    cta = "https://oksmashedburger.com/menu"
+    _, _, html = render_email(tpl_key, ctx, rows=rows, cta_href=cta,
+                              brand=current_app.config.get("BRAND_NAME") or None)
+    return Response(html, mimetype="text/html; charset=utf-8")
+
+
+@bp.post("/admin/email-image")
+@roles_required(*ADMIN_ROLES)
+def email_image():
+    allowed = email_image_keys()
+    key = (request.form.get("key") or "").strip()
+    if key not in allowed:
+        return jsonify(ok=False, error="unknown image slot"), 400
+    sent = request.files.get("file")
+    slug = "email-" + key.replace("_", "-")
+    url = _save_image(sent, slug, quiet=True)
+    if sent and getattr(sent, "filename", "") and not url:
+        return jsonify(ok=False, error="That file type is not allowed here — use JPG, PNG, GIF or WEBP."), 400
+    url = url or (request.form.get("url") or "").strip()
+    row = SiteSetting.query.filter_by(key=key).first()
+    if url:
+        if row:
+            row.value = url
+        else:
+            db.session.add(SiteSetting(key=key, value=url))
+    elif row:
+        db.session.delete(row)
+    db.session.commit()
+    return jsonify(ok=True, key=key, url=url)
+
+
+@bp.post("/admin/email-templates")
+@roles_required(*ADMIN_ROLES)
+def email_templates_save():
+    store = _admin_store()
+    brand = current_app.config.get("BRAND_NAME", "")
+    defaults = {**email_layout_defaults(brand), **email_template_defaults(brand)}
+    save_kind = request.form.get("save_kind", "template")
+    allowed = set()
+    if save_kind == "layout":
+        allowed = set(email_layout_defaults(brand))
+    else:
+        tpl_key = (request.form.get("tpl_key") or "").strip()
+        for _g, _l, _i, tpls in EMAIL_TEMPLATE_GROUPS:
+            for key, _tl, flds in tpls:
+                if key == tpl_key:
+                    for field, _fl, _def, _kind in flds:
+                        allowed.add("email_%s_%s" % (tpl_key, field))
+                    allowed.add("email_%s_custom_html" % tpl_key)
+                    break
+    for key in allowed:
+        if key not in request.form:
+            continue
+        raw = request.form.get(key)
+        val = (raw or "").strip() if not key.endswith("_custom_html") else (raw or "")
+        if key.endswith("_custom_html"):
+            val = val.strip()
+        setting = SiteSetting.query.filter_by(key=key).first()
+        if val and val != (defaults.get(key) or ""):
+            if setting:
+                setting.value = val
+            else:
+                db.session.add(SiteSetting(key=key, value=val))
+        elif setting:
+            db.session.delete(setting)
+    db.session.commit()
+    flash("Email template saved.", "success")
+    anchor = "design" if save_kind == "layout" else (request.form.get("tpl_key") or "")
+    return redirect("/admin/email-templates" + _qs(store) + ("#" + anchor if anchor else ""))
 
 
 # ── Visual canvas editor (drag/reorder + live restyle of home sections) ──
@@ -1529,6 +1672,9 @@ def menu():
 @roles_required(*ADMIN_ROLES)
 def menu_save(pid):
     store = _admin_store()
+    if not store:
+        flash("Pick a location first.", "error")
+        return redirect("/admin/menu")
     product = Product.query.get_or_404(pid)
     mi = StoreMenuItem.query.filter_by(store_id=store.id, product_id=pid).first()
     if not mi:
@@ -1840,9 +1986,14 @@ def integrations_save(provider):
         db.session.add(integ)
     integ.enabled = bool(request.form.get("enabled"))
     cfg = dict(integ.config or {})
+    spec = next((p for p in PROVIDERS if p["key"] == provider), None)
+    secret_keys = {f["key"] for f in (spec or {}).get("fields", []) if f.get("secret")}
     for key, val in request.form.items():
         if key.startswith("cfg_"):
-            cfg[key[4:]] = val.strip()
+            k = key[4:]
+            if k in secret_keys and not val.strip() and cfg.get(k):
+                continue
+            cfg[k] = val.strip()
     integ.config = cfg  # reassign so SQLAlchemy detects the JSON change
     db.session.commit()
     flash(f"{provider.replace('_', ' ').title()} settings saved.", "success")
@@ -2887,6 +3038,13 @@ TEXT_ROLE_PROP_SPECS = [
     ("tsdist", "Shadow — how far (px)", "px"),
     ("tsblur", "Shadow — how soft (px)", "px"),
     ("tscolor", "Shadow — colour", "color"),
+]
+# Tablet (md) / desktop (lg) copies — size already has sizemd/sizelg.
+TEXT_ROLE_PROP_SPECS = TEXT_ROLE_PROP_SPECS + [
+    (prop + bp, "%s (%s)" % (label, "tablet" if bp == "md" else "desktop"), kind)
+    for prop, label, kind in TEXT_ROLE_PROP_SPECS
+    if prop not in ("size", "sizemd", "sizelg")
+    for bp in ("md", "lg")
 ]
 
 TEXT_ROLE_FIELDS = [

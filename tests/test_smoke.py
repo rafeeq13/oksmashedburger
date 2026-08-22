@@ -80,6 +80,7 @@ ADMIN = ["/admin", "/admin/orders", "/admin/customers", "/admin/menu",
          "/admin/coupons", "/admin/gift-cards", "/admin/drivers", "/admin/staff",
          "/admin/locations", "/admin/settings", "/admin/canvas", "/admin/builder",
          "/admin/page-content", "/admin/content", "/admin/site-images",
+         "/admin/email-templates",
          "/admin/design", "/admin/theme", "/admin/features", "/admin/reviews",
          "/admin/integrations",
          "/admin/notifications", "/admin/messages", "/admin/subscribers"]
@@ -296,15 +297,27 @@ def test_each_kind_of_text_carries_its_own_typography(app):
     from app import TEXT_ROLES, TEXT_ROLE_PROPS
     from app.blueprints.admin import TEXT_ROLE_KEYS
 
-    css = (pathlib.Path(__file__).resolve().parents[1]
-           / "app" / "static" / "css" / "builder-parts.css").read_text(encoding="utf-8")
+    root = pathlib.Path(__file__).resolve().parents[1] / "app" / "static" / "css"
+    css = (root / "builder-parts.css").read_text(encoding="utf-8")
+    bp = (root / "builder-bp.css").read_text(encoding="utf-8")
 
     for role in TEXT_ROLES:
         for prop, _unit in TEXT_ROLE_PROPS:
             var = "--pb-%s-%s" % (role, prop)
-            assert '[style*="%s:"]' % var in css, "no rule for " + var
+            # base + size breakpoints live in builder-parts; other md/lg in builder-bp
+            if prop.endswith(("md", "lg")) and prop not in ("sizemd", "sizelg"):
+                hay = bp
+            else:
+                hay = css
+            assert '[style*="%s:"]' % var in hay, "no rule for " + var
             assert "style_%s_%s" % (role, prop) in TEXT_ROLE_KEYS, \
                 "the editor cannot save style_%s_%s" % (role, prop)
+
+    # composed shadows: base in parts, md/lg overrides in builder-bp
+    for role in TEXT_ROLES:
+        assert '[style*="--pb-%s-shadow:"]' % role in css
+        assert '[style*="--pb-%s-shadowmd:"]' % role in bp
+        assert '[style*="--pb-%s-shadowlg:"]' % role in bp
 
     # the roles must not overlap: a rule for one role may not also list a class
     # another role claims, or a change to one would still reach the other
@@ -763,6 +776,31 @@ def test_a_switched_off_feature_stops_pricing_not_just_showing(app):
         set_deals(False)
 
     assert totals()["promo"]["code"] == code, "switching back must restore the deal"
+
+
+def test_switched_off_page_is_not_reachable(app, client):
+    """Every feature switch removes its page URL, not just the nav link."""
+    from app.extensions import db
+    from app.models.site import SiteSetting
+
+    def set_feature(slug, off):
+        key = "feature_%s" % slug
+        with app.app_context():
+            row = SiteSetting.query.filter_by(key=key).first()
+            if off and not row:
+                db.session.add(SiteSetting(key=key, value="off"))
+            elif off:
+                row.value = "off"
+            elif row:
+                db.session.delete(row)
+            db.session.commit()
+
+    try:
+        set_feature("catering", True)
+        assert client.get("/catering").status_code == 404
+        assert client.get("/about").status_code == 200
+    finally:
+        set_feature("catering", False)
 
 
 def test_saving_one_pages_words_leaves_the_other_pages_alone(app):
@@ -1278,9 +1316,13 @@ def test_a_shadow_belongs_to_one_kind_of_text(app):
         style_of = app.jinja_env.globals["pb_section_style"]
         out = style_of({"style_title_tsside": "bottom", "style_title_tsdist": "6",
                         "style_sub_tsside": "none"})
+        out2 = style_of({"style_title_tsside": "none",
+                         "style_title_tssidelg": "bottom", "style_title_tsdistlg": "8"})
     assert "--pb-title-shadow:0px 6px 4px" in out, out
     assert "--pb-sub-shadow:none" in out, out
     assert "--pb-textshadow" not in out, "the old section-wide value came back"
+    assert "--pb-title-shadow:none" in out2
+    assert "--pb-title-shadowlg:0px 8px" in out2
 
 
 def test_every_card_control_reaches_every_kind_of_card(app):

@@ -1,0 +1,236 @@
+{% extends "admin/base.html" %}
+{% block title %}Email templates, {{ brand_name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  .et-preview iframe{ width:100%; height:640px; border:0; border-radius:12px; background:#f0efeb; }
+  .et-img-prev{ position:relative; aspect-ratio:16/7; border-radius:10px; overflow:hidden; background:#f6f5f2;
+    display:grid; place-items:center; margin-bottom:.5rem; border:1px solid var(--ok-line, #eceae4); }
+  .et-img-prev img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .et-field.is-changed > .ok-label::after{
+    content:"edited"; margin-left:.5rem; font-size:.6rem; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--ok-amber); }
+  .et-html-editor{ font-family:ui-monospace,Consolas,monospace; font-size:.78rem; line-height:1.45; min-height:20rem; }
+</style>
+{% endblock %}
+
+{% block admin %}
+<div class="d-flex flex-wrap align-items-start justify-content-between ok-gap-3 mb-1">
+  <h2 class="ok-h2">Email templates</h2>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="/admin/integrations{{ qs }}#smtp" class="btn btn-secondary btn-sm"><i class="fa-solid fa-plug"></i> SMTP</a>
+    <a href="/admin/notifications{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell"></i> Sent log</a>
+  </div>
+</div>
+<p class="text-muted-warm ok-fs-sm ok-mb-4">Use the built-in layout fields, or paste a <b>complete HTML email</b> per template. Images accept URL or upload. Leave HTML blank to keep the auto-designed layout.</p>
+<div class="ok-card ok-p-3 ok-mb-4 ok-fs-sm text-muted-warm">
+  <strong class="text-ink">Placeholders</strong> — use in text fields or custom HTML:
+  {% for ph in placeholders %}<code class="ms-1">{{ ph }}</code>{% endfor %}
+</div>
+
+<div data-tab-group id="etMain">
+  <div class="d-flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1">
+    <button type="button" data-tab="design" class="chip flex-shrink-0 is-active"><i class="fa-solid fa-palette"></i> Design</button>
+    {% for grp_key, grp_label, grp_icon, templates in groups %}
+    <button type="button" data-tab="{{ grp_key }}" class="chip flex-shrink-0"><i class="fa-solid fa-{{ grp_icon }}"></i> {{ grp_label }}</button>
+    {% endfor %}
+  </div>
+
+  {# ── Shared layout (header + footer) ── #}
+  <div data-panel="design">
+    <div class="ok-grid ok-grid-lg-2 ok-gap-4 align-items-start">
+      <form method="post" action="/admin/email-templates{{ qs }}" class="ok-card ok-p-5">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="save_kind" value="layout">
+        <h3 class="font-display fw-bold ok-fs-lg mb-1">Shared email design</h3>
+        <p class="ok-fs-sm text-muted-warm ok-mb-4">Header logo, footer block and legal line — used on every customer email.</p>
+        <div class="ok-stack-4">
+          {% for field, label, _def, kind, hint in layout_fields %}
+          {% set key = 'email_layout_' ~ field %}
+          {% set _val = current.get(key) or defaults.get(key, _def) %}
+          <div class="et-field{% if current.get(key) %} is-changed{% endif %}">
+            <label class="ok-label ok-fs-xs" for="f-{{ key }}">{{ label }}</label>
+            {% if hint %}<p class="ok-fs-62rem text-muted-warm ok-mb-15">{{ hint }}</p>{% endif %}
+            {% if kind == 'image' %}
+            <div class="et-img-prev" data-et-preview="{{ key }}">
+              {% if _val %}<img src="{{ _val }}" alt="">{% else %}<span class="ok-fs-xs text-muted-warm">No image yet</span>{% endif %}
+            </div>
+            <input id="f-{{ key }}" name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="{{ defaults.get(key, _def) }}"
+                   class="ok-input ok-py-15 ok-fs-sm ok-mb-15" data-et-url="{{ key }}">
+            <input type="file" accept="image/*" class="ok-input py-1 ok-fs-xs" data-et-upload="{{ key }}">
+            {% elif kind == 'area' %}
+            <textarea id="f-{{ key }}" name="{{ key }}" rows="2" placeholder="{{ defaults.get(key, _def) }}"
+                      class="ok-input py-2 ok-fs-sm">{{ _val }}</textarea>
+            {% else %}
+            <input id="f-{{ key }}" name="{{ key }}" value="{{ _val }}" placeholder="{{ defaults.get(key, _def) }}" class="ok-input py-2 ok-fs-sm">
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary btn-sm ok-mt-4">Save design</button>
+      </form>
+      <div class="ok-card ok-p-4 et-preview d-none d-lg-block">
+        <div class="d-flex align-items-center justify-content-between ok-mb-3">
+          <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm">Sample preview</div>
+          <a href="/admin/email-templates/preview/welcome{{ qs }}" target="_blank" rel="noopener" class="ok-fs-xs link-underline">Open full size</a>
+        </div>
+        <iframe data-et-preview-frame title="Email preview" data-preview="welcome"></iframe>
+      </div>
+    </div>
+  </div>
+
+  {# ── Template groups (orders / account / marketing) ── #}
+  {% for grp_key, grp_label, grp_icon, templates in groups %}
+  <div data-panel="{{ grp_key }}" class="d-none">
+    <div data-tab-group id="etSub-{{ grp_key }}">
+      <div class="d-flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1">
+        {% for tpl_key, tpl_label, fields in templates %}
+        <button type="button" data-tab="{{ tpl_key }}" class="chip flex-shrink-0 {% if loop.first %}is-active{% endif %}">{{ tpl_label }}</button>
+        {% endfor %}
+      </div>
+
+      {% for tpl_key, tpl_label, fields in templates %}
+      <div data-panel="{{ tpl_key }}" data-email-tpl="{{ tpl_key }}" data-email-group="{{ grp_key }}"
+           class="{% if not loop.first %}d-none{% endif %}">
+        <div class="ok-grid ok-grid-lg-2 ok-gap-4 align-items-start">
+          <form method="post" action="/admin/email-templates{{ qs }}" class="ok-card ok-p-5">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <input type="hidden" name="save_kind" value="template">
+            <input type="hidden" name="tpl_key" value="{{ tpl_key }}">
+            <div class="ok-mb-4 pb-3 border-bottom ok-bc-varokline">
+              <div class="ok-fs-xs text-muted-warm text-uppercase ok-ls-wide">{{ grp_label }}</div>
+              <h3 class="font-display fw-bold ok-fs-lg mb-0">{{ tpl_label }}</h3>
+            </div>
+            <div class="ok-stack-4">
+              {% for f in fields %}
+              {% set field = f[0] %}{% set flabel = f[1] %}{% set kind = f[3] if f|length > 3 else 'text' %}
+              {% set hint = f[4] if f|length > 4 else '' %}
+              {% set key = 'email_' ~ tpl_key ~ '_' ~ field %}
+              {% set _def = defaults.get(key, f[2]) %}
+              {% set _val = current.get(key) or _def %}
+              <div class="et-field{% if kind in ['area','html'] %} ok-col-span-md-2{% endif %}{% if current.get(key) %} is-changed{% endif %}">
+                <label class="ok-label ok-fs-xs" for="f-{{ key }}">{{ flabel }}</label>
+                {% if hint %}<p class="ok-fs-62rem text-muted-warm ok-mb-15">{{ hint }}</p>{% endif %}
+                {% if kind == 'image' %}
+                <div class="et-img-prev" data-et-preview="{{ key }}">
+                  {% if _val %}<img src="{{ _val }}" alt="">{% else %}<span class="ok-fs-xs text-muted-warm">Optional — leave blank for no banner</span>{% endif %}
+                </div>
+                <input id="f-{{ key }}" name="{{ key }}" value="{{ current.get(key, '') }}" placeholder="https://… or upload"
+                       class="ok-input ok-py-15 ok-fs-sm ok-mb-15" data-et-url="{{ key }}">
+                <input type="file" accept="image/*" class="ok-input py-1 ok-fs-xs" data-et-upload="{{ key }}">
+                {% elif kind == 'html' %}
+                <textarea id="f-{{ key }}" name="{{ key }}" rows="16" placeholder="&lt;!DOCTYPE html&gt;… or &lt;table&gt;…"
+                          class="ok-input py-2 ok-fs-sm et-html-editor">{{ current.get(key) or '' }}</textarea>
+                {% elif kind == 'area' %}
+                <textarea id="f-{{ key }}" name="{{ key }}" rows="3" placeholder="{{ _def }}" class="ok-input py-2 ok-fs-sm">{{ _val }}</textarea>
+                {% else %}
+                <input id="f-{{ key }}" name="{{ key }}" value="{{ _val }}" placeholder="{{ _def }}" class="ok-input py-2 ok-fs-sm">
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            <button class="btn btn-primary btn-sm ok-mt-4">Save {{ tpl_label }}</button>
+          </form>
+          <div class="ok-card ok-p-4 et-preview d-none d-lg-block">
+            <div class="d-flex align-items-center justify-content-between ok-mb-3">
+              <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm">Live preview</div>
+              <a href="/admin/email-templates/preview/{{ tpl_key }}{{ qs }}" target="_blank" rel="noopener" class="ok-fs-xs link-underline">Open full size</a>
+            </div>
+            <iframe data-et-preview-frame title="Preview {{ tpl_label }}" data-preview="{{ tpl_key }}"></iframe>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var qs = "{{ qs|e }}";
+  var previewBase = "/admin/email-templates/preview/";
+
+  function loadPreview(frame) {
+    if (!frame || frame.dataset.loaded === "1") return;
+    var key = frame.getAttribute("data-preview");
+    if (!key) return;
+    frame.src = previewBase + key + qs;
+    frame.dataset.loaded = "1";
+  }
+
+  function loadVisiblePreviews(root) {
+    (root || document).querySelectorAll("[data-et-preview-frame]").forEach(function (frame) {
+      var panel = frame.closest("[data-panel]");
+      if (!panel || panel.classList.contains("d-none")) return;
+      var p = panel.parentElement;
+      while (p) {
+        if (p.classList && p.classList.contains("d-none") && p.hasAttribute("data-panel")) return;
+        p = p.parentElement;
+      }
+      loadPreview(frame);
+    });
+  }
+
+  document.getElementById("etMain").addEventListener("click", function (e) {
+    var tab = e.target.closest("[data-tab]");
+    if (!tab) return;
+    setTimeout(function () { loadVisiblePreviews(document.getElementById("etMain")); }, 0);
+  });
+
+  function activateFromHash() {
+    var h = (location.hash || "").replace("#", "");
+    var main = document.getElementById("etMain");
+    if (!main) return;
+    if (!h) {
+      loadVisiblePreviews(main);
+      return;
+    }
+    if (h === "design") {
+      var d = main.querySelector('[data-tab="design"]');
+      if (d) d.click();
+      loadVisiblePreviews(main);
+      return;
+    }
+    var sub = document.querySelector('[data-email-tpl="' + h + '"]');
+    if (!sub) return;
+    var grp = sub.getAttribute("data-email-group");
+    var mainTab = main.querySelector('[data-tab="' + grp + '"]');
+    if (mainTab) mainTab.click();
+    var subGrp = document.getElementById("etSub-" + grp);
+    var subTab = subGrp && subGrp.querySelector('[data-tab="' + h + '"]');
+    if (subTab) subTab.click();
+    loadVisiblePreviews(main);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", activateFromHash);
+  else activateFromHash();
+
+  document.querySelectorAll("[data-et-upload]").forEach(function (input) {
+    input.addEventListener("change", function () {
+      var key = input.getAttribute("data-et-upload");
+      var file = input.files && input.files[0];
+      if (!file) return;
+      var fd = new FormData();
+      fd.append("file", file);
+      fd.append("key", key);
+      fd.append("_csrf", document.querySelector('input[name="_csrf"]').value);
+      input.disabled = true;
+      fetch("/admin/email-image" + qs, { method: "POST", body: fd, credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.ok) { alert(data.error || "Upload failed"); return; }
+          var urlInput = document.querySelector('[data-et-url="' + key + '"]');
+          if (urlInput) urlInput.value = data.url || "";
+          var prev = document.querySelector('[data-et-preview="' + key + '"]');
+          if (prev && data.url) prev.innerHTML = '<img src="' + data.url + '" alt="">';
+        })
+        .catch(function () { alert("Upload failed"); })
+        .finally(function () { input.disabled = false; input.value = ""; });
+    });
+  });
+})();
+</script>
+{% endblock %}

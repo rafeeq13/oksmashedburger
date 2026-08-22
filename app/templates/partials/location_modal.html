@@ -19,6 +19,7 @@
       <div class="ok-stack-2 ok-mt-3">
         {% for s in all_stores %}
         <button type="button" data-loc-pick="{{ s.slug }}" data-loc-name="{{ s.name }}" data-zip="{{ s.zip_code }}" data-city="{{ s.city }}"
+                data-address="{{ s.full_address }}"
                 data-zips="{{ s.delivery_zones|map(attribute='zip_codes')|sum(start=[])|join(',') }}"
                 data-search="{{ (s.name ~ ' ' ~ s.full_address ~ ' ' ~ s.city ~ ' ' ~ s.zip_code)|lower }}"
                 class="w-100 text-start ok-card ok-card-hover ok-p-3 d-flex align-items-center justify-content-between ok-gap-3 ok-locpick{% if current_store and s.id == current_store.id %} is-selected{% endif %}">

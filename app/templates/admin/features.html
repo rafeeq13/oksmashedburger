@@ -15,11 +15,12 @@
 <form method="post" action="/admin/features{{ qs }}" class="ok-stack-3">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% for key, label, blurb in features_spec %}
+  {% set slug = key.replace('feature_', '') %}
   <article class="ok-card ok-p-5 d-flex flex-wrap align-items-start justify-content-between ok-gap-3">
     <div class="ok-min-w-0 ok-flex-1">
       <div class="d-flex align-items-center gap-2 ok-mb-15">
         <b class="font-display ok-fs-lg">{{ label }}</b>
-        {% if current.get(key, True) %}
+        {% if current.get(slug, True) %}
         <span class="badge badge-green">On</span>
         {% else %}
         <span class="badge badge-soft">Off</span>
@@ -29,7 +30,7 @@
     </div>
     <label class="d-flex align-items-center gap-2 ok-fs-sm fw-semibold flex-shrink-0 ok-pointer">
       <input type="checkbox" name="{{ key }}" value="on"
-             {% if current.get(key, True) %}checked{% endif %}
+             {% if current.get(slug, True) %}checked{% endif %}
              class="ok-w-5 ok-h-5 ok-accent-yellow">
       Show on the website
     </label>

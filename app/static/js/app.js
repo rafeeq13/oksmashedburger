@@ -203,6 +203,8 @@
       document.querySelectorAll("[data-store-label]").forEach(function (el) { el.textContent = d.city + " · " + d.zip; });
     if (d.name != null)
       document.querySelectorAll("[data-store-name]").forEach(function (el) { el.textContent = d.name; });
+    if (d.address != null)
+      document.querySelectorAll("[data-store-address]").forEach(function (el) { el.textContent = d.address; });
     highlightStore(_storeSlug);
   });
   // Persist a store choice in the session, then announce it to the whole page.
@@ -212,7 +214,16 @@
     if (optimistic) document.dispatchEvent(new CustomEvent("ok:store", { detail: Object.assign({ slug: slug }, optimistic) }));
     return fetch("/api/select-store/" + encodeURIComponent(slug), { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.ok) document.dispatchEvent(new CustomEvent("ok:store", { detail: d })); return d; })
+      .then(function (d) {
+        if (d && d.ok) {
+          document.dispatchEvent(new CustomEvent("ok:store", { detail: d }));
+          // Menu is rendered per store on the server — reload once the session
+          // store is saved so the grid matches the chosen location.
+          var path = location.pathname || "";
+          if (path === "/menu" || path.indexOf("/menu/") === 0) location.reload();
+        }
+        return d;
+      })
       .catch(function () {});
   }
 
@@ -345,7 +356,7 @@
       return;
     }
     // choosing a store in the modal selects it everywhere too (header, cards, …)
-    selectStore(card.dataset.locPick, { name: card.dataset.locName, city: card.dataset.city, zip: card.dataset.zip });
+    selectStore(card.dataset.locPick, { name: card.dataset.locName, city: card.dataset.city, zip: card.dataset.zip, address: card.dataset.address });
     // the location is the thing the visitor came here to change, so close on
     // pick rather than pushing them through a second step
     openLocation(false);

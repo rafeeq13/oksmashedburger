@@ -3620,6 +3620,11 @@ input[type="datetime-local"]::-webkit-date-and-time-value{
   white-space: nowrap;
   box-shadow: 0 1px 4px rgba(20, 20, 20, .12);
 }
+.badge-red.ok-cardflag{
+  background: var(--ok-red);
+  color: #fff;
+  border-color: var(--ok-red);
+}
 .ok-cardflag i{ color: var(--ok-yellow); }
 
 

@@ -99,6 +99,7 @@
   <form method="post" action="/admin/menu/{{ row.product.id }}{{ qs }}"
     class="p-3 d-flex flex-wrap align-items-center ok-cgap-5 ok-rgap-3 {% if not row.product.is_active %}ok-opacity-60{% endif %}">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% if can_switch and admin_store %}<input type="hidden" name="store" value="{{ admin_store.slug }}">{% endif %}
     <img src="{{ row.product.image_url or logo_url }}"
       onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt=""
       class="ok-w-14 ok-h-14 ok-rounded-lg ok-cover flex-shrink-0 bg-cream">

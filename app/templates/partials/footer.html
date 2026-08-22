@@ -16,17 +16,17 @@
       </div>
     </div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col1_heading') }}</h4><ul class="ok-stack-25">
-      <li><a href="/menu" class="ok-flink text-w-60 ok-fs-sm">Menu</a></li>
+      {% if features.menu %}<li><a href="/menu" class="ok-flink text-w-60 ok-fs-sm">Menu</a></li>{% endif %}
       {% if features.deals %}<li><a href="/deals" class="ok-flink text-w-60 ok-fs-sm">Deals &amp; Offers</a></li>{% endif %}
-      <li><a href="/locations" class="ok-flink text-w-60 ok-fs-sm">Locations</a></li>
+      {% if features.locations %}<li><a href="/locations" class="ok-flink text-w-60 ok-fs-sm">Locations</a></li>{% endif %}
       {% if features.giftcards %}<li><a href="/gift-cards" class="ok-flink text-w-60 ok-fs-sm">Gift Cards</a></li>{% endif %}
-      <li><a href="/tracking" class="ok-flink text-w-60 ok-fs-sm">Track Order</a></li>
+      {% if features.tracking %}<li><a href="/tracking" class="ok-flink text-w-60 ok-fs-sm">Track Order</a></li>{% endif %}
     </ul></div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col2_heading') }}</h4><ul class="ok-stack-25">
-      <li><a href="/about" class="ok-flink text-w-60 ok-fs-sm">About Us</a></li>
-      <li><a href="/about" class="ok-flink text-w-60 ok-fs-sm">Careers</a></li>
-      <li><a href="/about" class="ok-flink text-w-60 ok-fs-sm">Franchising</a></li>
-      <li><a href="/contact" class="ok-flink text-w-60 ok-fs-sm">Contact</a></li>
+      {% if features.about %}<li><a href="/about" class="ok-flink text-w-60 ok-fs-sm">About Us</a></li>{% endif %}
+      {% if features.careers %}<li><a href="/careers" class="ok-flink text-w-60 ok-fs-sm">Careers</a></li>{% endif %}
+      {% if features.about %}<li><a href="/about" class="ok-flink text-w-60 ok-fs-sm">Franchising</a></li>{% endif %}
+      {% if features.contact %}<li><a href="/contact" class="ok-flink text-w-60 ok-fs-sm">Contact</a></li>{% endif %}
     </ul></div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col3_heading') }}</h4><ul class="ok-stack-25">
       <li><a href="/login" class="ok-flink text-w-60 ok-fs-sm">Sign In</a></li>
@@ -36,10 +36,10 @@
       <li><a href="/favorites" class="ok-flink text-w-60 ok-fs-sm">Favorites</a></li>
     </ul></div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col4_heading') }}</h4><ul class="ok-stack-25">
-      <li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Help / FAQ</a></li>
-      <li><a href="/contact" class="ok-flink text-w-60 ok-fs-sm">Order Issues</a></li>
-      <li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Allergen Info</a></li>
-      <li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Accessibility</a></li>
+      {% if features.faq %}<li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Help / FAQ</a></li>{% endif %}
+      {% if features.contact %}<li><a href="/contact" class="ok-flink text-w-60 ok-fs-sm">Order Issues</a></li>{% endif %}
+      {% if features.faq %}<li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Allergen Info</a></li>{% endif %}
+      {% if features.faq %}<li><a href="/faq" class="ok-flink text-w-60 ok-fs-sm">Accessibility</a></li>{% endif %}
     </ul></div>
   </div>
 

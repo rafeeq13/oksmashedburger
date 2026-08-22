@@ -24,6 +24,10 @@ class SiteSetting(db.Model):
 #
 # (key, label, what disappears when it is off)
 FEATURES = [
+    ("feature_menu", "Menu",
+     "The Menu page, item pages (/item/…), and Menu links in the header and footer."),
+    ("feature_locations", "Locations",
+     "The store locator page and its header/footer links."),
     ("feature_deals", "Deals & offers",
      "The Deals page, its nav and footer links, the promo-code box in the cart "
      "and at checkout, and the “Deals” badge in the menu."),
@@ -33,8 +37,20 @@ FEATURES = [
     ("feature_giftcards", "Gift cards",
      "The Gift cards page, its nav and footer links, and the gift-card box at "
      "checkout."),
+    ("feature_catering", "Catering",
+     "The Catering page and its header nav link."),
+    ("feature_about", "About",
+     "The About page and its header nav link."),
+    ("feature_contact", "Contact",
+     "The Contact page, footer links, and the contact form."),
+    ("feature_careers", "Careers / Join our team",
+     "The Careers page and its link in the More menu."),
+    ("feature_faq", "Help / FAQ",
+     "The FAQ page and the help links in the footer."),
     ("feature_news", "News & updates",
      "The News page and its nav and footer links."),
+    ("feature_tracking", "Order tracking",
+     "The Track Order page and its footer link."),
 ]
 
 FEATURE_KEYS = [f[0] for f in FEATURES]

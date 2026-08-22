@@ -23,7 +23,7 @@ INTEGRATION_PROVIDERS = [
     "google_maps",   # geocoding / distance / store locator
     "firebase",      # push notifications
     "twilio",        # SMS
-    "sendgrid",      # email
+    "smtp",          # email (SMTP)
 ]
 
 
@@ -198,7 +198,7 @@ class Store(TimestampMixin, db.Model):
                     continue
                 mi = by_product.get(product.id)
                 if not mi or not mi.is_listed:
-                    continue  # product not on this store's menu
+                    continue  # not on this store's menu
                 items.append({
                     "product": product,
                     "price": float(mi.price_override if mi.price_override is not None else product.base_price),

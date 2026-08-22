@@ -7,6 +7,11 @@ this turns those into contenteditables and saves each on blur. #}
   <b>Editing this page</b>
   <span class="ok-ie-hint">Click any highlighted text to change it. Changes save on their own.</span>
   <span id="okIeStatus" class="ok-ie-status"></span>
+  <div id="okIeDevices" class="ok-ie-devices" role="group" aria-label="Preview screen">
+    <button type="button" data-device="1280" class="is-on" title="Desktop"><i class="fa-solid fa-display"></i></button>
+    <button type="button" data-device="820" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>
+    <button type="button" data-device="390" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>
+  </div>
   <select id="okIeJump" class="ok-ie-jump" aria-label="Design a shared part of the site">
     <option value="">Design a shared part…</option>
     <option value="header">Header / navigation</option>
@@ -15,6 +20,13 @@ this turns those into contenteditables and saves each on blur. #}
     <option value="location_modal">Location picker</option>
   </select>
   <a href="{{ request.path }}" class="ok-ie-exit">Done</a>
+</div>
+
+<div id="okIeStage" class="ok-ie-stage" hidden>
+  <div id="okIeViewport" class="ok-ie-viewport">
+    <iframe id="okIeFrame" title="Screen preview"></iframe>
+  </div>
+  <div class="ok-ie-stage-foot"><span id="okIeDeviceLabel">Desktop</span> · redesign this screen separately</div>
 </div>
 
 <div id="okIeDesign" role="dialog" aria-label="Section design">
@@ -84,6 +96,77 @@ this turns those into contenteditables and saves each on blur. #}
     margin-left: auto;
     color: #FFC72C;
     font-weight: 600;
+  }
+
+  .ok-ie-devices {
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: .55rem;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .ok-ie-devices button {
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, .72);
+    padding: .35rem .55rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .ok-ie-devices button+button {
+    border-left: 1px solid rgba(255, 255, 255, .14);
+  }
+
+  .ok-ie-devices button.is-on {
+    background: #FFC72C;
+    color: #101820;
+  }
+
+  .ok-ie-stage {
+    position: fixed;
+    inset: 46px 0 0 0;
+    z-index: 8500;
+    background: #e8e9ec;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 16px 8px;
+    box-sizing: border-box;
+  }
+
+  .ok-ie-stage[hidden] {
+    display: none !important;
+  }
+
+  .ok-ie-viewport {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .1);
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  .ok-ie-viewport iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  .ok-ie-stage-foot {
+    flex: 0 0 auto;
+    margin-top: 8px;
+    font: 600 11.5px/1 Quicksand, sans-serif;
+    color: #6b6b6b;
+  }
+
+  body.ok-ie-device-preview> :not(#okIeBar):not(#okIeStage) {
+    display: none !important;
   }
 
   .ok-ie-jump {
@@ -793,11 +876,12 @@ this turns those into contenteditables and saves each on blur. #}
   ];
 
   // key suffix, kind, label, options / [min,max,step,default,unit]
+  // One Size control — phone/tablet/desktop map to size / sizemd / sizelg.
+  // Other props get an md/lg key suffix from okIeDeviceKey() so each screen
+  // is redesigned on its own.
   var TEXT_PROPS = [
     ["family", "font", "Font", null],
     ["size", "range", "Size", [8, 140, 1, 32, "px"]],
-    ["sizemd", "range", "Size from 768px", [8, 160, 1, 40, "px"]],
-    ["sizelg", "range", "Size from 1024px", [8, 200, 1, 48, "px"]],
     ["weight", "select", "Weight", WEIGHTS],
     ["lh", "range", "Line height", [0.8, 2.4, 0.05, 1.3, ""]],
     ["track", "range", "Letter spacing", [-5, 16, 0.5, 0, "px"]],
@@ -806,17 +890,46 @@ this turns those into contenteditables and saves each on blur. #}
     ["color", "color", "Colour", "#141414"],
     ["maxw", "range", "Text width", [120, 1600, 20, 720, "px"]],
     ["align", "select", "Alignment", ALIGNS],
-    // spacing belongs to the element as well: the gap under a heading is not
-    // the gap under the paragraph below it
     ["mt", "range", "Space above", [0, 200, 2, 0, "px"]],
     ["mb", "range", "Space below", [0, 200, 2, 0, "px"]],
-    // A shadow belongs to the words it sits under. These four make one value,
-    // composed on the server, which is why they carry no variable of their own.
     ["tsside", "select", "Shadow", TSSIDES],
     ["tsdist", "range", "Shadow distance", [0, 24, 1, 2, "px"]],
     ["tsblur", "range", "Shadow softness", [0, 60, 1, 4, "px"]],
     ["tscolor", "color", "Shadow colour", "#000000"]
   ];
+
+  function okIeDeviceBp() {
+    var w = parseInt(sessionStorage.getItem("okIeDeviceW") || "1280", 10) || 1280;
+    if (w <= 500) return "";          // phone → base keys
+    if (w < 1024) return "md";        // tablet
+    return "lg";                      // desktop
+  }
+  function okIeDeviceKey(key) {
+    var bp = okIeDeviceBp();
+    if (!bp || !key) return key;
+    // button states stay shared for now; images are one file for all screens
+    if (key.indexOf("style_cta_") === 0) return key;
+    if (/^style_(pt|pb|align|bgimage|xtraimg|xtrapos)$/.test(key)) return key;
+    // size already uses sizemd / sizelg
+    var m = /^(style_[a-z]+_)size$/.exec(key);
+    if (m) return m[1] + "size" + bp;
+    if (/size(md|lg)$/.test(key)) return key;
+    if (/(md|lg)$/.test(key)) return key;
+    return key + bp;
+  }
+  function okIeDeviceVar(cssvar) {
+    var bp = okIeDeviceBp();
+    if (!bp || !cssvar) return cssvar;
+    if (/--pb-cta-/.test(cssvar)) return cssvar;
+    if (/--pb-[a-z]+-size$/.test(cssvar)) return cssvar + bp;
+    if (/size(md|lg)$/.test(cssvar)) return cssvar;
+    if (/(md|lg)$/.test(cssvar)) return cssvar;
+    return cssvar + bp;
+  }
+  function okIeScreenName() {
+    var bp = okIeDeviceBp();
+    return bp === "md" ? "Tablet" : (bp === "lg" ? "Desktop" : "Phone");
+  }
 
   // group, kind, config key, label, css variable, options / [min,max,step,default,unit]
   // Everything the section-style system can do is here — the same keys the
@@ -1050,6 +1163,8 @@ this turns those into contenteditables and saves each on blur. #}
   }
 
   function addControl(el, kind, key, label, cssvar, extra, into) {
+    key = okIeDeviceKey(key);
+    cssvar = okIeDeviceVar(cssvar);
     var cur = cssvar ? (el.style.getPropertyValue(cssvar) || "") : "";
     var wrap = document.createElement("div");
     var id = "ie_" + key;
@@ -1146,6 +1261,11 @@ this turns those into contenteditables and saves each on blur. #}
     currentSec = el;
     dName.textContent = el.getAttribute("data-label") || el.getAttribute("data-section") || "Section";
     dBody.innerHTML = "";
+    var screenNote = document.createElement("p");
+    screenNote.className = "hint ok-ie-editing";
+    screenNote.textContent = "Screen: " + okIeScreenName() +
+      " — changes here only apply to this screen.";
+    dBody.appendChild(screenNote);
     /* Text first. People open this panel because they clicked on words, and
        the words are what they came to change; the section's background and
        padding are the rarer job. It used to sit under eight other groups, so
@@ -1421,7 +1541,7 @@ this turns those into contenteditables and saves each on blur. #}
     if (roleName) {
       var label = currentRole;
       TEXT_ROLES.forEach(function (r) { if (r[0] === currentRole) label = r[1]; });
-      roleName.textContent = "Editing: " + label +
+      roleName.textContent = "Editing: " + label + " on " + okIeScreenName() +
         " — nothing else in this section changes.";
     }
     textHost.innerHTML = "";
@@ -1738,5 +1858,92 @@ this turns those into contenteditables and saves each on blur. #}
   window.okIeRefresh = wireText;
 
   say(document.querySelectorAll(".ok-ie").length + " editable areas", 2600);
+
+  /* ---------- desktop / tablet / phone preview ----------
+     Media queries follow the iframe's width (not the parent window), so the
+     page really becomes that screen. Every style control is remapped to that
+     screen's keys (phone=base, tablet=md, desktop=lg). */
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var isEmbed = params.get("okIeEmbed") === "1";
+    var devices = document.getElementById("okIeDevices");
+    var stage = document.getElementById("okIeStage");
+    var viewport = document.getElementById("okIeViewport");
+    var frame = document.getElementById("okIeFrame");
+    var label = document.getElementById("okIeDeviceLabel");
+    if (!devices) return;
+
+    if (isEmbed) {
+      if (devices) devices.hidden = true;
+      if (stage) stage.hidden = true;
+      var bar = document.getElementById("okIeBar");
+      if (bar) bar.style.display = "none";
+      document.body.style.paddingTop = "0";
+      document.documentElement.style.setProperty("--ok-chrome-top", "0px");
+      return;
+    }
+
+    var deviceW = parseInt(sessionStorage.getItem("okIeDeviceW") || "1280", 10) || 1280;
+    var NAMES = { 1280: "Desktop", 820: "Tablet", 390: "Phone" };
+
+    function embedUrl() {
+      var u = new URL(location.href);
+      u.searchParams.set("edit", "1");
+      u.searchParams.set("okIeEmbed", "1");
+      return u.toString();
+    }
+
+    function fitPreview() {
+      if (!stage || stage.hidden || !viewport) return;
+      var pad = 32;
+      var availW = stage.clientWidth - pad;
+      var availH = stage.clientHeight - 40 - pad;
+      if (availW <= 0 || availH <= 0) return;
+      var scale = Math.min(1, availW / deviceW);
+      var frameH = Math.max(480, Math.round(availH / scale));
+      viewport.style.width = Math.round(deviceW * scale) + "px";
+      viewport.style.height = Math.round(frameH * scale) + "px";
+      if (frame) {
+        frame.style.width = deviceW + "px";
+        frame.style.height = frameH + "px";
+        frame.style.transform = "scale(" + scale + ")";
+        frame.style.transformOrigin = "0 0";
+      }
+    }
+
+    function setDevice(w) {
+      deviceW = w;
+      sessionStorage.setItem("okIeDeviceW", String(w));
+      devices.querySelectorAll("button").forEach(function (b) {
+        b.classList.toggle("is-on", parseInt(b.getAttribute("data-device"), 10) === w);
+      });
+      if (label) label.textContent = (NAMES[w] || (w + "px"));
+
+      if (w >= 1024) {
+        document.body.classList.remove("ok-ie-device-preview");
+        if (stage) stage.hidden = true;
+        if (frame) frame.removeAttribute("src");
+        return;
+      }
+
+      document.body.classList.add("ok-ie-device-preview");
+      if (stage) stage.hidden = false;
+      if (frame && frame.getAttribute("src") !== embedUrl()) frame.src = embedUrl();
+      requestAnimationFrame(fitPreview);
+    }
+
+    devices.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        setDevice(parseInt(b.getAttribute("data-device"), 10) || 1280);
+      });
+    });
+
+    window.addEventListener("resize", function () {
+      if (deviceW < 1024) fitPreview();
+    });
+
+    // restore last picked screen (tablet/phone reopen the preview)
+    setDevice(deviceW);
+  })();
 }) ();
 </script>
