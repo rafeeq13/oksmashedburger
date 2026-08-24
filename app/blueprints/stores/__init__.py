@@ -35,7 +35,12 @@ def api_select_store(slug):
     session["context_set"] = True
     return {"ok": True, "slug": store.slug, "name": store.name,
             "city": store.city, "zip": store.zip_code,
-            "address": store.full_address}
+            "address": store.full_address,
+            "phone": store.phone or "",
+            "email": store.email or "",
+            "map_query": store.map_query,
+            "map_embed_src": store.map_embed_src,
+            "hours_today": store.today_hours_with_day}
 
 
 @bp.get("/api/schedule")

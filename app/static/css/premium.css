@@ -4174,6 +4174,23 @@ input[type="radio"]:focus-visible{
 [data-addon].is-on .qty.qty-sm{ border-color: var(--ok-ink); }
 [data-addon].is-invalid{ border: 1px solid var(--ok-red) !important; }
 
+/* Menu store bar — change-location / change-time links read as CTAs */
+.ok-menu-cta{
+  color: var(--ok-red, #C62828);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.ok-menu-cta--muted{ color: var(--ok-red, #C62828); opacity: .85; }
+.ok-menu-cta:hover{ color: #a31f1f; }
+
+/* News page — uploaded card photos fill the 16:10 frame */
+.ok-news-card-img{ object-fit: cover; object-position: center; }
+
 /* Account sidebar: horizontal scroll tabs on mobile, vertical on desktop */
 .ok-account-page-grid{
   display: flex;
@@ -4396,4 +4413,39 @@ input[type="radio"]:focus-visible{
     line-height: .98;
     letter-spacing: -.025em;
   }
+}
+
+/* Google Places suggestions above checkout cards */
+.pac-container{ z-index: 1200; border-radius: .75rem; border: 1px solid var(--ok-line, #e8e4dc); box-shadow: 0 12px 40px rgba(0,0,0,.12); font-family: inherit; }
+.pac-item{ padding: .55rem .85rem; cursor: pointer; }
+.pac-item:hover{ background: #faf8f3; }
+.pac-icon{ display: none; }
+
+/* Address search — single ok-input + custom Places dropdown */
+.ok-address-search-wrap{ position: relative; }
+.ok-address-predictions{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 1200;
+  margin: 0;
+  padding: .25rem 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--ok-line, #e8e4dc);
+  border-radius: .75rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,.12);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.ok-address-predictions li{
+  padding: .55rem .85rem;
+  cursor: pointer;
+  font-size: .9rem;
+  line-height: 1.35;
+}
+.ok-address-predictions li:hover,
+.ok-address-predictions li.is-active{
+  background: #faf8f3;
 }

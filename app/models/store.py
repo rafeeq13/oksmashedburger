@@ -3,11 +3,20 @@
 Each location owns its own menu (see StoreMenuItem in menu.py) and its own
 integration credentials (StoreIntegration) — Stripe/Square/Uber keys, etc.
 """
+import re
 from datetime import datetime, timedelta, time as _time
 
 from app.extensions import db
 from .base import TimestampMixin
 
+
+def normalize_map_embed(val):
+    """Accept a Google embed URL or a pasted <iframe> snippet."""
+    val = (val or "").strip()
+    if not val:
+        return ""
+    m = re.search(r'src=["\']([^"\']+)', val, re.I)
+    return m.group(1).strip() if m else val
 
 def _parse_hm(s):
     try:
@@ -42,6 +51,7 @@ class Store(TimestampMixin, db.Model):
     image_url = db.Column(db.String(500))           # optional location photo
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
+    map_embed_url = db.Column(db.String(500))   # Google Maps Share → Embed map
     timezone = db.Column(db.String(40), default="America/New_York")
 
     tax_rate = db.Column(db.Numeric(5, 4), default=0.08)      # 8%
@@ -74,6 +84,30 @@ class Store(TimestampMixin, db.Model):
     def full_address(self):
         return f"{self.address_line}, {self.city}, {self.state} {self.zip_code}"
 
+    @property
+    def map_query(self):
+        if self.latitude is not None and self.longitude is not None:
+            return f"{self.latitude},{self.longitude}"
+        return self.full_address
+
+    @property
+    def map_embed_src(self):
+        if self.map_embed_url:
+            return self.map_embed_url
+        from urllib.parse import quote
+        return f"https://maps.google.com/maps?q={quote(self.map_query)}&z=15&output=embed"
+
+    def contact_hours_lines(self):
+        labels = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        lines = []
+        for i, label in enumerate(labels):
+            h = self.hours_for(i)
+            if not h or h.is_closed:
+                lines.append(f"{label}: Closed")
+            else:
+                lines.append(f"{label}: {h.open_time}–{h.close_time}")
+        return lines
+
     def hours_for(self, weekday):
         """StoreHours row for a Python weekday (Mon=0…Sun=6)."""
         return next((h for h in self.hours if h.day_of_week == weekday), None)
@@ -101,6 +135,15 @@ class Store(TimestampMixin, db.Model):
         if not h or h.is_closed:
             return "Closed today"
         return f"{h.open_time}–{h.close_time}"
+
+    @property
+    def today_hours_with_day(self):
+        labels = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        day = labels[datetime.now().weekday()]
+        h = self.hours_for(datetime.now().weekday())
+        if not h or h.is_closed:
+            return f"{day}: Closed"
+        return f"{day}: {h.open_time}–{h.close_time}"
 
     @property
     def open_now(self):

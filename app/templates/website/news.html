@@ -24,8 +24,8 @@
 {% set _s = pb_page_style('news', 'featured_post') %}<div class="pb-sec" data-page="news" data-section="featured_post" data-label="Featured Post"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-section">
   <div class="ok-container">
     <article class="ok-card ok-card-hover overflow-hidden ok-grid ok-grid-md-2">
-      <div class="ok-ar-1610 ok-ar-auto-md bg-cream-40">
-        <img src="{{ lead.img }}" alt="{{ lead.title }}" class="w-100 h-100 ok-cover">
+      <div class="ok-ar-1610 ok-ar-auto-md bg-cream-40 position-relative overflow-hidden">
+        {% if lead.img %}<img src="{{ lead.img }}" alt="{{ lead.title }}" class="w-100 h-100 ok-cover ok-news-card-img" loading="eager">{% else %}<div class="w-100 h-100 ok-grid ok-place-center text-muted-warm ok-fs-sm px-3 text-center">Photo coming soon</div>{% endif %}
       </div>
       <div class="ok-p-3 ok-paddin-25rem-md d-flex flex-column justify-content-center">
         <div class="d-flex align-items-center ok-gap-3 ok-mb-3">
@@ -50,8 +50,8 @@
     <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
       {% for p in posts[1:] %}
       <article class="ok-card ok-card-hover overflow-hidden d-flex flex-column">
-        <div class="ok-ar-1610 bg-ink overflow-hidden">
-          <img src="{{ p.img }}" alt="{{ p.title }}" class="w-100 h-100 ok-cover" loading="lazy">
+        <div class="ok-ar-1610 bg-ink overflow-hidden position-relative">
+          {% if p.img %}<img src="{{ p.img }}" alt="{{ p.title }}" class="w-100 h-100 ok-cover ok-news-card-img" loading="lazy">{% else %}<div class="w-100 h-100 ok-grid ok-place-center text-muted-warm ok-fs-sm px-3 text-center">Photo coming soon</div>{% endif %}
         </div>
         <div class="ok-p-5 flex-grow-1 d-flex flex-column">
           <div class="d-flex align-items-center ok-gap-3 mb-2">

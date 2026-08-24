@@ -4,6 +4,15 @@
 {% macro field(f, value) %}
   {% set key, label, type = f[0], f[1], f[2] %}
   <label class="d-block">
+    {% if type == 'image' %}
+    <span class="d-flex align-items-center gap-2 flex-wrap ok-mb-1">
+      <span class="d-block ok-fs-xs fw-semibold text-muted-warm">{{ label }}</span>
+      {% if f|length > 3 %}<span class="badge badge-yellow ok-fs-6rem text-nowrap" title="Build the image at this size for a perfect fit on the News page">{{ f[3] }} · 16:10</span>{% endif %}
+    </span>
+    {% if value %}<img src="{{ value }}" class="d-block ok-mb-2 ok-rounded-lg" style="max-height:100px;max-width:220px;object-fit:cover" alt="">{% endif %}
+    <input type="hidden" name="{{ key }}" value="{{ value or '' }}">
+    <input name="{{ key }}_file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="ok-input w-100 ok-fs-sm">
+    {% else %}
     <span class="d-block ok-fs-xs fw-semibold text-muted-warm mb-1">{{ label }}</span>
     {% if type == 'textarea' %}
       <textarea name="{{ key }}" rows="3" class="ok-input w-100 ok-fs-sm">{{ value or '' }}</textarea>
@@ -11,6 +20,7 @@
       <input name="{{ key }}" type="{{ 'number' if type == 'number' else 'text' }}"
              value="{{ value or '' }}" class="ok-input w-100 ok-fs-sm"
              {% if type == 'url' %}placeholder="https://…"{% endif %}>
+    {% endif %}
     {% endif %}
   </label>
 {% endmacro %}
@@ -88,10 +98,10 @@
       </div>
     </div>
 
-    <form method="post" action="/admin/content/{{ r.id }}/edit" class="ok-grid ok-grid-sm-2 ok-gap-3">
+    <form method="post" action="/admin/content/{{ r.id }}/edit" class="ok-grid ok-grid-sm-2 ok-gap-3"{% if kind == 'news' %} enctype="multipart/form-data"{% endif %}>
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       {% for f in spec.fields %}
-      <div class="{{ 'ok-col-span-sm-2' if f[2] == 'textarea' else '' }}">{{ field(f, r.data.get(f[0])) }}</div>
+      <div class="{{ 'ok-col-span-sm-2' if f[2] in ['textarea', 'image'] else '' }}">{{ field(f, r.data.get(f[0])) }}</div>
       {% endfor %}
       <div class="ok-col-span-sm-2"><button class="btn btn-primary btn-sm">Save</button></div>
     </form>
@@ -101,10 +111,10 @@
 
 <div class="ok-card ok-p-5 ok-mt-5">
   <h3 class="font-display fw-bold ok-mb-3">Add a new {{ spec.label.lower().rstrip('s') }}</h3>
-  <form method="post" action="/admin/content/{{ kind }}/add" class="ok-grid ok-grid-sm-2 ok-gap-3">
+  <form method="post" action="/admin/content/{{ kind }}/add" class="ok-grid ok-grid-sm-2 ok-gap-3"{% if kind == 'news' %} enctype="multipart/form-data"{% endif %}>
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     {% for f in spec.fields %}
-    <div class="{{ 'ok-col-span-sm-2' if f[2] == 'textarea' else '' }}">{{ field(f, '') }}</div>
+    <div class="{{ 'ok-col-span-sm-2' if f[2] in ['textarea', 'image'] else '' }}">{{ field(f, '') }}</div>
     {% endfor %}
     <div class="ok-col-span-sm-2"><button class="btn btn-primary btn-sm">Add to the website</button></div>
   </form>

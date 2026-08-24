@@ -6,6 +6,10 @@
    address from Page Content is the fallback. #}
 {% set _loc_name = current_store.name if current_store else pc_attr('contact_hq_name') %}
 {% set _loc_addr = current_store.full_address if current_store else pc_attr('contact_hq_address') %}
+{% set _loc_phone = current_store.phone if current_store and current_store.phone else '(215) 555-0100' %}
+{% set _loc_email = current_store.email if current_store and current_store.email else 'hello@oksmashedburger.com' %}
+{% set _map_q = current_store.map_query if current_store else _loc_addr %}
+{% set _map_src = current_store.map_embed_src if current_store else ('https://maps.google.com/maps?q=' ~ (_loc_addr|urlencode) ~ '&z=15&output=embed') %}
 
     <!-- ============ HERO ============ -->
     {% set _s = pb_page_style('contact', 'hero') %}<div class="pb-sec" data-page="contact" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
@@ -33,11 +37,11 @@
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <div class="ok-grid ok-grid-sm-2 ok-gap-3">
               <div class="ok-float">
-                <input id="name" name="name" type="text" autocomplete="name" placeholder=" " class="ok-input" value="{{ current_user.full_name if current_user else '' }}">
+                <input id="name" name="name" type="text" autocomplete="name" placeholder=" " class="ok-input" value="">
                 <label for="name">Full name</label>
               </div>
               <div class="ok-float">
-                <input id="email" name="email" type="email" autocomplete="email" placeholder=" " class="ok-input" value="{{ current_user.email if current_user else '' }}" data-rule="email">
+                <input id="email" name="email" type="email" autocomplete="email" placeholder=" " class="ok-input" value="" data-rule="email">
                 <label for="email">Email address</label>
               </div>
             </div>
@@ -76,24 +80,24 @@
             <!-- Phone -->
             <div class="ok-card ok-card-hover ok-p-3">
               <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-phone"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Call us</h3></div>
-              <a href="tel:+12155550100" class="link-underline ok-fs-sm">(215) 555-0100</a>
-              <p class="ok-fs-xs text-muted-warm ok-mt-15">Daily · 11 AM to 12 AM</p>
+              <a href="tel:{{ _loc_phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','') }}" data-contact-phone data-fallback="(215) 555-0100" class="link-underline ok-fs-sm">{{ _loc_phone }}</a>
+              <p class="ok-fs-xs text-muted-warm ok-mt-15">{% if current_store %}{{ current_store.name }}{% else %}Daily · 11 AM to 12 AM{% endif %}</p>
             </div>
             <!-- Email -->
             <div class="ok-card ok-card-hover ok-p-3">
               <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-envelope"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Email us</h3></div>
-              <a href="mailto:hello@oksmashedburger.com" class="link-underline ok-fs-sm text-break">hello@oksmashedburger.com</a>
+              <a href="mailto:{{ _loc_email }}" data-contact-email data-fallback="hello@oksmashedburger.com" class="link-underline ok-fs-sm text-break">{{ _loc_email }}</a>
               <p class="ok-fs-xs text-muted-warm ok-mt-15">{{ pc('contact_email_note') }}</p>
             </div>
-            <!-- HQ -->
+            <!-- Location -->
             <div class="ok-card ok-card-hover ok-p-3">
-              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-location-dot"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Visit HQ</h3></div>
-              <p class="ok-fs-sm text-muted-warm mt-1">1201 Frankford Ave<br>Philadelphia, PA 19125</p>
+              <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-location-dot"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0" data-contact-visit-title>{% if current_store %}Visit {{ current_store.name }}{% else %}Visit HQ{% endif %}</h3></div>
+              <p class="ok-fs-sm text-muted-warm mt-1" data-contact-visit-address>{{ _loc_addr }}</p>
             </div>
             <!-- Hours -->
             <div class="ok-card ok-card-hover ok-p-3">
               <div class="d-flex align-items-center ok-gap-25 ok-mb-15"><span class="ok-w-10 ok-h-10 ok-rounded-xl ok-grid ok-place-center ok-fs-base text-ink flex-shrink-0" style="background:var(--ok-soft);"><i class="fa-solid fa-clock"></i></span><h3 class="font-display fw-bold ok-fs-lg mb-0">Hours</h3></div>
-              <p class="ok-fs-sm text-muted-warm mt-1">Mon to Sun<br>11 AM to 12 AM</p>
+              <p class="ok-fs-sm text-muted-warm mt-1" data-contact-hours>{% if current_store %}{{ current_store.today_hours_with_day }}{% else %}Mon to Sun<br>11 AM to 12 AM{% endif %}</p>
             </div>
           </div>
 
@@ -111,15 +115,15 @@
           <!-- Map -->
           <div class="ok-card overflow-hidden" data-reveal="up">
             <div class="position-relative ok-ar-1610 bg-cream-40">
-              <iframe src="https://maps.google.com/maps?q={{ _loc_addr|urlencode }}&z=15&output=embed" title="Map of {{ _loc_name }}" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ pc('contact_hq_name') }} map"></iframe>
+              <iframe data-contact-map src="{{ _map_src }}" title="Map of {{ _loc_name }}" class="w-100 h-100 border-0 ok-grayscale-35" loading="lazy" referrerpolicy="no-referrer-when-cross-origin"></iframe>
             </div>
             <div class="ok-p-5 d-flex align-items-center justify-content-between ok-gap-3 border-top ok-bc-varokhairline">
               <div class="ok-min-w-0">
-                <div class="font-display fw-bold ok-fs-sm">{{ _loc_name }}</div>
-                <div class="ok-fs-xs text-muted-warm">{{ _loc_addr }}</div>
-                {% if current_store and current_store.phone %}<div class="ok-fs-xs text-muted-warm">{{ current_store.phone }}</div>{% endif %}
+                <div class="font-display fw-bold ok-fs-sm" data-store-name data-contact-map-name>{{ _loc_name }}</div>
+                <div class="ok-fs-xs text-muted-warm" data-store-address data-contact-map-address>{{ _loc_addr }}</div>
+                <div class="ok-fs-xs text-muted-warm" data-contact-map-phone>{% if current_store and current_store.phone %}{{ current_store.phone }}{% endif %}</div>
               </div>
-              <a href="https://maps.google.com/?q={{ _loc_addr|urlencode }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm flex-shrink-0">{{ pc('contact_directions_label') }}</a>
+              <a href="https://maps.google.com/?q={{ _map_q|urlencode }}" target="_blank" rel="noopener" data-contact-directions class="btn btn-secondary btn-sm flex-shrink-0">{{ pc('contact_directions_label') }}</a>
             </div>
           </div>
         </div>
@@ -197,6 +201,49 @@
       if (window.OK && OK.toast) OK.toast("Please check the highlighted fields");
     }
   });
+})();
+
+// Keep contact details in sync when the visitor changes location in the header/modal.
+(function () {
+  function telHref(phone) {
+    var digits = String(phone || "").replace(/[^\d+]/g, "");
+    return digits ? "tel:" + digits : "#";
+  }
+  function mapUrl(q) {
+    return "https://maps.google.com/maps?q=" + encodeURIComponent(q || "") + "&z=15&output=embed";
+  }
+  function mapLink(q) {
+    return "https://maps.google.com/?q=" + encodeURIComponent(q || "");
+  }
+  function applyContactStore(d) {
+    if (!d || !d.slug) return;
+    var phone = d.phone || "";
+    var email = d.email || "";
+    document.querySelectorAll("[data-contact-phone]").forEach(function (el) {
+      var show = phone || el.dataset.fallback || "";
+      el.textContent = show;
+      el.href = telHref(show);
+    });
+    document.querySelectorAll("[data-contact-email]").forEach(function (el) {
+      var show = email || el.dataset.fallback || "";
+      el.textContent = show;
+      el.href = "mailto:" + show;
+    });
+    var visitTitle = document.querySelector("[data-contact-visit-title]");
+    if (visitTitle && d.name) visitTitle.textContent = "Visit " + d.name;
+    var visitAddr = document.querySelector("[data-contact-visit-address]");
+    if (visitAddr && d.address) visitAddr.textContent = d.address;
+    var hours = document.querySelector("[data-contact-hours]");
+    if (hours && d.hours_today) hours.textContent = d.hours_today;
+    var map = document.querySelector("[data-contact-map]");
+    if (map && d.map_embed_src) map.src = d.map_embed_src;
+    else if (map && d.map_query) map.src = mapUrl(d.map_query);
+    var dir = document.querySelector("[data-contact-directions]");
+    if (dir && d.map_query) dir.href = mapLink(d.map_query);
+    var mapPhone = document.querySelector("[data-contact-map-phone]");
+    if (mapPhone) mapPhone.textContent = phone;
+  }
+  document.addEventListener("ok:store", function (e) { applyContactStore(e.detail || {}); });
 })();
 </script>
 {% endblock %}

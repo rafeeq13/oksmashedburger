@@ -73,7 +73,7 @@
             <div class="ok-p-3 ok-paddin-125rem-md flex-grow-1 d-none d-md-flex flex-column">
               <div
                 class="position-relative flex-grow-1 ok-minh-220px ok-minh-260px-md ok-rounded-xl overflow-hidden bg-cream-40 border ok-bc-varokline">
-                <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed"
+                <iframe src="{{ s.map_embed_src }}"
                   class="position-absolute ok-fill w-100 h-100 border-0" loading="lazy"
                   referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
               </div>

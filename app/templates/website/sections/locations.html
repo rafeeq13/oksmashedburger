@@ -14,7 +14,7 @@
       {% for s in all_stores[:3] %}
       <div class="ok-loccard">
         <div class="ok-loccard-map">
-          <iframe src="https://maps.google.com/maps?q={{ s.full_address|urlencode }}&z=15&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ s.name }} map"></iframe>
+          <iframe src="{{ s.map_embed_src }}" loading="lazy" referrerpolicy="no-referrer-when-cross-origin" title="{{ s.name }} map"></iframe>
           {% if s.open_now %}<span class="ok-loccard-badge"><span class="status-dot"></span> Open now</span>{% endif %}
         </div>
         <div class="ok-loccard-body">

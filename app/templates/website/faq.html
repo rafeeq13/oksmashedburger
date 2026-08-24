@@ -1,6 +1,7 @@
 {% extends "layouts/base.html" %}
 {% block title %}Help & FAQ, OK Smashed Burger{% endblock %}
 {% block content %}
+<div data-faq-page>
     <!-- ============ HERO (jet) with search ============ -->
     {% set _s = pb_page_style('faq', 'hero') %}<div class="pb-sec" data-page="faq" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
@@ -14,8 +15,8 @@
         <form onsubmit="return false" class="max-w-xl mx-auto">
           <div class="d-flex align-items-center gap-2 ok-input bg-white text-ink !py-3">
             <span class="text-gold ok-fs-lg"><i class="fa-solid fa-magnifying-glass"></i></span>
-            <input class="w-100 bg-transparent ok-nofocus ok-fs-base" placeholder="Search for answers, e.g. 'track my order'" aria-label="Search the help center">
-            <button class="btn btn-primary btn-sm flex-shrink-0">Search</button>
+            <input class="w-100 bg-transparent ok-nofocus ok-fs-base" data-faq-search type="search" placeholder="Search for answers, e.g. 'track my order'" aria-label="Search the help center">
+            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-faq-search-btn>Search</button>
           </div>
         </form>
       </div>
@@ -39,7 +40,7 @@
         {% set faqs = content_list('faq') %}
         <div class="ok-card p-2 ok-paddin-15rem-sm">
           {% for f in faqs %}
-          <div class="acc-item{{ ' is-open' if loop.first }}" data-faq-group="{{ f.group }}">
+          <div class="acc-item{{ ' is-open' if loop.first }}" data-faq-group="{{ f.group }}" data-search="{{ ((f.q ~ ' ' ~ (f.a|striptags))|lower)|e }}">
             <button class="acc-q">{{ f.q }} <span class="acc-icon">+</span></button>
             <div class="acc-a">
               <p>{{ f.a|safe }}</p>
@@ -47,6 +48,7 @@
           </div>
           {% endfor %}
         </div>
+        <p class="text-center text-muted-warm ok-fs-sm ok-mt-4 d-none" data-faq-empty>No matching questions. Try another search or pick a topic above.</p>
       </div>
     </section></div>
 
@@ -71,4 +73,5 @@
         </div>
       </div>
     </section></div>
+</div>
 {% endblock %}

@@ -15,7 +15,7 @@ from app.extensions import db
 from .base import TimestampMixin
 
 # field types the admin form knows how to render
-TEXT, AREA, URL, NUM = "text", "textarea", "url", "number"
+TEXT, AREA, URL, NUM, IMAGE = "text", "textarea", "url", "number", "image"
 
 
 class ContentItem(TimestampMixin, db.Model):
@@ -84,7 +84,7 @@ CONTENT_LISTS = [
         "label": "News posts",
         "where": "News page",
         "fields": [("title", "Headline", TEXT), ("date", "Date", TEXT),
-                   ("tag", "Tag", TEXT), ("img", "Image URL", URL),
+                   ("tag", "Tag", TEXT), ("img", "Card photo", IMAGE, "1200×750"),
                    ("excerpt", "Excerpt", AREA),
                    ("link", "Read-more link (optional)", URL)],
         "defaults": [

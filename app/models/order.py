@@ -19,6 +19,13 @@ class Order(TimestampMixin, db.Model):
     customer_email = db.Column(db.String(255))
     customer_phone = db.Column(db.String(40))
     address = db.Column(db.String(400))
+    address_line1 = db.Column(db.String(255))
+    address_line2 = db.Column(db.String(120))
+    address_city = db.Column(db.String(80))
+    address_state = db.Column(db.String(40))
+    address_zip = db.Column(db.String(12))
+    address_lat = db.Column(db.Float)
+    address_lng = db.Column(db.Float)
     notes = db.Column(db.Text)
 
     subtotal = db.Column(db.Numeric(10, 2), default=0)

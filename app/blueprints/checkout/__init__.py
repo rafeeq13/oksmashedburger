@@ -11,8 +11,89 @@ from app.auth import current_user
 from app.models.order import Order, OrderItem, Payment
 from app.models.promo import Coupon, GiftCard
 from app.integrations.stripe_gateway import charge, store_stripe_config, is_connected
+from app.integrations.google_maps import store_google_maps_key
+from app.address import address_from_form
 
 bp = Blueprint("checkout", __name__)
+
+
+def _checkout_draft():
+    """Remember what the customer entered when validation bounces them back."""
+    tip = request.form.get("tip", "0")
+    store = get_current_store()
+    subtotal = cartlib.summary(store).get("subtotal", 0) if store else 0
+    presets = (store.tip_presets if store and store.tip_presets else [15, 18, 20])
+    preset_vals = {f"{round(subtotal * p / 100, 2):.2f}" for p in presets}
+    try:
+        tip_f = float(tip or 0)
+    except (TypeError, ValueError):
+        tip_f = 0.0
+    tip = f"{tip_f:.2f}"
+    tip_custom = tip_f > 0 and tip not in preset_vals
+    addr = address_from_form(request.form)
+    return {
+        "order_type": request.form.get("order_type", "delivery"),
+        "fulfillment": request.form.get("fulfillment", "asap"),
+        "scheduled_for": request.form.get("scheduled_for", ""),
+        "address_line1": addr["line1"],
+        "address_line2": addr["line2"],
+        "address_city": addr["city"],
+        "address_state": addr["state"],
+        "address_zip": addr["zip"],
+        "address_lat": request.form.get("address_lat", ""),
+        "address_lng": request.form.get("address_lng", ""),
+        "address_search": request.form.get("address_search", "").strip(),
+        "name": request.form.get("name", "").strip(),
+        "phone": request.form.get("phone", "").strip(),
+        "email": request.form.get("email", "").strip(),
+        "notes": request.form.get("notes", "").strip(),
+        "tip": tip,
+        "tip_custom": tip_custom,
+        "payment_method": request.form.get("payment_method", "card"),
+        "card_number": request.form.get("card_number", ""),
+        "card_exp": request.form.get("card_exp", ""),
+        "card_cvc": request.form.get("card_cvc", ""),
+        "card_name": request.form.get("card_name", ""),
+    }
+
+
+def _checkout_error(message):
+    session["checkout_draft"] = _checkout_draft()
+    flash(message, "error")
+    return redirect("/checkout")
+
+
+def _render_checkout(store, form=None):
+    form = form or {}
+    ot = form.get("order_type") or session.get("order_type", "delivery")
+    session["order_type"] = ot
+    try:
+        tip = float(form.get("tip") or 0)
+    except (TypeError, ValueError):
+        tip = 0.0
+    s = cartlib.summary(store, tip=tip, order_type=ot)
+    s_delivery = s if ot == "delivery" else cartlib.summary(store, tip=tip, order_type="delivery")
+    s_pickup = s if ot == "pickup" else cartlib.summary(store, tip=tip, order_type="pickup")
+    u = current_user()
+    default_address = None
+    if u:
+        from app.models.address import UserAddress
+        default_address = (UserAddress.query.filter_by(user_id=u.id, is_default=True).first()
+                           or UserAddress.query.filter_by(user_id=u.id).first())
+    now = datetime.now()
+    return render_template(
+        "checkout/checkout.html", store=store, summary=s, user=u, form=form,
+        default_address=default_address,
+        min_schedule=(now + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M"),
+        default_schedule=(now + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M"),
+        stripe_pub_key=store_stripe_config(store).get("publishable_key", ""),
+        stripe_connected=is_connected(store),
+        checkout_delivery_fee=s_delivery["delivery_fee"],
+        checkout_delivery_free=bool(s_delivery["promo"].get("delivery_discount")),
+        checkout_total_delivery=s_delivery["total"],
+        checkout_total_pickup=s_pickup["total"],
+        google_maps_api_key=store_google_maps_key(store),
+    )
 
 
 @bp.route("/checkout", methods=["GET", "POST"])
@@ -31,32 +112,26 @@ def checkout():
         scheduled_for = None
         if fulfillment == "scheduled":
             if not (store and store.scheduling_open):
-                flash("Scheduled ordering isn't available for this store right now.", "error")
-                return redirect("/checkout")
+                return _checkout_error("Scheduled ordering isn't available for this store right now.")
             try:
                 scheduled_for = datetime.strptime(request.form.get("scheduled_for", ""), "%Y-%m-%dT%H:%M")
             except (ValueError, TypeError):
-                flash("Please choose a valid date and time for your scheduled order.", "error")
-                return redirect("/checkout")
+                return _checkout_error("Please choose a valid date and time for your scheduled order.")
             if scheduled_for <= datetime.now():
-                flash("Your scheduled time must be in the future.", "error")
-                return redirect("/checkout")
+                return _checkout_error("Your scheduled time must be in the future.")
             if not store.is_open_at(scheduled_for):
-                flash(f"{store.name} isn't open at that time — please pick a slot within opening hours "
-                      f"({store.today_hours} today).", "error")
-                return redirect("/checkout")
+                return _checkout_error(f"{store.name} isn't open at that time — please pick a slot within opening hours "
+                      f"({store.today_hours} today).")
         else:  # ASAP
             if not (store and store.open_now):
-                flash(f"{store.name if store else 'This store'} is closed for immediate orders — "
-                      "please schedule your order for later.", "error")
-                return redirect("/checkout")
+                return _checkout_error(f"{store.name if store else 'This store'} is closed for immediate orders — "
+                      "please schedule your order for later.")
 
         # A delivery order without an address is undeliverable, and the browser
         # `required` attribute is not a guarantee — it is trivially bypassed.
-        address = request.form.get("address", "").strip()
-        if order_type == "delivery" and not address:
-            flash("Please enter a delivery address.", "error")
-            return redirect("/checkout")
+        addr = address_from_form(request.form)
+        if order_type == "delivery" and not addr["line1"]:
+            return _checkout_error("Please enter a delivery street address.")
 
         s = cartlib.summary(store, tip=tip, order_type=order_type)
 
@@ -66,7 +141,14 @@ def checkout():
             customer_name=request.form.get("name", "").strip(),
             customer_email=request.form.get("email", "").strip(),
             customer_phone=request.form.get("phone", "").strip(),
-            address=address,
+            address=addr["one_line"],
+            address_line1=addr["line1"],
+            address_line2=addr["line2"] or None,
+            address_city=addr["city"] or None,
+            address_state=addr["state"] or None,
+            address_zip=addr["zip"] or None,
+            address_lat=addr["lat"],
+            address_lng=addr["lng"],
             notes=request.form.get("notes", "").strip(),
             subtotal=Decimal(str(s["subtotal"])), tax=Decimal(str(s["tax"])),
             delivery_fee=Decimal(str(s["delivery_fee"])), tip=Decimal(str(s["tip"])),
@@ -126,34 +208,14 @@ def checkout():
         notify_order_event(order, order.status)
 
         cartlib.clear()
+        session.pop("checkout_draft", None)
         session["last_order_id"] = order.id
         flash(f"Order {order.number} placed! 🎉", "success")
         return redirect("/order-confirmed")
 
-    # GET — price for the customer's current Delivery/Pickup choice
-    ot = session.get("order_type", "delivery")
-    s = cartlib.summary(store, order_type=ot)
-    s_delivery = s if ot == "delivery" else cartlib.summary(store, order_type="delivery")
-    s_pickup = s if ot == "pickup" else cartlib.summary(store, order_type="pickup")
-    u = current_user()
-    default_address = None
-    if u:
-        from app.models.address import UserAddress
-        default_address = (UserAddress.query.filter_by(user_id=u.id, is_default=True).first()
-                           or UserAddress.query.filter_by(user_id=u.id).first())
-    now = datetime.now()
-    return render_template(
-        "checkout/checkout.html", store=store, summary=s, user=u,
-        default_address=default_address,
-        min_schedule=(now + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M"),
-        default_schedule=(now + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M"),
-        stripe_pub_key=store_stripe_config(store).get("publishable_key", ""),
-        stripe_connected=is_connected(store),
-        checkout_delivery_fee=s_delivery["delivery_fee"],
-        checkout_delivery_free=bool(s_delivery["promo"].get("delivery_discount")),
-        checkout_total_delivery=s_delivery["total"],
-        checkout_total_pickup=s_pickup["total"],
-    )
+    # GET — restore a failed submit, or show defaults
+    draft = session.pop("checkout_draft", None)
+    return _render_checkout(store, draft)
 
 
 @bp.get("/order-confirmed")

@@ -2,7 +2,22 @@
 {% block title %}Checkout, {{ brand_name }}{% endblock %}
 {% block main_class %}bg-[#f6f6f4]{% endblock %}
 
+{% block head_extra %}
+{% if google_maps_api_key %}
+<script src="{{ url_for('static', filename='js/address-autocomplete.js') }}" defer></script>
+{% endif %}
+{% endblock %}
+
 {% block content %}
+{% set form = form or {} %}
+{% set sel_order_type = form.get('order_type') or order_type %}
+{% set sel_fulfillment = form.get('fulfillment') or ('asap' if store and store.open_now else 'scheduled') %}
+{% set addr_line1 = form.get('address_line1') or (default_address.line1 if default_address else '') %}
+{% set addr_line2 = form.get('address_line2') or (default_address.line2 if default_address else '') %}
+{% set addr_city = form.get('address_city') or (default_address.city if default_address else 'Philadelphia') %}
+{% set addr_state = form.get('address_state') or (default_address.state if default_address else 'PA') %}
+{% set addr_zip = form.get('address_zip') or (default_address.zip_code if default_address else '') %}
+{% set addr_search = form.get('address_search') or (default_address.one_line if default_address and not form.get('address_line1') else '') %}
 <form method="post" action="/checkout">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <div class="ok-container ok-py-8 ok-paddin-25rem-md ok-grid ok-gc-1fr400px-lg ok-gap-3 ok-gap-2rem-lg align-items-start">
@@ -18,7 +33,7 @@
         <div class="ok-grid ok-grid-2 gap-2 ok-mb-5">
           {% for ot, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
           <label class="ok-choice d-flex align-items-center justify-content-center ok-gap-25 ok-pointer transition ok-bc-varokline ok-checkable">
-            <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if order_type == ot %}checked{% endif %}>
+            <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if sel_order_type == ot %}checked{% endif %}>
             <i class="fa-solid fa-{{ icon }} ok-fs-lg text-gold"></i>
             <span class="ok-fs-sm fw-semibold">{{ label }}</span>
           </label>
@@ -26,12 +41,43 @@
         </div>
 
         <!-- address (delivery only — hidden for pickup by app.js) -->
-        <div class="ok-mb-5" data-address-row>
-          <label class="ok-label" for="address">Delivery address <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
-          <div class="d-flex align-items-center gap-2 ok-input">
-            <span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span>
-            <input id="address" name="address" data-address-field required class="w-100 bg-transparent ok-nofocus" placeholder="1520 Chestnut St, Apt 4B, Philadelphia 19102" value="{{ default_address.one_line if default_address else '' }}">
+        <div class="ok-mb-5" data-address-row data-address-autocomplete{% if google_maps_api_key %} data-maps-key="{{ google_maps_api_key }}"{% endif %}>
+          <label class="ok-label" for="address_search">Search delivery address <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
+          <div class="ok-address-search-wrap position-relative ok-mb-3">
+            <div class="d-flex align-items-center gap-2 ok-input">
+              <span class="text-muted-warm flex-shrink-0" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input id="address_search" name="address_search" data-address-search type="search" autocomplete="off" class="w-100 bg-transparent ok-nofocus ok-fs-base" placeholder="Start typing your address…" value="{{ addr_search }}">
+            </div>
+            <ul data-address-predictions class="ok-address-predictions d-none" role="listbox" aria-label="Address suggestions"></ul>
           </div>
+          <div class="ok-grid ok-grid-sm-2 ok-gap-3">
+            <div class="ok-gridco-span2span2-sm">
+              <label class="ok-label" for="address_line1">Street address</label>
+              <input id="address_line1" name="address_line1" data-address-field required class="ok-input" placeholder="1520 Chestnut St" value="{{ addr_line1 }}">
+            </div>
+            <div class="ok-gridco-span2span2-sm">
+              <label class="ok-label" for="address_line2">Apt / suite <span class="text-muted-warm fw-normal">(optional)</span></label>
+              <input id="address_line2" name="address_line2" data-address-field class="ok-input" placeholder="Apt 4B" value="{{ addr_line2 }}">
+            </div>
+            <div>
+              <label class="ok-label" for="address_city">City</label>
+              <input id="address_city" name="address_city" data-address-field required class="ok-input" value="{{ addr_city }}">
+            </div>
+            <div class="ok-grid ok-grid-2 ok-gap-3">
+              <div>
+                <label class="ok-label" for="address_state">State</label>
+                <input id="address_state" name="address_state" data-address-field required class="ok-input" maxlength="2" value="{{ addr_state }}">
+              </div>
+              <div>
+                <label class="ok-label" for="address_zip">ZIP</label>
+                <input id="address_zip" name="address_zip" data-address-field required class="ok-input" inputmode="numeric" value="{{ addr_zip }}">
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="address_lat" value="{{ form.get('address_lat', '') }}">
+          <input type="hidden" name="address_lng" value="{{ form.get('address_lng', '') }}">
+          <p class="ok-hint ok-mt-2 d-none" data-address-maps-status></p>
+          {% if not google_maps_api_key %}<p class="ok-hint ok-mt-2"><i class="fa-solid fa-circle-info"></i> Add a Google Maps API key in Admin → Integrations (enable Google Maps and save your key).</p>{% endif %}
         </div>
 
         <!-- timing -->
@@ -40,13 +86,13 @@
         {% else %}
         <div class="ok-grid ok-grid-sm-2 gap-2">
           <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
-            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if store.open_now %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
+            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'asap' %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
             <span class="ok-fs-xs text-muted-warm ok-asap-note">{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
           </label>
           {% if store.scheduling_open %}
           <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline">
-            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if not store.open_now %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
-            <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ default_schedule }}">
+            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'scheduled' %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
+            <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ form.get('scheduled_for') or default_schedule }}">
           </label>
           {% endif %}
         </div>
@@ -58,30 +104,32 @@
       <section class="ok-card ok-p-5 ok-paddin-15rem-md">
         <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">2</span><h2 class="font-display fw-bold ok-fs-lg">Contact details</h2></div>
         <div class="ok-grid ok-grid-sm-2 ok-gap-3">
-          <div><label class="ok-label" for="name">Name</label><input id="name" name="name" required class="ok-input" value="{{ user.full_name if user else '' }}" placeholder="Jordan Miller"></div>
-          <div><label class="ok-label" for="phone">Phone</label><input id="phone" name="phone" class="ok-input" value="{{ user.phone if user else '' }}" placeholder="(215) 555-0100"></div>
-          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="email">Email</label><input id="email" name="email" type="email" class="ok-input" value="{{ user.email if user else '' }}" placeholder="you@email.com"></div>
-          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="notes">Order notes <span class="text-muted-warm fw-normal">(optional)</span></label><textarea id="notes" name="notes" rows="2" class="ok-textarea" placeholder="Gate code, allergies, no onions…"></textarea></div>
+          <div><label class="ok-label" for="name">Name</label><input id="name" name="name" required class="ok-input" value="{{ form.get('name') or (user.full_name if user else '') }}" placeholder="Jordan Miller"></div>
+          <div><label class="ok-label" for="phone">Phone</label><input id="phone" name="phone" class="ok-input" value="{{ form.get('phone') or (user.phone if user else '') }}" placeholder="(215) 555-0100"></div>
+          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="email">Email</label><input id="email" name="email" type="email" class="ok-input" value="{{ form.get('email') or (user.email if user else '') }}" placeholder="you@email.com"></div>
+          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="notes">Order notes <span class="text-muted-warm fw-normal">(optional)</span></label><textarea id="notes" name="notes" rows="2" class="ok-textarea" placeholder="Gate code, allergies, no onions…">{{ form.get('notes', '') }}</textarea></div>
         </div>
       </section>
 
       {% set tip_presets = (store.tip_presets if store and store.tip_presets else [15, 18, 20]) %}
       {% if store and store.tips_enabled %}
+      {% set sel_tip = form.get('tip', '0') %}
       <!-- 3 · Tip (percentages configured per store in admin → Settings) -->
       <section class="ok-card ok-p-5 ok-paddin-15rem-md">
         <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">3</span><h2 class="font-display fw-bold ok-fs-lg">Add a tip</h2><span class="ok-fs-xs text-muted-warm ml-auto">100% goes to the crew</span></div>
         <div class="d-flex flex-wrap ok-gap-15 ok-gap-05rem-sm">
-          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="0" class="visually-hidden" checked><span class="fw-bold ok-fs-sm">None</span><span class="ok-fs-65rem text-muted-warm">$0</span></label>
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="0" class="visually-hidden" {% if sel_tip == '0' and not form.get('tip_custom') %}checked{% endif %}><span class="fw-bold ok-fs-sm">None</span><span class="ok-fs-65rem text-muted-warm">$0</span></label>
           {% for pct in tip_presets %}
-          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="{{ '%.2f'|format(summary.subtotal * pct / 100) }}" class="visually-hidden"><span class="fw-bold ok-fs-sm">{{ pct }}%</span><span class="ok-fs-65rem text-muted-warm">${{ '%.2f'|format(summary.subtotal * pct / 100) }}</span></label>
+          {% set tip_amt = '%.2f'|format(summary.subtotal * pct / 100) %}
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="{{ tip_amt }}" class="visually-hidden" {% if sel_tip == tip_amt and not form.get('tip_custom') %}checked{% endif %}><span class="fw-bold ok-fs-sm">{{ pct }}%</span><span class="ok-fs-65rem text-muted-warm">${{ tip_amt }}</span></label>
           {% endfor %}
-          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center justify-content-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="0" class="visually-hidden" data-tip-custom-radio><span class="fw-bold ok-fs-sm">Custom</span><span class="ok-fs-65rem text-muted-warm"><i class="fa-solid fa-pen"></i></span></label>
+          <label class="flex-grow-1 ok-minw-56px d-flex flex-column align-items-center justify-content-center ok-rounded-xl border-2 ok-py-25 ok-pointer transition ok-bc-varokline ok-checkable"><input type="radio" name="tip" value="{{ sel_tip if form.get('tip_custom') else '0' }}" class="visually-hidden" data-tip-custom-radio {% if form.get('tip_custom') %}checked{% endif %}><span class="fw-bold ok-fs-sm">Custom</span><span class="ok-fs-65rem text-muted-warm"><i class="fa-solid fa-pen"></i></span></label>
         </div>
 
         <!-- custom tip amount (shown when Custom is selected) -->
-        <div data-tip-custom-wrap class="ok-mt-3" hidden>
+        <div data-tip-custom-wrap class="ok-mt-3"{% if not form.get('tip_custom') %} hidden{% endif %}>
           <label class="ok-label !text-xs" for="tipCustom">Custom tip amount</label>
-          <div class="d-flex align-items-center gap-2 ok-input"><span class="text-muted-warm fw-semibold">$</span><input id="tipCustom" type="number" min="0" step="0.50" inputmode="decimal" data-tip-custom-input class="w-100 bg-transparent ok-nofocus" placeholder="0.00"></div>
+          <div class="d-flex align-items-center gap-2 ok-input"><span class="text-muted-warm fw-semibold">$</span><input id="tipCustom" type="number" min="0" step="0.50" inputmode="decimal" data-tip-custom-input class="w-100 bg-transparent ok-nofocus" placeholder="0.00" value="{{ sel_tip if form.get('tip_custom') else '' }}"></div>
         </div>
       </section>
       {% endif %}
@@ -97,15 +145,15 @@
             <label class="ok-label" for="card_number">Card number</label>
             <div class="d-flex align-items-center gap-2 ok-input">
               <span class="text-muted-warm"><i class="fa-solid fa-credit-card"></i></span>
-              <input id="card_number" name="card_number" inputmode="numeric" autocomplete="cc-number" maxlength="19" class="w-100 bg-transparent ok-nofocus tracking-widest" placeholder="4242 4242 4242 4242">
+              <input id="card_number" name="card_number" inputmode="numeric" autocomplete="cc-number" maxlength="19" class="w-100 bg-transparent ok-nofocus tracking-widest" placeholder="4242 4242 4242 4242" value="{{ form.get('card_number', '') }}">
               <span class="d-flex gap-1 text-muted-warm-70"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i><i class="fa-brands fa-cc-amex"></i></span>
             </div>
           </div>
           <div class="ok-grid ok-grid-2 ok-gap-3">
-            <div><label class="ok-label" for="card_exp">Expiry</label><input id="card_exp" name="card_exp" inputmode="numeric" autocomplete="cc-exp" maxlength="7" class="ok-input" placeholder="MM / YY"></div>
-            <div><label class="ok-label" for="card_cvc">CVC</label><input id="card_cvc" name="card_cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="4" class="ok-input" placeholder="123"></div>
+            <div><label class="ok-label" for="card_exp">Expiry</label><input id="card_exp" name="card_exp" inputmode="numeric" autocomplete="cc-exp" maxlength="7" class="ok-input" placeholder="MM / YY" value="{{ form.get('card_exp', '') }}"></div>
+            <div><label class="ok-label" for="card_cvc">CVC</label><input id="card_cvc" name="card_cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="4" class="ok-input" placeholder="123" value="{{ form.get('card_cvc', '') }}"></div>
           </div>
-          <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}"></div>
+          <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}" value="{{ form.get('card_name', '') }}"></div>
         </div>
 
         <p class="ok-hint ok-mt-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-lock text-ok-green"></i>
@@ -156,7 +204,7 @@
           <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
           {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount{% if summary.promo.code %} ({{ summary.promo.code }}){% endif %}</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
           <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
-          <div class="d-flex justify-content-between" data-delivery-line><span class="text-muted-warm">Delivery</span><span class="fw-semibold" data-delivery-amount>{% if order_type == 'pickup' %}$0.00{% elif checkout_delivery_free %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(checkout_delivery_fee) }}{% endif %}</span></div>
+          <div class="d-flex justify-content-between" data-delivery-line><span class="text-muted-warm">Delivery</span><span class="fw-semibold" data-delivery-amount>{% if sel_order_type == 'pickup' %}$0.00{% elif checkout_delivery_free %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(checkout_delivery_fee) }}{% endif %}</span></div>
           <div class="d-flex justify-content-between" data-tip-line{% if not summary.tip %} hidden{% endif %}><span class="text-muted-warm">Tip</span><span class="fw-semibold" data-tip-amount>${{ '%.2f'|format(summary.tip) }}</span></div>
           {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
         </div>
@@ -255,6 +303,13 @@
 
   syncDeliveryLine();
   applyTip();
+  if (!isDelivery()) {
+    var addrRow = form.querySelector("[data-address-row]");
+    if (addrRow) addrRow.classList.add("d-none");
+    form.querySelectorAll("[data-address-field][required]").forEach(function (el) {
+      el.removeAttribute("required");
+    });
+  }
 })();
 </script>
 {% endblock %}

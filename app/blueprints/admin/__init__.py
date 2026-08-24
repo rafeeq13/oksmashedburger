@@ -17,7 +17,7 @@ from app.extensions import db
 from app.auth import current_user, roles_required
 from app.helpers import active_stores, get_current_store
 from app.security import style_value_ok
-from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone
+from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone, normalize_map_embed
 from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon, AddonLibrary, Category
 from app.models.order import Order, OrderItem
 from app.models.promo import Coupon, GiftCard, COUPON_KINDS
@@ -2144,6 +2144,15 @@ def _slugify(text):
     return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-") or "store"
 
 
+def _optional_float(val):
+    if val is None or str(val).strip() == "":
+        return None
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
+
+
 @bp.get("/admin/locations")
 @roles_required(*ADMIN_ROLES)
 def locations():
@@ -2189,6 +2198,9 @@ def location_add():
         zip_code=request.form.get("zip_code", "").strip(),
         phone=request.form.get("phone", "").strip(),
         email=request.form.get("email", "").strip() or f"{slug}@oksmashedburger.com",
+        latitude=_optional_float(request.form.get("latitude")),
+        longitude=_optional_float(request.form.get("longitude")),
+        map_embed_url=normalize_map_embed(request.form.get("map_embed_url")),
         tax_rate=tax, avg_prep_minutes=int(request.form.get("avg_prep_minutes") or 15))
     db.session.add(s)
     db.session.flush()
@@ -2238,6 +2250,10 @@ def location_edit(sid):
     s.zip_code = request.form.get("zip_code", "").strip()
     s.phone = request.form.get("phone", "").strip()
     s.email = request.form.get("email", "").strip() or s.email
+    s.latitude = _optional_float(request.form.get("latitude"))
+    s.longitude = _optional_float(request.form.get("longitude"))
+    if "map_embed_url" in request.form:
+        s.map_embed_url = normalize_map_embed(request.form.get("map_embed_url")) or None
     try:
         s.tax_rate = Decimal(request.form.get("tax_rate") or str(s.tax_rate))
     except InvalidOperation:
@@ -2684,14 +2700,21 @@ def _content_kind(kind):
     return spec
 
 
-def _content_payload(spec):
+def _content_payload(spec, row=None):
     """Read this list's own fields off the submitted form.
 
     Number fields are coerced: a form always hands back strings, and templates
     compare these values numerically (`r.stars >= i+1`), which blows up on a str.
     """
     out = {}
-    for key, _label, ftype in spec["fields"]:
+    existing = (row.data if row else {}) or {}
+    for f in spec["fields"]:
+        key, _label, ftype = f[0], f[1], f[2]
+        if ftype == "image":
+            slug = f"content-{spec['kind']}-{(row.id if row else 'new')}-{key}"
+            uploaded = _save_image(request.files.get(f"{key}_file"), slug)
+            out[key] = uploaded or request.form.get(key, "").strip() or existing.get(key, "")
+            continue
         val = request.form.get(key, "").strip()
         if ftype == "number":
             try:
@@ -2736,8 +2759,15 @@ def content_add(kind):
     spec = _content_kind(kind)
     last = (db.session.query(db.func.max(ContentItem.sort_order))
             .filter_by(kind=kind).scalar() or 0)
-    db.session.add(ContentItem(kind=kind, sort_order=last + 1, is_active=True,
-                               data=_content_payload(spec)))
+    row = ContentItem(kind=kind, sort_order=last + 1, is_active=True, data={})
+    db.session.add(row)
+    db.session.flush()
+    data = _content_payload(spec, row)
+    if kind == "news" and not data.get("img"):
+        db.session.rollback()
+        flash("Upload a card photo (1200×750, 16:10) for this news post.", "error")
+        return redirect("/admin/content?kind=" + kind)
+    row.data = data
     db.session.commit()
     flash("Added.", "success")
     return redirect("/admin/content?kind=" + kind)
@@ -2748,7 +2778,7 @@ def content_add(kind):
 def content_edit(iid):
     row = ContentItem.query.get_or_404(iid)
     spec = _content_kind(row.kind)
-    row.data = _content_payload(spec)
+    row.data = _content_payload(spec, row)
     db.session.commit()
     flash("Saved.", "success")
     return redirect("/admin/content?kind=" + row.kind)

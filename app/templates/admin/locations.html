@@ -25,6 +25,14 @@
         placeholder="19104"></div>
     <div><label class="ok-label ok-fs-xs">Phone</label><input name="phone" class="ok-input py-2 ok-fs-sm"
         placeholder="(215) 555-0140"></div>
+    <div><label class="ok-label ok-fs-xs">Latitude</label><input name="latitude" class="ok-input py-2 ok-fs-sm"
+        placeholder="39.9776" data-loc-map-input></div>
+    <div><label class="ok-label ok-fs-xs">Longitude</label><input name="longitude" class="ok-input py-2 ok-fs-sm"
+        placeholder="-75.0721" data-loc-map-input></div>
+    <div class="ok-col-span-lg-2"><label class="ok-label ok-fs-xs">Google Maps embed</label>
+      <textarea name="map_embed_url" rows="3" class="ok-input py-2 ok-fs-sm" placeholder="Paste the embed URL or full &lt;iframe&gt; from Google Maps → Share → Embed a map" data-loc-embed-input></textarea>
+      <p class="ok-fs-xs text-muted-warm ok-mt-05">Optional. When set, the website uses this exact map pin.</p>
+    </div>
     <div class="ok-col-span-lg-2"><label class="ok-label ok-fs-xs">Email</label><input name="email"
         class="ok-input py-2 ok-fs-sm" placeholder="auto: slug@oksmashedburger.com"></div>
     <div><label class="ok-label ok-fs-xs">Tax rate</label><input name="tax_rate" class="ok-input py-2 ok-fs-sm"
@@ -114,17 +122,38 @@
         <div class="ok-col-span-2"><label class="ok-label ok-fs-xs">Name</label><input name="name"
             value="{{ r.store.name }}" class="ok-input ok-py-15 ok-fs-sm"></div>
         <div class="ok-col-span-2"><label class="ok-label ok-fs-xs">Address</label><input name="address_line"
-            value="{{ r.store.address_line or '' }}" class="ok-input ok-py-15 ok-fs-sm"></div>
+            value="{{ r.store.address_line or '' }}" class="ok-input ok-py-15 ok-fs-sm" data-loc-map-input></div>
         <div><label class="ok-label ok-fs-xs">City</label><input name="city" value="{{ r.store.city }}"
-            class="ok-input ok-py-15 ok-fs-sm"></div>
+            class="ok-input ok-py-15 ok-fs-sm" data-loc-map-input></div>
         <div><label class="ok-label ok-fs-xs">State</label><input name="state" value="{{ r.store.state }}"
-            class="ok-input ok-py-15 ok-fs-sm"></div>
+            class="ok-input ok-py-15 ok-fs-sm" data-loc-map-input></div>
         <div><label class="ok-label ok-fs-xs">ZIP</label><input name="zip_code" value="{{ r.store.zip_code or '' }}"
-            class="ok-input ok-py-15 ok-fs-sm"></div>
+            class="ok-input ok-py-15 ok-fs-sm" data-loc-map-input></div>
         <div><label class="ok-label ok-fs-xs">Phone</label><input name="phone" value="{{ r.store.phone or '' }}"
+            class="ok-input ok-py-15 ok-fs-sm" data-loc-map-input></div>
+        <div><label class="ok-label ok-fs-xs">Latitude</label><input name="latitude"
+            value="{{ r.store.latitude if r.store.latitude is not none else '' }}" class="ok-input ok-py-15 ok-fs-sm"
+            placeholder="39.9776" data-loc-map-input></div>
+        <div><label class="ok-label ok-fs-xs">Longitude</label><input name="longitude"
+            value="{{ r.store.longitude if r.store.longitude is not none else '' }}" class="ok-input ok-py-15 ok-fs-sm"
+            placeholder="-75.0721" data-loc-map-input></div>
+        <div class="ok-col-span-2"><label class="ok-label ok-fs-xs">Email</label><input name="email" value="{{ r.store.email or '' }}"
             class="ok-input ok-py-15 ok-fs-sm"></div>
-        <div><label class="ok-label ok-fs-xs">Email</label><input name="email" value="{{ r.store.email or '' }}"
-            class="ok-input ok-py-15 ok-fs-sm"></div>
+        <div class="ok-col-span-2"><label class="ok-label ok-fs-xs">Google Maps embed</label>
+          <textarea name="map_embed_url" rows="3" class="ok-input ok-py-15 ok-fs-sm" data-loc-embed-input
+            placeholder="Paste the embed URL or full &lt;iframe&gt; from Google Maps → Share → Embed a map">{{ r.store.map_embed_url or '' }}</textarea>
+          <p class="ok-fs-xs text-muted-warm ok-mt-05">Optional. Overrides the auto map when set.</p>
+        </div>
+        <div class="ok-col-span-2">
+          <label class="ok-label ok-fs-xs">Map preview</label>
+          <div class="ok-rounded-lg overflow-hidden border ok-bc-varokline">
+            <iframe data-loc-map-preview data-store-id="{{ r.store.id }}"
+              src="{{ r.store.map_embed_src }}"
+              class="w-100 border-0" style="height:220px" loading="lazy"
+              title="Map preview for {{ r.store.name }}"></iframe>
+          </div>
+          <p class="ok-fs-xs text-muted-warm ok-mt-15">Uses the Google embed when saved, otherwise latitude/longitude or the street address.</p>
+        </div>
         <div><label class="ok-label ok-fs-xs">Tax rate</label><input name="tax_rate" value="{{ r.store.tax_rate }}"
             class="ok-input ok-py-15 ok-fs-sm"></div>
         <div class="ok-col-span-2">
@@ -145,4 +174,40 @@
   </article>
   {% endfor %}
 </div>
+<script>
+(function () {
+  function mapQuery(form) {
+    if (!form) return "";
+    var lat = (form.querySelector('[name="latitude"]') || {}).value || "";
+    var lng = (form.querySelector('[name="longitude"]') || {}).value || "";
+    if (lat.trim() && lng.trim()) return lat.trim() + "," + lng.trim();
+    var line = (form.querySelector('[name="address_line"]') || {}).value || "";
+    var city = (form.querySelector('[name="city"]') || {}).value || "";
+    var state = (form.querySelector('[name="state"]') || {}).value || "";
+    var zip = (form.querySelector('[name="zip_code"]') || {}).value || "";
+    return [line, city, state, zip].filter(Boolean).join(", ");
+  }
+  function extractEmbedSrc(val) {
+    val = String(val || "").trim();
+    if (!val) return "";
+    var m = val.match(/src=["']([^"']+)/i);
+    return m ? m[1] : val;
+  }
+  function refreshMap(form) {
+    var frame = form.querySelector("[data-loc-map-preview]");
+    if (!frame) return;
+    var embed = extractEmbedSrc((form.querySelector("[data-loc-embed-input]") || {}).value);
+    if (embed) { frame.src = embed; return; }
+    var q = mapQuery(form);
+    if (!q) return;
+    frame.src = "https://maps.google.com/maps?q=" + encodeURIComponent(q) + "&z=15&output=embed";
+  }
+  document.querySelectorAll("form[action*='/admin/locations']").forEach(function (form) {
+    form.querySelectorAll("[data-loc-map-input], [name='address_line'], [name='city'], [name='state'], [name='zip_code'], [data-loc-embed-input]").forEach(function (el) {
+      el.addEventListener("input", function () { refreshMap(form); });
+      el.addEventListener("change", function () { refreshMap(form); });
+    });
+  });
+})();
+</script>
 {% endblock %}

@@ -469,21 +469,26 @@
     }
     if (searchBox) searchBox.addEventListener("focusout", function (e) { if (!searchBox.contains(e.relatedTarget)) openSearch(false); });
 
-    // Checkout: the address is required for delivery and meaningless for
-    // pickup, so the attribute follows the order-type radios.
+    // Checkout: address fields are required for delivery only.
     (function () {
-      var addr = document.querySelector("[data-address-field]");
-      if (!addr) return;
-      var radios = document.querySelectorAll('input[name="order_type"]');
       var row = document.querySelector("[data-address-row]");
+      if (!row) return;
+      var fields = row.querySelectorAll("[data-address-field]");
+      var radios = document.querySelectorAll('input[name="order_type"]');
       function sync() {
         var picked = document.querySelector('input[name="order_type"]:checked');
         var delivery = !picked || picked.value === "delivery";
-        // required must come off with the field, or a pickup order can never
-        // be submitted: browsers refuse to validate a hidden required input.
-        addr.required = delivery;
-        if (row) row.classList.toggle("d-none", !delivery);
+        fields.forEach(function (el) {
+          if (el.hasAttribute("data-addr-required")) {
+            if (delivery) el.setAttribute("required", "");
+            else el.removeAttribute("required");
+          }
+        });
+        row.classList.toggle("d-none", !delivery);
       }
+      fields.forEach(function (el) {
+        if (el.hasAttribute("required")) el.setAttribute("data-addr-required", "");
+      });
       radios.forEach(function (r) { r.addEventListener("change", sync); });
       sync();
     })();
@@ -559,6 +564,67 @@
       openMenuSearch(true);
       filterMenu(q0);
     }
+
+    // ── FAQ help-center search + topic chips ─────────────────────────────
+    var faqRoot = document.querySelector("[data-faq-page]");
+    var faqSearchInput = faqRoot ? faqRoot.querySelector("[data-faq-search]") : null;
+    var faqEmpty = faqRoot ? faqRoot.querySelector("[data-faq-empty]") : null;
+    var faqGroupFilter = "";
+
+    function applyFaqView() {
+      if (!faqRoot) return;
+      var items = faqRoot.querySelectorAll("[data-faq-group]");
+      var chips = faqRoot.querySelectorAll("[data-faq-filter]");
+      var q = (faqSearchInput ? faqSearchInput.value : "").trim().toLowerCase();
+      var shown = 0;
+      var matchingGroups = {};
+
+      items.forEach(function (item) {
+        var blob = (item.getAttribute("data-search") || "").toLowerCase();
+        if (!blob) {
+          var qEl = item.querySelector(".acc-q");
+          var aEl = item.querySelector(".acc-a");
+          blob = ((qEl ? qEl.textContent : "") + " " + (aEl ? aEl.textContent : "")).toLowerCase();
+        }
+        var group = item.getAttribute("data-faq-group") || "";
+        var hitSearch = !q || blob.indexOf(q) !== -1;
+        var hitGroup = !faqGroupFilter || group === faqGroupFilter;
+        var show = q ? hitSearch : hitGroup;
+
+        item.style.display = show ? "" : "none";
+        if (show) shown++;
+        if (q) {
+          item.classList.toggle("is-open", hitSearch);
+          if (hitSearch) matchingGroups[group] = true;
+        }
+      });
+
+      chips.forEach(function (chip) {
+        var g = chip.getAttribute("data-faq-filter");
+        if (q) {
+          chip.classList.toggle("is-active", g !== "" && !!matchingGroups[g]);
+        } else {
+          chip.classList.toggle("is-active", g === faqGroupFilter);
+        }
+      });
+
+      if (faqEmpty) faqEmpty.classList.toggle("d-none", shown !== 0);
+    }
+
+    if (faqSearchInput) {
+      faqSearchInput.addEventListener("input", applyFaqView);
+      faqSearchInput.addEventListener("keydown", function (e) { if (e.key === "Enter") e.preventDefault(); });
+    }
+    if (faqRoot) {
+      document.addEventListener("click", function (e) {
+        if (e.target.closest("[data-faq-search-btn]")) {
+          e.preventDefault();
+          applyFaqView();
+          if (faqSearchInput) faqSearchInput.focus();
+        }
+      });
+    }
+
     if (catbar) {
       catbar.addEventListener("mouseleave", function () { openMenuSearch(false); });
       catbar.addEventListener("focusout", function (e) { if (!catbar.contains(e.relatedTarget)) openMenuSearch(false); });
@@ -617,7 +683,7 @@
       }
 
       var chip = e.target.closest("[data-chip-group] .chip");
-      if (chip) {
+      if (chip && !chip.hasAttribute("data-faq-filter")) {
         if (chip.dataset.multi === undefined) chip.parentElement.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("is-active"); });
         chip.classList.toggle("is-active");
         recalcItem(chip.closest("[data-item-form]"));
@@ -652,17 +718,12 @@
       var accQ = e.target.closest(".acc-q");
       if (accQ) accQ.parentElement.classList.toggle("is-open");
 
-      // FAQ category chips. They were decorative before — the sections are
-      // data-driven now, so filtering is just matching one attribute.
+      // FAQ category chips — filter by topic, or highlight topics during search.
       var faqChip = e.target.closest("[data-faq-filter]");
       if (faqChip) {
-        var want = faqChip.getAttribute("data-faq-filter");
-        document.querySelectorAll("[data-faq-filter]").forEach(function (b) {
-          b.classList.toggle("is-active", b === faqChip);
-        });
-        document.querySelectorAll("[data-faq-group]").forEach(function (item) {
-          item.style.display = (!want || item.getAttribute("data-faq-group") === want) ? "" : "none";
-        });
+        faqGroupFilter = faqChip.getAttribute("data-faq-filter") || "";
+        if (faqSearchInput) faqSearchInput.value = "";
+        applyFaqView();
       }
 
       var tabBtn = e.target.closest("[data-tab]");
