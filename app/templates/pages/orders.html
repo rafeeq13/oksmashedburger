@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% from "partials/order_breakdown.html" import order_breakdown %}
 {% block title %}My Orders, {{ brand_name }}{% endblock %}
 {% block main_class %}bg-softyellow/20{% endblock %}
 
@@ -12,14 +13,15 @@
         {% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
         {% else %}<span class="badge badge-yellow">{{ o.status.replace('_',' ')|title }}</span>{% endif %}
       </div>
-      <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
+      <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at_local.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
     </div>
     <div class="text-end"><div class="font-display fw-bold ok-fs-lg">${{ '%.2f'|format(o.total) }}</div><div class="ok-fs-xs text-muted-warm">{{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</div></div>
   </div>
-  <ul class="ok-fs-sm text-muted-warm ok-mb-3 ok-stack-05">
+  <ul class="ok-fs-sm text-muted-warm ok-mb-2 ok-stack-05">
     {% for it in o.items %}<li>{{ it.qty }}× {{ it.name }}</li>{% endfor %}
   </ul>
-  <div class="d-flex flex-wrap gap-2">
+  {{ order_breakdown(o, compact=true) }}
+  <div class="d-flex flex-wrap gap-2 ok-mt-2">
     {% if o.status not in ['completed', 'cancelled'] %}<a href="/tracking/{{ o.number }}" class="btn btn-primary btn-sm">Track order</a>{% endif %}
     <a href="/tracking/{{ o.number }}" class="btn btn-secondary btn-sm">View details</a>
     <form method="post" action="/orders/{{ o.number }}/reorder" class="d-inline">

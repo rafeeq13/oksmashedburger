@@ -340,3 +340,76 @@ a.sb-navlink.is-loading{ pointer-events:none; opacity:.92; }
   .ok-pageswitch{ align-items:stretch; }
   .ok-pageswitch-panel{ width:min(290px,86vw); }
 }
+
+/* Menu modifiers — compact inline addon controls (admin only; premium.css not loaded here) */
+.ok-addon-row__meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem; margin-bottom:.5rem; }
+.ok-addon-row__controls{
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:center !important;
+  gap:.5rem !important;
+}
+.ok-addon-row__controls .ok-addon-section-select{
+  width:60% !important;
+  min-width:0 !important;
+  max-width:60% !important;
+  flex:0 0 60% !important;
+  padding:.25rem 1.25rem .25rem .35rem !important;
+  font-size:.8125rem !important;
+}
+.ok-addon-row__controls-right{
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:center !important;
+  gap:.4rem !important;
+  margin-left:auto !important;
+  flex:1 1 auto !important;
+  justify-content:flex-end !important;
+}
+.ok-addon-row__controls-right .ok-addon-sort-input{
+  width:2.75rem !important;
+  min-width:2.75rem !important;
+  max-width:2.75rem !important;
+  flex:0 0 2.75rem !important;
+  padding:.25rem .15rem !important;
+  text-align:center;
+  font-size:.8rem !important;
+}
+.ok-modsec-row{
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:flex-end !important;
+  gap:.5rem !important;
+  width:100% !important;
+}
+.ok-modsec-label{
+  width:60% !important;
+  min-width:0 !important;
+  max-width:60% !important;
+  flex:0 0 60% !important;
+  font-size:.8125rem !important;
+  padding:.35rem .5rem !important;
+}
+.ok-modsec-row-right{
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:center !important;
+  gap:.4rem !important;
+  margin-left:auto !important;
+  flex:1 1 auto !important;
+  justify-content:flex-end !important;
+}
+.ok-modsec-order{
+  width:2.75rem !important;
+  min-width:2.75rem !important;
+  max-width:2.75rem !important;
+  flex:0 0 2.75rem !important;
+  padding:.35rem .15rem !important;
+  text-align:center;
+  font-size:.8rem !important;
+}
+@media (max-width:575.98px){
+  .ok-addon-row__controls, .ok-modsec-row{ flex-wrap:wrap !important; }
+}
+.ok-addon-attach-row{ width:100%; }
+.ok-addon-attach-row .ok-addon-row__controls{ width:100%; flex:1 1 100%; }

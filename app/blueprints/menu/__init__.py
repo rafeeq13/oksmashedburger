@@ -1,7 +1,7 @@
 """Per-store menu browsing + item detail."""
 from flask import Blueprint, render_template, session, abort
 
-from app.helpers import get_current_store
+from app.helpers import get_current_store, product_modifier_sections
 from app.models.store import Store
 from app.models.menu import Product
 
@@ -37,7 +37,13 @@ def _item_context(slug):
         if mi:
             price = float(mi.price_override if mi.price_override is not None else product.base_price)
             available = mi.is_available and mi.is_listed
-    return {"product": product, "price": price, "available": available, "store": store}
+    return {
+        "product": product,
+        "price": price,
+        "available": available,
+        "store": store,
+        "modifier_sections": product_modifier_sections(product),
+    }
 
 
 @bp.get("/item/<slug>")

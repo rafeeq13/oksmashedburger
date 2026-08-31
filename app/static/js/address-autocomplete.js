@@ -86,9 +86,11 @@
         resolve();
       };
       window.gm_authFailure = function () {
+        var msg = refererHelp();
         document.querySelectorAll("[data-address-autocomplete]").forEach(function (root) {
-          showStatus(root, refererHelp(), true);
+          showStatus(root, msg, true);
         });
+        if (window.OK && OK.toast) OK.toast(msg);
       };
       var s = document.createElement("script");
       s.id = id;
@@ -166,8 +168,8 @@
     }
 
     search.addEventListener("input", function () {
-      var q = (search.value || "").trim();
-      setVal(root, "address_search", q);
+      var raw = search.value || "";
+      var q = raw.trim();
       if (timer) clearTimeout(timer);
       if (q.length < 3) {
         hideList();
@@ -207,6 +209,149 @@
     showStatus(root, "Start typing to search addresses.");
   }
 
+  function attachLocationSearch(search, list, onPlace) {
+    var service = new google.maps.places.AutocompleteService();
+    var placesService = new google.maps.places.PlacesService(document.createElement("div"));
+    var timer = null;
+    var active = -1;
+    var items = [];
+    var lastLen = 0;
+    var seq = 0;
+    // Philly metro — local results return faster than a country-wide search
+    var locBias = { north: 40.25, south: 39.75, east: -74.85, west: -75.55 };
+
+    function hideList() {
+      list.classList.add("d-none");
+      list.innerHTML = "";
+      items = [];
+      active = -1;
+    }
+
+    function pick(prediction) {
+      if (!prediction || !prediction.place_id) return;
+      hideList();
+      placesService.getDetails({
+        placeId: prediction.place_id,
+        fields: ["address_components", "formatted_address", "geometry"]
+      }, function (place, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+          onPlace(place);
+        }
+      });
+    }
+
+    function renderSuggestions(predictions) {
+      list.innerHTML = "";
+      items = predictions || [];
+      active = -1;
+      if (!items.length) {
+        hideList();
+        return;
+      }
+      items.forEach(function (prediction) {
+        var li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.textContent = prediction.description || "";
+        li.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          pick(prediction);
+        });
+        list.appendChild(li);
+      });
+      list.classList.remove("d-none");
+    }
+
+    function fetchSuggestions(q) {
+      var my = ++seq;
+      service.getPlacePredictions({
+        input: q,
+        componentRestrictions: { country: "us" },
+        locationBias: locBias,
+        types: ["geocode"]
+      }, function (predictions, status) {
+        if (my !== seq) return;
+        if ((search.value || "").trim() !== q) return;
+        if (status === google.maps.places.PlacesServiceStatus.OK || status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          renderSuggestions(predictions || []);
+        } else {
+          hideList();
+        }
+      });
+    }
+
+    search.addEventListener("input", function () {
+      delete search.dataset.locZip;
+      delete search.dataset.locQuery;
+      delete search.dataset.locLat;
+      delete search.dataset.locLng;
+      var q = (search.value || "").trim();
+      if (timer) clearTimeout(timer);
+      if (q.length < 2) {
+        hideList();
+        lastLen = q.length;
+        return;
+      }
+      var pasted = q.length - lastLen > 1;
+      lastLen = q.length;
+      if (pasted) fetchSuggestions(q);
+      else timer = setTimeout(function () { fetchSuggestions(q); }, 50);
+    });
+
+    search.addEventListener("keydown", function (e) {
+      if (list.classList.contains("d-none") || !items.length) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        active = Math.min(active + 1, items.length - 1);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        active = Math.max(active - 1, 0);
+      } else if (e.key === "Enter" && active >= 0) {
+        e.preventDefault();
+        var p = items[active];
+        if (p) pick(p);
+        return;
+      } else if (e.key === "Escape") {
+        hideList();
+        return;
+      } else {
+        return;
+      }
+      Array.prototype.forEach.call(list.children, function (li, i) {
+        li.classList.toggle("is-active", i === active);
+      });
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!list.contains(e.target) && e.target !== search) hideList();
+    });
+  }
+
+  function initLocationPicker(root) {
+    if (!root || root._locInit) return;
+    var apiKey = root.getAttribute("data-maps-key");
+    var search = root.querySelector("[data-loc-search]");
+    var list = root.querySelector("[data-loc-predictions]");
+    if (!apiKey || !search || !list) return;
+    root._locInit = true;
+    loadMaps(apiKey).then(function () {
+      attachLocationSearch(search, list, function (place) {
+        var formatted = place.formatted_address || "";
+        var parsed = parseComponents(place.address_components || place.addressComponents);
+        search.value = formatted;
+        if (parsed.zip) search.dataset.locZip = parsed.zip;
+        search.dataset.locQuery = formatted.toLowerCase();
+        var loc = place.geometry && place.geometry.location;
+        if (loc) {
+          search.dataset.locLat = String(typeof loc.lat === "function" ? loc.lat() : loc.lat);
+          search.dataset.locLng = String(typeof loc.lng === "function" ? loc.lng() : loc.lng);
+        }
+        document.dispatchEvent(new CustomEvent("ok-loc-search"));
+      });
+    }).catch(function () {
+      /* manual ZIP / address entry still works via Find */
+    });
+  }
+
   function initRoot(root) {
     if (!root || root._addrInit) return;
     var apiKey = root.getAttribute("data-maps-key");
@@ -234,4 +379,6 @@
 
   window.OK = window.OK || {};
   window.OK.initAddressAutocomplete = initRoot;
+  window.OK.initLocationPicker = initLocationPicker;
+  window.OK.preloadMaps = function (apiKey) { return apiKey ? loadMaps(apiKey) : Promise.resolve(); };
 })();

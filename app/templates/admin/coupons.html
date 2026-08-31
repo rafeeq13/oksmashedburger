@@ -16,6 +16,12 @@
   <div><label class="ok-label ok-fs-xs">Value ($ or %)</label><input name="value" type="number" step="0.01" class="ok-input py-2 ok-fs-sm" placeholder="10"></div>
   <div><label class="ok-label ok-fs-xs">Min order $</label><input name="min_order" type="number" step="0.01" class="ok-input py-2 ok-fs-sm" placeholder="0"></div>
   <div><label class="ok-label ok-fs-xs">Description</label><input name="description" class="ok-input py-2 ok-fs-sm" placeholder="10% off"></div>
+  <div><label class="ok-label ok-fs-xs">Location</label>
+    <select name="store_id" class="ok-select py-2 ok-fs-sm">
+      <option value="">All locations</option>
+      {% for s in stores %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+  </div>
   <label class="d-flex align-items-center gap-2 ok-fs-sm ok-h-38px"><input type="checkbox" name="requires_code" checked class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>
   <div class="ok-col-span-lg-3 ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Card photo | upload</label><input type="file" name="image_file" accept="image/*" class="ok-input py-2 ok-fs-sm"></div>
   <div class="ok-col-span-lg-3 ok-col-span-sm-2"><label class="ok-label ok-fs-xs">…or paste an image link</label><input name="image_url" class="ok-input py-2 ok-fs-sm" placeholder="https://…"></div>
@@ -33,6 +39,12 @@
     <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Value <input name="value" type="number" step="0.01" value="{{ '%.2f'|format(c.value) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
     <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Min $ <input name="min_order" type="number" step="0.01" value="{{ '%.2f'|format(c.min_order) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-20"></label>
     <input name="description" value="{{ c.description or '' }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-minw-8rem" placeholder="Description">
+    <label class="ok-fs-xs text-muted-warm d-flex align-items-center gap-1">Location
+      <select name="store_id" class="ok-select ok-py-15 ok-fs-sm">
+        <option value="">All</option>
+        {% for s in stores %}<option value="{{ s.id }}" {% if c.store_id == s.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+      </select>
+    </label>
     <input name="image_url" value="{{ c.image_url or '' }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-minw-8rem" placeholder="Photo link (or upload →)">
     <input type="file" name="image_file" accept="image/*" class="ok-input ok-py-15 ok-fs-xs ok-w-40 flex-shrink-0" aria-label="Upload a photo for {{ c.code }}">
     <label class="d-flex align-items-center ok-gap-15 ok-fs-xs text-nowrap"><input type="checkbox" name="requires_code" {% if c.requires_code %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Needs code</label>

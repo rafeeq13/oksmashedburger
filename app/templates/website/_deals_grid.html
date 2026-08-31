@@ -1,0 +1,34 @@
+{% if coupons %}
+<div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5" data-deals-grid>
+  {% for c in coupons %}
+  <article class="ok-card ok-card-hover ok-dealcard overflow-hidden ok-hovergroup d-flex flex-column">
+    <div class="position-relative ok-ar-1610 overflow-hidden">
+      {% if c.image_url %}<img src="{{ c.image_url }}" alt="{{ c.description or c.code }}" class="ph-img transition">
+      {% else %}<img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">{% endif %}
+      {% if c.kind == 'free_delivery' %}<span class="badge badge-green position-absolute top-3 left-3">Free delivery</span>
+      {% elif c.kind == 'percent' %}<span class="badge badge-green position-absolute top-3 left-3">-{{ c.value|int }}%</span>
+      {% else %}<span class="badge badge-deal position-absolute top-3 left-3">Save ${{ '%.0f'|format(c.value) }}</span>{% endif %}
+    </div>
+    <div class="ok-p-3 d-flex flex-column flex-grow-1">
+      <h3 class="font-display fw-bold ok-fs-lg">{{ c.description or c.code }}</h3>
+      <p class="ok-fs-sm text-muted-warm ok-mb-3 flex-grow-1">
+        {% if c.kind == 'free_delivery' %}Free delivery{% elif c.kind == 'percent' %}{{ c.value|int }}% off your order{% else %}${{ '%.2f'|format(c.value) }} off{% endif %}{% if c.min_order and c.min_order > 0 %} on orders over ${{ '%.0f'|format(c.min_order) }}{% endif %}.
+      </p>
+      {% if c.requires_code %}
+      <p class="ok-fs-xs text-muted-warm ok-mb-3">Use code <b>{{ c.code }}</b>{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
+      {% else %}
+      <p class="ok-fs-xs ok-deal-nocode fw-semibold ok-mb-3"><i class="fa-solid fa-circle-check"></i> No code needed{% if c.expires_at %} · Expires {{ c.expires_at.strftime('%b %d') }}{% endif %}</p>
+      {% endif %}
+      <form method="post" action="/cart/promo">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="promo" value="{{ c.code }}">
+        <input type="hidden" name="next" value="/menu">
+        <button class="btn btn-primary btn-sm btn-block">Order now</button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="ok-card ok-p-10 text-center text-muted-warm" data-deals-empty>{{ pc('deals_empty_text') }}</div>
+{% endif %}

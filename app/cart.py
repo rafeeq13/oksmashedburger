@@ -78,6 +78,27 @@ def clear():
         session.pop(k, None)
 
 
+def unavailable_at_store(store):
+    """Cart line names that are not listed on this store's menu."""
+    if not store:
+        return []
+    cart = get_cart()
+    if not cart:
+        return []
+    by_product = {mi.product_id: mi for mi in store.menu_items}
+    names = []
+    seen = set()
+    for it in cart:
+        pid = it.get("product_id")
+        mi = by_product.get(pid)
+        if not mi or not mi.is_listed:
+            name = it.get("name") or "Item"
+            if name not in seen:
+                seen.add(name)
+                names.append(name)
+    return names
+
+
 def summary(store, tip=0.0, order_type="delivery"):
     """Full pricing incl. promo code, loyalty-points redemption and gift card,
     all resolved from the session + current user (SRS §4.9)."""
@@ -119,6 +140,8 @@ def summary(store, tip=0.0, order_type="delivery"):
         c = Coupon.query.filter_by(code=code.upper()).first()
         if not c:
             promo["code"], promo["error"] = code, "Invalid promo code."
+        elif store and c.store_id and c.store_id != store.id:
+            promo["code"], promo["error"] = code, "This promo isn't valid at this location."
         else:
             ok, err = c.validate(subtotal)
             promo["code"], promo["desc"] = c.code, c.description

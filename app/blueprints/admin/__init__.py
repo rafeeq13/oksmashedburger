@@ -18,7 +18,10 @@ from app.auth import current_user, roles_required
 from app.helpers import active_stores, get_current_store
 from app.security import style_value_ok
 from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone, normalize_map_embed
-from app.models.menu import Product, StoreMenuItem, ProductVariant, ProductAddon, AddonLibrary, Category
+from app.models.menu import (
+    Product, StoreMenuItem, ProductVariant, ProductAddon, AddonLibrary, Category,
+    ProductModifierSection,
+)
 from app.models.order import Order, OrderItem
 from app.models.promo import Coupon, GiftCard, COUPON_KINDS
 from app.models.user import User, Role
@@ -46,8 +49,18 @@ ADMIN_ROLES = ("super_admin", "franchise_owner", "store_manager")
 PROVIDERS = [
     {"key": "stripe", "name": "Stripe", "icon": "credit-card", "desc": "Online card payments",
      "fields": [{"key": "account_id", "label": "Account ID"}, {"key": "publishable_key", "label": "Publishable key"}, {"key": "secret_key", "label": "Secret key", "secret": True}]},
-    {"key": "square", "name": "Square POS", "icon": "cash-register", "desc": "In-store payments & reconciliation",
-     "fields": [{"key": "location_id", "label": "Location ID"}, {"key": "access_token", "label": "Access token", "secret": True}]},
+    {"key": "square", "name": "Square POS", "icon": "cash-register",
+     "desc": "Sync web orders to each location's Square terminal (items, tax, delivery, tip)",
+     "fields": [
+         {"key": "application_id", "label": "Application ID",
+          "placeholder": "sandbox-sq0idb-…",
+          "hint": "From Square Developer Dashboard → your app. Not the Location ID."},
+         {"key": "location_id", "label": "Location ID",
+          "placeholder": "LSZ6XQEM292RD",
+          "hint": "Starts with L — from Square Dashboard → Locations, or run tools/list_square_locations.py"},
+         {"key": "access_token", "label": "Access token", "secret": True,
+          "hint": "Sandbox access token with ORDERS_WRITE + PAYMENTS_WRITE scopes."},
+     ]},
     {"key": "uber_direct", "name": "Uber Direct", "icon": "car", "desc": "Third-party delivery dispatch",
      "fields": [{"key": "customer_id", "label": "Customer ID"}, {"key": "client_id", "label": "Client ID"}, {"key": "client_secret", "label": "Client secret", "secret": True}]},
     {"key": "google_maps", "name": "Google Maps", "icon": "map", "desc": "Geocoding, distance & ETA",
@@ -56,7 +69,8 @@ PROVIDERS = [
      "fields": [{"key": "account_sid", "label": "Account SID"}, {"key": "auth_token", "label": "Auth token", "secret": True}]},
     {"key": "smtp", "name": "SMTP email", "icon": "envelope", "desc": "Order updates, sign-up & marketing email",
      "fields": [
-         {"key": "smtp_host", "label": "SMTP host"},
+         {"key": "smtp_host", "label": "SMTP host", "placeholder": "smtp.gmail.com",
+          "hint": "Hostname only — no https://. Gmail: smtp.gmail.com · Microsoft 365: smtp.office365.com · Namecheap: mail.privateemail.com"},
          {"key": "smtp_port", "label": "Port (587 STARTTLS, 465 SSL)"},
          {"key": "smtp_user", "label": "Username"},
          {"key": "smtp_password", "label": "Password", "secret": True},
@@ -105,6 +119,17 @@ def _admin_store():
 
 def _can_switch():
     return current_user().store_id is None
+
+
+def _optional_store_filter():
+    """Head office sees all locations unless ?store= is set; pinned managers stay on their shop."""
+    u = current_user()
+    if u and u.store_id:
+        return Store.query.get(u.store_id)
+    slug = (request.args.get("store") or "").strip()
+    if slug:
+        return Store.query.filter_by(slug=slug).first()
+    return None
 
 
 def _qs(store):
@@ -1040,7 +1065,11 @@ def email_templates():
     brand = current_app.config.get("BRAND_NAME", "")
     defaults = {**email_layout_defaults(brand), **email_template_defaults(brand)}
     return render_template("admin/email_templates.html", groups=templates_for_admin(),
-                           layout_fields=EMAIL_LAYOUT, placeholders=EMAIL_PLACEHOLDERS,
+                           layout_fields=EMAIL_LAYOUT,
+                           layout_logo_fields=[f for f in EMAIL_LAYOUT if f[0] in ("header_logo", "footer_logo")],
+                           layout_image_fields=[f for f in EMAIL_LAYOUT if f[0].startswith("img_")],
+                           layout_text_fields=[f for f in EMAIL_LAYOUT if f[0] not in ("header_logo", "footer_logo") and not f[0].startswith("img_")],
+                           placeholders=EMAIL_PLACEHOLDERS,
                            current=current, defaults=defaults, **_shell(store))
 
 
@@ -1055,7 +1084,13 @@ def email_templates_preview(tpl_key):
     cta = "https://oksmashedburger.com/menu"
     _, _, html = render_email(tpl_key, ctx, rows=rows, cta_href=cta,
                               brand=current_app.config.get("BRAND_NAME") or None)
-    return Response(html, mimetype="text/html; charset=utf-8")
+    # Block scripts in pasted email HTML — preview runs same-origin in admin iframes.
+    return Response(html, mimetype="text/html; charset=utf-8", headers={
+        "Content-Security-Policy": (
+            "default-src 'none'; style-src 'unsafe-inline' data:; "
+            "img-src * data: blob:; font-src * data:"
+        ),
+    })
 
 
 @bp.post("/admin/email-image")
@@ -1067,9 +1102,9 @@ def email_image():
         return jsonify(ok=False, error="unknown image slot"), 400
     sent = request.files.get("file")
     slug = "email-" + key.replace("_", "-")
-    url = _save_image(sent, slug, quiet=True)
+    url = _save_image(sent, slug, exts=EMAIL_IMAGE_EXTS, quiet=True)
     if sent and getattr(sent, "filename", "") and not url:
-        return jsonify(ok=False, error="That file type is not allowed here | use JPG, PNG, GIF or WEBP."), 400
+        return jsonify(ok=False, error="That file type is not allowed here | use JPG, PNG, GIF, WEBP or SVG."), 400
     url = url or (request.form.get("url") or "").strip()
     row = SiteSetting.query.filter_by(key=key).first()
     if url:
@@ -1098,17 +1133,21 @@ def email_templates_save():
         for _g, _l, _i, tpls in EMAIL_TEMPLATE_GROUPS:
             for key, _tl, flds in tpls:
                 if key == tpl_key:
-                    for field, _fl, _def, _kind in flds:
+                    for field, _fl, _def, _kind, *_rest in flds:
                         allowed.add("email_%s_%s" % (tpl_key, field))
-                    allowed.add("email_%s_custom_html" % tpl_key)
                     break
-    for key in allowed:
-        if key not in request.form:
-            continue
+    received = [k for k in allowed if k in request.form]
+    if not received:
+        flash("Nothing was saved — the form may be too large or empty. Try again or shorten the HTML.",
+              "error")
+        anchor = "design" if save_kind == "layout" else (request.form.get("tpl_key") or "")
+        return redirect("/admin/email-templates" + _qs(store) + ("#" + anchor if anchor else ""))
+    for key in received:
         raw = request.form.get(key)
-        val = (raw or "").strip() if not key.endswith("_custom_html") else (raw or "")
-        if key.endswith("_custom_html"):
-            val = val.strip()
+        if key.endswith("_html_body") or key.endswith("_custom_html"):
+            val = raw or ""
+        else:
+            val = (raw or "").strip()
         setting = SiteSetting.query.filter_by(key=key).first()
         if val and val != (defaults.get(key) or ""):
             if setting:
@@ -1718,6 +1757,75 @@ def product_modifiers(pid):
     )
 
 
+@bp.post("/admin/menu/<int:pid>/modifier-sections")
+@roles_required(*ADMIN_ROLES)
+def product_modifier_sections_save(pid):
+    store = _admin_store()
+    product = Product.query.get_or_404(pid)
+    product.variants_section_label = request.form.get("variants_section_label", "").strip() or None
+    product.variants_section_order = request.form.get("variants_section_order", type=int) or 0
+    db.session.commit()
+    flash("Size section heading and order saved.", "success")
+    return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/menu/<int:pid>/addon-sections")
+@roles_required(*ADMIN_ROLES)
+def addon_section_add(pid):
+    store = _admin_store()
+    product = Product.query.get_or_404(pid)
+    label = request.form.get("label", "").strip()
+    if not label:
+        flash("Enter a section heading.", "error")
+        return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+    db.session.add(ProductModifierSection(
+        product=product,
+        label=label,
+        sort_order=request.form.get("sort_order", type=int) or 0,
+    ))
+    db.session.commit()
+    flash(f"Section “{label}” added.", "success")
+    return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/menu/addon-sections/<int:sid>/edit")
+@roles_required(*ADMIN_ROLES)
+def addon_section_edit(sid):
+    store = _admin_store()
+    sec = ProductModifierSection.query.get_or_404(sid)
+    label = request.form.get("label", "").strip()
+    if label:
+        sec.label = label
+        for a in sec.addons:
+            a.group_label = label
+    if request.form.get("sort_order") not in (None, ""):
+        sec.sort_order = request.form.get("sort_order", type=int) or 0
+    db.session.commit()
+    flash("Section updated.", "success")
+    return redirect(f"/admin/menu/{sec.product_id}/modifiers" + _qs(store))
+
+
+@bp.post("/admin/menu/addon-sections/<int:sid>/delete")
+@roles_required(*ADMIN_ROLES)
+def addon_section_delete(sid):
+    store = _admin_store()
+    sec = ProductModifierSection.query.get_or_404(sid)
+    pid = sec.product_id
+    for a in sec.addons:
+        a.section_id = None
+    db.session.delete(sec)
+    db.session.commit()
+    flash("Section removed.", "success")
+    return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
+
+
+def _addon_section(product, form):
+    sid = form.get("section_id", type=int)
+    if not sid:
+        return None
+    return ProductModifierSection.query.filter_by(id=sid, product_id=product.id).first()
+
+
 @bp.post("/admin/menu/<int:pid>/variants")
 @roles_required(*ADMIN_ROLES)
 def variant_add(pid):
@@ -1783,11 +1891,15 @@ def addon_attach(pid):
         if ProductAddon.query.filter_by(product_id=pid, library_id=lib.id).first():
             flash(f"“{lib.name}” is already attached.", "error")
             return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
-        db.session.add(ProductAddon(
+        sec = _addon_section(product, request.form)
+        addon = ProductAddon(
             product=product, library=lib, name=lib.name, price=lib.price,
             sort_order=lib.sort_order or 0,
             is_required=bool(request.form.get("is_required")),
-        ))
+            section=sec,
+            group_label=sec.label if sec else None,
+        )
+        db.session.add(addon)
         db.session.commit()
         flash(f"Attached “{lib.name}”.", "success")
         return redirect(f"/admin/menu/{pid}/modifiers" + _qs(store))
@@ -1801,9 +1913,12 @@ def addon_attach(pid):
         price = Decimal(request.form.get("price") or "0")
     except InvalidOperation:
         price = Decimal("0")
+    sec = _addon_section(product, request.form)
     db.session.add(ProductAddon(
         product=product, name=name, price=price,
         is_required=bool(request.form.get("is_required")),
+        section=sec,
+        group_label=sec.label if sec else None,
     ))
     db.session.commit()
     flash(f"Added item-only add-on “{name}”.", "success")
@@ -1816,7 +1931,14 @@ def addon_edit(aid):
     store = _admin_store()
     a = ProductAddon.query.get_or_404(aid)
     if a.library_id:
-        flash("Shared add-ons are edited on the menu page | changes sync to every attached item.", "error")
+        if request.form.get("sort_order") not in (None, ""):
+            a.sort_order = request.form.get("sort_order", type=int) or 0
+        sec = _addon_section(a.product, request.form)
+        a.section = sec
+        a.group_label = sec.label if sec else None
+        a.is_required = bool(request.form.get("is_required"))
+        db.session.commit()
+        flash("Add-on settings updated for this item.", "success")
         return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
     name = request.form.get("name", "").strip()
     if name:
@@ -1826,6 +1948,11 @@ def addon_edit(aid):
     except InvalidOperation:
         pass
     a.is_required = bool(request.form.get("is_required"))
+    if request.form.get("sort_order") not in (None, ""):
+        a.sort_order = request.form.get("sort_order", type=int) or 0
+    sec = _addon_section(a.product, request.form)
+    a.section = sec
+    a.group_label = sec.label if sec else None
     db.session.commit()
     flash("Add-on updated.", "success")
     return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
@@ -1920,6 +2047,7 @@ def addon_delete(aid):
 
 # ── Catalog: create/edit products & categories (brand-wide) ──────────────
 IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+EMAIL_IMAGE_EXTS = IMAGE_EXTS + (".svg",)
 VIDEO_EXTS = (".mp4", ".webm")
 
 
@@ -2029,8 +2157,10 @@ def product_delete(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
     name = product.name
+    from app.models.favorite import Favorite
+    Favorite.query.filter_by(product_id=pid).delete()
     OrderItem.query.filter_by(product_id=pid).update({"product_id": None})
-    db.session.delete(product)  # cascades variants / add-ons / store listings
+    db.session.delete(product)
     db.session.commit()
     flash(f"“{name}” deleted from the catalog.", "success")
     return redirect("/admin/menu" + _qs(store))
@@ -2096,19 +2226,48 @@ def category_delete(cid):
 @bp.get("/admin/integrations")
 @roles_required(*ADMIN_ROLES)
 def integrations():
+    from app.integrations.config import integration_env, active_integration_config
+
     store = _admin_store()
     existing = {i.provider: i for i in store.integrations} if store else {}
+    env = integration_env(store) if store else "sandbox"
     providers = []
     for p in PROVIDERS:
         integ = existing.get(p["key"])
-        providers.append({**p, "enabled": integ.enabled if integ else False,
-                          "config": (integ.config or {}) if integ else {}})
-    return render_template("admin/integrations.html", providers=providers, **_shell(store))
+        providers.append({
+            **p,
+            "enabled": integ.enabled if integ else False,
+            "config": active_integration_config(store, p["key"]) if integ else {},
+        })
+    u = current_user()
+    return render_template(
+        "admin/integrations.html",
+        providers=providers,
+        integration_env=env,
+        admin_email=(u.email if u else ""),
+        **_shell(store),
+    )
+
+
+@bp.post("/admin/integrations/environment")
+@roles_required(*ADMIN_ROLES)
+def integrations_set_environment():
+    store = _admin_store()
+    env = (request.form.get("environment") or "sandbox").strip().lower()
+    if env not in ("sandbox", "production"):
+        env = "sandbox"
+    store.integration_env = env
+    db.session.commit()
+    label = "Sandbox (test)" if env == "sandbox" else "Production (live)"
+    flash("Orders at %s now use %s credentials." % (store.name, label), "success")
+    return redirect("/admin/integrations" + _qs(store))
 
 
 @bp.post("/admin/integrations/<provider>")
 @roles_required(*ADMIN_ROLES)
 def integrations_save(provider):
+    from app.integrations.config import integration_env, merge_env_config, active_integration_config
+
     store = _admin_store()
     if provider not in _PROVIDER_KEYS:
         abort(404)
@@ -2117,19 +2276,58 @@ def integrations_save(provider):
         integ = StoreIntegration(store_id=store.id, provider=provider, config={})
         db.session.add(integ)
     integ.enabled = bool(request.form.get("enabled"))
-    cfg = dict(integ.config or {})
+    env = integration_env(store)
     spec = next((p for p in PROVIDERS if p["key"] == provider), None)
     secret_keys = {f["key"] for f in (spec or {}).get("fields", []) if f.get("secret")}
+    bucket = dict(active_integration_config(store, provider) if integ.config else {})
     for key, val in request.form.items():
         if key.startswith("cfg_"):
             k = key[4:]
-            if k in secret_keys and not val.strip() and cfg.get(k):
+            v = val.strip()
+            if k in secret_keys and not v and bucket.get(k):
                 continue
-            cfg[k] = val.strip()
-    integ.config = cfg  # reassign so SQLAlchemy detects the JSON change
+            if provider == "smtp" and k == "smtp_host":
+                from app.integrations.smtp_gateway import normalize_smtp_host
+                v = normalize_smtp_host(v)
+            bucket[k] = v
+    merge_env_config(integ, env, bucket)
     db.session.commit()
-    flash(f"{provider.replace('_', ' ').title()} settings saved.", "success")
+    flash(f"{provider.replace('_', ' ').title()} settings saved for {env}.", "success")
+    if provider == "smtp" and bucket.get("smtp_host"):
+        from app.integrations.smtp_gateway import smtp_host_warnings
+        for note in smtp_host_warnings(bucket["smtp_host"]):
+            flash(note, "warning")
     return redirect("/admin/integrations" + _qs(store) + f"#{provider}")
+
+
+@bp.post("/admin/integrations/smtp/test")
+@roles_required(*ADMIN_ROLES)
+def integrations_smtp_test():
+    from app.integrations import smtp_gateway
+    from app.services import mailer
+
+    store = _admin_store()
+    to = (request.form.get("test_to") or "").strip().lower()
+    if not to:
+        u = current_user()
+        to = (u.email or "").strip().lower() if u else ""
+    if not to or "@" not in to:
+        flash("Enter a valid email address for the test.", "error")
+        return redirect("/admin/integrations" + _qs(store) + "#smtp")
+    if not smtp_gateway.is_enabled(store):
+        flash("Enable SMTP, fill in host + from email, save, then send a test.", "error")
+        return redirect("/admin/integrations" + _qs(store) + "#smtp")
+
+    res = mailer.send_test(to, store=store)
+    status = res.get("status")
+    if status == "sent":
+        flash("Test email sent to %s. Check your inbox (and spam folder)." % to, "success")
+    elif status == "failed":
+        err = (res.get("raw") or {}).get("error", "Unknown error")
+        flash("Test email failed: %s" % err, "error")
+    else:
+        flash("Test email was not sent — check SMTP host and from address are saved.", "error")
+    return redirect("/admin/integrations" + _qs(store) + "#smtp")
 
 
 # ── Locations / stores ───────────────────────────────────────────────────
@@ -2544,8 +2742,10 @@ def staff_toggle(sid):
 @roles_required(*ADMIN_ROLES)
 def coupons():
     store = _admin_store()
-    return render_template("admin/coupons.html", coupons=Coupon.query.order_by(Coupon.created_at.desc()).all(),
-                           kinds=COUPON_KINDS, **_shell(store))
+    return render_template("admin/coupons.html",
+                           coupons=Coupon.query.order_by(Coupon.created_at.desc()).all(),
+                           kinds=COUPON_KINDS, stores=active_stores(),
+                           **_shell(store))
 
 
 @bp.post("/admin/coupons")
@@ -2567,7 +2767,8 @@ def coupons_create():
             min_order=request.form.get("min_order", type=float) or 0,
             requires_code=bool(request.form.get("requires_code")),
             description=request.form.get("description", "").strip(),
-            image_url=img or None, active=True))
+            image_url=img or None, active=True,
+            store_id=request.form.get("store_id", type=int) or None))
         db.session.commit()
         flash(f"Coupon {code} created.", "success")
     return redirect("/admin/coupons" + _qs(store))
@@ -2593,6 +2794,8 @@ def coupons_edit(cid):
     # checkboxes only post when checked, so this form controls them explicitly
     c.requires_code = bool(request.form.get("requires_code"))
     c.active = bool(request.form.get("active"))
+    if "store_id" in request.form:
+        c.store_id = request.form.get("store_id", type=int) or None
     db.session.commit()
     flash(f"Coupon {c.code} updated.", "success")
     return redirect("/admin/coupons" + _qs(store))
@@ -2831,16 +3034,89 @@ def content_delete(iid):
 @roles_required(*ADMIN_ROLES)
 def subscribers():
     from app.models.contact import Subscriber
-    store = _admin_store()
+    store = _optional_store_filter()
     q = (request.args.get("q") or "").strip()
+
     query = Subscriber.query
+    if store:
+        query = query.filter_by(store_id=store.id)
     if q:
         query = query.filter(Subscriber.email.ilike("%" + q + "%"))
+
     rows = query.order_by(Subscriber.created_at.desc()).limit(500).all()
+
+    total_query = Subscriber.query
+    active_query = Subscriber.query.filter_by(is_active=True)
+    if store:
+        total_query = total_query.filter_by(store_id=store.id)
+        active_query = active_query.filter_by(store_id=store.id)
+
     return render_template("admin/subscribers.html", rows=rows, q=q,
-                           total=Subscriber.query.count(),
-                           active=Subscriber.query.filter_by(is_active=True).count(),
-                           **_shell(store))
+                           total=total_query.count(),
+                           active=active_query.count(),
+                           **_shell(store or _admin_store()))
+
+
+@bp.get("/admin/subscribers/newsletter")
+@roles_required(*ADMIN_ROLES)
+def newsletter_compose():
+    from app.models.contact import Subscriber
+    store = _optional_store_filter()
+    query = Subscriber.query.filter_by(is_active=True)
+    if store:
+        query = query.filter_by(store_id=store.id)
+
+    return render_template("admin/newsletter_compose.html",
+                           count=query.count(),
+                           **_shell(store or _admin_store()))
+
+
+@bp.post("/admin/subscribers/newsletter")
+@roles_required(*ADMIN_ROLES)
+def newsletter_send():
+    from app.models.contact import Subscriber
+    from app.models import email_templates as et
+    from app.services import mailer
+    store = _optional_store_filter()
+    subject = request.form.get("subject", "").strip()
+    message = request.form.get("message", "").strip()
+
+    if not subject or not message:
+        flash("Subject and message are required.", "error")
+        return redirect("/admin/subscribers/newsletter" + _qs(store or _admin_store()))
+
+    query = Subscriber.query.filter_by(is_active=True)
+    if store:
+        query = query.filter_by(store_id=store.id)
+
+    subscribers = query.all()
+    sent_count = 0
+
+    for s in subscribers:
+        try:
+            link = mailer.unsubscribe_link(s.email)
+            ctx = {
+                "message": message,
+                "customer_name": "there",
+                "store": (store.name if store else 'OK Smashed Burger'),
+                "link": link,
+            }
+            # Import mailer inside to avoid circular deps if any
+            from app.services.mailer import _abs
+            subj_tpl, plain, html = et.render("newsletter", ctx, cta_href=_abs("/menu"))
+            
+            # The et.render uses the subject from template, but we might want to override 
+            # with the one from the form if the template subject is generic.
+            # Actually, let's just use the form subject.
+            final_subject = subject or subj_tpl
+
+            mailer.send(s.email, final_subject, plain, html=html, event="newsletter", store=store)
+            sent_count += 1
+        except Exception as e:
+            current_app.logger.error("Failed to send newsletter to %s: %s", s.email, e)
+
+    flash(f"Newsletter sent to {sent_count} subscribers.", "success")
+    return redirect("/admin/subscribers" + _qs(store or _admin_store()))
 
 
 @bp.post("/admin/subscribers/<int:sid>/toggle")
@@ -2868,13 +3144,24 @@ def subscriber_delete(sid):
 @roles_required(*ADMIN_ROLES)
 def subscribers_export():
     from app.models.contact import Subscriber
+    store = _optional_store_filter()
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["email", "source", "status", "signed_up"])
-    for s in Subscriber.query.order_by(Subscriber.created_at.desc()).all():
-        w.writerow([s.email, s.source or "",
-                    "active" if s.is_active else "unsubscribed",
-                    s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else ""])
+    w.writerow(["email", "source", "location", "status", "signed_up", "ip_address"])
+
+    query = Subscriber.query
+    if store:
+        query = query.filter_by(store_id=store.id)
+
+    for s in query.order_by(Subscriber.created_at.desc()).all():
+        w.writerow([
+            s.email,
+            s.source or "",
+            s.store.name if s.store else "Brand-wide",
+            "active" if s.is_active else "unsubscribed",
+            s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "",
+            s.ip_address or ""
+        ])
     return Response(buf.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=subscribers.csv"})
 

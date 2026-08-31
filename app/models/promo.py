@@ -21,6 +21,9 @@ class Coupon(TimestampMixin, db.Model):
     used_count = db.Column(db.Integer, default=0, nullable=False)
     description = db.Column(db.String(200))
     image_url = db.Column(db.String(400))   # the photo on the deal card, set from the admin
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=True)  # null = all locations
+
+    store = db.relationship("Store")
 
     def validate(self, subtotal):
         """Return (ok, error_message)."""

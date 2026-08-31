@@ -1,50 +1,86 @@
-"""Email via EACH STORE's own SMTP account (replaces SendGrid).
+"""Email via EACH STORE's own SMTP account.
 
-A store sends email only when SMTP is enabled with host + from address.
-DEMO_PAYMENTS=true simulates the send so flows work without real credentials.
+Sandbox may simulate when SMTP is not configured; production requires live SMTP.
 """
-import os
+import re
 import smtplib
+import socket
 import ssl
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from app.integrations.config import active_integration_config, integration_enabled, should_simulate
+
+_HOST_SCHEME_RE = re.compile(r"^(?:smtp|smtps|https?|mailto)://", re.I)
+_INVALID_PLACEHOLDER_HOSTS = frozenset({"smtp", "mail", "email", "server"})
+
+
+def normalize_smtp_host(raw):
+    """Strip common mistakes (scheme, path, port, whitespace) from SMTP host input."""
+    host = (raw or "").strip()
+    if not host:
+        return ""
+    host = _HOST_SCHEME_RE.sub("", host)
+    host = host.split("/")[0].strip()
+    if host.startswith("[") and "]" in host:
+        host = host[1:host.index("]")]
+    elif ":" in host:
+        host = host.rsplit(":", 1)[0]
+    return host.strip().rstrip(".").lower()
+
+
+def smtp_host_warnings(host):
+    """Non-blocking hints when a host looks wrong or does not resolve."""
+    host = normalize_smtp_host(host)
+    if not host:
+        return []
+    warnings = []
+    if host in _INVALID_PLACEHOLDER_HOSTS:
+        warnings.append(
+            "'%s' is not a mail server hostname — use e.g. smtp.gmail.com, "
+            "smtp.office365.com, or mail.privateemail.com" % host
+        )
+    elif "." not in host:
+        warnings.append("'%s' does not look like a domain name (no dot)" % host)
+    try:
+        socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        warnings.append("Could not resolve '%s' — check spelling or DNS" % host)
+    return warnings
+
 
 def store_smtp_config(store):
-    if not store:
+    if not store or not integration_enabled(store, "smtp"):
         return {}
-    integ = store.integration("smtp")
-    return (integ.config or {}) if (integ and integ.enabled) else {}
+    return active_integration_config(store, "smtp")
 
 
 def is_enabled(store):
     """True when this store has SMTP switched on with enough to connect."""
-    if not store or not store.is_connected("smtp"):
+    if not store or not integration_enabled(store, "smtp"):
         return False
     cfg = store_smtp_config(store)
-    return bool((cfg.get("smtp_host") or "").strip() and (cfg.get("from_email") or "").strip())
-
-
-def _demo():
-    return os.environ.get("DEMO_PAYMENTS", "true").lower() != "false"
+    return bool(normalize_smtp_host(cfg.get("smtp_host")) and (cfg.get("from_email") or "").strip())
 
 
 def send_email(store, to, subject, body, attachment=None, html=None, headers=None):
     """Send via the store's SMTP server. Returns {status, raw}."""
     cfg = store_smtp_config(store)
     att_name = attachment.get("filename") if attachment else None
-    if _demo() or not (cfg.get("smtp_host") or "").strip():
+    host = normalize_smtp_host(cfg.get("smtp_host"))
+    if should_simulate(store, "smtp", cfg) or not host:
+        if not host and not should_simulate(store, "smtp", cfg):
+            return {"status": "failed", "raw": {"error": "SMTP host missing for production mode"}}
         return {"status": "simulated",
-                "raw": {"demo": True, "host": cfg.get("smtp_host"), "to": to,
-                        "subject": subject, "attachment": att_name}}
+                "raw": {"error": "SMTP not configured", "to": to, "subject": subject,
+                        "attachment": att_name}}
 
     sender = (cfg.get("from_email") or "").strip()
     if not sender:
         return {"status": "failed", "raw": {"error": "no from_email configured for SMTP"}}
 
     from_name = (cfg.get("from_name") or "OK Smashed Burger").strip()
-    host = cfg.get("smtp_host", "").strip()
     try:
         port = int(cfg.get("smtp_port") or 587)
     except (TypeError, ValueError):

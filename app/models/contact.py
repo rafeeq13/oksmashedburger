@@ -19,6 +19,10 @@ class Subscriber(db.Model):
     __tablename__ = "subscribers"
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, index=True, nullable=False)
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=True)
     source = db.Column(db.String(40), default="footer")
+    ip_address = db.Column(db.String(45))  # Support IPv6
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
+
+    store = db.relationship("Store")

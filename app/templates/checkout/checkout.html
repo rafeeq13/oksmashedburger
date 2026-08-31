@@ -4,7 +4,10 @@
 
 {% block head_extra %}
 {% if google_maps_api_key %}
-<script src="{{ url_for('static', filename='js/address-autocomplete.js') }}" defer></script>
+<script defer src="{{ url_for('static', filename='js/address-autocomplete.js') }}"></script>
+{% endif %}
+{% if stripe_checkout_mode == 'elements' and stripe_pub_key %}
+<script src="https://js.stripe.com/v3/"></script>
 {% endif %}
 {% endblock %}
 
@@ -56,8 +59,8 @@
               <input id="address_line1" name="address_line1" data-address-field required class="ok-input" placeholder="1520 Chestnut St" value="{{ addr_line1 }}">
             </div>
             <div class="ok-gridco-span2span2-sm">
-              <label class="ok-label" for="address_line2">Apt / suite <span class="text-muted-warm fw-normal">(optional)</span></label>
-              <input id="address_line2" name="address_line2" data-address-field class="ok-input" placeholder="Apt 4B" value="{{ addr_line2 }}">
+              <label class="ok-label" for="address_line2">Apt / suite <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
+              <input id="address_line2" name="address_line2" data-address-field required class="ok-input" placeholder="Apt 4B" value="{{ addr_line2 }}">
             </div>
             <div>
               <label class="ok-label" for="address_city">City</label>
@@ -87,7 +90,7 @@
         <div class="ok-grid ok-grid-sm-2 gap-2">
           <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
             <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'asap' %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
-            <span class="ok-fs-xs text-muted-warm ok-asap-note">{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
+            <span class="ok-fs-xs text-muted-warm ok-asap-note" data-checkout-asap-note>{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
           </label>
           {% if store.scheduling_open %}
           <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline">
@@ -96,7 +99,15 @@
           </label>
           {% endif %}
         </div>
-        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 text-ok-red"><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: {{ store.today_hours }}).</p>{% endif %}
+        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 text-ok-red" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours>{{ store.today_hours }}</span>).</p>{% else %}<p class="ok-hint ok-mt-3 text-ok-red d-none" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours></span>).</p>{% endif %}
+        {% endif %}
+        {% if store %}
+        <div data-pickup-location class="ok-mt-4 ok-rounded-xl border ok-bc-varokline bg-cream-60 ok-p-3{% if sel_order_type != 'pickup' %} d-none{% endif %}">
+          <div class="ok-fs-xs text-muted-warm text-uppercase fw-bold mb-1">Pickup location</div>
+          <div class="fw-semibold text-ink" data-pickup-name>{{ store.name }}</div>
+          <div class="ok-fs-sm text-muted-warm" data-pickup-address>{{ store.full_address }}</div>
+          {% if store.phone %}<div class="ok-fs-sm text-muted-warm ok-mt-1" data-pickup-phone-wrap><i class="fa-solid fa-phone text-gold"></i> <span data-pickup-phone>{{ store.phone }}</span></div>{% else %}<div class="ok-fs-sm text-muted-warm ok-mt-1 d-none" data-pickup-phone-wrap><i class="fa-solid fa-phone text-gold"></i> <span data-pickup-phone></span></div>{% endif %}
+        </div>
         {% endif %}
       </section>
 
@@ -138,9 +149,18 @@
       <section class="ok-card ok-p-5 ok-paddin-15rem-md">
         <div class="d-flex align-items-center ok-gap-3 ok-mb-5"><span class="ok-w-8 ok-h-8 rounded-pill bg-ink text-yellow ok-grid ok-place-center font-display fw-bold flex-shrink-0">{{ '4' if (store and store.tips_enabled) else '3' }}</span><h2 class="font-display fw-bold ok-fs-lg">Payment</h2></div>
         <input type="hidden" name="payment_method" value="card">
+        <input type="hidden" name="stripe_payment_intent" id="stripe_payment_intent" value="">
 
         <!-- card details -->
         <div data-card-fields class="ok-grid ok-gap-3">
+          {% if stripe_checkout_mode == 'elements' and stripe_pub_key %}
+          <div>
+            <label class="ok-label" for="card-element">Card details</label>
+            <div id="card-element" class="ok-input py-3"></div>
+            <div id="card-element-errors" class="ok-fs-xs text-ok-red mt-1" role="alert"></div>
+          </div>
+          <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}" value="{{ form.get('card_name', '') }}"></div>
+          {% else %}
           <div>
             <label class="ok-label" for="card_number">Card number</label>
             <div class="d-flex align-items-center gap-2 ok-input">
@@ -154,10 +174,11 @@
             <div><label class="ok-label" for="card_cvc">CVC</label><input id="card_cvc" name="card_cvc" inputmode="numeric" autocomplete="cc-csc" maxlength="4" class="ok-input" placeholder="123" value="{{ form.get('card_cvc', '') }}"></div>
           </div>
           <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}" value="{{ form.get('card_name', '') }}"></div>
+          {% endif %}
         </div>
 
         <p class="ok-hint ok-mt-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-lock text-ok-green"></i>
-          {% if store %}<b class="text-ink">{{ store.name }}</b>{% if not stripe_connected %} <span class="text-gold">(demo mode)</span>{% endif %}{% else %}Secure, PCI-DSS compliant.{% endif %}
+          {% if store %}<b class="text-ink" data-checkout-store-name>{{ store.name }}</b>{% if integration_env == 'sandbox' %} <span class="text-gold">(sandbox)</span>{% elif not stripe_connected %} <span class="text-gold">(payments not configured)</span>{% endif %}{% else %}Secure, PCI-DSS compliant.{% endif %}
         </p>
       </section>
     </div>
@@ -212,7 +233,7 @@
         <!-- total + CTA -->
         <div class="ok-px-5 ok-py-3 bg-ink text-white">
           <div class="d-flex justify-content-between align-items-center ok-mb-3">
-            <div><div class="text-white ok-fs-base text-uppercase tracking-wide fw-bold">Total</div>{% if user %}<div class="ok-fs-sm text-yellow fw-semibold">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
+            <div><div class="text-white ok-fs-base text-uppercase tracking-wide fw-bold">Total</div>{% if features.rewards and user %}<div class="ok-fs-sm text-yellow fw-semibold">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
             <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}" data-total-delivery="{{ '%.2f'|format(checkout_total_delivery) }}" data-total-pickup="{{ '%.2f'|format(checkout_total_pickup) }}" data-delivery-fee="{{ '%.2f'|format(checkout_delivery_fee) }}" data-delivery-free="{{ '1' if checkout_delivery_free else '0' }}">${{ '%.2f'|format(summary.total) }}</span>
           </div>
           {% if store and store.can_order %}
@@ -289,6 +310,15 @@
     syncDeliveryLine();
     applyTip();
     var picked = form.querySelector('input[name="order_type"]:checked');
+    var isDel = !picked || picked.value === "delivery";
+    var addrRow = form.querySelector("[data-address-row]");
+    if (addrRow) addrRow.classList.toggle("d-none", !isDel);
+    var pickupLoc = form.querySelector("[data-pickup-location]");
+    if (pickupLoc) pickupLoc.classList.toggle("d-none", isDel);
+    form.querySelectorAll("[data-address-field][required]").forEach(function (el) {
+      if (isDel) el.setAttribute("required", "");
+      else el.removeAttribute("required");
+    });
     if (picked && picked.value) {
       fetch("/api/order-type/" + encodeURIComponent(picked.value), { credentials: "same-origin" }).catch(function () {});
     }
@@ -303,13 +333,155 @@
 
   syncDeliveryLine();
   applyTip();
-  if (!isDelivery()) {
-    var addrRow = form.querySelector("[data-address-row]");
-    if (addrRow) addrRow.classList.add("d-none");
-    form.querySelectorAll("[data-address-field][required]").forEach(function (el) {
-      el.removeAttribute("required");
+  syncOrderType();
+
+  function applyCheckoutStore(d) {
+    if (!d) return;
+    var pickup = form.querySelector("[data-pickup-location]");
+    if (pickup) {
+      var nameEl = pickup.querySelector("[data-pickup-name]");
+      var addrEl = pickup.querySelector("[data-pickup-address]");
+      var phoneEl = pickup.querySelector("[data-pickup-phone]");
+      var phoneWrap = pickup.querySelector("[data-pickup-phone-wrap]");
+      if (nameEl && d.name != null) nameEl.textContent = d.name;
+      if (addrEl && d.address != null) addrEl.textContent = d.address;
+      if (phoneEl && d.phone != null) phoneEl.textContent = d.phone;
+      if (phoneWrap && d.phone != null) phoneWrap.classList.toggle("d-none", !d.phone);
+    }
+    if (d.name != null) {
+      form.querySelectorAll("[data-checkout-store-name]").forEach(function (el) {
+        el.textContent = d.name;
+      });
+    }
+    if (d.today_hours != null) {
+      form.querySelectorAll("[data-checkout-today-hours]").forEach(function (el) {
+        el.textContent = d.today_hours;
+      });
+    }
+    if (d.avg_prep_minutes != null) {
+      form.querySelectorAll("[data-checkout-asap-note]").forEach(function (el) {
+        el.textContent = d.open_now
+          ? ("Ready in ~" + d.avg_prep_minutes + " min")
+          : "Closed right now";
+      });
+    }
+    var schedHint = form.querySelector("[data-checkout-schedule-hint]");
+    if (schedHint && d.open_now != null && d.scheduling_open != null) {
+      schedHint.classList.toggle("d-none", !(d.scheduling_open && !d.open_now));
+    }
+  }
+  document.addEventListener("ok:store", function (e) { applyCheckoutStore(e.detail || {}); });
+
+  form.addEventListener("submit", function (e) {
+    var picked = form.querySelector('input[name="order_type"]:checked');
+    var isDel = !picked || picked.value === "delivery";
+    var apt = form.querySelector("#address_line2");
+    if (isDel && apt) {
+      if (!(apt.value || "").trim()) {
+        e.preventDefault();
+        apt.classList.add("is-invalid");
+        apt.focus();
+        if (window.OK && OK.toast) OK.toast("Please enter your apt / suite number.");
+        return;
+      }
+      apt.classList.remove("is-invalid");
+    }
+  });
+  var aptEl = form.querySelector("#address_line2");
+  if (aptEl) aptEl.addEventListener("input", function () {
+    if ((aptEl.value || "").trim()) aptEl.classList.remove("is-invalid");
+  });
+
+  // ----- Stripe Elements (sandbox / live test keys) -----
+  var stripeMode = {{ stripe_checkout_mode|tojson }};
+  var stripePubKey = {{ stripe_pub_key|tojson }};
+  var stripeClient = null;
+  var cardElement = null;
+  if (stripeMode === "elements" && stripePubKey && window.Stripe) {
+    stripeClient = Stripe(stripePubKey);
+    var elements = stripeClient.elements();
+    cardElement = elements.create("card", {
+      style: {
+        base: { fontSize: "16px", color: "#141414", "::placeholder": { color: "#9a9a9a" } },
+        invalid: { color: "#c0392b" }
+      }
+    });
+    var mountEl = document.getElementById("card-element");
+    if (mountEl) cardElement.mount(mountEl);
+    cardElement.on("change", function (ev) {
+      var errEl = document.getElementById("card-element-errors");
+      if (errEl) errEl.textContent = ev.error ? ev.error.message : "";
     });
   }
+
+  function checkoutTotal() {
+    var sel = form.querySelector('input[name="tip"]:checked');
+    var tip = sel ? (parseFloat(sel.value) || 0) : 0;
+    return baseTotal() + tip;
+  }
+
+  form.addEventListener("submit", function (e) {
+    if (stripeMode !== "elements" || !stripeClient || !cardElement) return;
+    if (form.dataset.stripeDone === "1") return;
+    var picked = form.querySelector('input[name="order_type"]:checked');
+    var isDel = !picked || picked.value === "delivery";
+    var apt = form.querySelector("#address_line2");
+    if (isDel && apt && !(apt.value || "").trim()) {
+      e.preventDefault();
+      apt.classList.add("is-invalid");
+      apt.focus();
+      if (window.OK && OK.toast) OK.toast("Please enter your apt / suite number.");
+      return;
+    }
+    e.preventDefault();
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+    var csrf = form.querySelector('input[name="_csrf"]');
+    fetch("/checkout/payment-intent", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrf ? csrf.value : ""
+      },
+      body: JSON.stringify({ amount: checkoutTotal() })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) throw new Error(data.error || "Payment setup failed");
+        if (data.demo) {
+          form.dataset.stripeDone = "1";
+          form.submit();
+          return;
+        }
+        var nameEl = document.getElementById("card_name");
+        return stripeClient.confirmCardPayment(data.client_secret, {
+          payment_method: {
+            card: cardElement,
+            billing_details: { name: nameEl ? nameEl.value : "" }
+          }
+        });
+      })
+      .then(function (result) {
+        if (!result) return;
+        if (result.error) throw new Error(result.error.message || "Card declined");
+        if (result.paymentIntent && result.paymentIntent.status === "succeeded") {
+          var hid = document.getElementById("stripe_payment_intent");
+          if (hid) hid.value = result.paymentIntent.id;
+          form.dataset.stripeDone = "1";
+          form.submit();
+          return;
+        }
+        throw new Error("Payment was not completed");
+      })
+      .catch(function (err) {
+        if (btn) btn.disabled = false;
+        var errEl = document.getElementById("card-element-errors");
+        if (errEl) errEl.textContent = err.message || "Payment failed";
+        else if (window.OK && OK.toast) OK.toast(err.message || "Payment failed");
+        else alert(err.message || "Payment failed");
+      });
+  }, true);
 })();
 </script>
 {% endblock %}

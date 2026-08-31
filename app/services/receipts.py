@@ -3,6 +3,8 @@ import os
 
 from fpdf import FPDF
 
+from app.helpers import feature_on, order_dt_local
+
 BRAND = "OK Smashed Burger"
 JET = (20, 20, 20)
 SLATE = (107, 107, 107)
@@ -52,7 +54,8 @@ def build_receipt_pdf(order):
     pdf.set_xy(X, 28)
     pdf.cell(W, 5.5, _s(f"Order  {order.number}"), align="R")
     pdf.set_xy(X, 33.5)
-    pdf.cell(W, 5.5, _s(order.created_at.strftime("%b %d, %Y  \xb7  %I:%M %p")), align="R")
+    t = order_dt_local(order, "created_at") or order.created_at
+    pdf.cell(W, 5.5, _s(t.strftime("%b %d, %Y  \xb7  %I:%M %p")), align="R")
 
     y = max(logo_bottom, 41) + 2
     pdf.set_draw_color(*YELLOW)
@@ -95,7 +98,8 @@ def build_receipt_pdf(order):
             ("Status", order.status.replace("_", " ").title()),
             ("Payment", (order.payment_method or "Card").title() + " \xb7 " + order.payment_status.title())]
     if getattr(order, "scheduled_for", None):
-        meta.append(("Scheduled", order.scheduled_for.strftime("%b %d, %I:%M %p")))
+        t_sched = order_dt_local(order, "scheduled_for") or order.scheduled_for
+        meta.append(("Scheduled", t_sched.strftime("%b %d, %I:%M %p")))
     for label, val in meta:
         pdf.set_font("Helvetica", "", 7.5)
         pdf.set_text_color(*MUTE)
@@ -172,11 +176,14 @@ def build_receipt_pdf(order):
         lbl = "Discount" + (f" ({order.coupon_code})" if order.coupon_code else "")
         row(lbl, "-" + _money(order.discount), "discount")
     row("Tax", _money(order.tax))
-    if order.delivery_fee:
-        row("Delivery", _money(order.delivery_fee))
-    if order.tip:
+    if order.order_type == "delivery":
+        if order.delivery_fee and float(order.delivery_fee) > 0:
+            row("Delivery", _money(order.delivery_fee))
+        else:
+            row("Delivery", "FREE")
+    if order.tip and float(order.tip) > 0:
         row("Tip", _money(order.tip))
-    if order.gift_card_applied:
+    if order.gift_card_applied and float(order.gift_card_applied) > 0:
         row("Gift card", "-" + _money(order.gift_card_applied), "discount")
 
     # highlighted TOTAL bar (right half)
@@ -210,7 +217,12 @@ def build_receipt_pdf(order):
     line2 = f"{BRAND}" + (f"  \xb7  {store.name}" if store else "") + (f"  \xb7  {contact}" if contact else "")
     pdf.cell(W, 5, _s(line2), align="C")
     pdf.ln(5)
-    pdf.set_text_color(*MUTE)
-    pdf.cell(W, 5, _s("Rewards points are applied automatically to member accounts. "
-                      "Questions? Reply to your confirmation email."), align="C")
+
+    if feature_on("rewards"):
+        pdf.set_text_color(*MUTE)
+        pdf.cell(W, 5, _s("Rewards points are applied automatically to member accounts. "
+                          "Questions? Reply to your confirmation email."), align="C")
+    else:
+        pdf.set_text_color(*MUTE)
+        pdf.cell(W, 5, _s("Questions about your order? Reply to your confirmation email."), align="C")
     return bytes(pdf.output())

@@ -231,8 +231,12 @@ PAGE_CONTENT = [
          "No stories yet. Check back soon.", "area")]},
     {"key": "storefront", "label": "Deals, Rewards & Gift cards copy", "url": "/deals", "fields": [
         # /deals
+        ("deals_hero_heading", "Deals | hero heading", "Deals & Offers"),
+        ("deals_hero_text", "Deals | hero text", "Save on smashed favorites. Start an order straight from any deal, most need no code at all.", "area"),
         ("deals_strip_lead", "Deals | banner lead-in", "New here? Enjoy"),
         ("deals_code_hint", "Deals | promo code hint", "Have a promo code? Apply it before you order."),
+        ("deals_list_heading", "Deals | list heading", "All deals"),
+        ("deals_empty_text", "Deals | empty text", "No active deals right now, check back soon!"),
         ("deals_terms", "Deals | small print", "One offer per order. Deals cannot be combined and are available at participating locations for a limited time.", "area"),
         ("deals_terms_link", "Deals | small print link text", "See full terms & conditions"),
         # /rewards

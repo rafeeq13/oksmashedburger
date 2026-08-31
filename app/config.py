@@ -31,6 +31,10 @@ class Config:
 
     BRAND_NAME = "OK Smashed Burger"
 
+    # Admin email templates: full HTML designs exceed Werkzeug's 500 KB default.
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    MAX_FORM_MEMORY_SIZE = 16 * 1024 * 1024
+
 
 class ProductionConfig(Config):
     DEBUG = False

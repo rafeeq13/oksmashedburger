@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% block title %}Send Newsletter, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<div class="ok-mb-5">
+  <a href="/admin/subscribers{{ qs }}" class="link-underline ok-fs-sm"><i class="fa-solid fa-arrow-left"></i> Back to subscribers</a>
+  <h2 class="ok-h2 mt-2">Send Newsletter</h2>
+  <p class="text-muted-warm ok-fs-sm">Send HTML to active subscribers for <b>{{ admin_store.name if admin_store else 'all locations' }}</b>. Content is injected into the <a href="/admin/email-templates{{ qs }}#newsletter" class="link-underline">Newsletter blast</a> template as <code>{message}</code>.</p>
+</div>
+
+<div class="ok-grid ok-grid-lg-12 ok-gap-5">
+  <div class="ok-gridco-span8-lg">
+    <form method="post" action="/admin/subscribers/newsletter{{ qs }}" class="ok-card p-5 ok-stack-4">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      
+      <div>
+        <label class="ok-label" for="subject">Subject line</label>
+        <input id="subject" name="subject" required class="ok-input" placeholder="e.g. New Smash Drop: The Truffle Burger is here!">
+      </div>
+
+      <div>
+        <label class="ok-label" for="message">HTML message body</label>
+        <textarea id="message" name="message" required rows="16" class="ok-textarea font-monospace ok-fs-sm" placeholder="<p>Your HTML content here…</p>"></textarea>
+        <p class="ok-hint mt-2">This HTML is placed inside the newsletter template where <code>{message}</code> appears. Design the wrapper in <a href="/admin/email-templates{{ qs }}#newsletter" class="link-underline">Email templates → Newsletter blast</a>. Unsubscribe link uses <code>{link}</code> in that template.</p>
+      </div>
+
+      <div class="ok-card bg-cream-50 p-3 border-yellow-20">
+        <div class="d-flex align-items-center gap-3">
+          <div class="ok-w-10 ok-h-10 rounded-pill bg-yellow text-jet ok-grid ok-place-center flex-shrink-0">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div>
+            <div class="fw-bold">Ready to send to {{ count }} subscribers</div>
+            <div class="ok-fs-xs text-muted-warm">Sent as HTML via this location's SMTP account.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button class="btn btn-primary btn-lg px-5" onclick="return confirm('Send this newsletter to {{ count }} people now?')">
+          <i class="fa-solid fa-paper-plane"></i> Send Now
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <aside class="ok-gridco-span4-lg">
+    <div class="ok-card p-5">
+      <h3 class="font-display fw-bold ok-fs-base mb-3">Newsletter tips</h3>
+      <ul class="ok-stack-3 ok-fs-sm text-muted-warm ps-3">
+        <li><b>Design once:</b> Edit the full email wrapper under Email templates → Newsletter blast.</li>
+        <li><b>HTML here:</b> Only the inner content changes each send — use headings, images, links.</li>
+        <li><b>Unsubscribe:</b> Include <code>{link}</code> in your template footer (required).</li>
+        <li><b>Preview:</b> Save the template, then use Live preview before sending.</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

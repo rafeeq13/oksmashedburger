@@ -10,6 +10,7 @@ from app.models.order import Order
 from app.models.menu import Product, ProductVariant, ProductAddon
 from app.models.favorite import Favorite
 from app.models.address import UserAddress
+from app.models.payment_method import UserPaymentMethod
 from app.models.notification import Notification
 from app.services.orders import orders_for_user, STAGE_META
 
@@ -47,6 +48,8 @@ def account():
         favorites_count=len(u.favorites),
         addresses=UserAddress.query.filter_by(user_id=u.id)
         .order_by(UserAddress.is_default.desc(), UserAddress.id).all(),
+        payment_methods=UserPaymentMethod.query.filter_by(user_id=u.id)
+        .order_by(UserPaymentMethod.is_default.desc(), UserPaymentMethod.id).all(),
         reward_target=target, reward_to_go=to_go, reward_pct=pct,
         tier=tier,
         # what this customer has actually been sent, newest first
@@ -300,3 +303,73 @@ def address_delete(aid):
     db.session.commit()
     flash("Address removed.", "success")
     return redirect("/account")
+
+
+# ── Saved payment methods ────────────────────────────────────────────────
+@bp.post("/account/payment-methods")
+@login_required
+def payment_method_add():
+    u = current_user()
+    last4 = "".join(ch for ch in request.form.get("last4", "") if ch.isdigit())[-4:]
+    if len(last4) != 4:
+        flash("Enter the last 4 digits of your card.", "error")
+        return redirect("/account#payment")
+    brand = request.form.get("brand", "Card").strip() or "Card"
+    make_default = bool(request.form.get("is_default")) or UserPaymentMethod.query.filter_by(user_id=u.id).count() == 0
+    if make_default:
+        UserPaymentMethod.query.filter_by(user_id=u.id).update({"is_default": False})
+    db.session.add(UserPaymentMethod(
+        user_id=u.id, brand=brand, last4=last4,
+        exp_month=request.form.get("exp_month", "").strip(),
+        exp_year=request.form.get("exp_year", "").strip(),
+        is_default=make_default))
+    db.session.commit()
+    flash("Payment method saved.", "success")
+    return redirect("/account#payment")
+
+
+@bp.post("/account/payment-methods/<int:mid>/edit")
+@login_required
+def payment_method_edit(mid):
+    u = current_user()
+    pm = UserPaymentMethod.query.filter_by(id=mid, user_id=u.id).first_or_404()
+    brand = request.form.get("brand", "").strip()
+    if brand:
+        pm.brand = brand
+    last4 = "".join(ch for ch in request.form.get("last4", pm.last4) if ch.isdigit())[-4:]
+    if len(last4) == 4:
+        pm.last4 = last4
+    pm.exp_month = request.form.get("exp_month", "").strip()
+    pm.exp_year = request.form.get("exp_year", "").strip()
+    db.session.commit()
+    flash("Payment method updated.", "success")
+    return redirect("/account#payment")
+
+
+@bp.post("/account/payment-methods/<int:mid>/default")
+@login_required
+def payment_method_default(mid):
+    u = current_user()
+    pm = UserPaymentMethod.query.filter_by(id=mid, user_id=u.id).first_or_404()
+    UserPaymentMethod.query.filter_by(user_id=u.id).update({"is_default": False})
+    pm.is_default = True
+    db.session.commit()
+    flash("Default payment method updated.", "success")
+    return redirect("/account#payment")
+
+
+@bp.post("/account/payment-methods/<int:mid>/delete")
+@login_required
+def payment_method_delete(mid):
+    u = current_user()
+    pm = UserPaymentMethod.query.filter_by(id=mid, user_id=u.id).first_or_404()
+    was_default = pm.is_default
+    db.session.delete(pm)
+    db.session.flush()
+    if was_default:
+        nxt = UserPaymentMethod.query.filter_by(user_id=u.id).first()
+        if nxt:
+            nxt.is_default = True
+    db.session.commit()
+    flash("Payment method removed.", "success")
+    return redirect("/account#payment")

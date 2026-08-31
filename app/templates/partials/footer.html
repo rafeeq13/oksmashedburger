@@ -2,7 +2,7 @@
   <div class="border-bottom border-w-10 position-relative"><div class="ok-container ok-py-10 d-flex flex-column flex-md-row align-items-center justify-content-between ok-gap-3">
     <div><h3 class="font-display ok-fs-xl ok-fs-md-2xl fw-bold text-nowrap">{{ pc('footer_news_heading') }}</h3>
       <p class="text-w-60 ok-fs-sm ok-mt-15">{{ pc('footer_news_text') }}</p></div>
-    <form method="post" action="/subscribe" class="d-flex gap-2 w-100 justify-content-md-end ok-width-auto-md"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="email" name="email" required placeholder="you@email.com" aria-label="Email address" class="ok-input ok-width-18rem-md text-ink"><button class="btn btn-primary ok-btn-subscribe flex-shrink-0">{{ pc('footer_news_button') }}</button></form>
+    <form method="post" action="/subscribe" class="d-flex gap-2 w-100 justify-content-md-end ok-width-auto-md"><input type="hidden" name="_csrf" value="{{ csrf_token }}">{% if current_store %}<input type="hidden" name="store_slug" value="{{ current_store.slug }}">{% endif %}<input type="email" name="email" required placeholder="you@email.com" aria-label="Email address" class="ok-input ok-width-18rem-md text-ink"><button class="btn btn-primary ok-btn-subscribe flex-shrink-0">{{ pc('footer_news_button') }}</button></form>
   </div></div>
 
   <div class="ok-container ok-py-14 ok-grid ok-grid-2 ok-grid-md-5 ok-gap-8 position-relative">

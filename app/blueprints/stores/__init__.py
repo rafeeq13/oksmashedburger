@@ -1,6 +1,7 @@
 """Store locator + choosing which location you're ordering from."""
 from flask import Blueprint, render_template, session, redirect, request, abort, flash
 
+from app import cart as cartlib
 from app.helpers import active_stores, find_store_for_zip, get_current_store
 from app.models.store import Store
 
@@ -20,6 +21,13 @@ def set_location(slug):
     if not store:
         abort(404)
     session["store_slug"] = slug
+    unavailable = cartlib.unavailable_at_store(store)
+    if unavailable:
+        flash(
+            f"Some items in your cart aren't available at {store.name}: "
+            f"{', '.join(unavailable)}. Please choose items from this location's menu.",
+            "error",
+        )
     # go back where the user came from, or to the menu
     return redirect(request.args.get("next") or "/menu")
 
@@ -33,6 +41,7 @@ def api_select_store(slug):
         return {"ok": False}, 404
     session["store_slug"] = slug
     session["context_set"] = True
+    unavailable = cartlib.unavailable_at_store(store)
     return {"ok": True, "slug": store.slug, "name": store.name,
             "city": store.city, "zip": store.zip_code,
             "address": store.full_address,
@@ -40,7 +49,13 @@ def api_select_store(slug):
             "email": store.email or "",
             "map_query": store.map_query,
             "map_embed_src": store.map_embed_src,
-            "hours_today": store.today_hours_with_day}
+            "hours_today": store.today_hours_with_day,
+            "today_hours": store.today_hours,
+            "open_now": store.open_now,
+            "can_order": store.can_order,
+            "scheduling_open": store.scheduling_open,
+            "avg_prep_minutes": store.avg_prep_minutes,
+            "cart_unavailable": unavailable}
 
 
 @bp.get("/api/schedule")
@@ -88,6 +103,13 @@ def order_context():
         store = find_store_for_zip(zip_code)
     if store:
         session["store_slug"] = store.slug
+        unavailable = cartlib.unavailable_at_store(store)
+        if unavailable:
+            flash(
+                f"Some items in your cart aren't available at {store.name}: "
+                f"{', '.join(unavailable)}. Please choose items from this location's menu.",
+                "error",
+            )
     session["context_set"] = True  # user has chosen store/type → stop auto-opening the modal
 
     ot = request.form.get("order_type", "delivery")

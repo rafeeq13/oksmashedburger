@@ -10,15 +10,23 @@
          pinned, so the panel does not lose half its height to a static header. #}
       <h3 class="ok-h2 ok-fs-xl mb-1">{{ pc('loc_modal_heading') }}</h3>
       <p class="ok-fs-sm text-muted-warm ok-mb-3">{{ pc('loc_modal_text') }}</p>
-      <div class="ok-locsearch position-sticky top-0 ok-z-20 bg-white ok-pb-3">
+      <div class="ok-locsearch position-sticky top-0 ok-z-20 bg-white ok-pb-3"{% if google_maps_api_key %} data-loc-autocomplete data-maps-key="{{ google_maps_api_key }}"{% endif %}>
       <div class="d-flex gap-2">
-        <div class="d-flex align-items-center gap-2 ok-input flex-grow-1"><span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span><input id="locZip" class="w-100 bg-transparent ok-nofocus" placeholder="Address or ZIP (e.g. 19104)"></div>
+        <div class="d-flex align-items-center gap-2 ok-input flex-grow-1 ok-address-search-wrap position-relative">
+          <span class="text-muted-warm"><i class="fa-solid fa-location-dot"></i></span>
+          <input id="locZip" data-loc-search class="w-100 bg-transparent ok-nofocus" placeholder="Start typing your address" autocomplete="off">
+          {% if google_maps_api_key %}
+          <ul data-loc-predictions class="ok-address-predictions d-none" role="listbox" aria-label="Address suggestions"></ul>
+          {% endif %}
+        </div>
         <button type="button" data-loc-find class="btn btn-dark flex-shrink-0">Find</button>
       </div>
       </div>
       <div class="ok-stack-2 ok-mt-3">
         {% for s in all_stores %}
         <button type="button" data-loc-pick="{{ s.slug }}" data-loc-name="{{ s.name }}" data-zip="{{ s.zip_code }}" data-city="{{ s.city }}"
+                data-phone="{{ s.phone or '' }}"
+                data-lat="{{ s.latitude if s.latitude is not none else '' }}" data-lng="{{ s.longitude if s.longitude is not none else '' }}"
                 data-address="{{ s.full_address }}"
                 data-zips="{{ s.delivery_zones|map(attribute='zip_codes')|sum(start=[])|join(',') }}"
                 data-search="{{ (s.name ~ ' ' ~ s.full_address ~ ' ' ~ s.city ~ ' ' ~ s.zip_code)|lower }}"

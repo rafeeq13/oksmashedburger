@@ -2,12 +2,13 @@
 import re
 import secrets
 
-from flask import Blueprint, render_template, request, redirect, flash, current_app, g
+from flask import Blueprint, render_template, request, redirect, flash, current_app, g, session
 from markupsafe import escape
 
 from app.extensions import db, limiter
-from app.helpers import get_current_store
+from app.helpers import coupon_public_dict, coupons_for_store, get_current_store
 from app.models.promo import Coupon, GiftCard
+from app.models.store import Store
 from app.models.contact import ContactMessage, Subscriber
 from app.models.review import Review
 from app.models.page import home_sections_ordered, BuilderPage, DYNAMIC_SECTION_KEYS
@@ -361,8 +362,37 @@ def faq():
 
 @bp.get("/deals")
 def deals():
-    coupons = Coupon.query.filter_by(active=True).order_by(Coupon.created_at.desc()).all()
-    return render_template("website/deals.html", coupons=coupons)
+    store = get_current_store()
+    coupons = coupons_for_store(store)
+    return render_template("website/deals.html", coupons=coupons, store=store)
+
+
+@bp.get("/deals/partial")
+def deals_partial():
+    """HTML fragment for the deals grid (location changes on /deals)."""
+    slug = (request.args.get("store") or "").strip()
+    store = Store.query.filter_by(slug=slug, is_active=True).first() if slug else None
+    if not store:
+        store = get_current_store()
+    coupons = coupons_for_store(store)
+    return render_template("website/_deals_grid.html", coupons=coupons, store=store)
+
+
+@bp.get("/api/deals")
+def api_deals():
+    """Deals for the session store, or an explicit ?store=slug (used right after a
+    location change so the grid updates before the session cookie round-trips)."""
+    slug = (request.args.get("store") or "").strip()
+    store = Store.query.filter_by(slug=slug, is_active=True).first() if slug else None
+    if not store:
+        store = get_current_store()
+    coupons = coupons_for_store(store)
+    return {
+        "ok": True,
+        "store": {"slug": store.slug, "name": store.name} if store else None,
+        "count": len(coupons),
+        "coupons": [coupon_public_dict(c) for c in coupons],
+    }
 
 
 @bp.get("/rewards")
@@ -480,19 +510,37 @@ def subscribe():
         flash("Please enter a valid email address.", "error")
         return redirect(back)
 
+    store = None
+    slug = (request.form.get("store_slug") or session.get("store_slug") or "").strip()
+    if slug:
+        store = Store.query.filter_by(slug=slug, is_active=True).first()
+    if store is None:
+        store = get_current_store()
+
     existing = Subscriber.query.filter_by(email=email).first()
+    ip = request.remote_addr
+
     if existing:
-        if not existing.is_active:
-            existing.is_active = True
-            db.session.commit()
+        existing.is_active = True
+        if store:
+            existing.store_id = store.id
+        existing.ip_address = ip
+        existing.source = "footer"
+        db.session.commit()
     else:
-        db.session.add(Subscriber(email=email, source="footer"))
+        db.session.add(Subscriber(
+            email=email,
+            source="footer",
+            store_id=store.id if store else None,
+            ip_address=ip,
+        ))
         db.session.commit()
         try:
             from app.services import mailer
-            mailer.subscribed(email)
+            mailer.subscribed(email, store=store)
         except Exception as e:
             current_app.logger.warning("subscribe mail failed: %s", e)
 
-    flash("You're on the list. Check your inbox!", "success")
+    loc = (" at %s" % store.name) if store else ""
+    flash("You're on the list%s. Check your inbox!" % loc, "success")
     return redirect(back)

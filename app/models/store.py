@@ -72,6 +72,8 @@ class Store(TimestampMixin, db.Model):
     # ASAP pickup/delivery; "accepting_scheduled" gates order-ahead independently.
     accepting_orders = db.Column(db.Boolean, default=True, nullable=False)
     accepting_scheduled = db.Column(db.Boolean, default=True, nullable=False)
+    # sandbox = test credentials / simulated fallbacks; production = live keys only
+    integration_env = db.Column(db.String(20), default="sandbox", nullable=False)
 
     # Relationships
     hours = db.relationship("StoreHours", back_populates="store", cascade="all, delete-orphan")
@@ -284,7 +286,7 @@ class StoreIntegration(TimestampMixin, db.Model):
 
     `config` holds provider-specific credentials/settings as JSON, e.g.:
       stripe  -> {"account_id": "...", "publishable_key": "...", "secret_key": "..."}
-      square  -> {"location_id": "...", "access_token": "..."}
+      square  -> {"application_id": "...", "location_id": "...", "access_token": "..."}
       uber    -> {"customer_id": "...", "client_id": "...", "client_secret": "..."}
     Secrets should be stored encrypted / in a vault in production (SRS NFR-2.2).
     """

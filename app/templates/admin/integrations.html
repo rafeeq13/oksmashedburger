@@ -3,7 +3,30 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Integrations, {{ admin_store.name if admin_store else '' }}</h2>
-<p class="text-muted-warm ok-fs-sm ok-mb-5">Each location connects its <b>own</b> payment, POS, delivery and messaging accounts. These keys are used only for this store's orders.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-4">Each location connects its <b>own</b> payment, POS, delivery and messaging accounts. Save separate credentials for <b>sandbox</b> (testing) and <b>production</b> (live orders).</p>
+
+<div class="ok-card p-4 ok-mb-4 border ok-bc-varokline">
+  <div class="d-flex flex-wrap align-items-center justify-content-between ok-gap-3">
+    <div>
+      <div class="font-display fw-bold ok-fs-base">Order environment</div>
+      <p class="ok-fs-sm text-muted-warm ok-mb-0">Checkout and notifications at this location use the active environment below.</p>
+    </div>
+    <form method="post" action="/admin/integrations/environment{{ qs }}" class="d-flex ok-gap-2">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" name="environment" value="sandbox" class="btn btn-sm {% if integration_env == 'sandbox' %}btn-primary{% else %}btn-secondary{% endif %}">Sandbox</button>
+      <button type="submit" name="environment" value="production" class="btn btn-sm {% if integration_env == 'production' %}btn-primary{% else %}btn-secondary{% endif %}">Production</button>
+    </form>
+  </div>
+  <p class="ok-fs-xs ok-mt-3 ok-mb-0 {% if integration_env == 'production' %}text-ok-red fw-semibold{% else %}text-muted-warm{% endif %}">
+    {% if integration_env == 'production' %}
+    <i class="fa-solid fa-circle-exclamation"></i> Live mode — orders charge real payments and send real SMS/email.
+    {% else %}
+    <i class="fa-solid fa-flask"></i> Test mode — use sandbox/test API keys. Missing keys are simulated safely.
+    {% endif %}
+  </p>
+</div>
+
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Editing credentials for <b class="text-ink text-capitalize">{{ integration_env }}</b> environment.</p>
 
 <div data-tab-group>
   <!-- Provider pills -->
@@ -38,7 +61,8 @@
         {% for field in prov.fields %}
         <div>
           <label class="ok-label ok-fs-xs mb-1">{{ field.label }}</label>
-          <input name="cfg_{{ field.key }}" value="{{ prov.config.get(field.key, '') }}" {% if field.secret %}type="password"{% else %}type="text"{% endif %} autocomplete="off" class="ok-input py-2 ok-fs-sm" placeholder="{{ field.label }}">
+          <input name="cfg_{{ field.key }}" value="{{ prov.config.get(field.key, '') }}" {% if field.secret %}type="password"{% else %}type="text"{% endif %} autocomplete="off" class="ok-input py-2 ok-fs-sm" placeholder="{{ field.placeholder or field.label }}">
+          {% if field.hint %}<p class="ok-fs-62rem text-muted-warm mt-1"><i class="fa-solid fa-circle-info"></i> {{ field.hint }}</p>{% endif %}
           {% if field.secret %}<p class="ok-fs-62rem text-muted-warm mt-1"><i class="fa-solid fa-lock"></i> Stored securely</p>{% endif %}
         </div>
         {% endfor %}
@@ -48,6 +72,22 @@
         <span class="ok-fs-xs text-muted-warm">Applies to {{ admin_store.name if admin_store else 'this location' }} only.</span>
       </div>
     </form>
+
+    {% if prov.key == 'smtp' %}
+    <div class="ok-card p-4 ok-mt-3 border ok-bc-varokline bg-cream-40">
+      <div class="font-display fw-bold ok-fs-base ok-mb-1">Send test email</div>
+      <p class="ok-fs-sm text-muted-warm ok-mb-4">Uses the <b>saved</b> SMTP settings above (save first if you just changed them). A successful test means order emails, sign-up mail, password resets, and newsletters will deliver from this location.</p>
+      <form method="post" action="/admin/integrations/smtp/test{{ qs }}" class="d-flex flex-wrap align-items-end ok-gap-3">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <div class="flex-grow-1 ok-minw-200px">
+          <label class="ok-label ok-fs-xs mb-1" for="smtp_test_to">Send to</label>
+          <input id="smtp_test_to" name="test_to" type="email" class="ok-input py-2 ok-fs-sm" placeholder="you@email.com" value="{{ admin_email }}" autocomplete="email">
+        </div>
+        <button type="submit" class="btn btn-secondary btn-sm" {% if not prov.enabled %}disabled{% endif %}><i class="fa-solid fa-paper-plane"></i> Send test</button>
+      </form>
+      {% if not prov.enabled %}<p class="ok-fs-xs text-muted-warm ok-mt-2"><i class="fa-solid fa-circle-info"></i> Enable SMTP and save before testing.</p>{% endif %}
+    </div>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

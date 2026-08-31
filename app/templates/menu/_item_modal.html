@@ -16,9 +16,6 @@
 </div>
 {% endif %}
 
-{# The price used to sit here. It now lives only in the sticky Add-to-cart
-   button, where it updates as the size and add-ons change — one number,
-   never two that can disagree. #}
 {% if store %}<div class="ok-fs-xs text-danger">at {{ store.name }}</div>{% endif %}
 
 {% if available %}
@@ -28,38 +25,38 @@
   <input type="hidden" name="qty" value="1">
   <input type="hidden" name="next" value="/">
 
-  {% if product.variants %}
-  <div class="ok-mb-3">
-    <label class="ok-label">{{ pc('modal_size_label') }}</label>
-    <div class="d-flex gap-2 ok-optrow" data-chip-group>
-      {% for v in product.variants %}
-      <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" data-delta="{{ '%.2f'|format(v.price_delta or 0) }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  {% if product.addons %}
-  <div class="ok-mb-3">
-    <label class="ok-label">{{ pc('modal_addons_label') }}</label>
-    <div class="ok-stack-2">
-      {% for a in product.addons %}
-      <div class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-gap-3" data-addon data-price="{{ '%.2f'|format(a.price) }}"{% if a.is_required %} data-required="1"{% endif %}>
-        <span class="fw-medium ok-min-w-0">{{ a.name }}{% if a.is_required %}<span class="text-ok-red" aria-hidden="true"> *</span>{% endif %}</span>
-        <span class="d-flex align-items-center ok-gap-3 flex-shrink-0">
-          <span class="text-muted-warm ok-fs-sm text-nowrap">+${{ '%.2f'|format(a.price) }}</span>
-          <span class="qty qty-sm">
-            <button type="button" data-astep="-" aria-label="One less {{ a.name }}">&minus;</button>
-            <span data-acount>0</span>
-            <button type="button" data-astep="+" aria-label="One more {{ a.name }}">+</button>
-          </span>
-          <input type="hidden" name="addon_qty_{{ a.id }}" value="0">
-        </span>
+  {% for section in modifier_sections %}
+    {% if section.kind == 'variants' %}
+    <div class="ok-mb-3">
+      <label class="ok-label">{{ section.label }}</label>
+      <div class="d-flex gap-2 ok-optrow" data-chip-group>
+        {% for v in section.variants %}
+        <label class="chip ok-pointer{% if v.is_default %} is-active{% endif %}"><input type="radio" name="variant_id" value="{{ v.id }}" data-delta="{{ '%.2f'|format(v.price_delta or 0) }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
-  {% endif %}
+    {% elif section.kind == 'addons' %}
+    <div class="ok-mb-3">
+      <label class="ok-label">{{ section.label }}</label>
+      <div class="ok-stack-2">
+        {% for a in section.addons %}
+        <div class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-gap-3" data-addon data-price="{{ '%.2f'|format(a.price) }}"{% if a.is_required %} data-required="1"{% endif %}>
+          <span class="fw-medium ok-min-w-0">{{ a.name }}{% if a.is_required %}<span class="text-ok-red" aria-hidden="true"> *</span>{% endif %}</span>
+          <span class="d-flex align-items-center ok-gap-3 flex-shrink-0">
+            <span class="text-muted-warm ok-fs-sm text-nowrap">+${{ '%.2f'|format(a.price) }}</span>
+            <span class="qty qty-sm">
+              <button type="button" data-astep="-" aria-label="One less {{ a.name }}">&minus;</button>
+              <span data-acount>0</span>
+              <button type="button" data-astep="+" aria-label="One more {{ a.name }}">+</button>
+            </span>
+            <input type="hidden" name="addon_qty_{{ a.id }}" value="0">
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  {% endfor %}
 
   <div class="ok-mb-3">
     <label class="ok-label">{{ pc('modal_notes_label') }}</label>

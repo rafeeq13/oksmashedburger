@@ -30,7 +30,7 @@
       <a href="/admin/orders/{{ o.number }}{{ qs }}" class="ok-py-3 d-flex align-items-center justify-content-between ok-gap-3 -mx-2 px-2 ok-rounded-lg ok-transition">
         <div class="ok-min-w-0">
           <span class="fw-bold">{{ o.number }}</span>
-          <span class="ok-fs-xs text-muted-warm">· {{ o.created_at.strftime('%b %d, %Y') }} · {{ o.store.name }} · {{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</span>
+          <span class="ok-fs-xs text-muted-warm">· {{ o.created_at_local.strftime('%b %d, %Y') }} · {{ o.store.name }} · {{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</span>
         </div>
         <div class="d-flex align-items-center ok-gap-3 flex-shrink-0">
           {% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow text-capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}

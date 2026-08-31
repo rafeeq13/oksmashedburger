@@ -4187,6 +4187,58 @@ input[type="radio"]:focus-visible{
 }
 .ok-menu-cta--muted{ color: var(--ok-red, #C62828); opacity: .85; }
 .ok-menu-cta:hover{ color: #a31f1f; }
+.ok-menu-sched-actions{ padding-left: 0; }
+@media (min-width: 576px){
+  .ok-menu-sched-actions{ padding-left: calc(3.25rem + .75rem); }
+}
+
+/* Tracking page */
+.ok-trk-search{ background:#fff; border-bottom:1px solid var(--ok-line, #e8e4dc); }
+.ok-trk-map{ position:relative; aspect-ratio:16/9; min-height:220px; background:#f5f0e8; }
+.ok-trk-map iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+
+/* Admin modifier rows — compact section + controls inline */
+.ok-addon-row__meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem; margin-bottom:.5rem; }
+.ok-addon-row__controls{ display:flex; flex-wrap:nowrap; align-items:center; gap:.4rem; }
+.ok-addon-section-select{
+  width:4.25rem !important;
+  min-width:4.25rem !important;
+  max-width:4.25rem !important;
+  flex:0 0 4.25rem !important;
+  padding:.4rem 1.1rem .4rem .3rem !important;
+  font-size:.72rem !important;
+  line-height:1.2;
+}
+.ok-addon-sort-input{
+  width:2.75rem !important;
+  min-width:2.75rem !important;
+  max-width:2.75rem !important;
+  flex:0 0 2.75rem !important;
+  padding:.4rem .2rem !important;
+  text-align:center;
+  font-size:.8rem;
+}
+.ok-modsec-label{
+  width:7.5rem !important;
+  min-width:7.5rem !important;
+  max-width:7.5rem !important;
+  flex:0 0 7.5rem !important;
+  padding:.4rem .5rem !important;
+  font-size:.8125rem;
+}
+.ok-modsec-order{
+  width:2.75rem !important;
+  min-width:2.75rem !important;
+  max-width:2.75rem !important;
+  flex:0 0 2.75rem !important;
+  padding:.4rem .2rem !important;
+  text-align:center;
+  font-size:.8rem;
+}
+.ok-modsec-row{ flex-wrap:nowrap !important; gap:.4rem !important; }
+@media (max-width:575.98px){
+  .ok-addon-row__controls, .ok-modsec-row{ flex-wrap:wrap !important; }
+}
 
 /* News page — uploaded card photos fill the 16:10 frame */
 .ok-news-card-img{ object-fit: cover; object-position: center; }

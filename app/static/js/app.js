@@ -48,7 +48,6 @@
     var nav = document.querySelector(".ok-account-nav");
     if (!nav) return;
     var onAccount = !!document.querySelector("[data-account-nav-page]");
-    var hashTabs = nav.querySelectorAll("[data-account-tab]");
     var sections = ["addresses", "profile"];
 
     function scrollerEl() {
@@ -78,10 +77,10 @@
       scroller.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
     }
 
-    function setHashActive(tab) {
+    function setActiveTab(tab) {
       var activeLink = null;
-      hashTabs.forEach(function (link) {
-        var on = link.dataset.accountTab === tab;
+      nav.querySelectorAll(".ok-account-nav__link").forEach(function (link) {
+        var on = !!(tab && link.dataset.accountTab === tab);
         link.classList.toggle("is-active", on);
         if (on) {
           link.setAttribute("aria-current", "page");
@@ -93,24 +92,27 @@
       if (activeLink) requestAnimationFrame(function () { revealTab(activeLink); });
     }
 
-    function activeTabFromHash() {
+    function tabFromHash() {
       var hash = (location.hash || "").replace("#", "");
       return sections.indexOf(hash) >= 0 ? hash : "";
     }
 
     nav.addEventListener("click", function (e) {
       var link = e.target.closest(".ok-account-nav__link");
-      if (link) requestAnimationFrame(function () { revealTab(link); });
+      if (!link) return;
+      if (onAccount && link.dataset.accountTab) {
+        setActiveTab(link.dataset.accountTab);
+      }
+      requestAnimationFrame(function () { revealTab(link); });
     });
 
     if (onAccount) {
-      setHashActive(activeTabFromHash());
-      window.addEventListener("hashchange", function () { setHashActive(activeTabFromHash()); });
-      var hash = (location.hash || "").replace("#", "");
+      setActiveTab(tabFromHash());
+      window.addEventListener("hashchange", function () { setActiveTab(tabFromHash()); });
+      var hash = tabFromHash();
       if (hash && document.getElementById(hash)) {
         requestAnimationFrame(function () {
           smoothScrollToEl(document.getElementById(hash));
-          setHashActive(activeTabFromHash());
         });
       }
     } else {
@@ -276,12 +278,63 @@
     if (d.slug) _storeSlug = d.slug;
     if (d.city != null && d.zip != null)
       document.querySelectorAll("[data-store-label]").forEach(function (el) { el.textContent = d.city + " · " + d.zip; });
-    if (d.name != null)
-      document.querySelectorAll("[data-store-name]").forEach(function (el) { el.textContent = d.name; });
-    if (d.address != null)
-      document.querySelectorAll("[data-store-address]").forEach(function (el) { el.textContent = d.address; });
+    if (d.name != null) {
+      document.querySelectorAll("[data-store-name]:not([data-deals-page]), [data-pickup-name]").forEach(function (el) { el.textContent = d.name; });
+    }
+    if (d.address != null) {
+      document.querySelectorAll("[data-store-address], [data-pickup-address]").forEach(function (el) { el.textContent = d.address; });
+    }
+    if (d.phone != null) {
+      document.querySelectorAll("[data-pickup-phone]").forEach(function (el) { el.textContent = d.phone; });
+      document.querySelectorAll("[data-pickup-phone-wrap]").forEach(function (el) {
+        el.classList.toggle("d-none", !d.phone);
+      });
+    }
     highlightStore(_storeSlug);
+    // Session is saved only after select-store returns (detail.ok). Refresh the
+    // deals grid then so it matches the newly chosen location.
+    if (d.ok && document.querySelector("[data-deals-page]")) refreshDealsPage(d);
   });
+
+  var _dealsRefreshSeq = 0;
+
+  function refreshDealsPage(storeDetail) {
+    var page = document.querySelector("[data-deals-page]");
+    if (!page) return;
+    var root = document.getElementById("deals-grid-root");
+    if (!root) return;
+    var label = document.getElementById("deals-store-label");
+    if (label && storeDetail && storeDetail.name) label.textContent = "Offers at " + storeDetail.name;
+    var seq = ++_dealsRefreshSeq;
+    var slug = (storeDetail && storeDetail.slug) || _storeSlug || "";
+    var url = "/deals/partial";
+    if (slug) url += "?store=" + encodeURIComponent(slug);
+    fetch(url, {
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "X-Requested-With": "fetch" },
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error("deals partial failed");
+        return r.text();
+      })
+      .then(function (html) {
+        if (seq !== _dealsRefreshSeq) return;
+        root.innerHTML = html;
+        var countEl = document.getElementById("deals-offer-count");
+        if (countEl) {
+          var n = root.querySelectorAll(".ok-dealcard").length;
+          countEl.textContent = n + " offer" + (n === 1 ? "" : "s") + " available";
+        }
+        if (typeof hydratePlaceholders === "function") hydratePlaceholders(root);
+        if (typeof modernIcons === "function") modernIcons(root);
+      })
+      .catch(function () {
+        if (seq !== _dealsRefreshSeq) return;
+        if ((location.pathname || "").replace(/\/$/, "") === "/deals") location.reload();
+      });
+  }
+
   // Persist a store choice in the session, then announce it to the whole page.
   // `optimistic` (name/city/zip) updates the UI instantly before the request returns.
   function selectStore(slug, optimistic) {
@@ -292,9 +345,16 @@
       .then(function (d) {
         if (d && d.ok) {
           document.dispatchEvent(new CustomEvent("ok:store", { detail: d }));
+          if (d.cart_unavailable && d.cart_unavailable.length) {
+            var msg = "These items aren't available at " + (d.name || "this location") + ": "
+              + d.cart_unavailable.join(", ")
+              + ". Please choose items from this location's menu.";
+            if (window.OK && OK.toast) OK.toast(msg);
+            else alert(msg);
+          }
           // Menu is rendered per store on the server — reload once the session
-          // store is saved so the grid matches the chosen location.
-          var path = location.pathname || "";
+          // store is saved. Deals refresh via ok:store + refreshDealsPage().
+          var path = (location.pathname || "").replace(/\/$/, "");
           if (path === "/menu" || path.indexOf("/menu/") === 0) location.reload();
         }
         return d;
@@ -340,11 +400,39 @@
     if (b) b.classList.toggle("is-open", open);
   }
 
+  function ensureLocAutocomplete(done) {
+    var root = document.querySelector("[data-loc-autocomplete]");
+    if (!root) { if (done) done(); return; }
+    var mapsKey = root.getAttribute("data-maps-key");
+    if (!mapsKey) { if (done) done(); return; }
+    function ready() {
+      if (window.OK && OK.initLocationPicker && !root._locInit) OK.initLocationPicker(root);
+      if (done) done();
+    }
+    if (document.querySelector('script[src*="address-autocomplete.js"]') && window.OK && OK.initLocationPicker) {
+      if (window.OK.preloadMaps) OK.preloadMaps(mapsKey).then(ready);
+      else ready();
+      return;
+    }
+    var s = document.createElement("script");
+    s.src = "/static/js/address-autocomplete.js";
+    s.defer = true;
+    s.onload = ready;
+    s.onerror = function () { if (done) done(); };
+    document.head.appendChild(s);
+  }
+
   function openLocation(open) {
     var m = document.getElementById("locModal"), b = document.getElementById("locBackdrop");
     if (!m) return;
     if (open && typeof locStep === "function") locStep(1);  // always start at "find a store"
     if (open && _storeSlug) highlightStore(_storeSlug);      // reflect the current choice
+    if (open) {
+      ensureLocAutocomplete(function () {
+        var inp = document.getElementById("locZip");
+        if (inp) inp.focus();
+      });
+    }
     showModal(m, b, open);
   }
   // When set (e.g. hero "Start Your Order"), picking a store goes here after close.
@@ -431,19 +519,45 @@
       return;
     }
     // choosing a store in the modal selects it everywhere too (header, cards, …)
-    selectStore(card.dataset.locPick, { name: card.dataset.locName, city: card.dataset.city, zip: card.dataset.zip, address: card.dataset.address });
+    selectStore(card.dataset.locPick, {
+      name: card.dataset.locName,
+      city: card.dataset.city,
+      zip: card.dataset.zip,
+      address: card.dataset.address,
+      phone: card.dataset.phone || "",
+    });
     // the location is the thing the visitor came here to change, so close on
     // pick rather than pushing them through a second step
     openLocation(false);
     locStep(1);
   }
+  function locMiles(la1, lo1, la2, lo2) {
+    var R = 3958.8, r = Math.PI / 180;
+    var dLa = (la2 - la1) * r, dLo = (lo2 - lo1) * r;
+    var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+      Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
   function locFind() {
     var m = document.getElementById("locModal"); if (!m) return;
-    var el = document.getElementById("locZip"), zip = ((el && el.value) || "").trim();
-    if (!zip) { if (el) el.focus(); return; }
+    var el = document.getElementById("locZip");
+    var zip = (el && el.dataset.locZip) || ((el && el.value) || "").trim();
+    if (!zip && !(el && el.dataset.locLat && el.dataset.locLng)) { if (el) el.focus(); return; }
     var cards = Array.prototype.slice.call(m.querySelectorAll("[data-loc-pick]"));
     if (!cards.length) return;
-    var q = zip.toLowerCase(), best = null;
+    var lat = el && parseFloat(el.dataset.locLat);
+    var lng = el && parseFloat(el.dataset.locLng);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      var nearest = null, nearestDist = Infinity;
+      cards.forEach(function (c) {
+        var slat = parseFloat(c.dataset.lat), slng = parseFloat(c.dataset.lng);
+        if (isNaN(slat) || isNaN(slng)) return;
+        var d = locMiles(lat, lng, slat, slng);
+        if (d < nearestDist) { nearestDist = d; nearest = c; }
+      });
+      if (nearest) { locPick(nearest); return; }
+    }
+    var q = (el && el.dataset.locQuery) || zip.toLowerCase(), best = null;
     // exact delivery-zone ZIP first, then the store's own ZIP prefix,
     // then anything in the name/address, so a street number or a
     // neighbourhood name finds the right store too.
@@ -457,6 +571,14 @@
 
   function wire() {
     modernIcons();
+
+    document.addEventListener("ok-loc-search", function () { locFind(); });
+    var locZipEl = document.getElementById("locZip");
+    if (locZipEl) {
+      locZipEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); locFind(); }
+      });
+    }
 
     var hd = document.getElementById("okHeader");
     if (hd) window.addEventListener("scroll", function () { hd.classList.toggle("is-scrolled", window.scrollY > 8); });
@@ -991,5 +1113,5 @@
     else start();
   })();
 
-  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, openItemModal: function (slug) { loadItem(slug); }, showModal: showModal };
+  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, refreshDealsPage: refreshDealsPage, openItemModal: function (slug) { loadItem(slug); }, showModal: showModal };
 })();

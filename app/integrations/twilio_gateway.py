@@ -1,33 +1,38 @@
 """SMS via EACH STORE's own Twilio account.
 
-A store sends SMS only if it has Twilio enabled with its own credentials.
-DEMO_PAYMENTS=true simulates the send so the flow works without real keys.
+Sandbox may simulate when credentials are missing; production requires live keys.
 """
-import os
+from app.integrations.config import active_integration_config, integration_enabled, should_simulate
 
 
 def store_twilio_config(store):
-    if not store:
+    if not store or not integration_enabled(store, "twilio"):
         return {}
-    integ = store.integration("twilio")
-    return (integ.config or {}) if (integ and integ.enabled) else {}
+    return active_integration_config(store, "twilio")
 
 
 def is_enabled(store):
-    """True only if this store has Twilio switched on (its own integration)."""
-    return bool(store and store.is_connected("twilio"))
-
-
-def _demo():
-    return os.environ.get("DEMO_PAYMENTS", "true").lower() != "false"
+    return bool(store and integration_enabled(store, "twilio"))
 
 
 def send_sms(store, to, body):
     """Send an SMS from the store's Twilio number. Returns {status, raw}."""
     cfg = store_twilio_config(store)
-    if _demo() or not cfg.get("auth_token"):
+    if should_simulate(store, "twilio", cfg):
         return {"status": "simulated",
                 "raw": {"demo": True, "account_sid": cfg.get("account_sid"), "to": to}}
-    # Live path (client provides real keys + DEMO_PAYMENTS=false): call the Twilio
-    # Messages API with cfg['account_sid']/['auth_token'] here.
-    return {"status": "failed", "raw": {"note": "live Twilio call not yet implemented"}}
+    # Live Twilio API
+    token = (cfg.get("auth_token") or "").strip()
+    account_sid = (cfg.get("account_sid") or "").strip()
+    from_number = (cfg.get("from_number") or "").strip()
+    if not token or not account_sid:
+        return {"status": "failed", "raw": {"error": "Twilio credentials missing for production mode"}}
+    try:
+        from twilio.rest import Client
+        client = Client(account_sid, token)
+        msg = client.messages.create(body=body, from_=from_number or None, to=to)
+        return {"status": "sent", "raw": {"sid": msg.sid, "to": to}}
+    except ImportError:
+        return {"status": "failed", "raw": {"error": "twilio package not installed"}}
+    except Exception as e:
+        return {"status": "failed", "raw": {"error": "%s: %s" % (type(e).__name__, e)}}

@@ -625,6 +625,7 @@ def create_app(config_object=None):
         def _asset(key, fallback):
             return site.get(key) or _url_for("static", filename=fallback)
 
+        from .integrations.google_maps import store_google_maps_key
         return {
             "brand_name": app.config["BRAND_NAME"],
             "logo_url": _asset("brand_logo", "img/logo.png"),
@@ -669,6 +670,7 @@ def create_app(config_object=None):
             "order_type": session.get("order_type", "delivery"),
             "schedule_at": session.get("schedule_at"),
             "needs_location": not session.get("context_set"),
+            "google_maps_api_key": store_google_maps_key(current),
             "csrf_token": get_csrf_token(),
         }
 

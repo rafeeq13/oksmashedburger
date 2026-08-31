@@ -18,7 +18,7 @@
     <div class="ok-card ok-p-5 text-center ok-mb-3">
       <div class="d-flex align-items-start justify-content-center ok-gap-3 ok-gap-5-sm">
         <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Order</div><div class="font-display fw-bold">{{ order.number }}</div></div>
-        <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">{% if order.scheduled_for %}Scheduled{% else %}ETA{% endif %}</div><div class="font-display fw-bold">{% if order.scheduled_for %}{{ order.scheduled_for.strftime('%b %d, %I:%M %p') }}{% else %}~{{ order.store.avg_prep_minutes }} min{% endif %}</div></div>
+        <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">{% if order.scheduled_for %}Scheduled{% else %}ETA{% endif %}</div><div class="font-display fw-bold">{% if order.scheduled_for %}{{ order.scheduled_for_local.strftime('%b %d, %I:%M %p') }}{% else %}~{{ order.store.avg_prep_minutes }} min{% endif %}</div></div>
         <div class="flex-fill"><div class="ok-fs-xs text-muted-warm text-uppercase fw-semibold">Type</div><div class="font-display fw-bold text-capitalize">{{ order.order_type }}</div></div>
       </div>
       <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokhairline">
@@ -51,14 +51,14 @@
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span>${{ '%.2f'|format(order.subtotal) }}</span></div>
         {% if order.discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount{% if order.coupon_code %} ({{ order.coupon_code }}){% endif %}</span><span>−${{ '%.2f'|format(order.discount) }}</span></div>{% endif %}
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax</span><span>${{ '%.2f'|format(order.tax) }}</span></div>
-        {% if order.delivery_fee %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery</span><span>${{ '%.2f'|format(order.delivery_fee) }}</span></div>{% endif %}
-        {% if order.tip %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Tip</span><span>${{ '%.2f'|format(order.tip) }}</span></div>{% endif %}
+        {% if order.order_type == 'delivery' %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery</span><span>{% if order.delivery_fee and order.delivery_fee > 0 %}${{ '%.2f'|format(order.delivery_fee) }}{% else %}FREE{% endif %}</span></div>{% endif %}
+        {% if order.tip and order.tip > 0 %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Tip</span><span>${{ '%.2f'|format(order.tip) }}</span></div>{% endif %}
         {% if order.gift_card_applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span>−${{ '%.2f'|format(order.gift_card_applied) }}</span></div>{% endif %}
         <div class="d-flex justify-content-between font-display fw-bold ok-fs-base pt-1"><span>Total</span><span>${{ '%.2f'|format(order.total) }}</span></div>
       </div>
     </div>
 
-    {% if order.user %}
+    {% if features.rewards and order.user %}
     <div class="ok-card ok-p-3 ok-mb-3 bg-cream-50 border-yellow-40 d-flex align-items-center ok-gap-3">
       <i class="fa-solid fa-gift text-gold ok-fs-xl"></i>
       <p class="ok-fs-sm">You earned <b>{{ (order.total | float | round(0, 'floor') | int) }} OK Rewards points</b> on this order.</p>
@@ -67,11 +67,26 @@
 
     <div class="d-flex flex-column flex-sm-row ok-gap-3">
       <a href="/tracking/{{ order.number }}" class="btn btn-primary btn-lg flex-grow-1"><i class="fa-solid fa-location-arrow"></i> Track your order</a>
+      {% if order.user %}
       <a href="/orders" class="btn btn-secondary btn-lg flex-grow-1">View my orders</a>
+      {% else %}
+      <button type="button" class="btn btn-secondary btn-lg flex-grow-1" id="guestOrdersBtn">View my orders</button>
+      {% endif %}
     </div>
     <div class="text-center ok-mt-3">
       <a href="/orders/{{ order.number }}/receipt.pdf" target="_blank" rel="noopener" class="link-underline ok-fs-sm"><i class="fa-solid fa-file-pdf"></i> Download PDF receipt</a>
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{% if order and not order.user %}
+<script>
+  document.getElementById("guestOrdersBtn")?.addEventListener("click", function () {
+    alert("You don't have an account with us. Please create your account for future order history.");
+    window.location.href = "/register";
+  });
+</script>
+{% endif %}
 {% endblock %}

@@ -20,3 +20,4 @@ email-validator==2.2.0
 # Integrations (added as each is wired up)
 stripe==10.10.0
 fpdf2==2.8.7
+tzdata==2025.2

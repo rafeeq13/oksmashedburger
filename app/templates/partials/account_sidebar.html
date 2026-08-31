@@ -8,7 +8,7 @@
       {% set av_size = 'ok-w-11 ok-h-11' %}{% include 'partials/user_avatar.html' %}
       <div class="ok-min-w-0">
         <div class="font-display fw-bold ok-lh-tight text-truncate">{{ current_user.full_name }}</div>
-        <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }} · {{ current_user.loyalty_points }} pts</div>
+        <div class="ok-fs-xs text-muted-warm text-truncate">{{ current_user.role.name|replace('_',' ')|title }}{% if features.rewards %} · {{ current_user.loyalty_points }} pts{% endif %}</div>
       </div>
     </div>
   </div>
@@ -22,7 +22,7 @@
     </nav>
   </div>
 
-  <div class="ok-account-sidebar__foot ok-mt-3 ok-pt-3 border-top ok-bc-varokline d-none d-lg-block">
+  <div class="ok-account-sidebar__foot ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
     <a href="/logout" class="d-flex align-items-center ok-gap-3 ok-px-3 ok-py-25 ok-rounded-xl fw-semibold ok-fs-sm text-ok-red"><i class="fa-solid fa-right-from-bracket"></i> Sign out</a>
   </div>
 </div>

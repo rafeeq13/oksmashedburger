@@ -16,8 +16,13 @@ if not exist ".venv\Scripts\python.exe" (
 
 if not exist "instance\dev.db" (
   echo [*] First run - creating database and demo data...
+  if not exist "instance" mkdir instance
   .venv\Scripts\python.exe -m flask --app wsgi db-create
+  .venv\Scripts\python.exe -m flask --app wsgi db upgrade
   .venv\Scripts\python.exe -m flask --app wsgi seed
+) else (
+  echo [*] Applying any pending database migrations...
+  .venv\Scripts\python.exe -m flask --app wsgi db upgrade
 )
 
 echo.

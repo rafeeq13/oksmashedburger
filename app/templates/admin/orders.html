@@ -91,7 +91,7 @@
       {% for o in orders %}
       <tr class="border-bottom ok-bc-varokline ok-last-border-0 ok-transition">
         <td class="ok-p-3 fw-bold"><a href="/admin/orders/{{ o.number }}{{ qs }}" class="">{{ o.number }}</a></td>
-        <td class="ok-p-3 text-muted-warm text-nowrap">{{ o.created_at.strftime('%b %d, %I:%M %p') }}</td>
+        <td class="ok-p-3 text-muted-warm text-nowrap">{{ o.created_at_local.strftime('%b %d, %I:%M %p') }}</td>
         <td class="ok-p-3">{{ o.customer_name or '-' }}</td>
         <td class="ok-p-3 text-capitalize">{{ o.order_type }}{% if o.delivery %} <span class="ok-fs-xs text-muted-warm ok-normal-case">({{ 'Uber' if o.delivery.method == 'uber_direct' else 'Own' }})</span>{% endif %}</td>
         <td class="ok-p-3">{{ o.item_count }}</td>

@@ -5,9 +5,12 @@
 <div class="d-flex flex-wrap align-items-end justify-content-between ok-gap-3 ok-mb-5">
   <div>
     <h2 class="ok-h2 mb-1">Newsletter subscribers</h2>
-    <p class="text-muted-warm ok-fs-sm">Sign-ups from the “Get the good stuff first” form in the site footer.</p>
+    <p class="text-muted-warm ok-fs-sm">Sign-ups from the footer form{% if admin_store %} for <b class="text-ink">{{ admin_store.name }}</b>{% else %} (all locations){% endif %}.</p>
   </div>
-  <a href="/admin/subscribers/export.csv" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Export CSV</a>
+  <div class="d-flex gap-2">
+    <a href="/admin/subscribers/newsletter{{ qs }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i> Send Newsletter</a>
+    <a href="/admin/subscribers/export.csv{{ qs }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Export CSV</a>
+  </div>
 </div>
 
 <div class="ok-grid ok-grid-sm-3 gap-3 ok-mb-5">
@@ -26,6 +29,7 @@
     <thead class="ok-bgc-b003 text-start">
       <tr>
         <th class="ok-p-3 fw-semibold">Email</th>
+        <th class="ok-p-3 fw-semibold">Location</th>
         <th class="ok-p-3 fw-semibold">Source</th>
         <th class="ok-p-3 fw-semibold">Signed up</th>
         <th class="ok-p-3 fw-semibold">Status</th>
@@ -36,6 +40,7 @@
       {% for s in rows %}
       <tr class="border-top border-ink-05">
         <td class="ok-p-3"><a href="mailto:{{ s.email }}" class="link-underline">{{ s.email }}</a></td>
+        <td class="ok-p-3 text-muted-warm">{{ s.store.name if s.store else 'Brand-wide' }}</td>
         <td class="ok-p-3 text-muted-warm">{{ s.source or '|' }}</td>
         <td class="ok-p-3 text-muted-warm">{{ s.created_at.strftime('%b %d, %Y') if s.created_at else '|' }}</td>
         <td class="ok-p-3">

@@ -3,6 +3,8 @@ import os
 
 from flask import current_app
 
+from app.integrations.config import active_integration_config, integration_enabled
+
 
 def _key_from_config(config):
     if not config:
@@ -11,13 +13,12 @@ def _key_from_config(config):
 
 
 def store_google_maps_key(store):
-    """Resolve the Maps JS API key for the storefront.
-
-    Order: current store → env/brand default → any store that saved a key.
-    A saved key is used even if the integration toggle was left off — admins
-    often paste the key and forget to tick Enable.
-    """
+    """Resolve the Maps JS API key for the storefront."""
     if store:
+        if integration_enabled(store, "google_maps"):
+            key = _key_from_config(active_integration_config(store, "google_maps"))
+            if key:
+                return key
         integ = store.integration("google_maps")
         if integ:
             key = _key_from_config(integ.config)

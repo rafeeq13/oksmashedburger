@@ -41,6 +41,16 @@ def send(to, subject, body, event, store=None, attachment=None, html=None, heade
     if not to:
         return {"status": "skipped", "raw": {"error": "no recipient"}}
     store = sending_store(store)
+    if not smtp_gateway.is_enabled(store):
+        db.session.add(Notification(
+            order_id=None, store_id=store.id if store else None,
+            channel="email", provider="smtp", recipient=to,
+            subject=subject[:160], body=body, event=event[:30],
+            status="skipped",
+            provider_ref="site_%s_%s" % (event, to)))
+        db.session.commit()
+        print("[mail] %s -> %s (skipped: smtp not configured)" % (event, to))
+        return {"status": "skipped", "raw": {"error": "smtp_not_configured"}}
     res = smtp_gateway.send_email(store, to, subject, body,
                                   attachment=attachment, html=html, headers=headers)
     db.session.add(Notification(
@@ -65,22 +75,24 @@ def contact_received(msg, store=None):
     kind = msg.subject or "Enquiry"
     rows = [("From", msg.name or "—"), ("Email", msg.email or "—"),
             ("Order number", msg.order_number), ("Message", msg.message)]
-    ctx = {"store": (store.name if store else et.BRAND), "subject": kind,
-           "message": msg.message or ""}
+    store_name = store.name if store else et.BRAND
 
     to_business = business_inbox(store)
     if to_business:
-        send(to_business, "[%s] %s — %s" % (et.BRAND, kind, msg.name or msg.email or "website"),
-             et.plain_text("A new %s came in from the website." % kind.lower(), rows=rows),
-             html=et.html_shell("New %s" % kind.lower(),
-                                "Someone just submitted the form on the website.",
-                                rows=rows,
-                                footer_note="Reply straight to %s to answer them." % (msg.email or "the sender")),
-             event="contact_new", store=store)
+        ctx = {
+            "store": store_name,
+            "subject": kind,
+            "message": msg.message or "",
+            "customer_name": msg.name or msg.email or "website",
+        }
+        subj, plain, html = et.render(
+            "contact_new", ctx, rows=rows, cta_href=_abs("/admin"),
+        )
+        send(to_business, subj, plain, event="contact_new", store=store, html=html)
 
     if msg.email:
         first = msg.name.split(" ")[0] if msg.name else "there"
-        ctx = {"store": (store.name if store else et.BRAND), "subject": kind,
+        ctx = {"store": store_name, "subject": kind,
                "message": msg.message or "", "customer_name": first}
         subj, plain, html = et.render("contact_ack", ctx,
                                       rows=[("Subject", kind), ("What you sent", msg.message)],
@@ -115,15 +127,12 @@ def unsubscribe_link(email):
     return _abs("/unsubscribe/" + token)
 
 
-def subscribed(email):
+def subscribed(email, store=None):
     link = unsubscribe_link(email)
-    ctx = {}
+    store = store or sending_store()
+    store_name = store.name if store else et.BRAND
+    ctx = {"link": link, "store": store_name}
     subj, plain, html = et.render("subscribed", ctx, cta_href=_abs("/deals"))
-    plain += "\n\nUnsubscribe: " + link
-    html = html.replace(
-        "Unsubscribe any time",
-        ('Not what you wanted? <a href="%s" style="color:#6b6b6b">'
-         "Unsubscribe in one click</a>." % link))
     send(email, subj, plain, event="subscribed", html=html,
          headers={"List-Unsubscribe": "<%s>" % link,
                   "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"})
@@ -140,3 +149,20 @@ def gift_card_issued(gc):
         subj, plain, html = et.render("gift_card", ctx, rows=rows, cta_href=_abs("/menu"))
         send(to, subj, plain, event="giftcard_issued", html=html)
     return to
+
+
+def send_test(to, store=None):
+    """Admin SMTP connectivity check — uses the HTML email template."""
+    store = sending_store(store)
+    if not smtp_gateway.is_enabled(store):
+        return {"status": "failed", "raw": {"error": "Enable SMTP and save host + from email first."}}
+    cfg = smtp_gateway.store_smtp_config(store)
+    loc = store.name if store else et.BRAND
+    rows = [
+        ("Location", loc),
+        ("SMTP host", cfg.get("smtp_host") or "—"),
+        ("From", cfg.get("from_email") or "—"),
+    ]
+    ctx = {"store": loc}
+    subj, plain, html = et.render("smtp_test", ctx, rows=rows)
+    return send(to, subj, plain, event="smtp_test", store=store, html=html)

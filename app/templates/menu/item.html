@@ -47,22 +47,21 @@
         <input type="hidden" name="qty" id="qtyField" value="1">
         <input type="hidden" name="next" value="/cart">
 
-        {% if product.variants %}
+        {% for section in modifier_sections %}
+        {% if section.kind == 'variants' %}
         <div class="ok-mb-5">
-          <label class="ok-label">Choose your size</label>
+          <label class="ok-label">{{ section.label }}</label>
           <div class="d-flex flex-wrap gap-2">
-            {% for v in product.variants %}
+            {% for v in section.variants %}
             <label class="chip ok-pointer"><input type="radio" name="variant_id" value="{{ v.id }}" class="visually-hidden" {% if v.is_default %}checked{% endif %}>{{ v.name }}{% if v.price_delta and v.price_delta != 0 %} ({{ '+' if v.price_delta > 0 else '' }}${{ '%.2f'|format(v.price_delta) }}){% endif %}</label>
             {% endfor %}
           </div>
         </div>
-        {% endif %}
-
-        {% if product.addons %}
+        {% elif section.kind == 'addons' %}
         <div class="ok-mb-5">
-          <label class="ok-label">Add-ons</label>
+          <label class="ok-label">{{ section.label }}</label>
           <div class="ok-stack-2">
-            {% for a in product.addons %}
+            {% for a in section.addons %}
             <label class="d-flex align-items-center justify-content-between ok-card ok-p-3 ok-pointer" data-addon{% if a.is_required %} data-required="1"{% endif %}>
               <span class="fw-medium">{{ a.name }}{% if a.is_required %}<span class="text-ok-red" aria-hidden="true"> *</span>{% endif %}</span>
               <span class="d-flex align-items-center ok-gap-3"><span class="text-muted-warm ok-fs-sm">+${{ '%.2f'|format(a.price) }}</span><input type="checkbox" name="addon_ids" value="{{ a.id }}" class="ok-w-5 ok-h-5 accent-okyellow"></span>
@@ -71,6 +70,7 @@
           </div>
         </div>
         {% endif %}
+        {% endfor %}
 
         <div class="ok-mb-5">
           <label class="ok-label">Special instructions</label>

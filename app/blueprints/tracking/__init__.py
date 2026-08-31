@@ -1,25 +1,41 @@
 """Customer order tracking (SRS FR-6.3) + a JSON status endpoint for polling."""
 from datetime import timedelta
+from urllib.parse import quote
 
-from flask import Blueprint, render_template, session, jsonify
+from flask import Blueprint, render_template, jsonify, request, flash
 
-from app.auth import current_user
+from app.extensions import db
 from app.models.order import Order
 from app.services.orders import TRACK_STAGES, STAGE_META, stage_index
 
 bp = Blueprint("tracking", __name__)
 
 
-def _latest_order():
-    oid = session.get("last_order_id")
-    if oid:
-        o = Order.query.get(oid)
-        if o:
-            return o
-    u = current_user()
-    if u:
-        return Order.query.filter_by(user_id=u.id).order_by(Order.created_at.desc()).first()
-    return None
+def _delivery_address(order):
+    if order.address:
+        return order.address
+    parts = [order.address_line1, order.address_line2,
+             order.address_city, order.address_state, order.address_zip]
+    return ", ".join(p for p in parts if p)
+
+
+def _tracking_map_src(order):
+    store = order.store
+    if order.order_type == "delivery":
+        dest = _delivery_address(order)
+        if dest and store:
+            return (
+                "https://maps.google.com/maps?saddr="
+                + quote(store.full_address)
+                + "&daddr="
+                + quote(dest)
+                + "&output=embed"
+            )
+        if dest:
+            return f"https://maps.google.com/maps?q={quote(dest)}&z=15&output=embed"
+    if store:
+        return store.map_embed_src
+    return "https://maps.google.com/maps?q=Philadelphia&z=12&output=embed"
 
 
 def _context(order):
@@ -59,15 +75,43 @@ def _context(order):
 
 
 def _render(order):
-    return render_template("orders/tracking.html", order=order, **_context(order))
+    return render_template(
+        "orders/tracking.html",
+        order=order,
+        map_embed_src=_tracking_map_src(order),
+        **_context(order),
+    )
+
+
+def _lookup_order():
+    number = (request.args.get("order") or "").strip().upper()
+    email = (request.args.get("email") or "").strip().lower()
+    if number:
+        return Order.query.filter_by(number=number).first(), "number"
+    if email:
+        return (
+            Order.query.filter(db.func.lower(Order.customer_email) == email)
+            .order_by(Order.created_at.desc())
+            .first(),
+            "email",
+        )
+    return None, None
 
 
 @bp.get("/tracking")
 def tracking():
-    order = _latest_order()
-    if not order:
-        return render_template("orders/tracking.html", order=None, stages=[], headline="")
-    return _render(order)
+    order, via = _lookup_order()
+    if via == "number" and not order:
+        flash("We couldn't find that order number. Please check and try again.", "error")
+    elif via == "email" and not order:
+        flash("We couldn't find an order for that email.", "error")
+    elif via == "email" and order:
+        n = Order.query.filter(db.func.lower(Order.customer_email) == request.args.get("email", "").strip().lower()).count()
+        if n > 1:
+            flash("Showing your most recent order. Use the order number for a specific one.", "info")
+    if order:
+        return _render(order)
+    return render_template("orders/tracking.html", order=None, stages=[], headline="")
 
 
 @bp.get("/tracking/<number>")

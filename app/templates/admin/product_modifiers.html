@@ -14,13 +14,63 @@
     <p class="text-muted-warm ok-fs-sm">{{ product.category.name }} · base ${{ '%.2f'|format(product.base_price) }}</p>
   </div>
 </div>
-<p class="text-muted-warm ok-fs-sm mb-4 -mt-2">Existing add-ons stay on this item. Attach shared ones from the library, or add an item-only extra below.</p>
 
-<div class="ok-grid ok-grid-lg-2 gap-4 align-items-start">
-  <!-- Sizes / variants (single-select) -->
+<!-- Section headings (define once, pick when attaching add-ons) -->
+<div class="ok-card ok-p-5 mb-4">
+  <h3 class="font-display fw-bold ok-fs-lg mb-1">Popup section headings</h3>
+  <p class="ok-fs-xs text-muted-warm mb-3">Define headings here. Lower order shows first on the item popup. When attaching add-ons, pick a section from the list.</p>
+
+  <div class="border rounded ok-p-3 mb-3 bg-cream-60">
+    <div class="ok-fs-xs text-muted-warm text-uppercase fw-bold mb-2">Sizes / variants</div>
+    <form method="post" action="/admin/menu/{{ product.id }}/modifier-sections{{ qs }}" class="ok-modsec-row">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="ok-modsec-label-wrap ok-flex-1 ok-min-w-0" style="flex:0 0 60%;max-width:60%">
+        <label class="ok-label ok-fs-xs">Heading</label>
+        <input name="variants_section_label" value="{{ product.variants_section_label or '' }}" class="form-control form-control-sm w-100 py-2" placeholder="CHOOSE A SIZE">
+      </div>
+      <div class="ok-modsec-row-right">
+        <div><label class="ok-label ok-fs-xs">Order</label><input name="variants_section_order" type="number" value="{{ product.variants_section_order or 0 }}" class="form-control form-control-sm ok-modsec-order py-2"></div>
+        <button class="btn btn-secondary btn-sm">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="ok-fs-xs text-muted-warm text-uppercase fw-bold mb-2">Add-on sections</div>
+  {% if product.modifier_sections %}
+  <div class="ok-divide-y mb-3">
+    {% for s in product.modifier_sections %}
+    <form method="post" action="/admin/menu/addon-sections/{{ s.id }}/edit{{ qs }}" class="ok-modsec-row ok-py-2">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input name="label" value="{{ s.label }}" class="form-control form-control-sm ok-modsec-label" required>
+      <div class="ok-modsec-row-right">
+        <input name="sort_order" type="number" value="{{ s.sort_order or 0 }}" class="form-control form-control-sm ok-modsec-order" title="Display order">
+        <button class="btn btn-secondary btn-sm">Save</button>
+        <button formaction="/admin/menu/addon-sections/{{ s.id }}/delete{{ qs }}" class="link-underline ok-fs-xs text-ok-red" onclick="return confirm('Remove this section heading? Add-ons will be unassigned.')">Delete</button>
+      </div>
+    </form>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="ok-fs-sm text-muted-warm mb-3">No add-on sections yet — add one below (e.g. ADD-ONS).</p>
+  {% endif %}
+  <form method="post" action="/admin/menu/{{ product.id }}/addon-sections{{ qs }}" class="ok-modsec-row">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="ok-modsec-label-wrap" style="flex:0 0 60%;max-width:60%">
+      <label class="ok-label ok-fs-xs">New section heading</label>
+      <input name="label" class="form-control form-control-sm w-100 py-2" placeholder="ADD-ONS" required>
+    </div>
+    <div class="ok-modsec-row-right">
+      <div><label class="ok-label ok-fs-xs">Order</label><input name="sort_order" type="number" value="10" class="form-control form-control-sm ok-modsec-order py-2"></div>
+      <button class="btn btn-primary btn-sm">Add section</button>
+    </div>
+  </form>
+</div>
+
+<div class="row g-4 align-items-start">
+  <div class="col-12">
   <div class="ok-card ok-p-5">
     <h3 class="font-display fw-bold ok-fs-lg mb-1">Sizes / variants</h3>
-    <p class="ok-fs-xs text-muted-warm mb-3">Single choice, one is the default. The price delta adjusts the base price.</p>
+    <p class="ok-fs-xs text-muted-warm mb-3">Single choice — customer picks one size. Heading is set above.</p>
     {% if product.variants %}
     <div class="ok-divide-y mb-3">
       {% for v in product.variants %}
@@ -39,7 +89,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="ok-fs-sm text-muted-warm mb-3">No sizes yet, the item is ordered at its base price.</p>
+    <p class="ok-fs-sm text-muted-warm mb-3">No sizes yet — the item is ordered at its base price.</p>
     {% endif %}
     <form method="post" action="/admin/menu/{{ product.id }}/variants{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -49,40 +99,57 @@
       <label class="ok-col-span-3 d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_default" class="ok-w-4 ok-h-4 ok-accent-yellow"> Make this the default</label>
     </form>
   </div>
+  </div>
 
-  <!-- Add-ons -->
+  <div class="col-12">
   <div class="ok-card ok-p-5">
     <h3 class="font-display fw-bold ok-fs-lg mb-1">Add-ons / extras</h3>
-    <p class="ok-fs-xs text-muted-warm mb-3">Shared add-ons sync from the library. Item-only add-ons stay on this product only.</p>
+    <p class="ok-fs-xs text-muted-warm mb-3">Pick a section when attaching. Item order within a section uses the sort field.</p>
     {% if product.addons %}
     <div class="ok-divide-y mb-3">
       {% for a in product.addons %}
       <div class="ok-py-25">
         {% if a.library_id %}
-        <div class="d-flex flex-wrap align-items-center ok-gap-3">
-          <div class="ok-flex-1 ok-min-w-0">
+        <form method="post" action="/admin/menu/addons/{{ a.id }}/edit{{ qs }}" class="ok-py-1">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <div class="ok-addon-row__meta">
             <span class="fw-semibold">{{ a.name }}</span>
             <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(a.price) }}</span>
-            <span class="badge badge-soft ms-1">Shared</span>
-            {% if a.is_required %}<span class="badge badge-yellow ms-1">Required</span>{% endif %}
+            <span class="badge badge-soft">Shared</span>
           </div>
-          <form method="post" action="/admin/menu/addons/{{ a.id }}/required{{ qs }}" class="d-flex align-items-center gap-2 ok-fs-xs">
-            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-            <label class="d-flex align-items-center gap-1 ok-pointer mb-0">
-              <input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} onchange="this.form.submit()"> Required
-            </label>
-          </form>
-          <form method="post" action="/admin/menu/addons/{{ a.id }}/delete{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Detach</button></form>
-        </div>
+          <div class="ok-addon-row__controls">
+            <select name="section_id" class="form-select form-select-sm ok-addon-section-select" title="Section">
+              <option value="">Choose a section</option>
+              {% for s in product.modifier_sections %}<option value="{{ s.id }}" {% if a.section_id == s.id %}selected{% endif %}>{{ s.label }}</option>{% endfor %}
+            </select>
+            <div class="ok-addon-row__controls-right">
+              <input name="sort_order" type="number" value="{{ a.sort_order }}" class="form-control form-control-sm ok-addon-sort-input" title="Seq">
+              <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+              <button class="btn btn-secondary btn-sm">Save</button>
+              <button formaction="/admin/menu/addons/{{ a.id }}/delete{{ qs }}" class="link-underline ok-fs-xs text-ok-red">Detach</button>
+            </div>
+          </div>
+        </form>
         {% else %}
-        <form method="post" action="/admin/menu/addons/{{ a.id }}/edit{{ qs }}" class="d-flex flex-wrap align-items-center gap-2">
+        <form method="post" action="/admin/menu/addons/{{ a.id }}/edit{{ qs }}" class="ok-py-1">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <span class="badge badge-soft flex-shrink-0">Item-only</span>
-          <input name="name" value="{{ a.name }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-min-w-0" required>
-          <div class="d-flex align-items-center gap-1 flex-shrink-0"><span class="text-muted-warm">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(a.price) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-24"></div>
-          <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0 flex-shrink-0"><input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
-          <button class="btn btn-secondary btn-sm flex-shrink-0">Save</button>
-          <button formaction="/admin/menu/addons/{{ a.id }}/delete{{ qs }}" class="link-underline ok-fs-xs text-ok-red flex-shrink-0">Delete</button>
+          <div class="ok-addon-row__meta">
+            <span class="badge badge-soft">Item-only</span>
+            <input name="name" value="{{ a.name }}" class="ok-input ok-py-15 ok-fs-sm" style="min-width:8rem;max-width:14rem" required>
+            <div class="d-flex align-items-center gap-1"><span class="text-muted-warm">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(a.price) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-24"></div>
+          </div>
+          <div class="ok-addon-row__controls">
+            <select name="section_id" class="form-select form-select-sm ok-addon-section-select" title="Section">
+              <option value="">Choose a section</option>
+              {% for s in product.modifier_sections %}<option value="{{ s.id }}" {% if a.section_id == s.id %}selected{% endif %}>{{ s.label }}</option>{% endfor %}
+            </select>
+            <div class="ok-addon-row__controls-right">
+              <input name="sort_order" type="number" value="{{ a.sort_order }}" class="form-control form-control-sm ok-addon-sort-input" title="Seq">
+              <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" {% if a.is_required %}checked{% endif %} class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+              <button class="btn btn-secondary btn-sm">Save</button>
+              <button formaction="/admin/menu/addons/{{ a.id }}/delete{{ qs }}" class="link-underline ok-fs-xs text-ok-red">Delete</button>
+            </div>
+          </div>
         </form>
         {% endif %}
       </div>
@@ -98,13 +165,23 @@
       <div class="ok-stack-2">
         {% for lib in addon_library %}
         {% if lib.id not in attached_lib_ids %}
-        <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="d-flex flex-wrap align-items-center gap-2">
+        <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-addon-attach-row">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <input type="hidden" name="library_id" value="{{ lib.id }}">
-          <span class="fw-semibold ok-flex-1">{{ lib.name }}</span>
-          <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(lib.price) }}</span>
-          <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
-          <button class="btn btn-secondary btn-sm">Attach</button>
+          <div class="ok-addon-row__meta">
+            <span class="fw-semibold">{{ lib.name }}</span>
+            <span class="ok-fs-sm text-muted-warm">+${{ '%.2f'|format(lib.price) }}</span>
+          </div>
+          <div class="ok-addon-row__controls">
+            <select name="section_id" class="form-select form-select-sm ok-addon-section-select" title="Section">
+              <option value="">Choose a section</option>
+              {% for s in product.modifier_sections %}<option value="{{ s.id }}">{{ s.label }}</option>{% endfor %}
+            </select>
+            <div class="ok-addon-row__controls-right">
+              <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+              <button class="btn btn-secondary btn-sm">Attach</button>
+            </div>
+          </div>
         </form>
         {% endif %}
         {% endfor %}
@@ -113,15 +190,26 @@
     {% endif %}
 
     <div class="border-top ok-bc-varokline pt-3">
-      <p class="ok-fs-xs text-muted-warm mb-2">Add item-only extra (legacy)</p>
-      <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
+      <p class="ok-fs-xs text-muted-warm mb-2">Add item-only extra</p>
+      <form method="post" action="/admin/menu/{{ product.id }}/addons{{ qs }}" class="ok-addon-attach-row">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-        <div><label class="ok-label ok-fs-xs">Name</label><input name="name" class="ok-input py-2 ok-fs-sm" placeholder="Add bacon"></div>
-        <div><label class="ok-label ok-fs-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 ok-fs-sm ok-w-24" placeholder="1.50"></div>
-        <button class="btn btn-primary btn-sm">Add</button>
-        <label class="ok-col-span-3 d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required for this item</label>
+        <div class="ok-addon-row__meta">
+          <div style="min-width:8rem"><label class="ok-label ok-fs-xs">Name</label><input name="name" class="ok-input py-2 ok-fs-sm" placeholder="Add bacon" required></div>
+          <div style="width:5rem"><label class="ok-label ok-fs-xs">Price</label><input name="price" type="number" step="0.01" min="0" class="ok-input py-2 ok-fs-sm" placeholder="1.50"></div>
+        </div>
+        <div class="ok-addon-row__controls">
+          <select name="section_id" class="form-select form-select-sm ok-addon-section-select" title="Section">
+            <option value="">Choose a section</option>
+            {% for s in product.modifier_sections %}<option value="{{ s.id }}">{{ s.label }}</option>{% endfor %}
+          </select>
+          <div class="ok-addon-row__controls-right">
+            <label class="d-flex align-items-center gap-1 ok-fs-xs ok-pointer mb-0"><input type="checkbox" name="is_required" value="1" class="ok-w-4 ok-h-4 ok-accent-yellow"> Required</label>
+            <button class="btn btn-primary btn-sm">Add</button>
+          </div>
+        </div>
       </form>
     </div>
+  </div>
   </div>
 </div>
 

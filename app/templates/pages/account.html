@@ -1,4 +1,5 @@
 {% extends "layouts/base.html" %}
+{% from "partials/order_breakdown.html" import order_breakdown %}
 {% block main_class %}bg-softyellow/20{% endblock %}
 {% block title %}My Account, OK Smashed Burger{% endblock %}
 {% block content %}
@@ -40,7 +41,8 @@
           </div>
 
           <!-- Stat cards -->
-          <div class="ok-grid ok-grid-sm-3 ok-gap-3">
+          <div class="ok-grid ok-gap-3{% if features.rewards %} ok-grid-sm-3{% else %} ok-grid-sm-2{% endif %}">
+            {% if features.rewards %}
             <div class="ok-card ok-p-5 d-flex align-items-center ok-gap-3">
               <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-star icon-lg"></i></div>
               <div>
@@ -48,6 +50,7 @@
                 <div class="ok-fs-sm text-muted-warm mt-1">Loyalty points</div>
               </div>
             </div>
+            {% endif %}
             <div class="ok-card ok-p-5 d-flex align-items-center ok-gap-3">
               <div class="ok-w-12 ok-h-12 rounded-pill bg-cream ok-grid ok-place-center ok-fs-2xl flex-shrink-0"><i class="fa-solid fa-receipt icon-lg"></i></div>
               <div>
@@ -64,6 +67,7 @@
             </a>
           </div>
 
+          {% if features.rewards %}
           <!-- Rewards mini-card -->
           <div class="ok-card overflow-hidden">
             <div class="ok-p-3 ok-grid ok-gc-1frauto-md ok-gap-5 align-items-center">
@@ -80,9 +84,10 @@
                   <span>{{ '{:,}'.format(reward_target) }} pts · next reward</span>
                 </div>
               </div>
-              {% if features.rewards %}<a href="/rewards" class="btn btn-secondary flex-shrink-0 justify-self-start ok-justif-end-md">View rewards</a>{% endif %}
+              <a href="/rewards" class="btn btn-secondary flex-shrink-0 justify-self-start ok-justif-end-md">View rewards</a>
             </div>
           </div>
+          {% endif %}
 
           <!-- Recent order -->
           <section id="orders">
@@ -101,15 +106,16 @@
                     {% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
                     {% else %}<span class="badge badge-yellow">{{ o.status.replace('_',' ')|title }}</span>{% endif %}
                   </div>
-                  <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
+                  <p class="ok-fs-sm text-muted-warm mt-1">{{ o.created_at_local.strftime('%b %d, %Y · %I:%M %p') }} · {{ o.store.name }} · <span class="text-capitalize">{{ o.order_type }}</span></p>
                 </div>
                 <div class="text-end">
                   <div class="font-display fw-bold ok-fs-lg">${{ '%.2f'|format(o.total) }}</div>
                   <div class="ok-fs-xs text-muted-warm">{{ o.item_count }} item{{ '' if o.item_count == 1 else 's' }}</div>
                 </div>
               </div>
-              <p class="ok-fs-sm text-muted-warm ok-mb-5">{{ o.items|map(attribute='name')|join(', ') }}</p>
-              <div class="divider ok-mb-3"></div>
+              <p class="ok-fs-sm text-muted-warm ok-mb-2">{{ o.items|map(attribute='name')|join(', ') }}</p>
+              {{ order_breakdown(o, compact=true) }}
+              <div class="divider ok-mb-3 ok-mt-3"></div>
               <div class="d-flex flex-wrap align-items-center ok-gap-3">
                 <span class="ok-fs-sm fw-semibold text-ok-green d-flex align-items-center ok-gap-15"><span class="ok-w-2 ok-h-2 rounded-pill bg-ok-green d-inline-block"></span> {{ o.status.replace('_',' ')|title }}{% if o.status not in ['completed','cancelled'] %} · ETA ~{{ o.store.avg_prep_minutes }} min{% endif %}</span>
                 <div class="d-flex flex-wrap gap-2 ms-auto">
@@ -174,33 +180,53 @@
           <section id="payment">
             <div class="d-flex align-items-center justify-content-between ok-mb-3">
               <h2 class="ok-h2 ok-fs-xl">Payment methods</h2>
-              <button data-add-cart="New card" class="btn btn-secondary btn-sm">+ Add card</button>
             </div>
-            <div class="ok-card divide-y ok-divide-y">
-              <div class="ok-p-3 ok-paddin-125rem-md d-flex flex-wrap align-items-center ok-gap-3">
-                <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-7rem fw-bold tracking-wider flex-shrink-0">VISA</div>
-                <div class="ok-min-w-0 flex-grow-1">
-                  <div class="fw-semibold">Visa •••• 4242</div>
-                  <div class="ok-fs-xs text-muted-warm">Expires 08/27</div>
+            <div class="ok-card divide-y ok-divide-y ok-mb-3">
+              {% for pm in payment_methods %}
+              <div class="ok-p-3 ok-paddin-125rem-md">
+                <div class="d-flex flex-wrap align-items-center ok-gap-3">
+                  <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-7rem fw-bold tracking-wider flex-shrink-0">{{ pm.brand[:4]|upper }}</div>
+                  <div class="ok-min-w-0 flex-grow-1">
+                    <div class="fw-semibold">{{ pm.display }}</div>
+                    {% if pm.exp_month and pm.exp_year %}
+                    <div class="ok-fs-xs text-muted-warm">Expires {{ pm.exp_month }}/{{ pm.exp_year[-2:] }}</div>
+                    {% endif %}
+                  </div>
+                  {% if pm.is_default %}<span class="badge badge-soft d-none d-sm-inline-flex">Default</span>{% endif %}
                 </div>
-                <span class="badge badge-soft d-none d-sm-inline-flex">Default</span>
-                <div class="d-flex flex-wrap ok-gap-3 ok-fs-sm">
-                  <button class="link-underline">Edit</button>
-                  <button class="link-underline !text-okred">Remove</button>
-                </div>
+                <details class="ok-mt-3">
+                  <summary class="ok-pointer ok-fs-sm fw-semibold">Manage card</summary>
+                  <div class="ok-mt-3 d-flex flex-wrap ok-gap-3 ok-fs-sm align-items-start">
+                    <form method="post" action="/account/payment-methods/{{ pm.id }}/edit" class="d-flex flex-wrap ok-gap-2 align-items-end flex-grow-1">
+                      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                      <div><label class="ok-label !text-xs">Brand</label><input name="brand" value="{{ pm.brand }}" class="ok-input py-2 ok-fs-sm"></div>
+                      <div><label class="ok-label !text-xs">Last 4</label><input name="last4" value="{{ pm.last4 }}" maxlength="4" class="ok-input py-2 ok-fs-sm ok-w-20"></div>
+                      <div><label class="ok-label !text-xs">Exp</label><div class="d-flex ok-gap-1"><input name="exp_month" value="{{ pm.exp_month or '' }}" placeholder="MM" maxlength="2" class="ok-input py-2 ok-fs-sm ok-w-16"><input name="exp_year" value="{{ pm.exp_year or '' }}" placeholder="YYYY" maxlength="4" class="ok-input py-2 ok-fs-sm ok-w-20"></div></div>
+                      <button class="btn btn-secondary btn-sm">Save</button>
+                    </form>
+                    {% if not pm.is_default %}
+                    <form method="post" action="/account/payment-methods/{{ pm.id }}/default"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline">Set default</button></form>
+                    {% endif %}
+                    <form method="post" action="/account/payment-methods/{{ pm.id }}/delete" onsubmit="return confirm('Remove this card?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline !text-okred">Remove</button></form>
+                  </div>
+                </details>
               </div>
-              <div class="ok-p-3 ok-paddin-125rem-md d-flex flex-wrap align-items-center ok-gap-3">
-                <div class="ok-w-12 ok-h-9 ok-rounded-md bg-ink text-white ok-grid ok-place-center ok-fs-62rem fw-bold tracking-wide flex-shrink-0">MC</div>
-                <div class="ok-min-w-0 flex-grow-1">
-                  <div class="fw-semibold">Mastercard •••• 8888</div>
-                  <div class="ok-fs-xs text-muted-warm">Expires 11/26</div>
-                </div>
-                <div class="d-flex flex-wrap ok-gap-3 ok-fs-sm">
-                  <button class="link-underline">Set default</button>
-                  <button class="link-underline !text-okred">Remove</button>
-                </div>
-              </div>
+              {% else %}
+              <div class="ok-p-5 text-center text-muted-warm ok-fs-sm">No saved cards yet.</div>
+              {% endfor %}
             </div>
+            <details class="ok-card ok-p-5">
+              <summary class="ok-pointer fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-plus"></i> Add a card</summary>
+              <form method="post" action="/account/payment-methods" class="ok-grid ok-grid-sm-2 ok-gap-3 ok-mt-3">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+                <div><label class="ok-label !text-xs">Brand</label><input name="brand" class="ok-input py-2 ok-fs-sm" placeholder="Visa"></div>
+                <div><label class="ok-label !text-xs">Last 4 digits</label><input name="last4" required maxlength="4" pattern="[0-9]{4}" class="ok-input py-2 ok-fs-sm" placeholder="4242"></div>
+                <div><label class="ok-label !text-xs">Exp month</label><input name="exp_month" maxlength="2" class="ok-input py-2 ok-fs-sm" placeholder="08"></div>
+                <div><label class="ok-label !text-xs">Exp year</label><input name="exp_year" maxlength="4" class="ok-input py-2 ok-fs-sm" placeholder="2027"></div>
+                <label class="ok-gridco-span2span2-sm d-flex align-items-center gap-2 ok-fs-sm"><input type="checkbox" name="is_default" class="ok-w-4 ok-h-4 accent-okyellow"> Set as default</label>
+                <div class="ok-gridco-span2span2-sm"><button class="btn btn-primary btn-sm">Save card</button></div>
+              </form>
+            </details>
           </section>
 
           <!-- Profile quick section -->
@@ -274,18 +300,21 @@
             </div>
             <div class="ok-card overflow-hidden">
               {% for n in notifications %}
-              <div class="ok-p-3 d-flex align-items-start ok-gap-3{% if not loop.last %} border-bottom ok-bc-varokhairline{% endif %}">
-                <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center flex-shrink-0">
-                  <i class="fa-solid fa-{{ 'envelope' if n.channel == 'email' else 'comment-sms' }}"></i>
-                </span>
-                <div class="ok-min-w-0 flex-grow-1">
-                  <div class="fw-semibold ok-fs-sm">{{ n.subject or n.event|replace('_', ' ')|capitalize }}</div>
-                  <p class="ok-fs-xs text-muted-warm ok-mt-05 text-truncate">{{ n.body }}</p>
-                </div>
-                <span class="ok-fs-xs text-muted-warm text-nowrap flex-shrink-0">
-                  {{ n.created_at.strftime('%b %d') if n.created_at else '' }}
-                </span>
-              </div>
+              <details class="{% if not loop.last %} border-bottom ok-bc-varokhairline{% endif %}">
+                <summary class="ok-p-3 d-flex align-items-start ok-gap-3 ok-pointer list-unstyled">
+                  <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center flex-shrink-0">
+                    <i class="fa-solid fa-{{ 'envelope' if n.channel == 'email' else 'comment-sms' }}"></i>
+                  </span>
+                  <div class="ok-min-w-0 flex-grow-1 text-start">
+                    <div class="fw-semibold ok-fs-sm">{{ n.subject or n.event|replace('_', ' ')|capitalize }}</div>
+                    <p class="ok-fs-xs text-muted-warm ok-mt-05 text-truncate">{{ n.body }}</p>
+                  </div>
+                  <span class="ok-fs-xs text-muted-warm text-nowrap flex-shrink-0">
+                    {{ n.created_at.strftime('%b %d') if n.created_at else '' }}
+                  </span>
+                </summary>
+                <div class="ok-px-3 ok-pb-3 ok-pl-5 ok-fs-sm text-muted-warm">{{ n.body }}</div>
+              </details>
               {% else %}
               <div class="ok-p-8 text-center text-muted-warm ok-fs-sm">
                 Nothing yet. Order updates will appear here.

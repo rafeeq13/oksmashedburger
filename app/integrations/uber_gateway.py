@@ -1,40 +1,32 @@
-"""Third-party delivery via EACH STORE's own Uber Direct account.
-
-A store dispatches to Uber Direct only if it has that integration enabled with
-its own credentials; otherwise the platform falls back to the store's own drivers.
-DEMO_PAYMENTS=true simulates the dispatch so the flow works without real keys.
-"""
-import os
+"""Third-party delivery via EACH STORE's own Uber Direct account."""
+from app.integrations.config import active_integration_config, integration_enabled, should_simulate
 
 
 def store_uber_config(store):
-    if not store:
+    if not store or not integration_enabled(store, "uber_direct"):
         return {}
-    integ = store.integration("uber_direct")
-    return (integ.config or {}) if (integ and integ.enabled) else {}
+    return active_integration_config(store, "uber_direct")
 
 
 def is_enabled(store):
-    """True only if this store has Uber Direct switched on (its own integration)."""
-    return bool(store and store.is_connected("uber_direct"))
+    return bool(store and integration_enabled(store, "uber_direct"))
 
 
-def _demo():
-    return os.environ.get("DEMO_PAYMENTS", "true").lower() != "false"
-
-
-def create_delivery(store, order):
-    """Create a delivery on the store's Uber Direct account. Returns
-    {status, reference, tracking_url, raw}."""
+def create_delivery(store, order, payload=None):
+    """Create a delivery on the store's Uber Direct account."""
     cfg = store_uber_config(store)
-    if _demo() or not cfg.get("client_secret"):
+    from app.services.order_details import uber_payload
+    order_payload = payload or uber_payload(order)
+    if should_simulate(store, "uber_direct", cfg):
         return {
             "status": "assigned",
             "reference": f"uber_{order.number}",
             "tracking_url": f"https://track.uber.example/{order.number}",
-            "raw": {"demo": True, "customer_id": cfg.get("customer_id")},
+            "raw": {"demo": True, "customer_id": cfg.get("customer_id"), "order": order_payload},
         }
-    # Live path (client provides real keys + DEMO_PAYMENTS=false): call the Uber
-    # Direct API with cfg['client_id']/['client_secret']/['customer_id'] here.
+    if not (cfg.get("client_secret") or "").strip():
+        return {"status": "failed", "reference": None, "tracking_url": None,
+                "raw": {"error": "Uber Direct credentials missing for production mode",
+                        "order": order_payload}}
     return {"status": "pending", "reference": None, "tracking_url": None,
-            "raw": {"note": "live Uber Direct call not yet implemented"}}
+            "raw": {"note": "live Uber Direct call not yet implemented", "order": order_payload}}

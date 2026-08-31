@@ -73,7 +73,7 @@ STORES = {
     },
     "northeast-philadelphia": {
         "name": "Northeast Philadelphia",
-        "address": "7074 Frankford Ave", "zip": "19135",
+        "address": "7014 Frankford Ave", "zip": "19135",
         "lat": 40.0252, "lng": -75.0490, "phone": "(215) 207-0040",
         "hours": ("12:00", "00:00"), "fri_sat": ("12:00", "01:00"),
     },

@@ -8,9 +8,10 @@
   {% if store %}
   <div class="ok-card ok-p-5 ok-paddin-15rem-md d-flex flex-column flex-lg-row align-items-lg-center ok-gap-5 justify-content-between">
     <!-- which store you're ordering from -->
-    <div class="d-flex align-items-center ok-gap-3 ok-min-w-0">
+    <div class="d-flex flex-column ok-gap-2 ok-min-w-0 flex-grow-1 w-100">
+      <div class="d-flex align-items-start ok-gap-3">
       <span class="ok-w-325rem ok-h-325rem ok-rounded-2xl ok-grid ok-place-center text-ink flex-shrink-0" style="background:var(--grad-gold);"><i class="fa-solid fa-location-dot ok-fs-lg"></i></span>
-      <div class="ok-min-w-0">
+      <div class="ok-min-w-0 flex-grow-1">
         <div class="d-flex align-items-center gap-2 flex-wrap ok-mb-05">
           <span class="ok-fs-62rem text-muted-warm text-uppercase fw-bold ok-ls-12em">Ordering from</span>
           {% if store.open_now %}<span class="badge badge-green">Open now</span>
@@ -18,25 +19,22 @@
           {% else %}<span class="badge badge-red">Closed</span>{% endif %}
         </div>
         <div class="font-display fw-bold ok-fs-lg text-ink ok-lh-tight" data-store-name>{{ store.name }}</div>
-        {# the address may wrap/truncate, but Change is a separate flex item so
-           it can never be clipped off the end on a narrow screen #}
-        <div class="ok-fs-sm text-muted-warm d-flex align-items-baseline ok-gap-15 ok-min-w-0">
+        <div class="ok-fs-sm text-muted-warm d-flex align-items-baseline ok-gap-15 ok-min-w-0 flex-wrap">
           <span class="text-truncate ok-min-w-0" data-store-address>{{ store.full_address }}</span>
-          <button data-open="location" class="ok-menu-cta text-nowrap flex-shrink-0">Change</button>
+          <button data-open="location" class="ok-menu-cta text-nowrap flex-shrink-0">Change location</button>
         </div>
-        {% if schedule_at %}
-        {# The picked time was stored but never shown, so a customer could not
-           see it, let alone change it. It is a first-class control now. #}
-        <div class="d-flex align-items-center ok-gap-15 ok-fs-sm ok-mt-05 flex-wrap">
-          <span class="badge badge-yellow"><i class="fa-solid fa-clock"></i> Scheduled</span>
-          <span data-sched-label class="fw-semibold text-ink">{{ schedule_at|nice_when }}</span>
-          <button type="button" data-sched-edit class="ok-menu-cta text-nowrap">Change time</button>
-          {% if store.open_now %}
-          <button type="button" data-sched-clear class="ok-menu-cta ok-menu-cta--muted text-nowrap">Order ASAP instead</button>
-          {% endif %}
-        </div>
+      </div>
+      </div>
+      {% if schedule_at %}
+      <div class="d-flex align-items-center ok-gap-15 ok-fs-sm flex-wrap w-100 ok-menu-sched-actions">
+        <span class="badge badge-yellow"><i class="fa-solid fa-clock"></i> Scheduled</span>
+        <span data-sched-label class="fw-semibold text-ink">{{ schedule_at|nice_when }}</span>
+        <button type="button" data-sched-edit class="ok-menu-cta text-nowrap">Change time</button>
+        {% if store.open_now %}
+        <button type="button" data-sched-clear class="ok-menu-cta ok-menu-cta--muted text-nowrap">Order ASAP instead</button>
         {% endif %}
       </div>
+      {% endif %}
     </div>
 
     <!-- delivery / pickup segmented toggle -->

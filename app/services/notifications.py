@@ -3,6 +3,8 @@ from app.extensions import db
 from app.models.notification import Notification
 from app.models import email_templates as et
 from app.integrations import twilio_gateway, smtp_gateway
+from app.services.mailer import sending_store
+from app.services.order_details import order_email_rows
 
 # order status -> (SMS body template, template key for email)
 _SMS = {
@@ -40,18 +42,25 @@ def notify_order_event(order, event):
         except Exception:
             attachment = None
 
-    email_subject, email_plain, email_html = et.render(tpl_key, ctx)
+    email_subject, email_plain, email_html = et.render(tpl_key, ctx, rows=order_email_rows(order))
 
     created = []
     if store and twilio_gateway.is_enabled(store) and order.customer_phone:
         res = twilio_gateway.send_sms(store, order.customer_phone, sms_body)
         created.append(_record(order, store, "sms", "twilio",
                                order.customer_phone, None, sms_body, event, res))
-    if store and smtp_gateway.is_enabled(store) and order.customer_email:
-        res = smtp_gateway.send_email(store, order.customer_email, email_subject,
-                                      email_plain, attachment=attachment, html=email_html)
-        created.append(_record(order, store, "email", "smtp",
-                               order.customer_email, email_subject, email_plain, event, res))
+    if order.customer_email:
+        smtp_store = sending_store(store)
+        if smtp_store and smtp_gateway.is_enabled(smtp_store):
+            res = smtp_gateway.send_email(smtp_store, order.customer_email, email_subject,
+                                          email_plain, attachment=attachment, html=email_html)
+            created.append(_record(order, store, "email", "smtp",
+                                   order.customer_email, email_subject, email_plain, event, res))
+        else:
+            created.append(_record(order, store, "email", "smtp",
+                                   order.customer_email, email_subject, email_plain, event,
+                                   {"status": "skipped",
+                                    "raw": {"error": "smtp_not_configured"}}))
     if created:
         db.session.commit()
     return created

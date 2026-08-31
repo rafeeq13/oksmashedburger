@@ -41,6 +41,7 @@ class Order(TimestampMixin, db.Model):
 
     payment_status = db.Column(db.String(20), default="pending")        # pending / paid / failed
     payment_method = db.Column(db.String(20))                           # card / cash
+    square_order_id = db.Column(db.String(80), index=True)              # Square Orders API id
 
     store = db.relationship("Store")
     user = db.relationship("User")
@@ -50,6 +51,16 @@ class Order(TimestampMixin, db.Model):
     @property
     def item_count(self):
         return sum(i.qty for i in self.items)
+
+    @property
+    def created_at_local(self):
+        from app.helpers import order_dt_local
+        return order_dt_local(self, "created_at")
+
+    @property
+    def scheduled_for_local(self):
+        from app.helpers import order_dt_local
+        return order_dt_local(self, "scheduled_for")
 
 
 class OrderItem(db.Model):

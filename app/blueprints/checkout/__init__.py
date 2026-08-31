@@ -2,7 +2,7 @@
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, session, flash
+from flask import Blueprint, render_template, request, redirect, session, flash, jsonify
 
 from app.extensions import db
 from app import cart as cartlib
@@ -10,8 +10,12 @@ from app.helpers import get_current_store
 from app.auth import current_user
 from app.models.order import Order, OrderItem, Payment
 from app.models.promo import Coupon, GiftCard
-from app.integrations.stripe_gateway import charge, store_stripe_config, is_connected
+from app.integrations.stripe_gateway import (
+    charge, store_stripe_config, is_connected, stripe_checkout_mode,
+    create_payment_intent, verify_payment_intent,
+)
 from app.integrations.google_maps import store_google_maps_key
+from app.integrations.config import integration_env
 from app.address import address_from_form
 
 bp = Blueprint("checkout", __name__)
@@ -88,6 +92,8 @@ def _render_checkout(store, form=None):
         default_schedule=(now + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M"),
         stripe_pub_key=store_stripe_config(store).get("publishable_key", ""),
         stripe_connected=is_connected(store),
+        stripe_checkout_mode=stripe_checkout_mode(store) if store else "off",
+        integration_env=integration_env(store) if store else "sandbox",
         checkout_delivery_fee=s_delivery["delivery_fee"],
         checkout_delivery_free=bool(s_delivery["promo"].get("delivery_discount")),
         checkout_total_delivery=s_delivery["total"],
@@ -132,6 +138,8 @@ def checkout():
         addr = address_from_form(request.form)
         if order_type == "delivery" and not addr["line1"]:
             return _checkout_error("Please enter a delivery street address.")
+        if order_type == "delivery" and not (addr["line2"] or "").strip():
+            return _checkout_error("Please enter your apt / suite number.")
 
         s = cartlib.summary(store, tip=tip, order_type=order_type)
 
@@ -182,13 +190,20 @@ def checkout():
                 gc.balance = max(Decimal("0"), gc.balance - Decimal(str(s["giftcard"]["applied"])))
 
         # Payment — routed through THIS store's own Stripe account.
+        payment_result = None
         if method == "card":
-            result = charge(store, s["total"], metadata={"order": order.number, "store": store.slug})
-            order.payment_status = "paid" if result["status"] == "succeeded" else "pending"
+            from app.services.order_details import payment_metadata
+            meta = payment_metadata(order)
+            intent_id = (request.form.get("stripe_payment_intent") or "").strip()
+            if intent_id:
+                payment_result = verify_payment_intent(store, intent_id, s["total"])
+            else:
+                payment_result = charge(store, s["total"], metadata=meta)
+            order.payment_status = "paid" if payment_result["status"] == "succeeded" else "pending"
             db.session.add(Payment(
                 order=order, provider="stripe", amount=order.total,
-                status="succeeded" if result["status"] == "succeeded" else result["status"],
-                provider_ref=result["reference"], raw=result["raw"],
+                status="succeeded" if payment_result["status"] == "succeeded" else payment_result["status"],
+                provider_ref=payment_result["reference"], raw=payment_result["raw"],
             ))
         else:  # cash / pay-at-store
             order.payment_status = "pending"
@@ -203,6 +218,9 @@ def checkout():
 
         db.session.commit()
 
+        from app.services.order_sync import sync_order_integrations
+        sync_order_integrations(order, payment_result=payment_result)
+
         # Notify the customer via THIS store's own SMS/email integrations.
         from app.services.notifications import notify_order_event
         notify_order_event(order, order.status)
@@ -216,6 +234,37 @@ def checkout():
     # GET — restore a failed submit, or show defaults
     draft = session.pop("checkout_draft", None)
     return _render_checkout(store, draft)
+
+
+@bp.post("/checkout/payment-intent")
+def checkout_payment_intent():
+    """Create a Stripe PaymentIntent for Elements confirmation before order submit."""
+    store = get_current_store()
+    if not store:
+        return jsonify(ok=False, error="No store selected"), 400
+    payload = request.get_json(silent=True) or {}
+    try:
+        amount = float(payload.get("amount") or request.form.get("amount") or 0)
+    except (TypeError, ValueError):
+        amount = 0.0
+    if amount <= 0:
+        return jsonify(ok=False, error="Invalid order total"), 400
+
+    result = create_payment_intent(
+        store, amount,
+        metadata={"store": store.slug, "checkout": "1"},
+    )
+    if result["status"] == "failed":
+        err = (result.get("raw") or {}).get("error") or "Could not start card payment"
+        return jsonify(ok=False, error=err), 400
+
+    return jsonify(
+        ok=True,
+        demo=bool((result.get("raw") or {}).get("demo")),
+        client_secret=result.get("client_secret"),
+        reference=result.get("reference"),
+        mode=stripe_checkout_mode(store),
+    )
 
 
 @bp.get("/order-confirmed")

@@ -15,7 +15,7 @@
       {% elif order.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>
       {% else %}<span class="badge badge-yellow text-capitalize">{{ order.status.replace('_',' ') }}</span>{% endif %}
     </div>
-    <p class="text-muted-warm ok-fs-sm mt-1">{{ order.created_at.strftime('%A, %b %d, %Y · %I:%M %p') }} · {{ order.store.name }} · <span class="text-capitalize">{{ order.order_type }}</span>{% if order.scheduled_for %} · <span class="text-gold fw-semibold"><i class="fa-solid fa-clock"></i> Scheduled for {{ order.scheduled_for.strftime('%b %d, %I:%M %p') }}</span>{% endif %}</p>
+    <p class="text-muted-warm ok-fs-sm mt-1">{{ order.created_at_local.strftime('%A, %b %d, %Y · %I:%M %p') }} · {{ order.store.name }} · <span class="text-capitalize">{{ order.order_type }}</span>{% if order.scheduled_for %} · <span class="text-gold fw-semibold"><i class="fa-solid fa-clock"></i> Scheduled for {{ order.scheduled_for_local.strftime('%b %d, %I:%M %p') }}</span>{% endif %}</p>
   </div>
   <div class="text-end">
     <div class="font-display ok-fw-800 ok-fs-2xl">${{ '%.2f'|format(order.total) }}</div>
@@ -149,7 +149,9 @@
       <div class="ok-stack-2 ok-fs-sm">
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Status</span>{% if order.payment_status == 'paid' %}<span class="text-ok-green fw-semibold">Paid</span>{% else %}<span class="text-gold fw-semibold">{{ order.payment_status|title }}</span>{% endif %}</div>
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Method</span><span class="text-capitalize">{{ order.payment_method or '-' }}</span></div>
-        {% if order.payment and order.payment.provider_ref %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Reference</span><span class="font-monospace ok-fs-xs">{{ order.payment.provider_ref }}</span></div>{% endif %}
+        {% if order.payment and order.payment.provider_ref %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Stripe ref</span><span class="font-monospace ok-fs-xs text-break">{{ order.payment.provider_ref }}</span></div>{% endif %}
+        {% if order.square_order_id %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Square order</span><span class="font-monospace ok-fs-xs text-break">{{ order.square_order_id }}</span></div>{% endif %}
+        {% if order.delivery and order.delivery.provider_ref %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Uber ref</span><span class="font-monospace ok-fs-xs text-break">{{ order.delivery.provider_ref }}</span></div>{% endif %}
       </div>
     </div>
   </div>
