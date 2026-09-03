@@ -25,7 +25,7 @@ _SAFE = {"GET", "HEAD", "OPTIONS"}
 # posted to by Gmail and Outlook themselves (RFC 8058 one-click), which have no
 # session at all — that route is safe without CSRF because its own signed token
 # is the authorisation, and the only thing it can do is opt an address out.
-_EXEMPT_PREFIXES = ("/api/", "/form-submit", "/unsubscribe/")
+_EXEMPT_PREFIXES = ("/api/", "/form-submit", "/unsubscribe/", "/webhooks/")
 
 
 def get_csrf_token():

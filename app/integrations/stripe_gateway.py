@@ -127,6 +127,83 @@ def verify_payment_intent(store, intent_id, expected_amount, currency="usd"):
         return {"status": "failed", "reference": None, "account": account, "raw": {"error": str(exc)}}
 
 
+def update_payment_intent(store, intent_id, metadata=None, description=None,
+                          receipt_email=None, shipping=None, statement_descriptor_suffix=None):
+    """Attach full order details to a PaymentIntent after checkout."""
+    cfg = store_stripe_config(store)
+    account = cfg.get("account_id")
+
+    if should_simulate(store, "stripe", cfg):
+        return {"status": "ok", "reference": intent_id, "account": account, "raw": {"demo": True}}
+
+    secret = (cfg.get("secret_key") or "").strip()
+    if not secret or not intent_id:
+        return {
+            "status": "failed",
+            "reference": intent_id,
+            "account": account,
+            "raw": {"error": "Stripe secret key missing or no payment intent"},
+        }
+
+    try:
+        import stripe
+        stripe.api_key = secret
+        kwargs = {}
+        if metadata:
+            kwargs["metadata"] = metadata
+        if description:
+            kwargs["description"] = str(description)[:1000]
+        if receipt_email:
+            kwargs["receipt_email"] = str(receipt_email)[:800]
+        if shipping:
+            kwargs["shipping"] = shipping
+        if statement_descriptor_suffix:
+            kwargs["statement_descriptor_suffix"] = str(statement_descriptor_suffix)[:22]
+        intent = stripe.PaymentIntent.modify(intent_id, **kwargs)
+        return {"status": "ok", "reference": intent.id, "account": account, "raw": {}}
+    except Exception as exc:  # pragma: no cover
+        return {"status": "failed", "reference": intent_id, "account": account, "raw": {"error": str(exc)}}
+
+
+def refund_payment(store, intent_id, amount=None, currency="usd"):
+    """Refund a succeeded PaymentIntent (full or partial)."""
+    cfg = store_stripe_config(store)
+    account = cfg.get("account_id")
+
+    if should_simulate(store, "stripe", cfg):
+        return {
+            "status": "simulated",
+            "reference": "demo_refund_%s" % (intent_id or "unset"),
+            "account": account,
+            "raw": {"demo": True, "payment_intent": intent_id, "amount": amount},
+        }
+
+    secret = (cfg.get("secret_key") or "").strip()
+    if not secret or not intent_id:
+        return {
+            "status": "failed",
+            "reference": None,
+            "account": account,
+            "raw": {"error": "Stripe secret key missing or no payment intent"},
+        }
+
+    try:
+        import stripe
+        stripe.api_key = secret
+        kwargs = {"payment_intent": intent_id}
+        if amount is not None:
+            kwargs["amount"] = int(round(float(amount) * 100))
+        refund = stripe.Refund.create(**kwargs)
+        return {
+            "status": "refunded",
+            "reference": refund.id,
+            "account": account,
+            "raw": {"refund_status": refund.status},
+        }
+    except Exception as exc:  # pragma: no cover
+        return {"status": "failed", "reference": None, "account": account, "raw": {"error": str(exc)}}
+
+
 def charge(store, amount, currency="usd", metadata=None):
     """Legacy server-side charge — prefer create_payment_intent + verify_payment_intent."""
     cfg = store_stripe_config(store)

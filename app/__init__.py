@@ -72,6 +72,7 @@ def create_app(config_object=None):
     from .blueprints.tracking import bp as tracking_bp
     from .blueprints.admin import bp as admin_bp
     from .blueprints.driver import bp as driver_bp
+    from .blueprints.webhooks import bp as webhooks_bp
     app.register_blueprint(website_bp)
     app.register_blueprint(stores_bp)
     app.register_blueprint(menu_bp)
@@ -82,6 +83,7 @@ def create_app(config_object=None):
     app.register_blueprint(tracking_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(driver_bp)
+    app.register_blueprint(webhooks_bp)
 
     # ── Feature switches: the page itself, not just the link ────────────
     # Hiding a nav entry is cosmetic — the URL still works, and a search

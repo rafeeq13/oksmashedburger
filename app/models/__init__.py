@@ -11,6 +11,7 @@ from .order import Order, OrderItem, Payment, ORDER_STATUSES  # noqa: F401
 from .delivery import Driver, Delivery, DELIVERY_STATUSES  # noqa: F401
 from .promo import Coupon, GiftCard, COUPON_KINDS  # noqa: F401
 from .notification import Notification, NOTIFY_CHANNELS, NOTIFY_STATUSES  # noqa: F401
+from .webhook_event import WebhookEvent  # noqa: F401
 from .favorite import Favorite  # noqa: F401
 from .address import UserAddress  # noqa: F401
 from .payment_method import UserPaymentMethod  # noqa: F401

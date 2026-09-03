@@ -30,13 +30,16 @@
 
 <div data-tab-group>
   <!-- Provider pills -->
-  <div class="d-flex gap-2 overflow-x-auto hide-scrollbar mb-4 pb-1">
+  <div class="d-flex flex-wrap ok-integ-tabbar gap-2 mb-4 pb-1">
     {% for prov in providers %}
-    <button type="button" data-tab="{{ prov.key }}" class="chip flex-shrink-0 {% if loop.first %}is-active{% endif %}">
+    <button type="button" data-tab="{{ prov.key }}" class="chip {% if loop.first %}is-active{% endif %}">
       <i class="fa-solid fa-{{ prov.icon }}"></i> {{ prov.name }}
       <span class="ok-w-2 ok-h-2 rounded-pill d-inline-block ms-1 {% if prov.enabled %}bg-ok-green{% else %}bg-muted-40{% endif %}"></span>
     </button>
     {% endfor %}
+    <button type="button" data-tab="webhooks" class="chip">
+      <i class="fa-solid fa-bolt"></i> Webhooks
+    </button>
   </div>
 
   <!-- Provider panels -->
@@ -90,6 +93,139 @@
     {% endif %}
   </div>
   {% endfor %}
+
+  <div data-panel="webhooks" class="d-none">
+    <div class="ok-card p-4 ok-mb-4 border ok-bc-varokline bg-cream-40">
+      <div class="font-display fw-bold ok-fs-base ok-mb-1">Webhook base URL</div>
+      <p class="ok-fs-sm text-muted-warm ok-mb-3">Set a public base URL for all webhook endpoints (e.g. <b>https://fooddeliveryaudit.com</b> or an <b>ngrok</b> URL for local testing). Leave blank to use the current site URL.</p>
+      <form method="post" action="/admin/integrations/webhooks/settings{{ qs }}" class="d-flex flex-wrap ok-gap-3 align-items-end">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <div class="flex-grow-1 ok-minw-280px">
+          <label class="ok-label ok-fs-xs mb-1" for="webhook_base_url">Base URL</label>
+          <input id="webhook_base_url" name="base_url" type="url" class="ok-input py-2 ok-fs-sm font-monospace" placeholder="{{ default_site_url }}" value="{% if webhook_base_saved %}{{ webhook_base_url }}{% endif %}">
+          <p class="ok-fs-62rem text-muted-warm mt-1">Auto-detected: <span class="font-monospace">{{ default_site_url }}</span>{% if webhook_base_saved %} · <span class="text-ok-green">Custom base saved</span>{% endif %}</p>
+        </div>
+        <button class="btn btn-primary btn-sm">Save base URL</button>
+      </form>
+    </div>
+
+    <div data-tab-group>
+      <div class="d-flex flex-wrap ok-integ-tabbar gap-2 mb-4 pb-1">
+        {% for wh in webhook_providers %}
+        <button type="button" data-tab="wh-{{ wh.key }}" class="chip {% if loop.first %}is-active{% endif %}">
+          <i class="fa-solid fa-{{ wh.icon }}"></i> {{ wh.name }}
+          {% if wh.secret_field %}
+          <span class="ok-w-2 ok-h-2 rounded-pill d-inline-block ms-1 {% if wh.secret_configured %}bg-ok-green{% else %}bg-muted-40{% endif %}"></span>
+          {% else %}
+          <span class="ok-w-2 ok-h-2 rounded-pill d-inline-block ms-1 bg-ok-green"></span>
+          {% endif %}
+        </button>
+        {% endfor %}
+        <button type="button" data-tab="wh-activity" class="chip">
+          <i class="fa-solid fa-clock-rotate-left"></i> Activity
+        </button>
+      </div>
+
+      {% for wh in webhook_providers %}
+      <div data-panel="wh-{{ wh.key }}" class="{% if not loop.first %}d-none{% endif %}">
+        <div class="ok-card p-4">
+          <div class="d-flex align-items-center ok-gap-3 ok-mb-4">
+            <div class="ok-w-11 ok-h-11 ok-rounded-xl bg-cream ok-grid ok-place-center text-gold ok-fs-lg"><i class="fa-solid fa-{{ wh.icon }}"></i></div>
+            <div>
+              <div class="font-display fw-bold ok-fs-lg">{{ wh.name }}</div>
+              <div class="ok-fs-xs text-muted-warm">{{ wh.setup }}</div>
+            </div>
+            {% if wh.secret_field %}
+            <span class="badge {% if wh.secret_configured %}badge-green{% else %}badge-soft{% endif %} ms-auto">{{ 'Secret saved' if wh.secret_configured else 'Secret missing' }}</span>
+            {% else %}
+            <span class="badge badge-green ms-auto">Uses Auth Token</span>
+            {% endif %}
+          </div>
+
+          <div class="ok-mb-4">
+            <label class="ok-label ok-fs-xs mb-1">Webhook URL {% if wh.url_custom %}<span class="badge badge-soft ms-1">Custom</span>{% endif %}</label>
+            <form method="post" action="/admin/integrations/webhooks/{{ wh.key }}{{ qs }}" class="d-flex flex-wrap ok-gap-2 align-items-start ok-mb-2">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <input name="webhook_url" type="url" class="ok-input py-2 ok-fs-sm flex-grow-1 font-monospace ok-minw-280px" placeholder="{{ wh.default_url }}" value="{% if wh.url_custom %}{{ wh.saved_url }}{% endif %}">
+              <button type="button" class="btn btn-secondary btn-sm" data-copy-url="{{ wh.url }}"><i class="fa-solid fa-copy"></i> Copy</button>
+              <button type="submit" class="btn btn-primary btn-sm">Save URL</button>
+            </form>
+            <p class="ok-fs-62rem text-muted-warm ok-mb-0">Default: <span class="font-monospace">{{ wh.default_url }}</span>. Clear the field and save to reset to auto.</p>
+          </div>
+
+          <div class="ok-mb-4">
+            <div class="ok-fs-xs text-muted-warm text-uppercase fw-bold ok-mb-2">Subscribe to these events</div>
+            <ul class="ok-fs-sm text-muted-warm ok-mb-0 ps-3">
+              {% for ev in wh.events %}<li>{{ ev }}</li>{% endfor %}
+            </ul>
+          </div>
+
+          {% if wh.secret_field %}
+          <p class="ok-fs-xs text-muted-warm ok-mb-3"><i class="fa-solid fa-circle-info"></i> Signing secret (optional if already saved).</p>
+          <form method="post" action="/admin/integrations/webhooks/{{ wh.key }}{{ qs }}" class="d-flex flex-wrap ok-gap-3 align-items-end ok-mb-4">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <div class="flex-grow-1 ok-minw-240px">
+              <label class="ok-label ok-fs-xs mb-1">{{ wh.secret_label }}</label>
+              <input name="webhook_secret" type="password" autocomplete="off" class="ok-input py-2 ok-fs-sm" placeholder="{{ wh.secret_placeholder or wh.secret_label }}">
+            </div>
+            <button class="btn btn-primary btn-sm">Save secret</button>
+          </form>
+          {% endif %}
+
+          <div class="border-top ok-bc-varokline ok-pt-4">
+            <div class="font-display fw-bold ok-fs-base ok-mb-3">Recent {{ wh.name }} events</div>
+            {% set wh_events = webhook_events|selectattr('provider', 'equalto', wh.key)|list %}
+            {% if wh_events %}
+            <div class="table-responsive">
+              <table class="table ok-fs-sm align-middle mb-0">
+                <thead><tr><th>When</th><th>Event</th><th>Status</th><th>Ref</th></tr></thead>
+                <tbody>
+                  {% for ev in wh_events[:10] %}
+                  <tr>
+                    <td class="text-nowrap">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                    <td>{{ ev.event_type }}</td>
+                    <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
+                    <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or '—' }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="ok-fs-sm text-muted-warm ok-mb-0">No {{ wh.name }} webhooks received yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      <div data-panel="wh-activity" class="d-none">
+        <div class="ok-card p-4">
+          <div class="font-display fw-bold ok-fs-base ok-mb-3">All webhook activity</div>
+          {% if webhook_events %}
+          <div class="table-responsive">
+            <table class="table ok-fs-sm align-middle mb-0">
+              <thead><tr><th>When</th><th>Provider</th><th>Event</th><th>Status</th><th>Ref</th></tr></thead>
+              <tbody>
+                {% for ev in webhook_events %}
+                <tr>
+                  <td class="text-nowrap">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                  <td class="text-capitalize">{{ ev.provider.replace('_', ' ') }}</td>
+                  <td>{{ ev.event_type }}</td>
+                  <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
+                  <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or '—' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="ok-fs-sm text-muted-warm ok-mb-0">No webhooks received yet. After you add the URLs in Stripe/Square/Uber/Twilio, events will show here.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <p class="ok-hint mt-3"><i class="fa-solid fa-lock"></i> In production these secrets are stored encrypted / in a vault (SRS NFR-2.2).</p>
 {% endblock %}
@@ -102,12 +238,43 @@
       var h = (location.hash || '').replace('#', '');
       if (!h) return;
       var group = document.querySelector('[data-tab-group]');
-      if (!group || !group.querySelector('[data-tab="' + h + '"]')) return;
-      group.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.tab === h); });
-      group.querySelectorAll('[data-panel]').forEach(function (p) { p.classList.toggle('d-none', p.dataset.panel !== h); });
+      if (!group) return;
+
+      var mainTab = h;
+      var subTab = null;
+      if (h.indexOf('wh-') === 0) {
+        mainTab = 'webhooks';
+        subTab = h;
+      } else if (h.indexOf('webhooks-') === 0) {
+        mainTab = 'webhooks';
+        subTab = 'wh-' + h.slice('webhooks-'.length);
+      }
+
+      if (group.querySelector('[data-tab="' + mainTab + '"]')) {
+        group.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.tab === mainTab); });
+        group.querySelectorAll(':scope > [data-panel]').forEach(function (p) { p.classList.toggle('d-none', p.dataset.panel !== mainTab); });
+      }
+
+      if (mainTab === 'webhooks' && subTab) {
+        var whGroup = document.querySelector('[data-panel="webhooks"] [data-tab-group]');
+        if (whGroup && whGroup.querySelector('[data-tab="' + subTab + '"]')) {
+          whGroup.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.toggle('is-active', b.dataset.tab === subTab); });
+          whGroup.querySelectorAll('[data-panel]').forEach(function (p) { p.classList.toggle('d-none', p.dataset.panel !== subTab); });
+        }
+      }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', activate);
     else activate();
+    document.querySelectorAll('[data-copy-url]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var url = btn.getAttribute('data-copy-url') || '';
+        if (!url) return;
+        navigator.clipboard.writeText(url).then(function () {
+          btn.textContent = 'Copied!';
+          setTimeout(function () { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 1500);
+        });
+      });
+    });
   })();
 </script>
 {% endblock %}

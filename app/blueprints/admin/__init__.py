@@ -48,7 +48,7 @@ ADMIN_ROLES = ("super_admin", "franchise_owner", "store_manager")
 # Per-provider config fields shown on the Integrations page.
 PROVIDERS = [
     {"key": "stripe", "name": "Stripe", "icon": "credit-card", "desc": "Online card payments",
-     "fields": [{"key": "account_id", "label": "Account ID"}, {"key": "publishable_key", "label": "Publishable key"}, {"key": "secret_key", "label": "Secret key", "secret": True}]},
+     "fields": [{"key": "account_id", "label": "Account ID"}, {"key": "publishable_key", "label": "Publishable key"}, {"key": "secret_key", "label": "Secret key", "secret": True}, {"key": "webhook_secret", "label": "Webhook signing secret", "secret": True, "placeholder": "whsec_...", "hint": "From Stripe → Developers → Webhooks → signing secret. Also set up the webhook URL in the Webhooks tab."}]},
     {"key": "square", "name": "Square POS", "icon": "cash-register",
      "desc": "Sync web orders to each location's Square terminal (items, tax, delivery, tip)",
      "fields": [
@@ -60,13 +60,16 @@ PROVIDERS = [
           "hint": "Starts with L — from Square Dashboard → Locations, or run tools/list_square_locations.py"},
          {"key": "access_token", "label": "Access token", "secret": True,
           "hint": "Sandbox access token with ORDERS_WRITE + PAYMENTS_WRITE scopes."},
+         {"key": "webhook_signature_key", "label": "Webhook signature key", "secret": True,
+          "placeholder": "From Square Developer → Webhooks",
+          "hint": "Used to verify inbound Square webhooks. Set the callback URL in the Webhooks tab."},
      ]},
     {"key": "uber_direct", "name": "Uber Direct", "icon": "car", "desc": "Third-party delivery dispatch",
-     "fields": [{"key": "customer_id", "label": "Customer ID"}, {"key": "client_id", "label": "Client ID"}, {"key": "client_secret", "label": "Client secret", "secret": True}]},
+     "fields": [{"key": "customer_id", "label": "Customer ID"}, {"key": "client_id", "label": "Client ID"}, {"key": "client_secret", "label": "Client secret", "secret": True}, {"key": "webhook_secret", "label": "Webhook signing secret", "secret": True, "hint": "Optional — verifies Uber delivery status callbacks."}]},
     {"key": "google_maps", "name": "Google Maps", "icon": "map", "desc": "Geocoding, distance & ETA",
      "fields": [{"key": "api_key", "label": "API key", "secret": True}]},
     {"key": "twilio", "name": "Twilio", "icon": "comment-sms", "desc": "SMS notifications",
-     "fields": [{"key": "account_sid", "label": "Account SID"}, {"key": "auth_token", "label": "Auth token", "secret": True}]},
+     "fields": [{"key": "account_sid", "label": "Account SID"}, {"key": "auth_token", "label": "Auth token", "secret": True}, {"key": "from_number", "label": "From number", "placeholder": "+12155550100", "hint": "Your Twilio sending number in E.164 format."}]},
     {"key": "smtp", "name": "SMTP email", "icon": "envelope", "desc": "Order updates, sign-up & marketing email",
      "fields": [
          {"key": "smtp_host", "label": "SMTP host", "placeholder": "smtp.gmail.com",
@@ -2227,6 +2230,11 @@ def category_delete(cid):
 @roles_required(*ADMIN_ROLES)
 def integrations():
     from app.integrations.config import integration_env, active_integration_config
+    from app.integrations.webhook_urls import (
+        WEBHOOK_PROVIDERS, default_webhook_url, resolve_webhook_url, webhook_base_url,
+        endpoint_url_key, webhook_settings,
+    )
+    from app.models.webhook_event import WebhookEvent
 
     store = _admin_store()
     existing = {i.provider: i for i in store.integrations} if store else {}
@@ -2239,10 +2247,41 @@ def integrations():
             "enabled": integ.enabled if integ else False,
             "config": active_integration_config(store, p["key"]) if integ else {},
         })
+    base_url = (request.url_root or "").rstrip("/")
+    wh_cfg = webhook_settings(store) if store else {}
+    webhook_providers = []
+    for wh in WEBHOOK_PROVIDERS:
+        cfg = active_integration_config(store, wh["key"]) if store else {}
+        secret_field = wh.get("secret_field")
+        default_url = default_webhook_url(store, wh["key"], base_url) if store else ""
+        saved_url = (wh_cfg.get(endpoint_url_key(wh["key"])) or "").strip()
+        resolved = resolve_webhook_url(store, wh["key"], base_url) if store else ""
+        webhook_providers.append({
+            **wh,
+            "default_url": default_url,
+            "url": resolved,
+            "url_custom": bool(saved_url),
+            "saved_url": saved_url or resolved,
+            "secret_configured": bool(secret_field and (cfg.get(secret_field) or "").strip()),
+            "secret_value": (cfg.get(secret_field) or "") if secret_field else "",
+        })
+    webhook_events = []
+    if store:
+        webhook_events = (
+            WebhookEvent.query.filter_by(store_id=store.id)
+            .order_by(WebhookEvent.id.desc())
+            .limit(25)
+            .all()
+        )
     u = current_user()
     return render_template(
         "admin/integrations.html",
         providers=providers,
+        webhook_providers=webhook_providers,
+        webhook_events=webhook_events,
+        webhook_base_url=(wh_cfg.get("base_url") or "").strip() if store else "",
+        webhook_base_saved=bool((wh_cfg.get("base_url") or "").strip()) if store else False,
+        default_site_url=base_url,
         integration_env=env,
         admin_email=(u.email if u else ""),
         **_shell(store),
@@ -2328,6 +2367,78 @@ def integrations_smtp_test():
     else:
         flash("Test email was not sent — check SMTP host and from address are saved.", "error")
     return redirect("/admin/integrations" + _qs(store) + "#smtp")
+
+
+@bp.post("/admin/integrations/webhooks/settings")
+@roles_required(*ADMIN_ROLES)
+def integrations_webhook_settings():
+    from app.integrations.config import integration_env, merge_env_config, active_integration_config
+    from app.models.store import StoreIntegration
+
+    store = _admin_store()
+    base_val = (request.form.get("base_url") or "").strip()
+
+    integ = StoreIntegration.query.filter_by(store_id=store.id, provider="webhooks").first()
+    if not integ:
+        integ = StoreIntegration(store_id=store.id, provider="webhooks", enabled=True, config={})
+        db.session.add(integ)
+    env = integration_env(store)
+    bucket = dict(active_integration_config(store, "webhooks") if integ.config else {})
+    if base_val:
+        bucket["base_url"] = base_val
+    else:
+        bucket.pop("base_url", None)
+    merge_env_config(integ, env, bucket)
+    db.session.commit()
+    flash("Webhook base URL saved for %s." % env, "success")
+    return redirect("/admin/integrations" + _qs(store) + "#webhooks")
+
+
+@bp.post("/admin/integrations/webhooks/<provider>")
+@roles_required(*ADMIN_ROLES)
+def integrations_webhook_save(provider):
+    from app.integrations.config import integration_env, merge_env_config, active_integration_config
+    from app.integrations.webhook_urls import WEBHOOK_PROVIDERS, endpoint_url_key
+    from app.models.store import StoreIntegration
+
+    store = _admin_store()
+    spec = next((p for p in WEBHOOK_PROVIDERS if p["key"] == provider), None)
+    if not spec:
+        abort(404)
+
+    endpoint_in_form = "webhook_url" in request.form
+    endpoint_url = (request.form.get("webhook_url") or "").strip() if endpoint_in_form else None
+    secret_val = (request.form.get("webhook_secret") or "").strip()
+    if not endpoint_in_form and not secret_val:
+        flash("Enter a webhook URL and/or signing secret to save.", "error")
+        return redirect("/admin/integrations" + _qs(store) + "#webhooks-" + provider)
+
+    wh_integ = StoreIntegration.query.filter_by(store_id=store.id, provider="webhooks").first()
+    if not wh_integ:
+        wh_integ = StoreIntegration(store_id=store.id, provider="webhooks", enabled=True, config={})
+        db.session.add(wh_integ)
+    env = integration_env(store)
+    wh_bucket = dict(active_integration_config(store, "webhooks") if wh_integ.config else {})
+    if endpoint_in_form:
+        url_key = endpoint_url_key(provider)
+        if endpoint_url:
+            wh_bucket[url_key] = endpoint_url
+        else:
+            wh_bucket.pop(url_key, None)
+        merge_env_config(wh_integ, env, wh_bucket)
+
+    if spec.get("secret_field") and secret_val:
+        integ = StoreIntegration.query.filter_by(store_id=store.id, provider=provider).first()
+        if not integ:
+            integ = StoreIntegration(store_id=store.id, provider=provider, enabled=False, config={})
+            db.session.add(integ)
+        bucket = dict(active_integration_config(store, provider) if integ.config else {})
+        bucket[spec["secret_field"]] = secret_val
+        merge_env_config(integ, env, bucket)
+
+    db.session.commit()
+    flash("%s webhook settings saved for %s." % (spec["name"], env), "success")
+    return redirect("/admin/integrations" + _qs(store) + "#webhooks-" + provider)
 
 
 # ── Locations / stores ───────────────────────────────────────────────────
@@ -2594,8 +2705,16 @@ def order_status(number):
         advance(order)                       # also fires the customer notification
         flash(f"{order.number} advanced to {order.status.replace('_', ' ')}.", "success")
     elif action == "cancel":
-        set_status(order, "cancelled")
-        flash(f"{order.number} cancelled.", "success")
+        from app.services.order_cancel import cancel_order
+        order, results = cancel_order(order)
+        msg = "%s cancelled." % order.number
+        stripe_st = (results.get("stripe") or {}).get("status")
+        square_st = (results.get("square") or {}).get("status")
+        if stripe_st:
+            msg += " Stripe refund: %s." % stripe_st
+        if square_st:
+            msg += " Square: %s." % square_st
+        flash(msg, "success")
     elif action == "mark_paid":
         order.payment_status = "paid"
         db.session.commit()

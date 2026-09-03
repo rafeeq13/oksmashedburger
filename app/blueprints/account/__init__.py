@@ -84,6 +84,24 @@ def receipt(number):
                     headers={"Content-Disposition": f"inline; filename=receipt-{order.number}.pdf"})
 
 
+@bp.get("/orders/receipt/<token>")
+def receipt_token(token):
+    """Signed receipt link from order emails (no login required)."""
+    from itsdangerous import URLSafeSerializer, BadSignature
+    from flask import current_app
+    from app.services.receipts import build_receipt_pdf
+    try:
+        number = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="ok-receipt").loads(token)
+    except BadSignature:
+        abort(404)
+    order = Order.query.filter_by(number=number).first_or_404()
+    return Response(
+        build_receipt_pdf(order),
+        mimetype="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=receipt-%s.pdf" % order.number},
+    )
+
+
 @bp.post("/orders/<number>/reorder")
 @login_required
 def reorder(number):

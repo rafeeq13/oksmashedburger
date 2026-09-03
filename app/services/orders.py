@@ -52,6 +52,10 @@ def advance(order):
 
 
 def set_status(order, status):
+    if status == "cancelled":
+        from app.services.order_cancel import cancel_order
+        order, _results = cancel_order(order)
+        return order
     order.status = status
     db.session.commit()
     _notify(order)

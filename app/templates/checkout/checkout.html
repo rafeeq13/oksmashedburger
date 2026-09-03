@@ -155,10 +155,26 @@
         <div data-card-fields class="ok-grid ok-gap-3">
           {% if stripe_checkout_mode == 'elements' and stripe_pub_key %}
           <div>
-            <label class="ok-label" for="card-element">Card details</label>
-            <div id="card-element" class="ok-input py-3"></div>
-            <div id="card-element-errors" class="ok-fs-xs text-ok-red mt-1" role="alert"></div>
+            <label class="ok-label" for="card-number-element">Card number</label>
+            <div class="ok-input ok-stripe-field">
+              <div id="card-number-element"></div>
+            </div>
           </div>
+          <div class="ok-grid ok-grid-2 ok-gap-3">
+            <div>
+              <label class="ok-label" for="card-expiry-element">Expiry</label>
+              <div class="ok-input ok-stripe-field">
+                <div id="card-expiry-element"></div>
+              </div>
+            </div>
+            <div>
+              <label class="ok-label" for="card-cvc-element">CVC</label>
+              <div class="ok-input ok-stripe-field">
+                <div id="card-cvc-element"></div>
+              </div>
+            </div>
+          </div>
+          <div id="card-element-errors" class="ok-fs-xs text-ok-red" role="alert"></div>
           <div><label class="ok-label" for="card_name">Name on card</label><input id="card_name" name="card_name" autocomplete="cc-name" class="ok-input" placeholder="{{ user.full_name if user else 'Jordan Miller' }}" value="{{ form.get('card_name', '') }}"></div>
           {% else %}
           <div>
@@ -396,32 +412,70 @@
   var stripeMode = {{ stripe_checkout_mode|tojson }};
   var stripePubKey = {{ stripe_pub_key|tojson }};
   var stripeClient = null;
-  var cardElement = null;
+  var cardNumberElement = null;
   if (stripeMode === "elements" && stripePubKey && window.Stripe) {
     stripeClient = Stripe(stripePubKey);
     var elements = stripeClient.elements();
-    cardElement = elements.create("card", {
-      style: {
-        base: { fontSize: "16px", color: "#141414", "::placeholder": { color: "#9a9a9a" } },
-        invalid: { color: "#c0392b" }
-      }
-    });
-    var mountEl = document.getElementById("card-element");
-    if (mountEl) cardElement.mount(mountEl);
-    cardElement.on("change", function (ev) {
+    var stripeStyle = {
+      base: { fontSize: "16px", color: "#141414", "::placeholder": { color: "#9a9a9a" } },
+      invalid: { color: "#c0392b" }
+    };
+    cardNumberElement = elements.create("cardNumber", { style: stripeStyle });
+    var cardExpiryElement = elements.create("cardExpiry", { style: stripeStyle });
+    var cardCvcElement = elements.create("cardCvc", { style: stripeStyle });
+    var numberMount = document.getElementById("card-number-element");
+    var expiryMount = document.getElementById("card-expiry-element");
+    var cvcMount = document.getElementById("card-cvc-element");
+    if (numberMount) cardNumberElement.mount(numberMount);
+    if (expiryMount) cardExpiryElement.mount(expiryMount);
+    if (cvcMount) cardCvcElement.mount(cvcMount);
+    function showCardError(message) {
       var errEl = document.getElementById("card-element-errors");
-      if (errEl) errEl.textContent = ev.error ? ev.error.message : "";
+      if (errEl) errEl.textContent = message || "";
+    }
+    [cardNumberElement, cardExpiryElement, cardCvcElement].forEach(function (el) {
+      el.on("change", function (ev) {
+        showCardError(ev.error ? ev.error.message : "");
+      });
     });
   }
 
   function checkoutTotal() {
+    if (customRadio && customRadio.checked && customInput) {
+      customRadio.value = String(Math.max(0, parseFloat(customInput.value) || 0));
+    }
     var sel = form.querySelector('input[name="tip"]:checked');
     var tip = sel ? (parseFloat(sel.value) || 0) : 0;
     return baseTotal() + tip;
   }
 
+  function billingDetails() {
+    var get = function (id) {
+      var el = document.getElementById(id);
+      return el ? String(el.value || "").trim() : "";
+    };
+    var cardName = document.getElementById("card_name");
+    var details = {
+      name: cardName ? cardName.value : get("name"),
+      email: get("email"),
+      phone: get("phone")
+    };
+    var line1 = get("address_line1");
+    if (line1) {
+      details.address = {
+        line1: line1,
+        line2: get("address_line2"),
+        city: get("address_city"),
+        state: get("address_state"),
+        postal_code: get("address_zip"),
+        country: "US"
+      };
+    }
+    return details;
+  }
+
   form.addEventListener("submit", function (e) {
-    if (stripeMode !== "elements" || !stripeClient || !cardElement) return;
+    if (stripeMode !== "elements" || !stripeClient || !cardNumberElement) return;
     if (form.dataset.stripeDone === "1") return;
     var picked = form.querySelector('input[name="order_type"]:checked');
     var isDel = !picked || picked.value === "delivery";
@@ -434,6 +488,7 @@
       return;
     }
     e.preventDefault();
+    applyTip();
     var btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
     var csrf = form.querySelector('input[name="_csrf"]');
@@ -454,11 +509,10 @@
           form.submit();
           return;
         }
-        var nameEl = document.getElementById("card_name");
         return stripeClient.confirmCardPayment(data.client_secret, {
           payment_method: {
-            card: cardElement,
-            billing_details: { name: nameEl ? nameEl.value : "" }
+            card: cardNumberElement,
+            billing_details: billingDetails()
           }
         });
       })

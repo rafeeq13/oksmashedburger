@@ -220,3 +220,46 @@ def push_order(store, order, stripe_ref=None):
         "reference": square_id,
         "raw": {"order": created, "payment": pay_raw},
     }
+
+
+def cancel_order(store, square_order_id):
+    """Cancel an existing Square order (e.g. when admin cancels a web order)."""
+    cfg = store_square_config(store)
+    if should_simulate(store, "square", cfg):
+        return {
+            "status": "simulated",
+            "reference": square_order_id,
+            "raw": {"demo": True, "order_id": square_order_id},
+        }
+
+    if not is_enabled(store) or not square_order_id:
+        return {"status": "skipped", "reference": square_order_id,
+                "raw": {"error": "Square not configured or no square order id"}}
+
+    current = _request(store, "GET", "/v2/orders/%s" % square_order_id)
+    if current.get("errors"):
+        return {"status": "failed", "reference": square_order_id, "raw": current}
+
+    sq_order = current.get("order") or {}
+    state = (sq_order.get("state") or "").upper()
+    if state in ("CANCELED", "CANCELLED", "COMPLETED"):
+        return {"status": "skipped", "reference": square_order_id,
+                "raw": {"reason": "already_%s" % state.lower()}}
+
+    version = sq_order.get("version")
+    if version is None:
+        return {"status": "failed", "reference": square_order_id,
+                "raw": {"error": "missing order version", "order": sq_order}}
+
+    updated = _request(store, "PUT", "/v2/orders/%s" % square_order_id, {
+        "idempotency_key": str(uuid.uuid4()),
+        "order": {"state": "CANCELED", "version": version},
+    })
+    if updated.get("errors"):
+        return {"status": "failed", "reference": square_order_id, "raw": updated}
+
+    return {
+        "status": "cancelled",
+        "reference": square_order_id,
+        "raw": updated,
+    }

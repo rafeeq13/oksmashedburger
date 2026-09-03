@@ -1,0 +1,26 @@
+{# Item line with modifier counts + per-modifier charges. Pass `item` (order line or cart line). #}
+<div class="ok-order-item-breakdown">
+  <div class="d-flex justify-content-between ok-fs-sm gap-2">
+    <span><b>{{ item.qty }}×</b> {{ item.name }}</span>
+    <span class="fw-semibold text-nowrap">${{ '%.2f'|format(item.line_total) }}</span>
+  </div>
+  {% if item.options %}
+  <div class="ok-mt-05 ok-stack-05 ps-3">
+    {% if item.options.variant %}
+    <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm">
+      <span>{{ item.options.variant }}</span>
+      {% if item.options.variant_delta %}<span class="text-nowrap">{{ '+' if item.options.variant_delta > 0 else '−' }}${{ '%.2f'|format(item.options.variant_delta|abs) }}</span>{% endif %}
+    </div>
+    {% endif %}
+    {% for a in item.options.addons or [] %}
+    <div class="d-flex justify-content-between gap-2 ok-fs-xs text-muted-warm">
+      <span>+ {{ a.name }}{% if (a.qty or 1) > 1 %} ×{{ a.qty }}{% endif %}</span>
+      <span class="text-nowrap">+${{ '%.2f'|format(a.price * (a.qty or 1)) }}</span>
+    </div>
+    {% endfor %}
+    {% if item.options.notes %}
+    <div class="ok-fs-xs text-muted-warm fst-italic">“{{ item.options.notes }}”</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

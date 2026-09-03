@@ -12,10 +12,10 @@ from app.models.order import Order, OrderItem, Payment
 from app.models.promo import Coupon, GiftCard
 from app.integrations.stripe_gateway import (
     charge, store_stripe_config, is_connected, stripe_checkout_mode,
-    create_payment_intent, verify_payment_intent,
+    create_payment_intent, verify_payment_intent, update_payment_intent,
 )
 from app.integrations.google_maps import store_google_maps_key
-from app.integrations.config import integration_env
+from app.integrations.config import integration_env, should_simulate
 from app.address import address_from_form
 
 bp = Blueprint("checkout", __name__)
@@ -192,17 +192,32 @@ def checkout():
         # Payment — routed through THIS store's own Stripe account.
         payment_result = None
         if method == "card":
-            from app.services.order_details import payment_metadata
-            meta = payment_metadata(order)
+            from app.services.order_details import stripe_payment_update
+            stripe_update = stripe_payment_update(order)
+            stripe_mode = stripe_checkout_mode(store)
             intent_id = (request.form.get("stripe_payment_intent") or "").strip()
+            if stripe_mode == "elements" and not should_simulate(store, "stripe") and not intent_id:
+                db.session.rollback()
+                return _checkout_error("Card payment was not completed. Please try again.")
+
             if intent_id:
                 payment_result = verify_payment_intent(store, intent_id, s["total"])
+                if payment_result["status"] == "succeeded":
+                    meta_result = update_payment_intent(store, intent_id, **stripe_update)
+                    if meta_result["status"] != "ok":
+                        payment_result["raw"]["stripe_update"] = meta_result.get("raw") or {}
             else:
-                payment_result = charge(store, s["total"], metadata=meta)
-            order.payment_status = "paid" if payment_result["status"] == "succeeded" else "pending"
+                payment_result = charge(store, s["total"], metadata=stripe_update.get("metadata"))
+
+            if payment_result["status"] != "succeeded":
+                db.session.rollback()
+                err = (payment_result.get("raw") or {}).get("error") or "Card payment failed. Please try again."
+                return _checkout_error(err)
+
+            order.payment_status = "paid"
             db.session.add(Payment(
                 order=order, provider="stripe", amount=order.total,
-                status="succeeded" if payment_result["status"] == "succeeded" else payment_result["status"],
+                status="succeeded",
                 provider_ref=payment_result["reference"], raw=payment_result["raw"],
             ))
         else:  # cash / pay-at-store

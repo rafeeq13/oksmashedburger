@@ -592,6 +592,33 @@ p {
 /* ---------------------------------------------------------
    7. FORMS — luxury inputs, floating labels, validation
    --------------------------------------------------------- */
+.ok-stripe-field {
+  display: flex;
+  align-items: center;
+  min-height: 3.1rem;
+  padding-top: .65rem;
+  padding-bottom: .65rem;
+}
+
+.ok-stripe-field > div {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 1.4rem;
+}
+
+.ok-stripe-field .__PrivateStripeElement,
+.ok-stripe-field iframe {
+  display: block;
+  width: 100% !important;
+  min-height: 1.4rem;
+}
+
+.ok-stripe-field:focus-within {
+  border-color: var(--ok-amber);
+  box-shadow: 0 0 0 4px rgba(255, 199, 44, .22);
+  background: #fff;
+}
+
 .ok-input,
 .ok-select,
 .ok-textarea {
@@ -2430,6 +2457,17 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   border-color:#000 !important;
 }
 [data-tab-group] .chip{ color:var(--ok-ink); }
+
+/* Integrations + webhooks tab bars: wrap instead of clipping the last pill. */
+.ok-integ-tabbar{
+  row-gap:.5rem;
+  max-width:100%;
+}
+.ok-integ-tabbar .chip{
+  flex:0 0 auto;
+  max-width:100%;
+  white-space:nowrap;
+}
 
 /* Rewards page: every CTA inverts to white-on-black text instead of the
    site-wide black fill. Scoped to this page only. */

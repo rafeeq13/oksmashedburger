@@ -132,7 +132,13 @@ def build_receipt_pdf(order):
                 v += f" ({'+' if float(vd) >= 0 else '-'}{_money(abs(float(vd)))})"
             detail.append(v)
         for a in opts.get("addons") or []:
-            detail.append(f"+ {a.get('name', '')}  (+{_money(a.get('price', 0))})")
+            qty = max(1, int(a.get("qty", 1)))
+            total = float(a.get("price", 0)) * qty
+            name = a.get("name", "")
+            if qty > 1:
+                detail.append(f"+ {name} ×{qty}  (+{_money(total)})")
+            else:
+                detail.append(f"+ {name}  (+{_money(total)})")
         if opts.get("notes"):
             detail.append(f"Note: {opts['notes']}")
 
@@ -226,3 +232,41 @@ def build_receipt_pdf(order):
         pdf.set_text_color(*MUTE)
         pdf.cell(W, 5, _s("Questions about your order? Reply to your confirmation email."), align="C")
     return bytes(pdf.output())
+
+
+def build_receipt_attachment(order):
+    """PDF attachment dict for order emails, or None if generation fails."""
+    if not order or not order.number:
+        return None
+    try:
+        content = build_receipt_pdf(order)
+    except Exception:
+        try:
+            from flask import current_app
+            current_app.logger.exception("receipt_pdf_failed order=%s", order.number)
+        except Exception:
+            pass
+        return None
+    if not content:
+        return None
+    return {
+        "filename": "receipt-%s.pdf" % order.number,
+        "content": content,
+    }
+
+
+def receipt_public_url(order):
+    """Signed download link for email (works for guests without login)."""
+    if not order or not order.number:
+        return ""
+    try:
+        from itsdangerous import URLSafeSerializer
+        from flask import current_app, url_for
+        token = URLSafeSerializer(current_app.config["SECRET_KEY"], salt="ok-receipt").dumps(order.number)
+        try:
+            return url_for("account.receipt_token", token=token, _external=True)
+        except Exception:
+            from app.services.mailer import _abs
+            return _abs("/orders/receipt/%s" % token)
+    except Exception:
+        return ""

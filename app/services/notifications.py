@@ -5,6 +5,7 @@ from app.models import email_templates as et
 from app.integrations import twilio_gateway, smtp_gateway
 from app.services.mailer import sending_store
 from app.services.order_details import order_email_rows
+from app.services.receipts import build_receipt_attachment
 
 # order status -> (SMS body template, template key for email)
 _SMS = {
@@ -33,20 +34,25 @@ def notify_order_event(order, event):
     }
     sms_body = _SMS.get(event, "").format(**ctx)
 
-    attachment = None
-    if event in ("placed", "confirmed"):
-        try:
-            from app.services.receipts import build_receipt_pdf
-            attachment = {"filename": "receipt-%s.pdf" % order.number,
-                          "content": build_receipt_pdf(order)}
-        except Exception:
-            attachment = None
+    attachment = build_receipt_attachment(order) if tpl_key else None
 
     email_subject, email_plain, email_html = et.render(tpl_key, ctx, rows=order_email_rows(order))
 
     created = []
+    twilio_callback = None
+    if store:
+        from flask import has_request_context, request
+        from app.integrations.webhook_urls import resolve_webhook_url
+        req_base = request.url_root.rstrip("/") if has_request_context() else None
+        twilio_callback = resolve_webhook_url(store, "twilio", req_base)
+        if not twilio_callback:
+            try:
+                from flask import url_for
+                twilio_callback = url_for("webhooks.twilio_webhook", store_slug=store.slug, _external=True)
+            except Exception:
+                twilio_callback = None
     if store and twilio_gateway.is_enabled(store) and order.customer_phone:
-        res = twilio_gateway.send_sms(store, order.customer_phone, sms_body)
+        res = twilio_gateway.send_sms(store, order.customer_phone, sms_body, status_callback=twilio_callback)
         created.append(_record(order, store, "sms", "twilio",
                                order.customer_phone, None, sms_body, event, res))
     if order.customer_email:
@@ -67,11 +73,13 @@ def notify_order_event(order, event):
 
 
 def _record(order, store, channel, provider, recipient, subject, body, event, res):
+    raw = res.get("raw") or {}
+    provider_ref = raw.get("sid") or "%s_%s_%s" % (provider, order.number, event)
     n = Notification(
         order_id=order.id, store_id=store.id if store else None,
         channel=channel, provider=provider, recipient=recipient, subject=subject,
         body=body, event=event, status=res.get("status", "simulated"),
-        provider_ref="%s_%s_%s" % (provider, order.number, event),
+        provider_ref=provider_ref,
     )
     db.session.add(n)
     print("[notify] %s -> %s via %s (%s) order %s/%s"

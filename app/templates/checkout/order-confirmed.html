@@ -43,7 +43,9 @@
       <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Order summary</h2>
       <div class="ok-stack-3">
         {% for it in order.items %}
-        <div class="d-flex justify-content-between ok-fs-sm"><span><b>{{ it.qty }}×</b> {{ it.name }}{% if it.options.variant %} <span class="text-muted-warm">({{ it.options.variant }})</span>{% endif %}</span><span class="fw-semibold">${{ '%.2f'|format(it.line_total) }}</span></div>
+        {% with item=it %}
+        {% include "partials/order_item_breakdown.html" %}
+        {% endwith %}
         {% endfor %}
       </div>
       <div class="divider ok-my-3"></div>

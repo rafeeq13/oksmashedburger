@@ -35,7 +35,9 @@ def main():
         )
         print("payment-intent", r.status_code, r.get_json())
         print("stripe.js", "js.stripe.com" in html)
-        print("card-element", "card-element" in html)
+        print("card-number-element", "card-number-element" in html)
+        print("card-expiry-element", "card-expiry-element" in html)
+        print("card-cvc-element", "card-cvc-element" in html)
         data = r.get_json() or {}
         return 0 if r.status_code == 200 and data.get("ok") and data.get("client_secret") else 1
 

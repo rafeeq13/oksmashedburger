@@ -51,18 +51,10 @@
       <h3 class="font-display fw-bold ok-fs-lg mb-3">Items</h3>
       <div class="ok-divide-y">
         {% for it in order.items %}
-        <div class="ok-py-3 d-flex align-items-start justify-content-between ok-gap-3">
-          <div>
-            <div class="fw-semibold">{{ it.qty }}× {{ it.name }}</div>
-            {% if it.options %}
-            <div class="ok-fs-xs text-muted-warm">
-              {% if it.options.variant %}{{ it.options.variant }}{% endif %}
-              {% if it.options.addons %}{% for a in it.options.addons %} · {{ a.name }}{% endfor %}{% endif %}
-              {% if it.options.notes %}<div class="fst-italic">“{{ it.options.notes }}”</div>{% endif %}
-            </div>
-            {% endif %}
-          </div>
-          <div class="fw-semibold text-nowrap">${{ '%.2f'|format(it.line_total) }}</div>
+        <div class="ok-py-3">
+          {% with item=it %}
+          {% include "partials/order_item_breakdown.html" %}
+          {% endwith %}
         </div>
         {% endfor %}
       </div>
