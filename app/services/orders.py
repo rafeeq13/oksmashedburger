@@ -46,6 +46,8 @@ def _notify(order):
 
 def advance(order):
     order.status = next_status(order.status, order.order_type)
+    from app.services.delivery import sync_delivery_from_order
+    sync_delivery_from_order(order, commit=False)
     db.session.commit()
     _notify(order)
     return order
@@ -57,6 +59,8 @@ def set_status(order, status):
         order, _results = cancel_order(order)
         return order
     order.status = status
+    from app.services.delivery import sync_delivery_from_order
+    sync_delivery_from_order(order, commit=False)
     db.session.commit()
     _notify(order)
     return order

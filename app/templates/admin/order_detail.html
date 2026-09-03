@@ -142,8 +142,18 @@
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Status</span>{% if order.payment_status == 'paid' %}<span class="text-ok-green fw-semibold">Paid</span>{% else %}<span class="text-gold fw-semibold">{{ order.payment_status|title }}</span>{% endif %}</div>
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Method</span><span class="text-capitalize">{{ order.payment_method or '-' }}</span></div>
         {% if order.payment and order.payment.provider_ref %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Stripe ref</span><span class="font-monospace ok-fs-xs text-break">{{ order.payment.provider_ref }}</span></div>{% endif %}
-        {% if order.square_order_id %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Square order</span><span class="font-monospace ok-fs-xs text-break">{{ order.square_order_id }}</span></div>{% endif %}
-        {% if order.delivery and order.delivery.provider_ref %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Uber ref</span><span class="font-monospace ok-fs-xs text-break">{{ order.delivery.provider_ref }}</span></div>{% endif %}
+        {% if order.square_order_id %}<div class="d-flex justify-content-between ok-gap-2"><span class="text-muted-warm flex-shrink-0">Square order</span><span class="font-monospace ok-fs-xs text-break text-end">{{ order.square_order_id }}</span></div>{% endif %}
+        {% if order.delivery and order.delivery.method == 'uber_direct' %}
+        <div class="d-flex justify-content-between ok-gap-2">
+          <span class="text-muted-warm flex-shrink-0">Uber Direct</span>
+          <span class="text-end">
+            {% if order.delivery.provider_ref %}<span class="font-monospace ok-fs-xs text-break d-block">{{ order.delivery.provider_ref }}</span>{% endif %}
+            <span class="ok-fs-xs text-capitalize {% if order.delivery.status == 'failed' %}text-ok-red{% elif order.delivery.status in ['delivered', 'picked_up'] %}text-ok-green{% else %}text-muted-warm{% endif %}">{{ order.delivery.status.replace('_',' ') }}</span>
+          </span>
+        </div>
+        {% elif order.delivery and order.delivery.provider_ref %}
+        <div class="d-flex justify-content-between ok-gap-2"><span class="text-muted-warm flex-shrink-0">Uber Direct</span><span class="font-monospace ok-fs-xs text-break text-end">{{ order.delivery.provider_ref }}</span></div>
+        {% endif %}
       </div>
     </div>
   </div>

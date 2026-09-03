@@ -10,7 +10,7 @@ from decimal import Decimal, InvalidOperation
 from datetime import datetime, timezone, timedelta
 from collections import Counter
 
-from flask import Blueprint, render_template, request, redirect, flash, abort, Response, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, flash, abort, Response, current_app, jsonify, url_for
 from werkzeug.utils import secure_filename
 
 from app.extensions import db
@@ -1084,7 +1084,13 @@ def email_templates_preview(tpl_key):
         abort(404)
     ctx = preview_context(tpl_key)
     rows = preview_rows(tpl_key)
-    cta = "https://oksmashedburger.com/menu"
+    if tpl_key.startswith("order_"):
+        cta = et.tracking_url_for(ctx.get("order_number") or "OK-4012")
+    else:
+        try:
+            cta = url_for("website.home", _external=True).rstrip("/") + "/menu"
+        except Exception:
+            cta = "https://fooddeliveryaudit.com/menu"
     _, _, html = render_email(tpl_key, ctx, rows=rows, cta_href=cta,
                               brand=current_app.config.get("BRAND_NAME") or None)
     # Block scripts in pasted email HTML — preview runs same-origin in admin iframes.
@@ -2270,7 +2276,7 @@ def integrations():
         webhook_events = (
             WebhookEvent.query.filter_by(store_id=store.id)
             .order_by(WebhookEvent.id.desc())
-            .limit(25)
+            .limit(500)
             .all()
         )
     u = current_user()
@@ -2691,6 +2697,9 @@ def _scoped_order(number):
 @roles_required(*ADMIN_ROLES)
 def order_detail(number):
     order = _scoped_order(number)
+    if order.delivery:
+        from app.services.delivery import ensure_delivery_status_current
+        ensure_delivery_status_current(order)
     store = Store.query.get(order.store_id)
     return render_template("admin/order_detail.html", order=order,
                            stages=TRACK_STAGES, stage_meta=STAGE_META, **_shell(store))

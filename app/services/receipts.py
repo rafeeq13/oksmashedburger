@@ -2,6 +2,7 @@
 import os
 
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 
 from app.helpers import feature_on, order_dt_local
 
@@ -192,21 +193,26 @@ def build_receipt_pdf(order):
     if order.gift_card_applied and float(order.gift_card_applied) > 0:
         row("Gift card", "-" + _money(order.gift_card_applied), "discount")
 
-    # highlighted TOTAL bar (right half)
-    pdf.ln(1)
+    # highlighted TOTAL bar (right half) — keep both cells on one line inside the fill
+    pdf.ln(2)
     ty = pdf.get_y()
     bx = X + W * 0.55
     bw = W * 0.45
     pdf.set_fill_color(*JET)
-    pdf.rect(bx, ty, bw, 12, "F")
     pdf.set_xy(bx, ty)
     pdf.set_font("Helvetica", "B", 11)
     pdf.set_text_color(255, 255, 255)
-    pdf.cell(bw * 0.45, 12, "  TOTAL", align="L")
+    pdf.cell(
+        bw * 0.45, 12, "  TOTAL", align="L", fill=True,
+        new_x=XPos.RIGHT, new_y=YPos.TOP,
+    )
     pdf.set_font("Helvetica", "B", 15)
     pdf.set_text_color(*YELLOW)
-    pdf.cell(bw * 0.55, 12, _money(order.total) + "  ", align="R")
-    pdf.ln(16)
+    pdf.cell(
+        bw * 0.55, 12, _money(order.total) + "  ", align="R", fill=True,
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT,
+    )
+    pdf.ln(6)
 
     # ── Footer ────────────────────────────────────────────────
     pdf.set_draw_color(*LINE)

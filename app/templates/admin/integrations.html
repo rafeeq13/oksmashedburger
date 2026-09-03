@@ -177,12 +177,12 @@
             {% set wh_events = webhook_events|selectattr('provider', 'equalto', wh.key)|list %}
             {% if wh_events %}
             <div class="table-responsive">
-              <table class="table ok-fs-sm align-middle mb-0">
+              <table data-table data-table-defer="1" data-page-size="10" class="w-100 ok-fs-sm align-middle mb-0" id="webhook-events-{{ wh.key }}">
                 <thead><tr><th>When</th><th>Event</th><th>Status</th><th>Ref</th></tr></thead>
                 <tbody>
-                  {% for ev in wh_events[:10] %}
+                  {% for ev in wh_events %}
                   <tr>
-                    <td class="text-nowrap">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                    <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
                     <td>{{ ev.event_type }}</td>
                     <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
                     <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or '—' }}</td>
@@ -204,12 +204,12 @@
           <div class="font-display fw-bold ok-fs-base ok-mb-3">All webhook activity</div>
           {% if webhook_events %}
           <div class="table-responsive">
-            <table class="table ok-fs-sm align-middle mb-0">
+            <table data-table data-table-defer="1" data-page-size="10" class="w-100 ok-fs-sm align-middle mb-0" id="webhook-events-all">
               <thead><tr><th>When</th><th>Provider</th><th>Event</th><th>Status</th><th>Ref</th></tr></thead>
               <tbody>
                 {% for ev in webhook_events %}
                 <tr>
-                  <td class="text-nowrap">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                  <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
                   <td class="text-capitalize">{{ ev.provider.replace('_', ' ') }}</td>
                   <td>{{ ev.event_type }}</td>
                   <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
@@ -234,6 +234,19 @@
 <script>
   // Re-open the tab named in the URL hash (e.g. after saving a provider).
   (function () {
+    function initWebhookEventTables() {
+      if (!window.jQuery || !jQuery.fn || !jQuery.fn.DataTable) return;
+      document.querySelectorAll('[data-panel="webhooks"] table[data-table-defer="1"]').forEach(function (t) {
+        if (jQuery.fn.DataTable.isDataTable(t)) {
+          jQuery(t).DataTable().columns.adjust();
+          return;
+        }
+        delete t.dataset.tableDefer;
+        if (window.initAdminDataTables) window.initAdminDataTables();
+        if (jQuery.fn.DataTable.isDataTable(t)) jQuery(t).DataTable().columns.adjust();
+      });
+    }
+
     function activate() {
       var h = (location.hash || '').replace('#', '');
       if (!h) return;
@@ -262,9 +275,22 @@
           whGroup.querySelectorAll('[data-panel]').forEach(function (p) { p.classList.toggle('d-none', p.dataset.panel !== subTab); });
         }
       }
+
+      if (mainTab === 'webhooks') {
+        setTimeout(initWebhookEventTables, 0);
+      }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', activate);
     else activate();
+
+    document.addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (!tab) return;
+      if (tab.dataset.tab === 'webhooks' || tab.closest('[data-panel="webhooks"]')) {
+        setTimeout(initWebhookEventTables, 0);
+      }
+    });
+
     document.querySelectorAll('[data-copy-url]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var url = btn.getAttribute('data-copy-url') || '';

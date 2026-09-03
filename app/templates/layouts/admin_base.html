@@ -239,6 +239,7 @@
       function initTables() {
         document.querySelectorAll('table[data-table]').forEach(function (t) {
           if (t.classList.contains("dataTable")) return;
+          if (t.dataset.tableDefer === "1") return;
           var tbody = t.tBodies[0];
           if (!tbody) return;
           var real = Array.prototype.filter.call(tbody.rows, function (r) {
@@ -259,6 +260,8 @@
           } catch (e) { }
         });
       }
+
+      window.initAdminDataTables = initTables;
 
       jQuery(function ($) {
         initTables();

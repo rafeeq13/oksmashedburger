@@ -233,7 +233,12 @@ def _tracking_url(delivery):
 
 
 def _status_from_uber(delivery):
-    status = (delivery.get("status") or "").strip().lower()
+    return map_uber_status(delivery.get("status")) or "assigned"
+
+
+def map_uber_status(status):
+    """Uber Direct status → our delivery.status."""
+    s = (status or "").strip().lower()
     return {
         "pending": "pending",
         "pickup": "assigned",
@@ -243,7 +248,7 @@ def _status_from_uber(delivery):
         "canceled": "failed",
         "cancelled": "failed",
         "returned": "failed",
-    }.get(status, "assigned")
+    }.get(s)
 
 
 def create_delivery(store, order, payload=None):

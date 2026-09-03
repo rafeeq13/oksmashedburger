@@ -24,11 +24,14 @@ def notify_order_event(order, event):
     if not order or not tpl_key:
         return []
     store = order.store
+    track_url = et.tracking_url_for(order.number)
     ctx = {
         "brand": et.BRAND,
         "store": store.name if store else et.BRAND,
         "order_number": order.number,
         "customer_name": order.customer_name or "there",
+        "tracking_url": track_url,
+        "order": order,
         "b": et.BRAND,
         "n": order.number,
     }
@@ -36,7 +39,9 @@ def notify_order_event(order, event):
 
     attachment = build_receipt_attachment(order) if tpl_key else None
 
-    email_subject, email_plain, email_html = et.render(tpl_key, ctx, rows=order_email_rows(order))
+    email_subject, email_plain, email_html = et.render(
+        tpl_key, ctx, rows=order_email_rows(order), cta_href=track_url,
+    )
 
     created = []
     twilio_callback = None

@@ -36,6 +36,12 @@ EMAIL_LAYOUT = [
     ("footer_legal", "Legal / fine print",
      "You received this email because you interacted with {brand}. "
      "Unsubscribe links appear in marketing messages.", "area", ""),
+    ("social_instagram", "Instagram URL (optional override)", "", "text",
+     "Leave blank to use the link from Site → Page content → Footer."),
+    ("social_facebook", "Facebook URL (optional override)", "", "text", ""),
+    ("social_youtube", "YouTube URL (optional override)", "", "text", ""),
+    ("social_tiktok", "TikTok URL (optional override)", "", "text", ""),
+    ("social_google", "Google / reviews URL (optional override)", "", "text", ""),
 ]
 
 # Appended to every template in admin — full HTML design (required for sending).
@@ -47,13 +53,13 @@ HTML_BODY_FIELD = (
 
 # Legacy copy used only when no HTML design is saved yet (auto-layout fallback).
 LEGACY_TEMPLATE_COPY = {
-    "order_placed": {"title": "Thanks for your order", "body": "Thanks for ordering from {store}! Order {order_number} has been received and is awaiting confirmation.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
-    "order_confirmed": {"title": "You're confirmed", "body": "Your order {order_number} at {store} is confirmed and heading to the kitchen.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "View order"},
-    "order_preparing": {"title": "On the grill", "body": "Good news — order {order_number} is on the grill at {store}.", "footer_note": "", "cta": "View order"},
-    "order_ready": {"title": "Ready when you are", "body": "Order {order_number} is ready at {store}.", "footer_note": "", "cta": "Get directions"},
-    "order_out_for_delivery": {"title": "On the way", "body": "Your order {order_number} from {store} is out for delivery.", "footer_note": "Track it any time from your account.", "cta": "Track order"},
-    "order_completed": {"title": "Enjoy!", "body": "Order {order_number} from {store} is complete. Thanks for choosing {brand}!", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Order again"},
-    "order_cancelled": {"title": "Order cancelled", "body": "Your order {order_number} at {store} has been cancelled.", "footer_note": "Your receipt is attached. Reply or call us with any questions.", "cta": "Contact us"},
+    "order_placed": {"title": "Thanks for your order", "body": "Thanks for ordering from {store}! Order <strong>{order_number}</strong> has been received and is awaiting confirmation.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
+    "order_confirmed": {"title": "You're confirmed", "body": "Your order <strong>{order_number}</strong> at {store} is confirmed and heading to the kitchen.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
+    "order_preparing": {"title": "On the grill", "body": "Good news — order <strong>{order_number}</strong> is on the grill at {store}.", "footer_note": "", "cta": "Track your order"},
+    "order_ready": {"title": "Ready when you are", "body": "Order <strong>{order_number}</strong> is ready at {store}.", "footer_note": "", "cta": "Track your order"},
+    "order_out_for_delivery": {"title": "On the way", "body": "Your order <strong>{order_number}</strong> from {store} is out for delivery.", "footer_note": "Tap below to follow your order in real time.", "cta": "Track your order"},
+    "order_completed": {"title": "Enjoy!", "body": "Order <strong>{order_number}</strong> from {store} is complete. Thanks for choosing {brand}!", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
+    "order_cancelled": {"title": "Order cancelled", "body": "Your order <strong>{order_number}</strong> at {store} has been cancelled.", "footer_note": "Your receipt is attached. Reply or call us with any questions.", "cta": "Track your order"},
     "welcome": {"title": "Welcome to OK Rewards", "body": "Your account is live and {points} bonus points are already on it. Every order earns more.", "footer_note": "Track your points any time from your account page.", "cta": "Start an order"},
     "password_reset": {"title": "Reset your password", "body": "We got a request to reset the password on your account. This link works once and expires in 60 minutes.", "footer_note": "If this wasn't you, ignore this email — nothing has changed.", "cta": "Reset your password"},
     "password_changed": {"title": "Password updated", "body": "The password on your account was just changed.", "footer_note": "If this wasn't you, contact us immediately.", "cta": "Sign in"},
@@ -67,48 +73,54 @@ LEGACY_TEMPLATE_COPY = {
 
 
 def default_html_starter(tpl_key):
-    """Attractive branded starter — admins customize in Email templates."""
+    """Premium branded starter — admins customize in Email templates."""
     legacy = LEGACY_TEMPLATE_COPY.get(tpl_key, {})
     title = legacy.get("title", "{title}")
     body = legacy.get("body", "{body}")
     footer = legacy.get("footer_note", "")
     return (
-        '<div style="margin:0;padding:0;background:#f0efeb">'
+        '<div style="margin:0;padding:0;background:#e8e6e0">'
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" '
-        'style="background:#f0efeb;padding:28px 12px;font-family:Helvetica,Arial,sans-serif;color:#141414">'
+        'style="background:#e8e6e0;padding:36px 16px;font-family:Helvetica,Arial,sans-serif;color:#141414">'
         '<tr><td align="center">'
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" '
-        'style="max-width:600px;background:#ffffff;border-radius:18px;overflow:hidden;'
-        'box-shadow:0 12px 40px rgba(20,20,20,.10)">'
+        'style="max-width:600px;background:#ffffff;border-radius:20px;overflow:hidden;'
+        'box-shadow:0 16px 48px rgba(20,20,20,.12)">'
+        # gold accent bar
+        '<tr><td style="height:5px;background:#FFC72C;font-size:0;line-height:0">&nbsp;</td></tr>'
         # header
-        '<tr><td style="background:linear-gradient(135deg,#141414 0%,#2a2a2a 100%);padding:22px 28px">'
-        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
-        '<td style="vertical-align:middle">'
-        '<img src="{header_logo}" alt="{brand}" width="160" style="display:block;max-width:160px;height:auto;border:0">'
-        '</td><td align="right" style="vertical-align:middle;font-size:11px;font-weight:700;'
-        'letter-spacing:.12em;text-transform:uppercase;color:#FFC72C">{store}</td>'
-        '</tr></table></td></tr>'
-        # optional hero
-        '<tr><td style="padding:0;line-height:0">{hero_image}</td></tr>'
+        '<tr><td style="background:#141414;padding:0">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
+        '<tr><td style="padding:28px 32px 8px;text-align:center">'
+        '<img src="{header_logo}" alt="{brand}" width="180" '
+        'style="display:block;margin:0 auto;max-width:180px;height:auto;border:0">'
+        '</td></tr>'
+        '<tr><td style="padding:0 32px 24px;text-align:center">'
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;'
+        'color:#FFC72C;margin-bottom:6px">{brand}</div>'
+        '<div style="font-size:13px;font-weight:600;color:#f0f0f0;letter-spacing:.04em">{store}</div>'
+        '</td></tr></table></td></tr>'
+        # hero
+        '<tr><td style="padding:0;line-height:0;background:#faf9f7">{hero_image}</td></tr>'
         # body
-        '<tr><td style="padding:32px 28px 24px">'
-        '<p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.14em;'
-        'text-transform:uppercase;color:#FFC72C">{brand}</p>'
-        '<h1 style="margin:0 0 18px;font-size:26px;line-height:1.2;font-weight:800;color:#141414">'
-        + title + '</h1>'
-        '<div style="font-size:15px;line-height:1.7;color:#3d3d3d;margin-bottom:22px">' + body + '</div>'
+        '<tr><td style="padding:36px 32px 28px;background:#ffffff">'
+        '<h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;font-weight:800;color:#141414;'
+        'letter-spacing:-.02em">' + title + '</h1>'
+        '<div style="font-size:16px;line-height:1.75;color:#444;margin-bottom:24px">' + body + '</div>'
         '{details_table}'
         '{cta_button}'
-        + ('<div style="margin-top:20px;padding:14px 16px;background:#faf9f7;border-left:4px solid #FFC72C;'
-           'border-radius:0 10px 10px 0;font-size:13px;line-height:1.6;color:#6b6b6b">' + footer + '</div>'
+        + ('<div style="margin-top:24px;padding:16px 18px;background:#faf9f7;border-left:4px solid #FFC72C;'
+           'border-radius:0 12px 12px 0;font-size:13px;line-height:1.65;color:#666">' + footer + '</div>'
            if footer else '') +
         '</td></tr>'
         # footer
-        '<tr><td style="background:#141414;padding:24px 28px;text-align:center">'
-        '<img src="{footer_logo}" alt="" width="88" style="display:block;margin:0 auto 12px;border:0;opacity:.95">'
-        '<div style="font-size:13px;font-weight:700;color:#FFC72C;margin-bottom:6px">{footer_line1}</div>'
-        '<div style="font-size:12px;line-height:1.55;color:#c8c8c8;margin-bottom:10px">{footer_line2}</div>'
-        '<div style="font-size:11px;line-height:1.5;color:#8a8a8a;padding-top:12px;border-top:1px solid #2a2a2a">'
+        '<tr><td style="background:#141414;padding:32px 28px 28px;text-align:center">'
+        '<img src="{footer_logo}" alt="" width="96" '
+        'style="display:block;margin:0 auto 16px;border:0;opacity:.95">'
+        '{social_footer}'
+        '<div style="font-size:14px;font-weight:700;color:#FFC72C;margin-bottom:8px">{footer_line1}</div>'
+        '<div style="font-size:13px;line-height:1.6;color:#c8c8c8;margin-bottom:14px">{footer_line2}</div>'
+        '<div style="font-size:11px;line-height:1.55;color:#8a8a8a;padding-top:14px;border-top:1px solid #2a2a2a">'
         '{footer_legal}</div>'
         '</td></tr>'
         '</table></td></tr></table></div>'
@@ -131,11 +143,26 @@ def templates_for_admin():
 # Placeholders available inside HTML designs
 EMAIL_PLACEHOLDERS = (
     "{brand}", "{store}", "{order_number}", "{customer_name}", "{points}", "{link}",
-    "{sender_name}", "{gift_code}", "{gift_value}", "{subject}", "{message}",
+    "{tracking_url}", "{sender_name}", "{gift_code}", "{gift_value}", "{subject}", "{message}",
     "{title}", "{body}", "{footer_note}", "{hero_image_url}", "{hero_image}",
-    "{cta_url}", "{cta_label}", "{cta_button}", "{details_table}",
+    "{cta_url}", "{cta_label}", "{cta_button}", "{details_table}", "{social_footer}",
+    "{instagram_url}", "{facebook_url}", "{youtube_url}", "{tiktok_url}", "{google_url}",
     "{header_logo}", "{footer_logo}", "{footer_line1}", "{footer_line2}", "{footer_legal}",
 ) + tuple("{%s}" % ("img_%02d" % i) for i in range(1, 16))
+
+
+def _order_tpl(tpl_key, tpl_label, subject_default):
+    legacy = LEGACY_TEMPLATE_COPY.get(tpl_key, {})
+    return (tpl_key, tpl_label, [
+        ("subject", "Subject line", subject_default, "text"),
+        ("hero_image", "Hero banner (optional)", "", "image",
+         "Wide image below the header — use {hero_image} in HTML or leave blank."),
+        ("cta_label", "CTA button text", legacy.get("cta", "Track your order"), "text",
+         "Button label — leave blank to hide."),
+        ("cta_url", "CTA button link", "/tracking/{order_number}", "text",
+         "Opens the guest order tracking page for this order."),
+        ("html_body", "HTML email design", default_html_starter(tpl_key), "html", HTML_BODY_FIELD[4]),
+    ])
 
 
 def _tpl(tpl_key, tpl_label, subject_default):
@@ -155,13 +182,13 @@ def _tpl(tpl_key, tpl_label, subject_default):
 # (group_key, group_label, icon, [(tpl_key, tpl_label, fields), ...])
 EMAIL_TEMPLATE_GROUPS = [
     ("orders", "Order updates", "receipt", [
-        _tpl("order_placed", "Order received", "We received order {order_number}"),
-        _tpl("order_confirmed", "Order confirmed", "Order {order_number} is confirmed"),
-        _tpl("order_preparing", "Being prepared", "Order {order_number} is being prepared"),
-        _tpl("order_ready", "Ready for pickup", "Order {order_number} is ready"),
-        _tpl("order_out_for_delivery", "Out for delivery", "Order {order_number} is on the way"),
-        _tpl("order_completed", "Completed", "Order {order_number} complete"),
-        _tpl("order_cancelled", "Cancelled", "Order {order_number} cancelled"),
+        _order_tpl("order_placed", "Order received", "We received order {order_number}"),
+        _order_tpl("order_confirmed", "Order confirmed", "Order {order_number} is confirmed"),
+        _order_tpl("order_preparing", "Being prepared", "Order {order_number} is being prepared"),
+        _order_tpl("order_ready", "Ready for pickup", "Order {order_number} is ready"),
+        _order_tpl("order_out_for_delivery", "Out for delivery", "Order {order_number} is on the way"),
+        _order_tpl("order_completed", "Completed", "Order {order_number} complete"),
+        _order_tpl("order_cancelled", "Cancelled", "Order {order_number} cancelled"),
     ]),
     ("account", "Account & auth", "user-lock", [
         _tpl("welcome", "Welcome / sign-up", "Welcome to OK Rewards"),
@@ -303,6 +330,117 @@ def _url_attr(url):
     return str(url or "").replace('"', "&quot;")
 
 
+def _site_setting(key):
+    row = SiteSetting.query.filter_by(key=key).first()
+    return (row.value or "").strip() if row and row.value else ""
+
+
+# Fallback social URLs when page content links are unset (#)
+DEFAULT_SOCIAL_URLS = {
+    "instagram": "https://www.instagram.com/oksmashedburger",
+    "facebook": "https://www.facebook.com/oksmashedburger",
+    "tiktok": "https://www.tiktok.com/@oksmashedburger",
+    "youtube": "https://www.youtube.com/@oksmashedburger",
+    "google": "https://www.google.com/search?q=OK+Smashed+Burger+Philadelphia",
+}
+
+# Icon images for email clients (Simple Icons CDN) — white on dark footer
+SOCIAL_ICON_IMAGES = {
+    "instagram": "https://cdn.simpleicons.org/instagram/FFFFFF",
+    "facebook": "https://cdn.simpleicons.org/facebook/FFFFFF",
+    "tiktok": "https://cdn.simpleicons.org/tiktok/FFFFFF",
+    "youtube": "https://cdn.simpleicons.org/youtube/FFFFFF",
+    "google": "https://cdn.simpleicons.org/google/FFFFFF",
+}
+
+
+def social_urls(brand=None):
+    """Social profile URLs — layout override, page content, then brand defaults."""
+    from app.models.page import page_content_defaults
+    defaults = page_content_defaults(brand or BRAND)
+    mapping = {
+        "instagram": ("social_instagram", "footer_instagram_url"),
+        "facebook": ("social_facebook", "footer_facebook_url"),
+        "youtube": ("social_youtube", "footer_youtube_url"),
+        "tiktok": ("social_tiktok", "footer_tiktok_url"),
+        "google": ("social_google", "footer_google_url"),
+    }
+    out = {}
+    for name, (layout_key, page_key) in mapping.items():
+        url = (get_layout(layout_key, brand) or _site_setting(page_key) or defaults.get(page_key) or "").strip()
+        if not url or url == "#":
+            url = DEFAULT_SOCIAL_URLS.get(name, "")
+        if url:
+            out[name] = url
+    return out
+
+
+def _social_footer_html(urls):
+    if not urls:
+        return ""
+    cells = []
+    for key, url in urls.items():
+        icon = SOCIAL_ICON_IMAGES.get(key)
+        if not icon:
+            continue
+        label = key.title()
+        cells.append(
+            '<td style="padding:0 12px;vertical-align:middle">'
+            '<a href="%s" title="%s" style="display:inline-block;text-decoration:none;line-height:0">'
+            '<img src="%s" alt="%s" width="32" height="32" '
+            'style="display:block;width:32px;height:32px;border:0;opacity:1">'
+            '</a></td>' % (_url_attr(url), _esc(label), _url_attr(icon), _esc(label))
+        )
+    return (
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+        'align="center" style="margin:0 auto 22px"><tr>' + "".join(cells) + "</tr></table>"
+    )
+
+
+def _order_details_html(tpl_key, ctx, rows):
+    order = ctx.get("order")
+    if tpl_key.startswith("order_") and order:
+        from app.services.order_details import order_email_html
+        return order_email_html(order)
+    if rows:
+        return _rows_html(rows)
+    return ""
+
+
+def tracking_url_for(order_number, external=True):
+    """Guest order tracking page URL."""
+    path = "/tracking/%s" % (order_number or "").strip()
+    if external:
+        try:
+            from flask import url_for
+            return url_for("tracking.tracking_number", number=order_number, _external=True)
+        except Exception:
+            return "https://fooddeliveryaudit.com" + path
+    return path
+
+
+def apply_premium_email_designs(brand=None, force=True):
+    """Refresh saved HTML bodies to the latest premium starter design."""
+    from app.extensions import db
+    brand = brand or BRAND
+    updated = 0
+    for _grp, _label, _icon, templates in EMAIL_TEMPLATE_GROUPS:
+        for tpl_key, _tpl_label, fields in templates:
+            if not any(f[0] == "html_body" for f in fields):
+                continue
+            key = _setting_key(tpl_key, "html_body")
+            new_html = default_html_starter(tpl_key)
+            row = SiteSetting.query.filter_by(key=key).first()
+            if force or not row or not (row.value or "").strip():
+                if row:
+                    row.value = new_html
+                else:
+                    db.session.add(SiteSetting(key=key, value=new_html))
+                updated += 1
+    db.session.commit()
+    return updated
+
+
 def html_shell(title, intro, rows=None, cta=None, footer_note=None, brand=None,
                hero_image=None, layout=None):
     brand = brand or BRAND
@@ -362,10 +500,12 @@ def html_shell(title, intro, rows=None, cta=None, footer_note=None, brand=None,
 
     if cta and cta[0] and cta[1]:
         parts.append(
-            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px">'
-            '<tr><td style="border-radius:10px;background:#FFC72C">'
-            '<a href="%s" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:800;'
-            'color:#141414;text-decoration:none">%s</a></td></tr></table>' % (_url_attr(cta[1]), _esc(cta[0])))
+            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px">'
+            '<tr><td align="center" style="border-radius:999px;background:#FFC72C;'
+            'box-shadow:0 8px 24px rgba(255,199,44,.35)">'
+            '<a href="%s" style="display:inline-block;padding:16px 36px;font-size:14px;font-weight:800;'
+            'letter-spacing:.06em;text-transform:uppercase;color:#141414;text-decoration:none">%s</a>'
+            '</td></tr></table>' % (_url_attr(cta[1]), _esc(cta[0])))
 
     if footer_note:
         parts.append(
@@ -378,6 +518,9 @@ def html_shell(title, intro, rows=None, cta=None, footer_note=None, brand=None,
     if footer_logo:
         parts.append('<img src="%s" alt="%s" width="96" style="display:block;margin:0 auto 12px;'
                        'max-width:96px;height:auto;border:0;opacity:.95">' % (_url_attr(footer_logo), _esc(brand)))
+    social_html = _social_footer_html(social_urls(brand))
+    if social_html:
+        parts.append(social_html)
     if footer_line1:
         parts.append('<p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#FFC72C">%s</p>'
                      % _esc(footer_line1))
@@ -433,11 +576,14 @@ def _cta_button_html(cta):
     if not cta or not cta[0] or not cta[1]:
         return ""
     return (
-        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px">'
-        '<tr><td style="border-radius:10px;background:#FFC72C">'
-        '<a href="%s" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:800;'
-        'color:#141414;text-decoration:none">%s</a></td></tr></table>'
-        % (_url_attr(cta[1]), _esc(cta[0])))
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px">'
+        '<tr><td align="center" style="border-radius:999px;background:#FFC72C;'
+        'box-shadow:0 8px 24px rgba(255,199,44,.35)">'
+        '<a href="%s" style="display:inline-block;padding:16px 36px;font-size:14px;font-weight:800;'
+        'letter-spacing:.06em;text-transform:uppercase;color:#141414;text-decoration:none">%s</a>'
+        '</td></tr></table>'
+        % (_url_attr(cta[1]), _esc(cta[0]))
+    )
 
 
 def _hero_image_html(url):
@@ -454,6 +600,7 @@ def merge_render_context(tpl_key, ctx, title, body, footer_note, hero_image, row
     """All placeholders available in custom HTML templates."""
     brand = brand or BRAND
     hero_url = abs_media(hero_image or "")
+    social = social_urls(brand)
     merged = dict(ctx, brand=brand, title=title, body=body, footer_note=footer_note or "",
                   hero_image_url=hero_url, hero_image=_hero_image_html(hero_image),
                   header_logo=abs_media(get_layout("header_logo", brand)),
@@ -461,8 +608,14 @@ def merge_render_context(tpl_key, ctx, title, body, footer_note, hero_image, row
                   footer_line1=format_text(get_layout("footer_line1", brand), dict(ctx, brand=brand)),
                   footer_line2=format_text(get_layout("footer_line2", brand), dict(ctx, brand=brand)),
                   footer_legal=format_text(get_layout("footer_legal", brand), dict(ctx, brand=brand)),
-                  details_table=_rows_html(rows),
-                  cta_button=_cta_button_html(cta))
+                  details_table=_order_details_html(tpl_key, ctx, rows),
+                  cta_button=_cta_button_html(cta),
+                  social_footer=_social_footer_html(social),
+                  instagram_url=social.get("instagram", ""),
+                  facebook_url=social.get("facebook", ""),
+                  youtube_url=social.get("youtube", ""),
+                  tiktok_url=social.get("tiktok", ""),
+                  google_url=social.get("google", ""))
     for i in range(1, 16):
         key = "img_%02d" % i
         merged[key] = abs_media(get_layout(key, brand))
@@ -474,6 +627,7 @@ def merge_render_context(tpl_key, ctx, title, body, footer_note, hero_image, row
         merged.setdefault("cta_label", "")
         merged.setdefault("cta_url", "")
         merged.setdefault("link", ctx.get("link") or "")
+    merged.setdefault("tracking_url", ctx.get("tracking_url") or merged.get("cta_url") or "")
     return merged
 
 

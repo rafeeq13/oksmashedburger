@@ -203,7 +203,9 @@ PAGE_CONTENT = [
         ("footer_legal", "Copyright line", "© 2026 {brand} · OK Brands, Philadelphia. All rights reserved."),
         ("footer_instagram_url", "Instagram link", "#"),
         ("footer_facebook_url", "Facebook link", "#"),
-        ("footer_youtube_url", "YouTube link", "#")]},
+        ("footer_youtube_url", "YouTube link", "#"),
+        ("footer_tiktok_url", "TikTok link", "#"),
+        ("footer_google_url", "Google / reviews link", "#")]},
     {"key": "chrome", "label": "Navigation & pop-ups", "url": "/", "fields": [
         ("nav_menu", "Nav | Menu", "Menu"),
         ("nav_deals", "Nav | Deals", "Deals"),

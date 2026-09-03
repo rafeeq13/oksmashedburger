@@ -59,12 +59,84 @@ def order_email_rows(order):
         if detail:
             value = "%s — %s" % (value, detail)
         rows.append((label, value))
-    from app.services.receipts import receipt_public_url
-    receipt_url = receipt_public_url(order)
-    if receipt_url:
-        rows.append(("Receipt PDF", receipt_url))
     rows.extend(order_charge_rows(order))
     return rows
+
+
+def order_email_html(order):
+    """Premium order breakdown block for HTML emails (no receipt link — PDF attached)."""
+    store_name = order.store.name if order.store else "—"
+    otype = (order.order_type or "delivery").title()
+    parts = [
+        '<div style="background:#faf9f7;border-radius:16px;padding:24px 22px;margin:0 0 24px;'
+        'border:1px solid #ebe8e0">',
+        '<div style="margin-bottom:18px">',
+        '<span style="display:inline-block;background:#141414;color:#FFC72C;padding:8px 16px;'
+        'border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em">',
+        _esc(order.number or ""), '</span>',
+        '</div>',
+        '<p style="margin:0 0 6px;font-size:13px;color:#777;line-height:1.5">',
+        '<strong style="color:#141414">%s</strong> · %s' % (_esc(store_name), _esc(otype)),
+        '</p>',
+    ]
+    if order.customer_name:
+        parts.append('<p style="margin:0 0 6px;font-size:13px;color:#777">%s</p>' % _esc(order.customer_name))
+    if order.address:
+        parts.append('<p style="margin:0;font-size:13px;color:#777">%s</p>' % _esc(order.address))
+
+    parts.append('<div style="margin-top:22px;padding-top:18px;border-top:1px solid #e3e0d8">')
+    for it in order.items:
+        detail = format_item_options(it)
+        item_label = _esc("%d× %s" % (it.qty, it.name))
+        line_price = _esc(_money(it.line_total))
+        parts.append(
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+            'style="margin-bottom:14px"><tr>'
+            '<td style="vertical-align:top;padding:0">'
+            '<div style="font-size:15px;font-weight:700;color:#141414;line-height:1.35">'
+            + item_label + '</div>'
+        )
+        if detail:
+            parts.append('<div style="font-size:12px;color:#888;margin-top:4px;line-height:1.5">%s</div>' % _esc(detail))
+        parts.append(
+            '</td><td align="right" style="vertical-align:top;padding:0 0 0 12px;'
+            'font-size:15px;font-weight:700;color:#141414;white-space:nowrap">'
+            + line_price + '</td></tr></table>'
+        )
+    parts.append('</div>')
+
+    charge_rows = order_charge_rows(order)
+    parts.append(
+        '<div style="margin-top:8px;padding:16px 14px 14px;border-top:2px solid #141414;'
+        'background:#f5f4f1;border-radius:0 0 12px 12px">'
+    )
+    for label, value in charge_rows:
+        if label == "Total":
+            continue
+        is_discount = str(value).startswith("−")
+        style_val = "font-size:14px;font-weight:700;color:#2a9d4b" if is_discount else "font-size:14px;font-weight:700;color:#141414"
+        parts.append(
+            '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+            'style="margin-bottom:6px"><tr>'
+            '<td style="font-size:14px;font-weight:500;color:#666">' + _esc(label) + '</td>'
+            '<td align="right" style="' + style_val + '">' + _esc(value) + '</td>'
+            '</tr></table>'
+        )
+    total_val = next((v for l, v in charge_rows if l == "Total"), _money(order.total))
+    parts.append(
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+        'style="margin-top:10px;background:#141414;border-radius:10px">'
+        '<tr><td style="padding:14px 16px;font-size:15px;font-weight:800;color:#ffffff">Total</td>'
+        '<td align="right" style="padding:14px 16px;font-size:20px;font-weight:800;color:#FFC72C">'
+        + _esc(total_val) + '</td></tr></table>'
+    )
+    parts.append('</div></div>')
+    return "".join(parts)
+
+
+def _esc(text):
+    from markupsafe import escape
+    return str(escape(text or "")).replace("\n", "<br>")
 
 
 def order_charge_rows(order):

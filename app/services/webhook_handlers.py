@@ -3,6 +3,7 @@ import base64
 import hashlib
 import hmac
 import json
+from datetime import datetime, timezone
 
 from flask import current_app
 
@@ -70,7 +71,12 @@ def _order_from_square_payload(payload):
 
 def _delivery_from_uber_payload(payload):
     delivery = payload.get("delivery") or payload.get("data") or payload
-    ref = (delivery.get("id") or delivery.get("delivery_id") or "").strip()
+    ref = (
+        delivery.get("id")
+        or delivery.get("delivery_id")
+        or payload.get("delivery_id")
+        or ""
+    ).strip()
     if ref:
         d = Delivery.query.filter_by(provider_ref=ref).first()
         if d:
@@ -84,17 +90,8 @@ def _delivery_from_uber_payload(payload):
 
 
 def _uber_status_map(status):
-    s = (status or "").strip().lower()
-    return {
-        "pending": "pending",
-        "pickup": "assigned",
-        "pickup_complete": "picked_up",
-        "dropoff": "picked_up",
-        "delivered": "delivered",
-        "canceled": "failed",
-        "cancelled": "failed",
-        "returned": "failed",
-    }.get(s)
+    from app.integrations.uber_gateway import map_uber_status
+    return map_uber_status(status)
 
 
 def _square_state_map(state):
@@ -229,7 +226,11 @@ def handle_uber(store, payload):
         db.session.commit()
         return {"ok": True, "ignored": True}
 
-    status = delivery_payload.get("status") or delivery_payload.get("delivery_status")
+    status = (
+        delivery_payload.get("status")
+        or delivery_payload.get("delivery_status")
+        or payload.get("status")
+    )
     mapped = _uber_status_map(status)
     if mapped:
         delivery.status = mapped
@@ -239,8 +240,10 @@ def handle_uber(store, payload):
     order = delivery.order
     if mapped == "picked_up" and order:
         order.status = "out_for_delivery"
+        delivery.picked_up_at = delivery.picked_up_at or datetime.now(timezone.utc)
     elif mapped == "delivered" and order:
         order.status = "completed"
+        delivery.delivered_at = delivery.delivered_at or datetime.now(timezone.utc)
     elif mapped == "failed" and order:
         prev = order.status
         order.status = "cancelled"
