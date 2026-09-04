@@ -9,13 +9,13 @@ from app.services.receipts import build_receipt_attachment
 
 # order status -> (SMS body template, template key for email)
 _SMS = {
-    "placed": "We got your order {n}! {store} will confirm it shortly. — {b}",
-    "confirmed": "Order {n} is confirmed at {store}. We'll keep you posted. — {b}",
+    "placed": "We got your order {n}! {store} will confirm it shortly. | {b}",
+    "confirmed": "Order {n} is confirmed at {store}. We'll keep you posted. | {b}",
     "preparing": "{b}: order {n} is now being prepared at {store}.",
-    "ready": "Order {n} is ready at {store}. See you soon! — {b}",
-    "out_for_delivery": "Order {n} is out for delivery from {store}. Track it in your account. — {b}",
-    "completed": "Order {n} complete — enjoy! Thanks for choosing {b}.",
-    "cancelled": "Order {n} at {store} was cancelled. Reply or call us with any questions. — {b}",
+    "ready": "Order {n} is ready at {store}. See you soon! | {b}",
+    "out_for_delivery": "Order {n} is out for delivery from {store}. Track it in your account. | {b}",
+    "completed": "Order {n} complete, enjoy! Thanks for choosing {b}.",
+    "cancelled": "Order {n} at {store} was cancelled. Reply or call us with any questions. | {b}",
 }
 
 

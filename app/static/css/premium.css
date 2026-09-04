@@ -1,5 +1,5 @@
 /* =========================================================
-   OK Smashed Burger — PREMIUM LAYER
+   OK Smashed Burger, PREMIUM LAYER
    Loaded AFTER style.css on the storefront (layouts/base.html)
    and inside the GrapesJS canvas so the builder previews match.
 
@@ -240,7 +240,7 @@ p {
 }
 
 /* ---------------------------------------------------------
-   4. BUTTONS — one primary style, premium feedback
+   4. BUTTONS | one primary style, premium feedback
    --------------------------------------------------------- */
 .btn {
   position: relative;
@@ -590,7 +590,7 @@ p {
 }
 
 /* ---------------------------------------------------------
-   7. FORMS — luxury inputs, floating labels, validation
+   7. FORMS | luxury inputs, floating labels, validation
    --------------------------------------------------------- */
 .ok-stripe-field {
   display: flex;
@@ -1137,7 +1137,7 @@ input[type="radio"] {
   color: #fff;
 }
 
-/* Carousel dots — bottom right so they never collide with the scroll cue */
+/* Carousel dots | bottom right so they never collide with the scroll cue */
 .ok-dots {
   position: absolute;
   right: clamp(1rem, 4vw, 2.5rem);
@@ -1231,7 +1231,7 @@ input[type="radio"] {
   pointer-events: auto;
 }
 
-/* Luxury preloader — only ever shown while html.ok-loading is set */
+/* Luxury preloader | only ever shown while html.ok-loading is set */
 #okLoader {
   display: none;
 }
@@ -1497,7 +1497,7 @@ html.ok-loading {
 }
 
 /* ---------------------------------------------------------
-   13. REDUCED MOTION — full kill switch
+   13. REDUCED MOTION | full kill switch
    --------------------------------------------------------- */
 @media (prefers-reduced-motion:reduce) {
 
@@ -1888,9 +1888,9 @@ html.ok-loading {
 
 /* Every popup enters from the LEFT and leaves to the RIGHT. The panel is the
    modal's only child, so it carries the movement while the wrapper handles the
-   fade. `.is-closing` is what makes the exit go the other way — without it the
+   fade. `.is-closing` is what makes the exit go the other way | without it the
    panel would just retrace its entrance. app.js (showModal) sets both. */
-/* The panel does NOT fade — only the wrapper does, and quickly — so what you
+/* The panel does NOT fade | only the wrapper does, and quickly | so what you
    actually see is the travel. Fading the panel as well washed the slide out
    into "it just appeared". */
 .ok-modal > * {
@@ -2232,7 +2232,7 @@ html.ok-loading {
 .ok-btn-onyellow:active{ background:#000; color:#fff; border-color:#000; }
 
 /* ---------------------------------------------------------
-   FORM FIELDS — site-wide, no yellow anywhere.
+   FORM FIELDS | site-wide, no yellow anywhere.
    Neutral 1px border at rest; hover, focus and active all give
    the same black 1px border and nothing else. The gold glow ring
    and the gold floating label are gone.
@@ -2347,7 +2347,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 }
 
 /* ---------------------------------------------------------
-   HERO TEXT — one colour, readable on any photo.
+   HERO TEXT | one colour, readable on any photo.
    Some heroes used text-white/55, /60, /80 utilities, which carry
    !important and left the copy washed out. Every heading and
    paragraph in a hero is now pure white with a four-sided 1px
@@ -2364,7 +2364,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
      contrast), and the white glow spreads out behind it. The result reads as
      lit type rather than flat white pasted on a photo. */
   text-shadow:
-    /* 1. tight dark contact on all four sides — the contrast workhorse, and
+    /* 1. tight dark contact on all four sides | the contrast workhorse, and
           what keeps the type readable over a bright bun as well as a dark room */
      0  1px 2px rgba(0,0,0,.78),
      0 -1px 2px rgba(0,0,0,.66),
@@ -2607,7 +2607,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   color: #fff;
 }
 
-/* The fixed bar would otherwise sit on top of the end of the footer — the
+/* The fixed bar would otherwise sit on top of the end of the footer | the
    height plus the gap it now stands off the bottom. */
 @media (max-width: 991.98px){
   body:has(.ok-mobile-order){
@@ -2658,7 +2658,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 }
 
 /* The About hero's veil (z-index:1) was painting OVER its heading, because the
-   content wrapper had position:relative but no z-index of its own — so "About
+   content wrapper had position:relative but no z-index of its own | so "About
    Us" was being viewed through the scrim and read grey instead of white. Page
    heroes already lift their container to z-index:2; match that here. */
 .ok-abt-hero > .ok-container{ position: relative; z-index: 2; }
@@ -2668,13 +2668,13 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
    A gloss highlight travelling across the type. The fill is a wide
    gradient clipped to the glyphs, and only its position animates, so
    nothing reflows and the four-layer shadow underneath still carries
-   the contrast. The base tone sits a touch below pure white — white
+   the contrast. The base tone sits a touch below pure white | white
    is the ceiling, so a brighter band is only visible if the rest of
    the letter is slightly under it.
    --------------------------------------------------------- */
 /* Stay inside 0%–100%. Background percentages position the image *within* the
    element, so anything outside that range slides a `no-repeat` 300%-wide
-   gradient clean off the box — the fill then resolves to transparent and the
+   gradient clean off the box | the fill then resolves to transparent and the
    dark text-shadow shows straight through the glyphs. */
 @keyframes okHeroShine{
   0%   { background-position: 100% 0; }
@@ -2700,7 +2700,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   animation: okHeroShine 4.5s linear infinite;
 
   /* A background-clip:text fill lives in the BACKGROUND layer, which paints
-     below text-shadow — so the dark halo covered the gloss and the glyphs
+     below text-shadow | so the dark halo covered the gloss and the glyphs
      came out black. drop-shadow filters the composited result instead, so the
      shine stays on top and still sits on its dark halo. */
   text-shadow: none;
@@ -2710,7 +2710,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 }
 
 /* stagger the sweep so a headline and its supporting line do not flash
-   in lockstep — it reads as light moving across the block */
+   in lockstep | it reads as light moving across the block */
 .ok-pagehero p,
 .ok-hero-sub{ animation-delay: -1.6s; }
 .ok-pagehero .ok-eyebrow,
@@ -2755,7 +2755,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 }
 
 /* ---------------------------------------------------------
-   FOOTER TEXT — full white
+   FOOTER TEXT | full white
    Every string in the footer was a faded white (.45 / .55 / .60 alpha),
    so the column links, the blurb and the copyright line all read as grey
    on the dark panel. They are pure white now; the utilities themselves are
@@ -2777,7 +2777,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 
 /* Subscribe stays black-on-yellow, and black-on-white when hovered.
    The blanket white-text rule above had turned the label white in the hover
-   state — and .ok-btn-subscribe's hover background is white, so the word
+   state | and .ok-btn-subscribe's hover background is white, so the word
    disappeared completely. Black in every state. */
 .ok-footer .btn-primary,
 .ok-footer .btn-primary span,
@@ -2791,7 +2791,7 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 .ok-footer input{ color: var(--ok-ink) !important; }
 .ok-footer input::placeholder{ color: var(--ok-slate) !important; }
 
-/* the dividers were white at 10% too — lift them so the sections read */
+/* the dividers were white at 10% too | lift them so the sections read */
 .ok-footer .border-w-10{ border-color: rgba(255,255,255,.22) !important; }
 
 /* ---------------------------------------------------------
@@ -2829,11 +2829,11 @@ input[type="password"], input[type="search"], textarea, select{
   border-radius: var(--r-control);
 }
 
-/* pills stay pills — chips, avatars and icon buttons are meant to be round */
+/* pills stay pills | chips, avatars and icon buttons are meant to be round */
 .chip, .badge, .rounded-pill, .ok-iconbtn, .chip-thumb{ border-radius: 9999px; }
 
 /* ---------------------------------------------------------
-   ONE TYPE SYSTEM — the home page is the reference
+   ONE TYPE SYSTEM | the home page is the reference
    Four competing sets had grown up: the home sections
    (.ok-title / .ok-subtitle / .ok-card-title / .ok-card-text),
    the inner pages (.ok-h2 + "font-display fw-bold ok-fs-lg"),
@@ -2907,14 +2907,14 @@ article.ok-card > h3,
   color: #000 !important;
 }
 
-/* On phones the magnifier stays where it belongs — in the icon group on the
+/* On phones the magnifier stays where it belongs | in the icon group on the
    right. It is only the OPEN field that centres itself across the bar. */
 @media (max-width: 767.98px){
   .hdr-search .search-panel > div,
 .hdr-search .search-panel > form{
     justify-content: center;
   }
-  /* the input carries Bootstrap's .w-100, which is !important — without
+  /* the input carries Bootstrap's .w-100, which is !important | without
      matching that it keeps filling the row and nothing can centre. */
   .hdr-search .search-panel input[data-search-input]{
     width: auto !important;
@@ -2924,7 +2924,7 @@ article.ok-card > h3,
 }
 
 /* ---------------------------------------------------------
-   SECTION HEADINGS — one step down
+   SECTION HEADINGS | one step down
    The shared scale peaked at 2.9rem (46px), which read as a page
    title rather than a section label. Down to 2.2rem (35px) max.
    Applied to .ok-title as well, not just the aliases: shrinking
@@ -3004,7 +3004,7 @@ button:focus, button:focus-visible,
               background-color var(--t-fast) var(--e-out);
 }
 
-/* the timing pair carries a second line (and a date field), so it grows —
+/* the timing pair carries a second line (and a date field), so it grows , 
    but both halves of the row grow together */
 .ok-choice--stack{
   display: flex;
@@ -3027,7 +3027,7 @@ button:focus, button:focus-visible,
    NO BLUE ON CLICK
    Bootstrap paints :active from --bs-btn-active-bg, and its
    selectors (.btn:first-child:active, :not(.btn-check)+.btn:active)
-   are specificity 0,3,0 — they outrank our own 0,2,0 :active rules,
+   are specificity 0,3,0 - they outrank our own 0,2,0 :active rules,
    so a click flashed Bootstrap blue (#0a58ca on primary, #565e64 on
    secondary, #4d5154 on dark) before settling back.
    Fixing the variables kills it at the source, for every path
@@ -3088,7 +3088,7 @@ button:focus, button:focus-visible,
   .ok-sharerow > .btn{ width: 100%; }
 }
 
-/* the share row is laid out here, not by utilities — see the note in
+/* the share row is laid out here, not by utilities | see the note in
    rewards.html: Bootstrap's d-flex is !important and blocked the grid */
 .ok-sharerow{
   display: flex;
@@ -3107,7 +3107,7 @@ button:focus, button:focus-visible,
    REVIEWS
    --------------------------------------------------------- */
 
-/* Carousel arrows were desktop-only (d-none d-md-grid), which is backwards —
+/* Carousel arrows were desktop-only (d-none d-md-grid), which is backwards , 
    a phone is exactly where people need a hint that the row scrolls. They sit
    inside the track on small screens so they never hang off the viewport. */
 .ok-carobtn{
@@ -3124,7 +3124,7 @@ button:focus, button:focus-visible,
 .ok-caro-next{ right: -1.25rem; }
 /* Keep the arrows clear of the cards at EVERY width. Nudging the buttons
    further out only works on a wide screen, so the row reserves the space
-   instead — the first card can then never sit under the previous button. */
+   instead | the first card can then never sit under the previous button. */
 .ok-caro--gutter > [id]{
   padding-inline: 2.5rem;
   scroll-padding-inline: 2.5rem;
@@ -3151,7 +3151,7 @@ button:focus, button:focus-visible,
 .ok-stars-pick input:checked ~ label{ color: var(--ok-yellow); }
 .ok-stars-pick input:focus-visible + label{ outline: 2px solid var(--ok-ink); outline-offset: 2px; }
 
-/* Initials avatar — the fallback when a customer has not uploaded a photo.
+/* Initials avatar | the fallback when a customer has not uploaded a photo.
    Previously a random stock face was pulled in, which put a stranger's
    portrait next to somebody's real name. */
 .ok-avatar{
@@ -3189,7 +3189,7 @@ button:focus, button:focus-visible,
 
 /* Catering package price.
    It was one 3xl string, so "$14 / person" put "/ person" at headline size
-   and "Custom quote" became the loudest thing in the section — three cards
+   and "Custom quote" became the loudest thing in the section | three cards
    that are meant to read as equals did not. */
 .ok-cater-price{
   font-family: 'Poppins', sans-serif;
@@ -3205,7 +3205,7 @@ button:focus, button:focus-visible,
   font-size: .95rem;
   color: var(--ok-slate);
 }
-/* a phrase, not a figure — sized so it sits level with the numbers */
+/* a phrase, not a figure | sized so it sits level with the numbers */
 .ok-cater-words{
   font-weight: 800;
   font-size: clamp(1.2rem, 2vw, 1.4rem);
@@ -3393,7 +3393,7 @@ button:focus, button:focus-visible,
 }
 
 /* Google / Yelp ratings: the pill chrome goes, the label and stars stay.
-   Only the background, border and blur are removed — spacing is kept so the
+   Only the background, border and blur are removed | spacing is kept so the
    two still read as two separate ratings. */
 .ok-rating-pill,
 .ok-rating-pill:hover{
@@ -3407,7 +3407,7 @@ button:focus, button:focus-visible,
 .ok-hero-ratings{ gap:1.75rem !important; }
 
 /* Deals cards: body copy reads black, and the green "no code needed" line
-   goes black on hover — the hover fill is yellow, so white was unreadable. */
+   goes black on hover | the hover fill is yellow, so white was unreadable. */
 .ok-dealcard .ok-fs-sm,
 .ok-dealcard .ok-fs-xs,
 .ok-dealcard p,
@@ -3422,16 +3422,16 @@ button:focus, button:focus-visible,
    Done through the COLOUR TOKENS, not a blanket element sweep.
    The sweep version had to repaint every h/p/span/label and then
    undo itself on the hero, the ink bands, the footer, dark cards
-   and every active pill — and each new exception broke an older
+   and every active pill | and each new exception broke an older
    one. Recolouring the two greys instead means white-on-dark
    markup (.text-white, .text-w-*, .bg-ink pills) is never touched
    and needs no exception at all.
    --------------------------------------------------------- */
 :root{
-  --ok-jet:#000;          /* was #141414 — headings, body, ink surfaces */
-  --ok-ink:#000;          /* was #0E0E0E — the premium heading colour */
-  --ok-slate:#000;        /* was #6B6B6B — muted copy */
-  --ok-lux-gray:#000;     /* was #8A8480 — premium muted copy */
+  --ok-jet:#000;          /* was #141414 - headings, body, ink surfaces */
+  --ok-ink:#000;          /* was #0E0E0E - the premium heading colour */
+  --ok-slate:#000;        /* was #6B6B6B - muted copy */
+  --ok-lux-gray:#000;     /* was #8A8480 - premium muted copy */
 }
 
 /* the few classes that hard-code a grey instead of using a token */
@@ -3476,7 +3476,7 @@ label i.text-gold, label i.text-yellow,
   color:inherit !important;
 }
 
-/* Deals cards: the CTA is outlined, not filled — white with a black border and
+/* Deals cards: the CTA is outlined, not filled | white with a black border and
    black label, inverting to black-on-white text on hover. Scoped to the deal
    card so the brand's yellow .btn-primary is untouched everywhere else. */
 .ok-dealcard .btn.btn-primary{
@@ -3526,13 +3526,13 @@ label i.text-gold, label i.text-yellow,
 
 /* Store status line: the WORD carries the warning (red), the detail beside it
    is just detail. It was brand yellow, which is unreadable on the white store
-   cards in the location picker — black keeps the two apart and stays legible.
+   cards in the location picker | black keeps the two apart and stays legible.
    On the locations page the row's yellow hover fill already blacks everything
    in that column, so this holds there too. */
 .ok-status-rest{ color:#000 !important; }
 
 /* ---------------------------------------------------------
-   PHONE SEARCH BAR — magnifier hard left, close hard right
+   PHONE SEARCH BAR | magnifier hard left, close hard right
    Both icons were sitting in the middle of the pill with the
    input squeezed between them, so neither read as a control.
    They anchor to the two ends now and the field takes what is
@@ -3634,8 +3634,8 @@ input[type="datetime-local"]::-webkit-date-and-time-value{
 
 /* ---------------------------------------------------------
    CARD FLAG ("Popular" / "Sold out")
-   Sits astride the card's top edge — half above the border,
-   half below — instead of floating inside the photo. White
+   Sits astride the card's top edge | half above the border,
+   half below | instead of floating inside the photo. White
    fill and black text so it reads on any image behind it.
    --------------------------------------------------------- */
 .ok-cardflag{
@@ -3669,7 +3669,7 @@ input[type="datetime-local"]::-webkit-date-and-time-value{
 
 /* ---------------------------------------------------------
    NO NATIVE BLUE ON A TAPPED BUTTON
-   The palette rules were already correct — hover, focus and
+   The palette rules were already correct | hover, focus and
    active all resolve to black. The blue was the browser's own
    painting: iOS Safari gives <button type="submit"> a native
    appearance with a system highlight, and Chrome draws its
@@ -3687,7 +3687,7 @@ button:focus, button:active{
   outline: none;
   box-shadow: none;
 }
-/* keyboard focus stays visible — and is yellow, never blue */
+/* keyboard focus stays visible | and is yellow, never blue */
 .btn:focus-visible,
 button:focus-visible,
 a:focus-visible{
@@ -3741,14 +3741,14 @@ a:focus-visible{
   color: #fff !important;
 }
 
-/* keyboard users still get a visible ring — yellow, on the outside */
+/* keyboard users still get a visible ring | yellow, on the outside */
 .btn:focus-visible{
   outline: 2px solid var(--ok-yellow) !important;
   outline-offset: 2px;
 }
 
 /* ---------------------------------------------------------
-   FOCUS RING — never the browser's blue
+   FOCUS RING | never the browser's blue
    Chrome's UA sheet paints :focus-visible with
    `outline: -webkit-focus-ring-color auto 1px`, and that colour
    is system blue. Setting `outline: none` alone has proved
@@ -3776,7 +3776,7 @@ button:active,
   box-shadow: none !important;
 }
 
-/* keyboard users still get a ring — drawn with box-shadow, so the UA
+/* keyboard users still get a ring | drawn with box-shadow, so the UA
    stylesheet has nothing to contribute and nothing to colour blue */
 .btn:focus-visible,
 button:focus-visible,
@@ -3802,7 +3802,7 @@ a:focus-visible{
      1. CSS variables   (--bs-blue, --bs-primary, link colours,
                          button hover/active, focus ring)
      2. HARD-CODED hex  (.form-control:focus uses #86b7fe and
-                         rgba(13,110,253,.25) directly — no
+                         rgba(13,110,253,.25) directly | no
                          variable to override, so the rules
                          themselves have to be restated)
      3. UA focus ring   (-webkit-focus-ring-color, handled above)
@@ -3835,7 +3835,7 @@ a:focus-visible{
   --bs-pagination-active-border-color: var(--ok-ink);
 }
 
-/* 2. the hard-coded ones — restated, because there is no variable */
+/* 2. the hard-coded ones | restated, because there is no variable */
 .form-control:focus,
 .form-select:focus,
 .form-check-input:focus,
@@ -3870,8 +3870,8 @@ input, textarea, select, [contenteditable]{ caret-color: var(--ok-ink); }
    FORCE THE LIGHT UI PALETTE
    Without `color-scheme`, a browser running in dark mode
    renders every NATIVE part of the page from its own dark
-   theme — button press states, form fields, focus rings,
-   scrollbars, select popups — and Chrome's dark accent is
+   theme | button press states, form fields, focus rings,
+   scrollbars, select popups | and Chrome's dark accent is
    blue. No stylesheet rule can reach those; they are painted
    by the browser, which is why the CSS scanned clean while
    blue was still showing on screen.
@@ -3902,7 +3902,7 @@ input, select, textarea, button, progress, meter{
    painted by the browser rather than by any rule:
 
      1. the focus ring only covered .btn / button / a, so form
-        fields still got Chrome's own — which is blue
+        fields still got Chrome's own | which is blue
      2. autofill was never handled at all; Chrome repaints an
         autofilled field with its own background and text colour
    ═════════════════════════════════════════════════════════ */
@@ -3952,13 +3952,13 @@ input[type="search"]::-webkit-search-cancel-button{
 }
 
 /* ═════════════════════════════════════════════════════════
-   .ok-cta — the Add-to-cart button, built from scratch
+   .ok-cta | the Add-to-cart button, built from scratch
    It used to be `btn btn-primary btn-lg`, which drags in the
    whole Bootstrap button engine: ~30 --bs-btn-* variables and
    the :hover / :active / :focus-visible rules that read them.
    Every one of those was a way for blue to come back.
    This carries no Bootstrap class at all, so none of that
-   applies — every state below is the only thing that can win.
+   applies | every state below is the only thing that can win.
    ═════════════════════════════════════════════════════════ */
 .ok-cta{
   /* reset anything the UA or a framework might contribute */
@@ -4023,7 +4023,7 @@ input[type="search"]::-webkit-search-cancel-button{
    QUANTITY STEPPER
    The cart built its own version of this control out of
    utility classes, so it drifted from the one on the menu.
-   Both use .qty now — including inside the little forms the
+   Both use .qty now | including inside the little forms the
    cart needs to POST each change.
    --------------------------------------------------------- */
 .qty{
@@ -4080,7 +4080,7 @@ input[type="search"]::-webkit-search-cancel-button{
    spec, a grid/flex item whose overflow is not `visible` gets
    an automatic minimum size of zero. Without it the card fell
    back to min-width:auto and grew to the intrinsic width of
-   its longest line — 919px inside a 390px phone, which pushed
+   its longest line, 919px inside a 390px phone, which pushed
    the photo off screen.
 
    min-width:0 restores exactly that containment, without
@@ -4104,7 +4104,7 @@ input[type="search"]::-webkit-search-cancel-button{
    FORM FIELDS: NO YELLOW BORDER
    The focus ring that was added while chasing Chrome's blue
    was drawn in the brand yellow, so every field picked up a
-   yellow outline on focus — most visibly on the wrapper-style
+   yellow outline on focus | most visibly on the wrapper-style
    fields (checkout address, header search), where the ring
    hugged the bare inner input inside its shell.
 
@@ -4153,7 +4153,7 @@ label.ok-input:focus-within,
   box-shadow: none !important;
 }
 
-/* checkbox and radio are round/small — a 4px square ring around them read
+/* checkbox and radio are round/small | a 4px square ring around them read
    as a stray yellow box. A tight neutral ring instead. */
 input[type="checkbox"]:focus-visible,
 input[type="radio"]:focus-visible{
@@ -4212,7 +4212,7 @@ input[type="radio"]:focus-visible{
 [data-addon].is-on .qty.qty-sm{ border-color: var(--ok-ink); }
 [data-addon].is-invalid{ border: 1px solid var(--ok-red) !important; }
 
-/* Menu store bar — change-location / change-time links read as CTAs */
+/* Menu store bar | change-location / change-time links read as CTAs */
 .ok-menu-cta{
   color: var(--ok-red, #C62828);
   text-decoration: underline;
@@ -4235,7 +4235,7 @@ input[type="radio"]:focus-visible{
 .ok-trk-map{ position:relative; aspect-ratio:16/9; min-height:220px; background:#f5f0e8; }
 .ok-trk-map iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
 
-/* Admin modifier rows — compact section + controls inline */
+/* Admin modifier rows | compact section + controls inline */
 .ok-addon-row__meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem; margin-bottom:.5rem; }
 .ok-addon-row__controls{ display:flex; flex-wrap:nowrap; align-items:center; gap:.4rem; }
 .ok-addon-section-select{
@@ -4278,7 +4278,7 @@ input[type="radio"]:focus-visible{
   .ok-addon-row__controls, .ok-modsec-row{ flex-wrap:wrap !important; }
 }
 
-/* News page — uploaded card photos fill the 16:10 frame */
+/* News page | uploaded card photos fill the 16:10 frame */
 .ok-news-card-img{ object-fit: cover; object-position: center; }
 
 /* Account sidebar: horizontal scroll tabs on mobile, vertical on desktop */
@@ -4422,8 +4422,8 @@ input[type="radio"]:focus-visible{
    The banners were sized by whatever copy happened to be in
    them, so /about came out at 480px and /catering at 819px on
    the same screen. The Contact banner is the reference, and
-   this reproduces its measured height — 345 / 467 / 482 at
-   390 / 1440 / 1920 — as one token every inner page uses.
+   this reproduces its measured height - 345 / 467 / 482 at
+   390 / 1440 / 1920 - as one token every inner page uses.
    The home page keeps its own full-bleed carousel.
    ═════════════════════════════════════════════════════════ */
 :root{ --ok-hero-h: clamp(21.5rem, 18rem + 12vw, 30rem); }
@@ -4447,7 +4447,7 @@ input[type="radio"]:focus-visible{
    "More" used to dump its links straight into the list, so the
    drawer opened long enough to scroll. It is a disclosure now:
    closed by default, chevron turning as it opens. The order and
-   location buttons underneath are never collapsed — they are the
+   location buttons underneath are never collapsed | they are the
    two things someone opens this drawer to do.
    ═════════════════════════════════════════════════════════ */
 .ok-navgroup{
@@ -4490,8 +4490,8 @@ input[type="radio"]:focus-visible{
 
 /* ═════════════════════════════════════════════════════════
    CATERING + FRANCHISE: A BIGGER TITLE ON WIDE SCREENS
-   These two are full-bleed statement bands — half photo, half
-   copy — so their headline has far more room around it than
+   These two are full-bleed statement bands | half photo, half
+   copy | so their headline has far more room around it than
    the ordinary section headings that share .ok-title. Above
    1300px it steps up; everything else, and every narrower
    screen, is untouched.
@@ -4511,7 +4511,7 @@ input[type="radio"]:focus-visible{
 .pac-item:hover{ background: #faf8f3; }
 .pac-icon{ display: none; }
 
-/* Address search — single ok-input + custom Places dropdown */
+/* Address search | single ok-input + custom Places dropdown */
 .ok-address-search-wrap{ position: relative; }
 .ok-address-predictions{
   position: absolute;

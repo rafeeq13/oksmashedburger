@@ -79,7 +79,7 @@ def main():
         user = User.query.filter(User.email.isnot(None)).first()
         if not user:
             user = User(email=to, first_name="Test", last_name="User")
-        user.email = to  # don't persist — just for template context
+        user.email = to  # don't persist | just for template context
 
         def record(name, res=None, exc=None):
             if exc:
@@ -147,7 +147,7 @@ def main():
                 message="This is a test contact form submission for SMTP verification.",
             )
             mailer.contact_received(msg, store=store)
-            # contact_received sends 2 emails — check last notification rows
+            # contact_received sends 2 emails | check last notification rows
             record("contact_received (business + ack)", {"status": "sent"})
         except Exception as e:
             record("contact_received", exc=e)
@@ -162,7 +162,7 @@ def main():
                 "link": link,
             }
             subj_tpl, plain, html = et.render("newsletter", ctx, cta_href=_abs("/menu"))
-            res = mailer.send(to, "TEST newsletter — " + subj_tpl, plain,
+            res = mailer.send(to, "TEST newsletter - " + subj_tpl, plain,
                               html=html, event="newsletter", store=store)
             record("newsletter", res)
         except Exception as e:

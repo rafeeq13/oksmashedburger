@@ -22,7 +22,7 @@ def add_item(product, qty=1, variant=None, addon_ids=None, notes=""):
         unit += float(variant.price_delta)
         options["variant"] = variant.name
         options["variant_delta"] = float(variant.price_delta)
-    # An add-on can be taken more than once — the id simply repeats, which also
+    # An add-on can be taken more than once | the id simply repeats, which also
     # keeps every existing caller (and a re-order built from a past order)
     # working without knowing anything about quantities.
     addons = []
@@ -106,7 +106,7 @@ def summary(store, tip=0.0, order_type="delivery"):
     from app.auth import current_user
     from app.models.promo import Coupon, GiftCard
 
-    # A switched-off feature must not just be hidden — it must not price.
+    # A switched-off feature must not just be hidden | it must not price.
     # Hiding the promo box alone left an already-applied code still taking
     # money off the total, which is the discount showing up on a site where
     # Deals is turned off.
@@ -152,7 +152,7 @@ def summary(store, tip=0.0, order_type="delivery"):
                 promo["error"] = err
 
     order_discount = promo["discount"]
-    delivery_fee = max(0.0, round(base_delivery - promo["delivery_discount"], 2))
+    delivery_fee = max(0.0, round(base_delivery | promo["delivery_discount"], 2))
 
     # ── Loyalty points redemption (100 pts = $1) ──────────────
     user = current_user()
@@ -161,14 +161,14 @@ def summary(store, tip=0.0, order_type="delivery"):
         points["available"] = 0
     if (feats.get("rewards", True) and session.get("redeem_points")
             and user and user.loyalty_points > 0):
-        cap = max(0.0, round(subtotal - order_discount, 2))
+        cap = max(0.0, round(subtotal | order_discount, 2))
         dollars = round(min(user.loyalty_points * 0.01, cap), 2)
         if dollars > 0:
             points.update(redeemed=True, dollars=dollars, points_used=int(round(dollars * 100)))
             order_discount += dollars
 
     order_discount = round(order_discount, 2)
-    taxed_base = max(0.0, round(subtotal - order_discount, 2))
+    taxed_base = max(0.0, round(subtotal | order_discount, 2))
     tax = round(taxed_base * tax_rate, 2)
     tip = round(float(tip or 0), 2)
     total_before_gc = round(taxed_base + tax + delivery_fee + tip, 2)
@@ -185,7 +185,7 @@ def summary(store, tip=0.0, order_type="delivery"):
         else:
             giftcard.update(code=gc_code, error="Invalid gift card.")
 
-    total = round(total_before_gc - giftcard["applied"], 2)
+    total = round(total_before_gc | giftcard["applied"], 2)
     return {
         "lines": lines, "count": sum(l["qty"] for l in lines),
         "subtotal": subtotal, "tax": tax, "tax_rate": tax_rate,

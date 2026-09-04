@@ -1,4 +1,4 @@
-"""Site-level email (no order attached) — sent via each store's SMTP.
+"""Site-level email (no order attached), sent via each store's SMTP.
 
 Order status mail lives in notifications.py. Template copy is editable in
 /admin/email-templates; delivery uses /admin/integrations → SMTP.
@@ -73,7 +73,7 @@ def _abs(path):
 
 def contact_received(msg, store=None):
     kind = msg.subject or "Enquiry"
-    rows = [("From", msg.name or "—"), ("Email", msg.email or "—"),
+    rows = [("From", msg.name or "n/a"), ("Email", msg.email or "n/a"),
             ("Order number", msg.order_number), ("Message", msg.message)]
     store_name = store.name if store else et.BRAND
 
@@ -152,7 +152,7 @@ def gift_card_issued(gc):
 
 
 def send_test(to, store=None):
-    """Admin SMTP connectivity check — uses the HTML email template."""
+    """Admin SMTP connectivity check, uses the HTML email template."""
     store = sending_store(store)
     if not smtp_gateway.is_enabled(store):
         return {"status": "failed", "raw": {"error": "Enable SMTP and save host + from email first."}}
@@ -160,8 +160,8 @@ def send_test(to, store=None):
     loc = store.name if store else et.BRAND
     rows = [
         ("Location", loc),
-        ("SMTP host", cfg.get("smtp_host") or "—"),
-        ("From", cfg.get("from_email") or "—"),
+        ("SMTP host", cfg.get("smtp_host") or "n/a"),
+        ("From", cfg.get("from_email") or "n/a"),
     ]
     ctx = {"store": loc}
     subj, plain, html = et.render("smtp_test", ctx, rows=rows)

@@ -205,7 +205,7 @@ def refund_payment(store, intent_id, amount=None, currency="usd"):
 
 
 def charge(store, amount, currency="usd", metadata=None):
-    """Legacy server-side charge — prefer create_payment_intent + verify_payment_intent."""
+    """Legacy server-side charge - prefer create_payment_intent + verify_payment_intent."""
     cfg = store_stripe_config(store)
     account = cfg.get("account_id")
 

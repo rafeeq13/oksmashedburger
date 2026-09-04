@@ -1,4 +1,4 @@
-"""Shared order breakdown — same numbers everywhere (Stripe, Square, emails, Uber)."""
+"""Shared order breakdown | same numbers everywhere (Stripe, Square, emails, Uber)."""
 from decimal import Decimal
 
 
@@ -45,7 +45,7 @@ def order_email_rows(order):
     store = order.store
     rows = [
         ("Order number", order.number),
-        ("Store", store.name if store else "—"),
+        ("Store", store.name if store else "n/a"),
         ("Type", (order.order_type or "delivery").title()),
     ]
     if order.customer_name:
@@ -57,15 +57,15 @@ def order_email_rows(order):
         label = "%d× %s" % (it.qty, it.name)
         value = _money(it.line_total)
         if detail:
-            value = "%s — %s" % (value, detail)
+            value = "%s | %s" % (value, detail)
         rows.append((label, value))
     rows.extend(order_charge_rows(order))
     return rows
 
 
 def order_email_html(order):
-    """Premium order breakdown block for HTML emails (no receipt link — PDF attached)."""
-    store_name = order.store.name if order.store else "—"
+    """Premium order breakdown block for HTML emails (no receipt link, PDF attached)."""
+    store_name = order.store.name if order.store else "n/a"
     otype = (order.order_type or "delivery").title()
     parts = [
         '<div style="background:#faf9f7;border-radius:16px;padding:24px 22px;margin:0 0 24px;'
@@ -186,7 +186,7 @@ def _stripe_items_metadata(order):
 
 
 def payment_metadata(order, extra=None):
-    """Stripe / provider metadata — charges, customer, delivery, items."""
+    """Stripe / provider metadata, charges, customer, delivery, items."""
     meta = {
         "order_number": order.number or "",
         "store": order.store.slug if order.store else "",

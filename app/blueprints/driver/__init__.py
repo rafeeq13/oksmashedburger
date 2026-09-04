@@ -1,4 +1,4 @@
-"""Driver app view — assigned deliveries, status updates, proof of delivery (SRS FR-8.4)."""
+"""Driver app view | assigned deliveries, status updates, proof of delivery (SRS FR-8.4)."""
 from datetime import datetime, timezone
 
 from flask import Blueprint, render_template, request, redirect, abort

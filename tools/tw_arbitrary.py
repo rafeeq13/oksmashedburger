@@ -95,7 +95,7 @@ def plain_value(tok):
 
 ARB = re.compile(r"^(-?)([a-z-]+)\[([^\]]+)\]$")
 RESP = re.compile(r"^(sm|md|lg|xl):(.+)$")
-# `bg-black/[0.02]`, `border-white/[0.07]` — an arbitrary *alpha* on a colour.
+# `bg-black/[0.02]`, `border-white/[0.07]`, an arbitrary *alpha* on a colour.
 ALPHA = re.compile(r"^(bg|text|border)-(black|white)/\[([0-9.]+)\]$")
 BASE_RGB = {"black": "0,0,0", "white": "255,255,255"}
 
@@ -233,7 +233,7 @@ def main():
         print('no arbitrary tokens found; leaving generated.css untouched')
     elif not dry:
         lines = ["/* =========================================================",
-                 "   GENERATED — do not hand-edit.",
+                 "   GENERATED - do not hand-edit.",
                  "   Every rule here replaces one Tailwind arbitrary value or",
                  "   responsive utility. Regenerate with tools/tw_arbitrary.py",
                  "   ========================================================= */"]

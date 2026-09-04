@@ -420,7 +420,7 @@
     if (!dragCard) return; e.preventDefault();
     var over = e.target.closest('.cv-layer'); if (!over || over === dragCard) return;
     var r = over.getBoundingClientRect();
-    layers.insertBefore(dragCard, (e.clientY - r.top) > r.height / 2 ? over.nextSibling : over);
+    layers.insertBefore(dragCard, (e.clientY | r.top) > r.height / 2 ? over.nextSibling : over);
   });
   layers.addEventListener('click', function (e) {
     var c = e.target.closest('.cv-layer'); if (!c) return;

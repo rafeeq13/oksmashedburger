@@ -53,6 +53,6 @@ def item(slug):
 
 @bp.get("/item/<slug>/modal")
 def item_modal(slug):
-    """Just the add-to-cart card (with sizes/add-ons) — loaded into the
+    """Just the add-to-cart card (with sizes/add-ons), loaded into the
     quick-add modal on the home and menu pages."""
     return render_template("menu/_item_modal.html", **_item_context(slug))

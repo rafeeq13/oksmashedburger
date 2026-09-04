@@ -1,4 +1,4 @@
-"""Site-wide theme — the brand palette, type and shape, editable by the client.
+"""Site-wide theme | the brand palette, type and shape, editable by the client.
 
 The palette used to live only in premium.css, so changing the brand colour or
 the corner radius meant editing a stylesheet. These are `SiteSetting` rows now
@@ -14,7 +14,7 @@ from app.models.site import SiteSetting
 THEME_TOKENS = [
     # ── brand colour ──────────────────────────────────────────────────────
     ("theme_primary", "Primary / brand", "--ok-yellow", "color", "#FFC72C",
-     "Buttons, badges, highlights — the yellow everywhere.", "Colour"),
+     "Buttons, badges, highlights, the yellow everywhere.", "Colour"),
     ("theme_primary_dark", "Primary (darker)", "--ok-amber", "color", "#E0A200",
      "Hover states, small yellow text on light backgrounds, the squiggle.", "Colour"),
     ("theme_ink", "Ink / near-black", "--ok-ink", "color", "#0E0E0E",
@@ -22,7 +22,7 @@ THEME_TOKENS = [
     ("theme_body", "Body text", "--ok-lux-gray", "color", "#8A8480",
      "Paragraphs and secondary copy across every page.", "Colour"),
     ("theme_link", "Link colour", "--ok-link", "color", "#0E0E0E",
-     "Text links inside copy — not buttons.", "Colour"),
+     "Text links inside copy, not buttons.", "Colour"),
 
     # ── surfaces ──────────────────────────────────────────────────────────
     ("theme_cream", "Cream / tint", "--ok-warm-white", "color", "#FCFAF6",
@@ -74,7 +74,7 @@ THEME_GROUPS = ["Colour", "Surfaces", "Status", "Shape", "Type", "Layout"]
 
 SHADOW_PRESETS = [
     ("", "Built-in"),
-    ("none", "Flat — no shadow"),
+    ("none", "Flat, no shadow"),
     ("0 1px 2px rgba(28,22,16,.06)", "Barely there"),
     ("0 2px 6px rgba(28,22,16,.05), 0 10px 24px -6px rgba(28,22,16,.10)", "Soft (built-in)"),
     ("0 6px 18px rgba(28,22,16,.10), 0 24px 48px -12px rgba(28,22,16,.18)", "Lifted"),
@@ -83,20 +83,20 @@ SHADOW_PRESETS = [
 
 
 # What the font dropdown offers. Each is already loaded by the page, so picking
-# one costs nothing extra — no new webfont request, no layout shift.
+# one costs nothing extra | no new webfont request, no layout shift.
 FONT_CHOICES = [
-    ("'Poppins', 'Inter', sans-serif", "Poppins — geometric, confident"),
-    ("'Quicksand', sans-serif", "Quicksand — rounded, friendly"),
-    ("'Inter', system-ui, sans-serif", "Inter — neutral, highly legible"),
-    ("Georgia, 'Times New Roman', serif", "Georgia — classic serif"),
-    ("system-ui, -apple-system, 'Segoe UI', sans-serif", "System — fastest, native look"),
+    ("'Poppins', 'Inter', sans-serif", "Poppins | geometric, confident"),
+    ("'Quicksand', sans-serif", "Quicksand | rounded, friendly"),
+    ("'Inter', system-ui, sans-serif", "Inter | neutral, highly legible"),
+    ("Georgia, 'Times New Roman', serif", "Georgia | classic serif"),
+    ("system-ui, -apple-system, 'Segoe UI', sans-serif", "System | fastest, native look"),
 ]
 
 TOKEN_BY_KEY = {t[0]: t for t in THEME_TOKENS}
 
 
 def theme_values():
-    """Saved overrides only — a key that was never set is absent, not blank."""
+    """Saved overrides only, a key that was never set is absent, not blank."""
     keys = [t[0] for t in THEME_TOKENS]
     return {s.key: s.value for s in SiteSetting.query.filter(SiteSetting.key.in_(keys)).all()
             if s.value}

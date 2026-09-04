@@ -1,4 +1,4 @@
-"""Google Maps / Places helpers — per-store API key with brand fallback."""
+"""Google Maps / Places helpers | per-store API key with brand fallback."""
 import os
 
 from flask import current_app

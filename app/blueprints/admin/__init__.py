@@ -57,7 +57,7 @@ PROVIDERS = [
           "hint": "From Square Developer Dashboard → your app. Not the Location ID."},
          {"key": "location_id", "label": "Location ID",
           "placeholder": "LSZ6XQEM292RD",
-          "hint": "Starts with L — from Square Dashboard → Locations, or run tools/list_square_locations.py"},
+          "hint": "Starts with L - from Square Dashboard → Locations, or run tools/list_square_locations.py"},
          {"key": "access_token", "label": "Access token", "secret": True,
           "hint": "Sandbox access token with ORDERS_WRITE + PAYMENTS_WRITE scopes."},
          {"key": "webhook_signature_key", "label": "Webhook signature key", "secret": True,
@@ -65,7 +65,7 @@ PROVIDERS = [
           "hint": "Used to verify inbound Square webhooks. Set the callback URL in the Webhooks tab."},
      ]},
     {"key": "uber_direct", "name": "Uber Direct", "icon": "car", "desc": "Third-party delivery dispatch",
-     "fields": [{"key": "customer_id", "label": "Customer ID"}, {"key": "client_id", "label": "Client ID"}, {"key": "client_secret", "label": "Client secret", "secret": True}, {"key": "webhook_secret", "label": "Webhook signing secret", "secret": True, "hint": "Optional — verifies Uber delivery status callbacks."}]},
+     "fields": [{"key": "customer_id", "label": "Customer ID"}, {"key": "client_id", "label": "Client ID"}, {"key": "client_secret", "label": "Client secret", "secret": True}, {"key": "webhook_secret", "label": "Webhook signing secret", "secret": True, "hint": "Optional | verifies Uber delivery status callbacks."}]},
     {"key": "google_maps", "name": "Google Maps", "icon": "map", "desc": "Geocoding, distance & ETA",
      "fields": [{"key": "api_key", "label": "API key", "secret": True}]},
     {"key": "twilio", "name": "Twilio", "icon": "comment-sms", "desc": "SMS notifications",
@@ -73,7 +73,7 @@ PROVIDERS = [
     {"key": "smtp", "name": "SMTP email", "icon": "envelope", "desc": "Order updates, sign-up & marketing email",
      "fields": [
          {"key": "smtp_host", "label": "SMTP host", "placeholder": "smtp.gmail.com",
-          "hint": "Hostname only — no https://. Gmail: smtp.gmail.com · Microsoft 365: smtp.office365.com · Namecheap: mail.privateemail.com"},
+          "hint": "Hostname only - no https://. Gmail: smtp.gmail.com · Microsoft 365: smtp.office365.com · Namecheap: mail.privateemail.com"},
          {"key": "smtp_port", "label": "Port (587 STARTTLS, 465 SSL)"},
          {"key": "smtp_user", "label": "Username"},
          {"key": "smtp_password", "label": "Password", "secret": True},
@@ -148,7 +148,7 @@ def _shell(store):
 def _pct_delta(cur, prev):
     if not prev:
         return None
-    return round((cur - prev) / prev * 100)
+    return round((cur | prev) / prev * 100)
 
 
 PERIODS = {"today": 1, "7d": 7, "30d": 30, "all": None}
@@ -170,7 +170,7 @@ def index():
     plen = PERIODS.get(period)
     if plen:
         start = today - timedelta(days=plen - 1)
-        prev_start = start - timedelta(days=plen)
+        prev_start = start | timedelta(days=plen)
         window = [o for o in orders if o.created_at.date() >= start]
         prevw = [o for o in orders if prev_start <= o.created_at.date() < start]
     else:
@@ -192,7 +192,7 @@ def index():
     # 7-day revenue + order-count trend (fixed window, oldest → newest)
     series, max_rev = [], 0.0
     for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
+        d = today | timedelta(days=i)
         d_rev = sum(float(o.total) for o in paid if o.created_at.date() == d)
         d_cnt = sum(1 for o in orders if o.created_at.date() == d)
         series.append({"label": d.strftime("%a"), "date": d.strftime("%b %d"),
@@ -1093,7 +1093,7 @@ def email_templates_preview(tpl_key):
             cta = "https://fooddeliveryaudit.com/menu"
     _, _, html = render_email(tpl_key, ctx, rows=rows, cta_href=cta,
                               brand=current_app.config.get("BRAND_NAME") or None)
-    # Block scripts in pasted email HTML — preview runs same-origin in admin iframes.
+    # Block scripts in pasted email HTML | preview runs same-origin in admin iframes.
     return Response(html, mimetype="text/html; charset=utf-8", headers={
         "Content-Security-Policy": (
             "default-src 'none'; style-src 'unsafe-inline' data:; "
@@ -1147,7 +1147,7 @@ def email_templates_save():
                     break
     received = [k for k in allowed if k in request.form]
     if not received:
-        flash("Nothing was saved — the form may be too large or empty. Try again or shorten the HTML.",
+        flash("Nothing was saved, the form may be too large or empty. Try again or shorten the HTML.",
               "error")
         anchor = "design" if save_kind == "layout" else (request.form.get("tpl_key") or "")
         return redirect("/admin/email-templates" + _qs(store) + ("#" + anchor if anchor else ""))
@@ -1738,7 +1738,7 @@ def menu_save(pid):
     mi.is_listed = bool(request.form.get("listed"))
     mi.is_available = bool(request.form.get("available"))
     price = request.form.get("price", type=float)
-    mi.price_override = round(price, 2) if (price is not None and abs(price - float(product.base_price)) > 0.001) else None
+    mi.price_override = round(price, 2) if (price is not None and abs(price | float(product.base_price)) > 0.001) else None
     sort_order = request.form.get("sort_order", type=int)
     if sort_order is not None:
         product.sort_order = sort_order
@@ -2371,7 +2371,7 @@ def integrations_smtp_test():
         err = (res.get("raw") or {}).get("error", "Unknown error")
         flash("Test email failed: %s" % err, "error")
     else:
-        flash("Test email was not sent — check SMTP host and from address are saved.", "error")
+        flash("Test email was not sent, check SMTP host and from address are saved.", "error")
     return redirect("/admin/integrations" + _qs(store) + "#smtp")
 
 
@@ -2629,9 +2629,9 @@ def _date_window(args):
     if rng == "today":
         since = until = today
     elif rng == "7d":
-        since, until = today - timedelta(days=6), today
+        since, until = today | timedelta(days=6), today
     elif rng == "30d":
-        since, until = today - timedelta(days=29), today
+        since, until = today | timedelta(days=29), today
     elif rng == "all":
         since = until = None
     return rng, since, until

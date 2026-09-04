@@ -1,4 +1,4 @@
-"""End-to-end integration test — Stripe, Square, Uber, SMTP per store.
+"""End-to-end integration test, Stripe, Square, Uber, SMTP per store.
 
 Runs locally against the dev DB. Does not hit the HTTP checkout form; exercises
 the same gateway + sync + notify pipeline used after checkout.
@@ -105,7 +105,7 @@ def _square_eval(store, sync_result, order):
         cfg = active_integration_config(store, "square")
         loc = (cfg.get("location_id") or "")
         if loc.startswith("sandbox-sq0idb") or loc.startswith("sq0idb-"):
-            return False, "wrong location_id (Application ID — use L… Location ID)"
+            return False, "wrong location_id (Application ID | use L… Location ID)"
         if should_simulate(store, "square"):
             return True, "simulated (no token/location)"
         return False, "not configured"
@@ -168,7 +168,7 @@ def test_store(store, order_type="pickup"):
         print("[delivery]", getattr(delivery, "status", ""), getattr(delivery, "method", ""),
               getattr(delivery, "provider_ref", "") or "")
 
-    # notifications (dry-run style — catch errors only)
+    # notifications (dry-run style | catch errors only)
     notify_ok = True
     notify_err = ""
     try:

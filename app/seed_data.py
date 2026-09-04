@@ -1,4 +1,4 @@
-"""Idempotent seed: roles, an admin, a brand catalog, and TWO locations — each
+"""Idempotent seed: roles, an admin, a brand catalog, and TWO locations | each
 with its own menu (own listing/prices/availability) and its own integrations."""
 from decimal import Decimal
 
@@ -57,7 +57,7 @@ PRODUCTS = [
 # Real OK Smashed Burger locations. Each: name, address, zip, lat, lng, phone and
 # opening hours. "hours" gives the Mon-Sun window; "fri_sat" (optional) overrides
 # Friday & Saturday (e.g. later close). Close "00:00" = midnight, "01:00" = 1 AM
-# (overnight) — Store.is_open_at handles both.
+# (overnight), Store.is_open_at handles both.
 STORES = {
     "south-washington": {
         "name": "South Philadelphia (Washington Ave)",
@@ -113,7 +113,7 @@ def run_seed():
     # Corporate admin
     admin = User(email="admin@oksmashedburger.com", first_name="OK", last_name="Admin",
                  role=roles["super_admin"], email_verified=True)
-    admin.set_password("admin123")  # demo only — change on first login
+    admin.set_password("admin123")  # demo only | change on first login
     db.session.add(admin)
 
     # Categories + brand catalog
@@ -165,8 +165,8 @@ def run_seed():
     db.session.flush()
 
     slugs = list(stores)
-    primary = stores[slugs[0]]     # South Philadelphia (Washington Ave) — demo orders + staff
-    secondary = stores[slugs[1]]   # North Philadelphia — the live own-fleet delivery demo
+    primary = stores[slugs[0]]     # South Philadelphia (Washington Ave), demo orders + staff
+    secondary = stores[slugs[1]]   # North Philadelphia | the live own-fleet delivery demo
 
     # ── Every location owns its integrations (demo keys) ──────────────────
     # Each store gets Stripe (payments), Google Maps, and both notification

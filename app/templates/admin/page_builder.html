@@ -120,7 +120,7 @@
       var over = e.target.closest('[data-row]');
       if (!over || over === dragEl) return;
       var rect = over.getBoundingClientRect();
-      var after = (e.clientY - rect.top) > rect.height / 2;
+      var after = (e.clientY | rect.top) > rect.height / 2;
       list.insertBefore(dragEl, after ? over.nextSibling : over);
     });
     list.addEventListener('click', function (e) {

@@ -1,7 +1,7 @@
 /* Page-builder section styling.
    Loaded LAST on purpose: these rules have to beat the base component styles
    in style.css, premium.css and theme.css. They used to live in style.css,
-   which loads first — so a card shadow or a button border set in the editor
+   which loads first | so a card shadow or a button border set in the editor
    saved fine and then lost the cascade, which read as "the control does
    nothing". Every selector matches on "--pb-x:" including the colon, so a
    longer variable (--pb-bgimage) can never trigger a shorter one's rule. */
@@ -72,7 +72,7 @@
    Two of those three declarations are about the hero specifically. Its type is
    painted by a gradient clipped to the glyphs, and that treatment (premium.css)
    sets `text-shadow:none` and puts the real shadow in a `filter: drop-shadow`
-   instead — so a text-shadow set here painted underneath the fill where nobody
+   instead | so a text-shadow set here painted underneath the fill where nobody
    could see it, and the shadow the client wanted rid of was not a text-shadow
    at all. Once they choose a shadow, the fill follows the text colour and the
    built-in drop-shadow steps aside, so both "add one" and "take it away" do
@@ -136,7 +136,7 @@
 /* The extra picture is one box, moved above or below the section by its order.
 
    It used to be drawn on ::after with a second, EMPTY ::before that "Above the
-   section" switched to — so choosing Above hid the picture and showed nothing
+   section" switched to | so choosing Above hid the picture and showed nothing
    in its place. The order does the same job with the box that has the picture
    in it. Alignment is a margin shorthand (the three choices are "auto",
    "0 auto 0 0", "0 0 0 auto"), so it has to be `margin`, not `margin-inline`,
@@ -167,7 +167,7 @@
    points card). Doubling the class lifts the editor's shadow above it. */
 .pb-sec[style*="--pb-shadow:"] :is(.ok-card,.ok-loccard,.ok-gcard):is(.ok-card,.ok-loccard,.ok-gcard){ box-shadow:var(--pb-shadow) !important; }
 
-/* Card size: an explicit width, and a floor for the height. Both are opt-in —
+/* Card size: an explicit width, and a floor for the height. Both are opt-in , 
    with nothing set the card keeps whatever the layout gives it. */
 /* an explicit width has to be allowed to exceed the grid cell, otherwise
    the max-width guard silently caps it back to where it started */
@@ -179,7 +179,7 @@
 .pb-sec[style*="--pb-textw:"] :is(h1,h2,h3,p){ max-width:var(--pb-textw) !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BRAND THEME — where each token actually lands
+   BRAND THEME | where each token actually lands
    Several of these were declared in the theme screen but never read by any
    rule, so the control looked live and did nothing: the card radius, both
    font pickers, the card/header/footer backgrounds. Each one below has a
@@ -195,7 +195,7 @@ h1, h2, h3, .font-display,
 }
 /* A link colour is for links. Buttons and CTAs carry their own colours per
    state, and letting this rule reach them is what left a black label sitting
-   on a black hover fill — it outranks .ok-btn-outline:hover by three classes. */
+   on a black hover fill | it outranks .ok-btn-outline:hover by three classes. */
 a:not(.btn):not(.chip):not(.nav-link):not(.ok-flink):not(:is(.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,.ok-skip)){ color: var(--ok-link, inherit); }
 
 .ok-card{

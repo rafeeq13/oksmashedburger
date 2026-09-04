@@ -16,7 +16,7 @@ BRAND = "OK Smashed Burger"
 # (field, label, default, kind, hint)
 _EMAIL_IMAGE_SLOTS = [
     ("img_%02d" % i, "Email image %d" % i, "", "image",
-     "Use in HTML as {img_%02d} — logos, banners, icons, SVG/PNG/JPG." % i)
+     "Use in HTML as {img_%02d} | logos, banners, icons, SVG/PNG/JPG." % i)
     for i in range(1, 16)
 ]
 
@@ -29,7 +29,7 @@ EMAIL_LAYOUT = [
     ("default_cta_label", "Default CTA label", "Order now", "text",
      "Fallback button text when a template leaves CTA blank."),
     ("default_cta_url", "Default CTA link", "/menu", "text",
-     "Fallback button URL — e.g. /menu, /deals, or full https://…"),
+     "Fallback button URL, e.g. /menu, /deals, or full https://…"),
     ("footer_line1", "Footer line 1", "{brand} · Philadelphia, PA", "text", ""),
     ("footer_line2", "Footer line 2",
      "Questions? Reply to this email or visit our website.", "area", ""),
@@ -44,7 +44,7 @@ EMAIL_LAYOUT = [
     ("social_google", "Google / reviews URL (optional override)", "", "text", ""),
 ]
 
-# Appended to every template in admin — full HTML design (required for sending).
+# Appended to every template in admin | full HTML design (required for sending).
 HTML_BODY_FIELD = (
     "html_body", "HTML email design", "", "html",
     "Paste your complete HTML email. Use placeholders like {customer_name}, {order_number}, "
@@ -55,13 +55,13 @@ HTML_BODY_FIELD = (
 LEGACY_TEMPLATE_COPY = {
     "order_placed": {"title": "Thanks for your order", "body": "Thanks for ordering from {store}! Order <strong>{order_number}</strong> has been received and is awaiting confirmation.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
     "order_confirmed": {"title": "You're confirmed", "body": "Your order <strong>{order_number}</strong> at {store} is confirmed and heading to the kitchen.", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
-    "order_preparing": {"title": "On the grill", "body": "Good news — order <strong>{order_number}</strong> is on the grill at {store}.", "footer_note": "", "cta": "Track your order"},
+    "order_preparing": {"title": "On the grill", "body": "Good news, order <strong>{order_number}</strong> is on the grill at {store}.", "footer_note": "", "cta": "Track your order"},
     "order_ready": {"title": "Ready when you are", "body": "Order <strong>{order_number}</strong> is ready at {store}.", "footer_note": "", "cta": "Track your order"},
     "order_out_for_delivery": {"title": "On the way", "body": "Your order <strong>{order_number}</strong> from {store} is out for delivery.", "footer_note": "Tap below to follow your order in real time.", "cta": "Track your order"},
     "order_completed": {"title": "Enjoy!", "body": "Order <strong>{order_number}</strong> from {store} is complete. Thanks for choosing {brand}!", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
     "order_cancelled": {"title": "Order cancelled", "body": "Your order <strong>{order_number}</strong> at {store} has been cancelled.", "footer_note": "Your receipt is attached. Reply or call us with any questions.", "cta": "Track your order"},
     "welcome": {"title": "Welcome to OK Rewards", "body": "Your account is live and {points} bonus points are already on it. Every order earns more.", "footer_note": "Track your points any time from your account page.", "cta": "Start an order"},
-    "password_reset": {"title": "Reset your password", "body": "We got a request to reset the password on your account. This link works once and expires in 60 minutes.", "footer_note": "If this wasn't you, ignore this email — nothing has changed.", "cta": "Reset your password"},
+    "password_reset": {"title": "Reset your password", "body": "We got a request to reset the password on your account. This link works once and expires in 60 minutes.", "footer_note": "If this wasn't you, ignore this email, nothing has changed.", "cta": "Reset your password"},
     "password_changed": {"title": "Password updated", "body": "The password on your account was just changed.", "footer_note": "If this wasn't you, contact us immediately.", "cta": "Sign in"},
     "contact_ack": {"title": "Thanks, we've got it", "body": "We have your message and will reply within one business day.", "footer_note": "", "cta": "Browse the menu"},
     "contact_new": {"title": "New website enquiry", "body": "Someone just submitted the contact form.", "footer_note": "Reply straight to the sender's email.", "cta": ""},
@@ -73,7 +73,7 @@ LEGACY_TEMPLATE_COPY = {
 
 
 def default_html_starter(tpl_key):
-    """Premium branded starter — admins customize in Email templates."""
+    """Premium branded starter, admins customize in Email templates."""
     legacy = LEGACY_TEMPLATE_COPY.get(tpl_key, {})
     title = legacy.get("title", "{title}")
     body = legacy.get("body", "{body}")
@@ -156,9 +156,9 @@ def _order_tpl(tpl_key, tpl_label, subject_default):
     return (tpl_key, tpl_label, [
         ("subject", "Subject line", subject_default, "text"),
         ("hero_image", "Hero banner (optional)", "", "image",
-         "Wide image below the header — use {hero_image} in HTML or leave blank."),
+         "Wide image below the header, use {hero_image} in HTML or leave blank."),
         ("cta_label", "CTA button text", legacy.get("cta", "Track your order"), "text",
-         "Button label — leave blank to hide."),
+         "Button label, leave blank to hide."),
         ("cta_url", "CTA button link", "/tracking/{order_number}", "text",
          "Opens the guest order tracking page for this order."),
         ("html_body", "HTML email design", default_html_starter(tpl_key), "html", HTML_BODY_FIELD[4]),
@@ -170,11 +170,11 @@ def _tpl(tpl_key, tpl_label, subject_default):
     return (tpl_key, tpl_label, [
         ("subject", "Subject line", subject_default, "text"),
         ("hero_image", "Hero banner (optional)", "", "image",
-         "Wide image below the header — use {hero_image} in HTML or leave blank."),
+         "Wide image below the header, use {hero_image} in HTML or leave blank."),
         ("cta_label", "CTA button text", legacy.get("cta", ""), "text",
-         "Button label — leave blank to hide."),
+         "Button label, leave blank to hide."),
         ("cta_url", "CTA button link", "", "text",
-         "e.g. /menu, /deals, /tracking — or full https:// URL."),
+         "e.g. /menu, /deals, /tracking, or full https:// URL."),
         ("html_body", "HTML email design", default_html_starter(tpl_key), "html", HTML_BODY_FIELD[4]),
     ])
 
@@ -196,12 +196,12 @@ EMAIL_TEMPLATE_GROUPS = [
         _tpl("password_changed", "Password changed", "Your password was changed"),
     ]),
     ("marketing", "Contact & marketing", "bullhorn", [
-        _tpl("contact_new", "Contact form — staff alert", "[{brand}] New enquiry from {customer_name}"),
-        _tpl("contact_ack", "Contact form — customer receipt", "We got your message, {customer_name}"),
+        _tpl("contact_new", "Contact form | staff alert", "[{brand}] New enquiry from {customer_name}"),
+        _tpl("contact_ack", "Contact form | customer receipt", "We got your message, {customer_name}"),
         _tpl("subscribed", "Newsletter welcome", "You're on the list"),
         _tpl("gift_card", "Gift card to recipient", "{sender_name} sent you a {brand} gift card"),
         _tpl("newsletter", "Newsletter blast", "News from {brand}"),
-        _tpl("smtp_test", "SMTP test", "SMTP test — {brand}"),
+        _tpl("smtp_test", "SMTP test", "SMTP test | {brand}"),
     ]),
 ]
 
@@ -344,7 +344,7 @@ DEFAULT_SOCIAL_URLS = {
     "google": "https://www.google.com/search?q=OK+Smashed+Burger+Philadelphia",
 }
 
-# Icon images for email clients (Simple Icons CDN) — white on dark footer
+# Icon images for email clients (Simple Icons CDN), white on dark footer
 SOCIAL_ICON_IMAGES = {
     "instagram": "https://cdn.simpleicons.org/instagram/FFFFFF",
     "facebook": "https://cdn.simpleicons.org/facebook/FFFFFF",
@@ -355,7 +355,7 @@ SOCIAL_ICON_IMAGES = {
 
 
 def social_urls(brand=None):
-    """Social profile URLs — layout override, page content, then brand defaults."""
+    """Social profile URLs | layout override, page content, then brand defaults."""
     from app.models.page import page_content_defaults
     defaults = page_content_defaults(brand or BRAND)
     mapping = {
@@ -646,7 +646,7 @@ def html_to_plain(html):
 
 
 def render(tpl_key, ctx, rows=None, cta_href=None, brand=None):
-    """Return (subject, plain_body, html_body) — always from the HTML template design."""
+    """Return (subject, plain_body, html_body) | always from the HTML template design."""
     brand = brand or ctx.get("brand") or BRAND
     ctx = dict(ctx, brand=brand)
     subject = format_text(get_field(tpl_key, "subject", brand), ctx)
@@ -698,7 +698,7 @@ def preview_rows(tpl_key):
             ("Order number", "OK-4012"),
             ("Store", "Center City"),
             ("Type", "Delivery"),
-            ("1× Classic Smash", "$12.99 — Double · + Bacon"),
+            ("1× Classic Smash", "$12.99 | Double · + Bacon"),
             ("Subtotal", "$12.99"),
             ("Tax", "$1.04"),
             ("Delivery", "$2.99"),

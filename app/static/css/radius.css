@@ -1,5 +1,5 @@
 /* =========================================================
-   OK Smashed Burger — CORNER RADIUS
+   OK Smashed Burger, CORNER RADIUS
    Loaded LAST in both shells (storefront and admin).
 
    The reference design the client signed off on uses one 8px
@@ -8,7 +8,7 @@
    place rather than editing ~30 rules across five stylesheets,
    so the decision stays reviewable and reversible.
 
-   It must load after utils.css / generated.css — those come
+   It must load after utils.css / generated.css | those come
    later in the chain and would otherwise win.
 
    WHAT STAYS ROUND (deliberately, a squircle would look broken):
@@ -81,7 +81,7 @@
 }
 
 /* the utilities that hand out a radius larger than 8px
-   (ok-r-175rem is generated.css's 1.75rem arbitrary value — it dressed the
+   (ok-r-175rem is generated.css's 1.75rem arbitrary value | it dressed the
    hero glass card and the About image, both of which the client flagged) */
 .ok-rounded-lg, .ok-rounded-xl, .ok-rounded-2xl, .ok-rounded-3xl,
 .ok-r-sm, .ok-r-md, .ok-r-lg, .ok-r-xl, .ok-r-175rem,
@@ -89,8 +89,8 @@
   border-radius:var(--ok-radius) !important;
 }
 
-/* Pill chrome on WIDE elements. `.rounded-pill` itself has to stay a pill —
-   it is what makes every avatar round — so the handful of long pills that the
+/* Pill chrome on WIDE elements. `.rounded-pill` itself has to stay a pill , 
+   it is what makes every avatar round | so the handful of long pills that the
    client wants squared off are named here instead. */
 .ok-skip,
 .ok-loccard-badge,
@@ -116,7 +116,7 @@
    curve there reads as a gap. The cards already clip their
    media with overflow:hidden, so the media itself stays
    square and only the top corners show the card's radius.
-   `.ok-media` is deliberately NOT forced to 8px here — the
+   `.ok-media` is deliberately NOT forced to 8px here | the
    templates mark it `!rounded-none` on purpose and this file
    loads last, so forcing it would undo that. */
 .ok-card > .ok-media:first-child,

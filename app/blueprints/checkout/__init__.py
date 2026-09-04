@@ -126,15 +126,15 @@ def checkout():
             if scheduled_for <= datetime.now():
                 return _checkout_error("Your scheduled time must be in the future.")
             if not store.is_open_at(scheduled_for):
-                return _checkout_error(f"{store.name} isn't open at that time — please pick a slot within opening hours "
+                return _checkout_error(f"{store.name} isn't open at that time - please pick a slot within opening hours "
                       f"({store.today_hours} today).")
         else:  # ASAP
             if not (store and store.open_now):
-                return _checkout_error(f"{store.name if store else 'This store'} is closed for immediate orders — "
+                return _checkout_error(f"{store.name if store else 'This store'} is closed for immediate orders - "
                       "please schedule your order for later.")
 
         # A delivery order without an address is undeliverable, and the browser
-        # `required` attribute is not a guarantee — it is trivially bypassed.
+        # `required` attribute is not a guarantee | it is trivially bypassed.
         addr = address_from_form(request.form)
         if order_type == "delivery" and not addr["line1"]:
             return _checkout_error("Please enter a delivery street address.")
@@ -189,7 +189,7 @@ def checkout():
             if gc:
                 gc.balance = max(Decimal("0"), gc.balance - Decimal(str(s["giftcard"]["applied"])))
 
-        # Payment — routed through THIS store's own Stripe account.
+        # Payment | routed through THIS store's own Stripe account.
         payment_result = None
         if method == "card":
             from app.services.order_details import stripe_payment_update
@@ -246,7 +246,7 @@ def checkout():
         flash(f"Order {order.number} placed! 🎉", "success")
         return redirect("/order-confirmed")
 
-    # GET — restore a failed submit, or show defaults
+    # GET | restore a failed submit, or show defaults
     draft = session.pop("checkout_draft", None)
     return _render_checkout(store, draft)
 

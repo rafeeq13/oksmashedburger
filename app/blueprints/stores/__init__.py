@@ -60,7 +60,7 @@ def api_select_store(slug):
 
 @bp.get("/api/schedule")
 def api_schedule():
-    """Save a scheduled (future) order time without a reload — used when the store
+    """Save a scheduled (future) order time without a reload | used when the store
     is closed for ASAP and the customer must pick a time before ordering."""
     val = (request.args.get("schedule_at") or "").strip()
     if not val:

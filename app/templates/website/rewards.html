@@ -80,7 +80,7 @@
         <!-- ---- EARN panel ---- -->
         <div data-panel="earn">
           <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 ok-gap-5">
-            {# Ways to earn — editable in Admin > Website Content #}
+            {# Ways to earn | editable in Admin > Website Content #}
             {% for e in content_list('rewards_earn') %}
             <article class="ok-card ok-card-hover ok-p-3">
               <div class="d-flex align-items-center ok-gap-25 mb-1 flex-wrap">
@@ -218,7 +218,7 @@
           <p class="text-muted-warm mt-2 max-w-xl mx-auto">{{ pc('rewards_tiers_text') }}</p>
         </div>
         <div class="ok-grid ok-grid-md-3 ok-gap-5 align-items-stretch">
-          {# Membership tiers — editable in Admin > Website Content.
+          {# Membership tiers | editable in Admin > Website Content.
              Ranges and the "your tier" marker are derived from the same rows,
              so the copy can never disagree with the thresholds. #}
           {% for t in ts.tiers %}
@@ -288,7 +288,7 @@
       <div class="ok-container max-w-3xl">
         <div class="text-center ok-mb-8"><h2 class="ok-h2">{{ pc('rewards_faq_heading') }}</h2></div>
         <div class="ok-card ok-px-3">
-          {# Rewards FAQ — editable in Admin > Website Content #}
+          {# Rewards FAQ | editable in Admin > Website Content #}
             {% for f in content_list('rewards_faq') %}
             <div class="acc-item{{ ' is-open' if loop.first }}">
               <button class="acc-q">{{ f.q }} <span class="acc-icon">+</span></button>

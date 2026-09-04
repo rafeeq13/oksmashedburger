@@ -51,7 +51,7 @@
     {% endfor %}
   </div>
   {% else %}
-  <p class="ok-fs-sm text-muted-warm mb-3">No add-on sections yet — add one below (e.g. ADD-ONS).</p>
+  <p class="ok-fs-sm text-muted-warm mb-3">No add-on sections yet | add one below (e.g. ADD-ONS).</p>
   {% endif %}
   <form method="post" action="/admin/menu/{{ product.id }}/addon-sections{{ qs }}" class="ok-modsec-row">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -70,7 +70,7 @@
   <div class="col-12">
   <div class="ok-card ok-p-5">
     <h3 class="font-display fw-bold ok-fs-lg mb-1">Sizes / variants</h3>
-    <p class="ok-fs-xs text-muted-warm mb-3">Single choice — customer picks one size. Heading is set above.</p>
+    <p class="ok-fs-xs text-muted-warm mb-3">Single choice | customer picks one size. Heading is set above.</p>
     {% if product.variants %}
     <div class="ok-divide-y mb-3">
       {% for v in product.variants %}
@@ -89,7 +89,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p class="ok-fs-sm text-muted-warm mb-3">No sizes yet — the item is ordered at its base price.</p>
+    <p class="ok-fs-sm text-muted-warm mb-3">No sizes yet | the item is ordered at its base price.</p>
     {% endif %}
     <form method="post" action="/admin/menu/{{ product.id }}/variants{{ qs }}" class="ok-grid ok-gc-1frautoauto gap-2 align-items-end">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">

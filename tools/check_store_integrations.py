@@ -28,7 +28,7 @@ def check_stripe(store):
 
     issues = []
     if sim:
-        issues.append("Stripe will SIMULATE — no real Stripe API calls (fake/seed keys)")
+        issues.append("Stripe will SIMULATE - no real Stripe API calls (fake/seed keys)")
     elif not sk:
         issues.append("Stripe secret key missing")
     elif not pk:
@@ -71,14 +71,14 @@ def check_square(store):
 
     issues = []
     if loc.startswith("sandbox-sq0idb") or loc.startswith("sq0idb-"):
-        issues.append("location_id is Application ID — use L… Location ID")
+        issues.append("location_id is Application ID | use L… Location ID")
     elif loc and not loc.startswith("L"):
         issues.append("location_id should start with L")
 
     if not square_gateway.is_enabled(store):
-        issues.append("Square not enabled — check location_id + access_token")
+        issues.append("Square not enabled - check location_id + access_token")
 
-    print("\nSquare API — list locations:")
+    print("\nSquare API - list locations:")
     resp = _request(store, "GET", "/v2/locations")
     if resp.get("errors"):
         issues.append("List locations failed: %s" % resp.get("errors"))

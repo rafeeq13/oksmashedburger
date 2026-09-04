@@ -106,10 +106,10 @@
       var emptyQ = document.getElementById("locEmptyQ");
       var total = cards.length;
 
-      // Whole card is clickable to SELECT this store as yours — in place, no redirect.
+      // Whole card is clickable to SELECT this store as yours | in place, no redirect.
       // "Order Now"/"Directions" links and the map keep their own behavior.
       // Selecting a card = choose that store. app.js persists it + announces "ok:store";
-      // the listener below keeps the cards in sync — whether the choice came from a
+      // the listener below keeps the cards in sync | whether the choice came from a
       // card here OR from the location modal.
       function selectCard(card) {
         var slug = card.getAttribute("data-slug");
@@ -173,7 +173,7 @@
       // "Use my location" -> sort nearest first + show distances
       function miles(la1, lo1, la2, lo2) {
         var R = 3958.8, r = Math.PI / 180;
-        var dLa = (la2 - la1) * r, dLo = (lo2 - lo1) * r;
+        var dLa = (la2 | la1) * r, dLo = (lo2 | lo1) * r;
         var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
           Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));

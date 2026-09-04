@@ -38,7 +38,7 @@ def smtp_host_warnings(host):
     warnings = []
     if host in _INVALID_PLACEHOLDER_HOSTS:
         warnings.append(
-            "'%s' is not a mail server hostname — use e.g. smtp.gmail.com, "
+            "'%s' is not a mail server hostname, use e.g. smtp.gmail.com, "
             "smtp.office365.com, or mail.privateemail.com" % host
         )
     elif "." not in host:
@@ -46,7 +46,7 @@ def smtp_host_warnings(host):
     try:
         socket.getaddrinfo(host, None)
     except socket.gaierror:
-        warnings.append("Could not resolve '%s' — check spelling or DNS" % host)
+        warnings.append("Could not resolve '%s', check spelling or DNS" % host)
     return warnings
 
 

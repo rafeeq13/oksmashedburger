@@ -57,7 +57,7 @@
 
   <div class="ok-progress" data-progress aria-hidden="true"><span></span></div>
 
-  {# The header and footer are on every page, so they are design targets too —
+  {# The header and footer are on every page, so they are design targets too , 
      same wrapper, same panel, same storage as any other section. #}
   {% set _hs = pb_page_style('site', 'header') %}
   <div class="pb-sec" data-page="site" data-section="header" data-label="Header / navigation" data-sectype="chrome"{% if _hs %} style="{{ _hs }}"{% endif %}>
@@ -71,7 +71,7 @@
   {% include "partials/footer.html" %}
   </div>
   {# Modals are design targets too. They are hidden until opened, so the edit
-     bar carries a direct way in — hovering for a button would never work. #}
+     bar carries a direct way in | hovering for a button would never work. #}
   {% set _ls = pb_page_style('site', 'location_modal') %}
   <div class="pb-sec pb-chrome" data-page="site" data-section="location_modal" data-label="Location picker" data-sectype="modal"{% if _ls %} style="{{ _ls }}"{% endif %}>
   {% include "partials/location_modal.html" %}

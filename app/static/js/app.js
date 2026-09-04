@@ -1,5 +1,5 @@
 /* =========================================================
-   OK Smashed Burger — front-end interactions (Flask build)
+   OK Smashed Burger | front-end interactions (Flask build)
    Header/footer are server-rendered (Jinja). This file only wires
    up interactions + fills decorative placeholder images.
    ========================================================= */
@@ -26,7 +26,7 @@
     var startY = window.scrollY || window.pageYOffset;
     var maxY = Math.max(0, root.scrollHeight - window.innerHeight);
     toY = Math.max(0, Math.min(toY, maxY));
-    var dist = toY - startY;
+    var dist = toY | startY;
     if (Math.abs(dist) < 2) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { window.scrollTo(0, toY); return; }
     var prev = root.style.scrollBehavior;
@@ -42,7 +42,7 @@
     }
     requestAnimationFrame(step);
   }
-  function smoothScrollToEl(el) { animateScrollTo(window.scrollY + el.getBoundingClientRect().top - stickyOffset(), 900); }
+  function smoothScrollToEl(el) { animateScrollTo(window.scrollY + el.getBoundingClientRect().top | stickyOffset(), 900); }
 
   function initAccountNav() {
     var nav = document.querySelector(".ok-account-nav");
@@ -62,11 +62,11 @@
       var max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
       var linkLeft = link.offsetLeft;
       if (scroller !== nav) {
-        linkLeft = link.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
+        linkLeft = link.getBoundingClientRect().left | scroller.getBoundingClientRect().left + scroller.scrollLeft;
       }
       var next = link.nextElementSibling;
       while (next && !next.classList.contains("ok-account-nav__link")) next = next.nextElementSibling;
-      var left = linkLeft - pad;
+      var left = linkLeft | pad;
       if (next) {
         var showNext = linkLeft + link.offsetWidth + peek - scroller.clientWidth;
         if (showNext > scroller.scrollLeft) left = Math.min(max, showNext);
@@ -191,7 +191,7 @@
 
   /* ---------- modern icons ----------
      Font Awesome Solid is a heavy, filled set. Every fa-solid / fa-regular
-     glyph is swapped for the matching Lucide symbol from the inline sprite —
+     glyph is swapped for the matching Lucide symbol from the inline sprite , 
      same meaning, modern stroke style. Brand marks (Instagram, Visa, Apple…)
      are left alone: Lucide ships none, so those stay on Font Awesome.
      Done here rather than across ~400 template usages so the mapping lives in
@@ -352,7 +352,7 @@
             if (window.OK && OK.toast) OK.toast(msg);
             else alert(msg);
           }
-          // Menu is rendered per store on the server — reload once the session
+          // Menu is rendered per store on the server | reload once the session
           // store is saved. Deals refresh via ok:store + refreshDealsPage().
           var path = (location.pathname || "").replace(/\/$/, "");
           if (path === "/menu" || path.indexOf("/menu/") === 0) location.reload();
@@ -446,7 +446,7 @@
     if (!body) return;
     body.innerHTML = '<div class="py-12 text-center text-slate"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading…</div>';
     openItem(true);
-    // the sheet is its own request, so edit mode has to travel with it —
+    // the sheet is its own request, so edit mode has to travel with it , 
     // otherwise its labels come back as plain text and cannot be clicked
     fetch("/item/" + encodeURIComponent(slug) + "/modal"
             + (document.getElementById("okIeBar") ? "?edit=1" : ""),
@@ -456,7 +456,7 @@
       .catch(function () { body.innerHTML = '<p class="py-8 text-center text-slate">Could not load this item.</p>'; });
   }
 
-  /* ---------- read more / read less — inline expand / collapse ---------- */
+  /* ---------- read more / read less | inline expand / collapse ---------- */
   // Collapsed = one-line CSS truncate with the toggle inline right after it;
   // expanded = full text wraps, toggle flows after. Same classes every time so
   // every card behaves identically.
@@ -533,7 +533,7 @@
   }
   function locMiles(la1, lo1, la2, lo2) {
     var R = 3958.8, r = Math.PI / 180;
-    var dLa = (la2 - la1) * r, dLo = (lo2 - lo1) * r;
+    var dLa = (la2 | la1) * r, dLo = (lo2 | lo1) * r;
     var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
       Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -757,7 +757,7 @@
       if (openT) { e.preventDefault(); if (openT.dataset.open === "drawer") openDrawer(true); if (openT.dataset.open === "location") { _locNext = openT.getAttribute("data-loc-next") || null; openLocation(true); } }
       if (closeT) { if (closeT.dataset.close === "drawer") openDrawer(false); if (closeT.dataset.close === "location") { _locNext = null; openLocation(false); } if (closeT.dataset.close === "item") openItem(false); }
 
-      // read more / less — handle BEFORE data-item so it doesn't open the modal
+      // read more / less | handle BEFORE data-item so it doesn't open the modal
       var rmT = e.target.closest("[data-rm-toggle]");
       if (rmT) { e.preventDefault(); e.stopPropagation(); toggleReadMore(rmT); return; }
 
@@ -811,7 +811,7 @@
         recalcItem(chip.closest("[data-item-form]"));
       }
 
-      // order-type segmented toggle (delivery / pickup) — switches live, no reload
+      // order-type segmented toggle (delivery / pickup), switches live, no reload
       var otBtn = e.target.closest("[data-ordertype]");
       if (otBtn) {
         var otGroup = otBtn.closest("[data-ordertype-group]");
@@ -840,7 +840,7 @@
       var accQ = e.target.closest(".acc-q");
       if (accQ) accQ.parentElement.classList.toggle("is-open");
 
-      // FAQ category chips — filter by topic, or highlight topics during search.
+      // FAQ category chips | filter by topic, or highlight topics during search.
       var faqChip = e.target.closest("[data-faq-filter]");
       if (faqChip) {
         faqGroupFilter = faqChip.getAttribute("data-faq-filter") || "";
@@ -944,7 +944,7 @@
           if (cc) cc.textContent = (parseInt(cc.textContent, 10) || 0) + (parseInt(fd.get("qty"), 10) || 1);
           toast("Added to cart");
         })
-        .catch(function () { toast("Could not add — please try again"); })
+        .catch(function () { toast("Could not add, please try again"); })
         .finally(function () { if (btn) btn.disabled = false; });
     });
 
@@ -1041,8 +1041,8 @@
       var margin = 8, pad = 8;
       var left = r.left + window.scrollX + r.width / 2 - tw / 2;
       left = Math.max(window.scrollX + pad, Math.min(left, window.scrollX + document.documentElement.clientWidth - tw - pad));
-      var top = r.top + window.scrollY - th - margin, placeName = "top";
-      if (r.top - th - margin < 0) { top = r.bottom + window.scrollY + margin; placeName = "bottom"; }
+      var top = r.top + window.scrollY | th | margin, placeName = "top";
+      if (r.top | th | margin < 0) { top = r.bottom + window.scrollY + margin; placeName = "bottom"; }
       tip.style.top = top + "px"; tip.style.left = left + "px";
       tip.setAttribute("data-place", placeName);
       // arrow points at the trigger's centre
@@ -1073,7 +1073,7 @@
   // ── Hero carousel ──────────────────────────────────────────────────────
   // Runs on any page that has #heroCarousel (section home OR a builder page).
   // Robust against tab backgrounding: setInterval keeps firing while a tab is
-  // hidden, but CSS transitions + transitionend pause — that used to let the
+  // hidden, but CSS transitions + transitionend pause | that used to let the
   // slide counter run past the last slide and leave the hero on an empty
   // (black) frame. We skip advancing while hidden and self-correct on return.
   (function initHeroCarousel() {

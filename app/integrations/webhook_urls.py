@@ -1,4 +1,4 @@
-"""Per-store webhook endpoint URLs — editable in Admin → Integrations → Webhooks."""
+"""Per-store webhook endpoint URLs - editable in Admin → Integrations → Webhooks."""
 
 WEBHOOK_PROVIDERS = [
     {
@@ -53,13 +53,13 @@ WEBHOOK_PROVIDERS = [
         "events": [
             "Message status (delivered, failed, undelivered)",
         ],
-        "setup": "No extra secret — Twilio validates with your Auth Token. Outbound SMS uses the status callback URL below.",
+        "setup": "No extra secret - Twilio validates with your Auth Token. Outbound SMS uses the status callback URL below.",
     },
 ]
 
 
 def store_webhook_key(store):
-    """Location id for webhook URLs — e.g. 7014 from 7014 Frankford Ave."""
+    """Location id for webhook URLs - e.g. 7014 from 7014 Frankford Ave."""
     import re
     if not store:
         return ""
@@ -73,7 +73,7 @@ def store_webhook_key(store):
 
 
 def webhook_path(provider, store_key):
-    """/webhooks/7014/stripe — location first, then provider."""
+    """/webhooks/7014/stripe - location first, then provider."""
     prov = provider.replace("_direct", "")
     return "/webhooks/%s/%s" % (store_key, prov)
 

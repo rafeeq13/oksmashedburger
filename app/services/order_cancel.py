@@ -1,4 +1,4 @@
-"""Cancel a paid web order — refund Stripe, cancel Square / delivery, notify customer."""
+"""Cancel a paid web order | refund Stripe, cancel Square / delivery, notify customer."""
 from flask import current_app
 
 from app.extensions import db

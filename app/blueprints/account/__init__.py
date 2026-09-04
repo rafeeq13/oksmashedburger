@@ -24,7 +24,7 @@ def _next_reward(points):
     """Resolve the balance against the admin's tier list.
 
     This used to hardcode a 1,500 target, which had nothing to do with the
-    thresholds printed on /rewards — 53 points showed "1,447 to your next
+    thresholds printed on /rewards - 53 points showed "1,447 to your next
     reward" while the tier cards said Silver starts at 2,500. One source of
     truth now: the same rows the client edits in Website Content.
     """
@@ -74,7 +74,7 @@ def orders():
 
 @bp.get("/orders/<number>/receipt.pdf")
 def receipt(number):
-    """PDF receipt — the order's owner, or a guest who just placed it (session)."""
+    """PDF receipt - the order's owner, or a guest who just placed it (session)."""
     from app.services.receipts import build_receipt_pdf
     order = Order.query.filter_by(number=number).first_or_404()
     u = current_user()
@@ -130,11 +130,11 @@ def reorder(number):
         added += 1
 
     if added and skipped:
-        flash(f"Added {added} item(s) to your cart — {skipped} item(s) from {order.number} are no longer available.", "success")
+        flash(f"Added {added} item(s) to your cart - {skipped} item(s) from {order.number} are no longer available.", "success")
     elif added:
         flash(f"Added your {order.number} items to the cart. Prices reflect today's menu.", "success")
     else:
-        flash("Sorry — none of those items are available to reorder right now.", "error")
+        flash("Sorry - none of those items are available to reorder right now.", "error")
     return redirect("/cart")
 
 
@@ -186,7 +186,7 @@ def _looks_like_image(head):
 def _save_avatar(file, user):
     """Store a profile photo. Returns (url, error).
 
-    Checked on extension AND on what the bytes actually are — a file called
+    Checked on extension AND on what the bytes actually are | a file called
     .png that is really something else must not be written into a folder the
     web server hands back to browsers. Named by user id so re-uploading
     replaces the old file instead of littering the disk.
@@ -203,7 +203,7 @@ def _save_avatar(file, user):
     size = file.stream.tell()
     file.stream.seek(0)
     if size > AVATAR_MAX_BYTES:
-        return None, "That image is over 4 MB — please use a smaller one."
+        return None, "That image is over 4 MB - please use a smaller one."
 
     head = file.stream.read(16)
     file.stream.seek(0)

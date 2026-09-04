@@ -1,4 +1,4 @@
-"""Customer favorites — products a signed-in user saved for faster reordering."""
+"""Customer favorites - products a signed-in user saved for faster reordering."""
 from app.extensions import db
 from .base import TimestampMixin
 

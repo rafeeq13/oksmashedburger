@@ -1,4 +1,4 @@
-"""Application factory — OK Smashed Burger platform (modular monolith)."""
+"""Application factory | OK Smashed Burger platform (modular monolith)."""
 import os
 import re
 
@@ -86,7 +86,7 @@ def create_app(config_object=None):
     app.register_blueprint(webhooks_bp)
 
     # ── Feature switches: the page itself, not just the link ────────────
-    # Hiding a nav entry is cosmetic — the URL still works, and a search
+    # Hiding a nav entry is cosmetic | the URL still works, and a search
     # engine or an old bookmark walks straight in. A switched-off area is
     # gone from the routing table's point of view too.
     FEATURE_PATHS = [
@@ -124,7 +124,7 @@ def create_app(config_object=None):
     # ── Static assets: cache hard, bust on change ────────────────────────
     # Nothing was setting a cache policy, so every visit re-fetched ~360 KB of
     # CSS/JS. A one-year max-age is only safe with a busting token, so
-    # url_for('static', …) gets ?v=<mtime> appended automatically — the URL
+    # url_for('static', …) gets ?v=<mtime> appended automatically | the URL
     # changes the moment a file is edited and browsers pick it up immediately.
     # Assigned, not setdefault: Flask ships this key pre-set to None, so
     # setdefault would silently leave caching off.
@@ -150,7 +150,7 @@ def create_app(config_object=None):
 
     @app.after_request
     def _security_headers(resp):
-        """Baseline hardening. Deliberately no CSP — the site and the page
+        """Baseline hardening. Deliberately no CSP | the site and the page
         builder both emit inline styles/scripts, so a policy strict enough to
         matter would break them; that needs its own pass with nonces."""
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
@@ -182,7 +182,7 @@ def create_app(config_object=None):
         parts = []
 
         def put(var, value):
-            """One declaration — but only if the value is really just a value.
+            """One declaration | but only if the value is really just a value.
 
             Everything here ends up inside a style attribute the whole internet
             reads, and inside the editor's own panel afterwards. A value holding
@@ -268,7 +268,7 @@ def create_app(config_object=None):
                     # Two things write these keys: Page design saves a bare number,
                     # the on-page panel saves the number with its unit already on
                     # it. Appending blindly produced "28pxpx", which the browser
-                    # throws away — the control looked like it did nothing after a
+                    # throws away | the control looked like it did nothing after a
                     # reload. Only add the unit when the value is still just a
                     # number.
                     raw = str(cfg[kk]).strip()
@@ -389,8 +389,8 @@ def create_app(config_object=None):
         path = (request.path or "/").rstrip("/") or "/"
         page_key = "home" if path == "/" else next(
             (p["page"] for p in INNER_PAGES if p["url"].rstrip("/") == path), None)
-        # the page's own sections, plus the shared chrome — a face picked for the
-        # header or the footer belongs to every page — plus the builder page's
+        # the page's own sections, plus the shared chrome | a face picked for the
+        # header or the footer belongs to every page | plus the builder page's
         # own key when one is being rendered
         wanted = ["site"] + ([page_key] if page_key else [])
         builder_key = getattr(g, "pb_builder_key", None)
@@ -410,7 +410,7 @@ def create_app(config_object=None):
 
         It is 190 KB of selectors that anchor on p, a, span, div and h1-h6, and
         it can only ever do something on a page that has actually set one of its
-        variables — which today is almost none of them. Asking for it only when
+        variables | which today is almost none of them. Asking for it only when
         it can matter keeps that weight off every ordinary visitor, while the
         editor always gets it because it writes those variables live.
         """
@@ -445,7 +445,7 @@ def create_app(config_object=None):
                   "Poppins:wght@400;500;600;700;800;900",
                   "Inter:wght@300;400;500;600;700;800"}
         try:
-            # only what can apply to this page — otherwise a face picked for
+            # only what can apply to this page | otherwise a face picked for
             # Contact would be downloaded on the home page too, for nothing
             # every place a face can be chosen: the two older section-wide keys
             # and the per-element ones
@@ -467,7 +467,7 @@ def create_app(config_object=None):
     def pb_page_style(page, key):
         """Inline style for an inner-page section. Same contract as
         pb_section_style, just looked up by (page, key) instead of being
-        handed a config — the templates have no row object to pass."""
+        handed a config | the templates have no row object to pass."""
         from .models.page import inner_section_config
         try:
             return pb_section_style(inner_section_config(page, key))
@@ -587,7 +587,7 @@ def create_app(config_object=None):
         pc_defaults = page_content_defaults(app.config["BRAND_NAME"])
 
         def pc_attr(key, fallback=""):
-            """Plain string — for use inside an HTML attribute, where a
+            """Plain string | for use inside an HTML attribute, where a
             wrapper element would corrupt the markup."""
             return site.get(key) or pc_defaults.get(key) or fallback
 

@@ -61,7 +61,7 @@ def _editable_cfg(key, cfg):
     Home sections read their words out of `cfg`, not out of pc(), which is why
     they were the one page you could restyle but not rewrite on the page. The
     registry defaults are merged in first, so a field nobody has overridden yet
-    is editable too — otherwise only already-changed text could be changed.
+    is editable too | otherwise only already-changed text could be changed.
     """
     from flask import request
     from app.auth import current_user
@@ -188,7 +188,7 @@ def _is_pure_section_page(page):
     "Edit home page" seeds the builder with one placeholder per home section and
     no content of its own. Until the admin actually drops a block in, the section
     system is the only thing describing that page, so it should own it completely
-    — including the order and the sections added or removed since. Rendering the
+   , including the order and the sections added or removed since. Rendering the
     stored placeholder list instead is what made reordering and new custom blocks
     in the Page Builder look like they did nothing.
     """
@@ -232,7 +232,7 @@ def home():
     u = current_user()
     edit_mode = bool(request.args.get("pbedit")) and u and u.role and u.role.name in _PB_EDIT_ROLES
 
-    # If the admin built a home page in the drag-drop builder, serve that — unless
+    # If the admin built a home page in the drag-drop builder, serve that | unless
     # it is still only the seeded section placeholders, in which case the section
     # system describes the page better than the frozen placeholder list does.
     home_page = BuilderPage.query.filter_by(is_home=True, published=True).first()
@@ -329,7 +329,7 @@ def contact_send():
     db.session.commit()
 
     # Notify the business and acknowledge the sender. A mail failure must never
-    # cost us the submission — the row is already committed above.
+    # cost us the submission | the row is already committed above.
     try:
         from app.services import mailer
         mailer.contact_received(row)
@@ -445,7 +445,7 @@ def unsubscribe(token):
 
     Accepts POST as well as GET because RFC 8058 one-click (the button Gmail
     and Outlook render from the List-Unsubscribe header) posts to this URL.
-    The token is signed and never expires — an old newsletter should still be
+    The token is signed and never expires | an old newsletter should still be
     able to unsubscribe someone years later.
     """
     from itsdangerous import BadSignature, URLSafeSerializer
@@ -465,7 +465,7 @@ def unsubscribe(token):
 @bp.post("/reviews")
 @limiter.limit("3 per minute; 10 per hour")
 def review_submit():
-    """Public review submission. Every row lands as `pending` — nothing a
+    """Public review submission. Every row lands as `pending`, nothing a
     visitor writes reaches the site until a manager approves it."""
     name = request.form.get("name", "").strip()
     body = request.form.get("body", "").strip()

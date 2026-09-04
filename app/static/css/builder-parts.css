@@ -1,5 +1,5 @@
 /* Per-element typography and button states.
-   GENERATED - regenerate with scratchpad/gen_roles.py then gen_cta.py.
+   GENERATED | regenerate with scratchpad/gen_roles.py then gen_cta.py.
 
    Split out of builder.css on purpose: these rules only ever apply to a page
    that has actually set one of their variables, and they anchor on div, p, a,
@@ -9,7 +9,7 @@
 */
 
 /* ── Per-role typography ────────────────────────────────────────────────
-   GENERATED — regenerate with scratchpad/gen_roles.py rather than editing
+   GENERATED | regenerate with scratchpad/gen_roles.py rather than editing
    these selectors by hand.
 
    Everything above this line stays exactly as it was: a section that has only
@@ -24,7 +24,7 @@
    to leave a whole subtree alone (brand wordmarks, the Google review cards).
 */
 
-/* title — Section heading */
+/* title, Section heading */
 .pb-sec[style*="--pb-title-family:"] .pb-t-title,
 .pb-sec[style*="--pb-title-family:"] :is(.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-title-family:"] :is(h1,h2):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-family:var(--pb-title-family) !important; }
@@ -75,7 +75,7 @@
 .pb-sec[style*="--pb-title-sizelg:"] :is(h1,h2):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-title-sizelg) !important; }
 }
 
-/* titlehl — Highlighted words in a heading */
+/* titlehl, Highlighted words in a heading */
 .pb-sec[style*="--pb-titlehl-family:"] .pb-t-titlehl,
 .pb-sec[style*="--pb-titlehl-family:"] :is(.ok-hl):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-titlehl-family:"] :is(h1,h2,h3,h4,h5,h6) :is(span,mark,em,b,strong):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-family:var(--pb-titlehl-family) !important; }
@@ -126,7 +126,7 @@
 .pb-sec[style*="--pb-titlehl-sizelg:"] :is(h1,h2,h3,h4,h5,h6) :is(span,mark,em,b,strong):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-titlehl-sizelg) !important; }
 }
 
-/* sub — Subheading / lead-in */
+/* sub, Subheading / lead-in */
 .pb-sec[style*="--pb-sub-family:"] .pb-t-sub,
 .pb-sec[style*="--pb-sub-family:"] :is(.ok-hero-sub,.ok-subtitle,.ok-lead):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-sub-family:"] :is(h4,h5,h6):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *):not(:is(.ok-card,.ok-loccard,.ok-gcard) *){ font-family:var(--pb-sub-family) !important; }
@@ -177,7 +177,7 @@
 .pb-sec[style*="--pb-sub-sizelg:"] :is(h4,h5,h6):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *):not(:is(.ok-card,.ok-loccard,.ok-gcard) *){ font-size:var(--pb-sub-sizelg) !important; }
 }
 
-/* body — Paragraph copy */
+/* body, Paragraph copy */
 .pb-sec[style*="--pb-body-family:"] .pb-t-body,
 .pb-sec[style*="--pb-body-family:"] :is(.ok-abt-body):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-body-family:"] :is(p,li):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *):not(:is(.ok-card,.ok-loccard,.ok-gcard,.acc-a) *){ font-family:var(--pb-body-family) !important; }
@@ -228,7 +228,7 @@
 .pb-sec[style*="--pb-body-sizelg:"] :is(p,li):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *):not(:is(.ok-card,.ok-loccard,.ok-gcard,.acc-a) *){ font-size:var(--pb-body-sizelg) !important; }
 }
 
-/* eyebrow — Label / kicker / badge */
+/* eyebrow, Label / kicker / badge */
 .pb-sec[style*="--pb-eyebrow-family:"] .pb-t-eyebrow,
 .pb-sec[style*="--pb-eyebrow-family:"] :is(.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-eyebrow-family:"] span.chip:not([class*="pb-t-"]):not(.pb-t-keep *),
@@ -294,7 +294,7 @@
 .pb-sec[style*="--pb-eyebrow-sizelg:"] label:not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-eyebrow-sizelg) !important; }
 }
 
-/* cardtitle — Card / tile heading */
+/* cardtitle, Card / tile heading */
 .pb-sec[style*="--pb-cardtitle-family:"] .pb-t-cardtitle,
 .pb-sec[style*="--pb-cardtitle-family:"] :is(.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-cardtitle-family:"] :is(.ok-card,.ok-loccard,.ok-gcard) :is(h3,h4,h5,h6):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *),
@@ -360,7 +360,7 @@
 .pb-sec[style*="--pb-cardtitle-sizelg:"] h3:not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-cardtitle-sizelg) !important; }
 }
 
-/* cardtext — Card / tile copy */
+/* cardtext, Card / tile copy */
 .pb-sec[style*="--pb-cardtext-family:"] .pb-t-cardtext,
 .pb-sec[style*="--pb-cardtext-family:"] :is(.ok-card-text,.ok-gcard-text,.ok-abt-body-sm):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-cardtext-family:"] :is(.ok-card,.ok-loccard,.ok-gcard,.acc-a) :is(p,li):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-family:var(--pb-cardtext-family) !important; }
@@ -411,7 +411,7 @@
 .pb-sec[style*="--pb-cardtext-sizelg:"] :is(.ok-card,.ok-loccard,.ok-gcard,.acc-a) :is(p,li):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-cardtext-sizelg) !important; }
 }
 
-/* btn — Button / CTA text */
+/* btn, Button / CTA text */
 .pb-sec[style*="--pb-btn-family:"] .pb-t-btn,
 .pb-sec[style*="--pb-btn-family:"] :is(.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-btn-family:"] :is(a,button).chip:not([class*="pb-t-"]):not(.pb-t-keep *),
@@ -477,7 +477,7 @@
 .pb-sec[style*="--pb-btn-sizelg:"] button:not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *){ font-size:var(--pb-btn-sizelg) !important; }
 }
 
-/* nav — Navigation link */
+/* nav, Navigation link */
 .pb-sec[style*="--pb-nav-family:"] .pb-t-nav,
 .pb-sec[style*="--pb-nav-family:"] :is(.nav-link,.ok-flink):not([class*="pb-t-"]):not(.pb-t-keep *){ font-family:var(--pb-nav-family) !important; }
 .pb-sec[style*="--pb-nav-color:"] .pb-t-nav,
@@ -513,7 +513,7 @@
 .pb-sec[style*="--pb-nav-sizelg:"] :is(.nav-link,.ok-flink):not([class*="pb-t-"]):not(.pb-t-keep *){ font-size:var(--pb-nav-sizelg) !important; }
 }
 
-/* meta — Price / rating / caption */
+/* meta, Price / rating / caption */
 .pb-sec[style*="--pb-meta-family:"] .pb-t-meta,
 .pb-sec[style*="--pb-meta-family:"] :is(.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words):not([class*="pb-t-"]):not(.pb-t-keep *),
 .pb-sec[style*="--pb-meta-family:"] :is(td,th,time):not(:is([class*="pb-t-"],.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,.ok-hl,.ok-hero-sub,.ok-subtitle,.ok-lead,.ok-card-title,.ok-h3,.ok-loccard-title,.ok-gcard-name,.ok-abt-cardh,.acc-q,.ok-card-text,.ok-gcard-text,.ok-abt-body-sm,.ok-abt-body,.ok-hero-kicker,.ok-eyebrow,.ok-label,.ok-press-label,.ok-loccard-badge,.badge,.ok-hint,.ok-stat,.ok-press-logo,.ok-rating-pill,.ok-rating-score,.ok-stars,.ok-gcard-when,.ok-gcard-avatar,.ok-cater-amount,.ok-cater-unit,.ok-cater-words,.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.chip,.nav-link,.ok-flink,.ok-ie)):not(.pb-t-keep *),
@@ -580,7 +580,7 @@
 }
 
 /* ── CTA states ────────────────────────────────────────────────────────
-   GENERATED — regenerate with scratchpad/gen_cta.py.
+   GENERATED | regenerate with scratchpad/gen_cta.py.
 
    Every button state carries its own colours: default, hover, focus, active and
    disabled never share a value, so a hover fill can no longer swallow the label
@@ -589,7 +589,7 @@
 
    Two things here are not obvious and must not be "simplified":
      * background sets background-image:none as well, because .btn-primary's
-       fill is a gradient written with the `background` shorthand — a lone
+       fill is a gradient written with the `background` shorthand | a lone
        background-color would sit underneath it.
      * the focus rule re-emits the site's keyboard ring inside its own
        box-shadow. Overriding box-shadow on :focus-visible without doing that
@@ -670,7 +670,7 @@
 .pb-sec[style*="--pb-cta-disabled-scale:"][style*="--pb-cta-disabled-scale:"][style*="--pb-cta-disabled-scale:"] :is(.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,[data-ordertype],[type="submit"]):not(.pb-t-keep *):not(:is(.ok-loclink,.ok-iconbtn,.chip,.qty button)):is(:disabled,[disabled],[aria-disabled="true"]){ scale:var(--pb-cta-disabled-scale,1) !important; }
 .pb-sec[style*="--pb-cta-disabled-radius:"][style*="--pb-cta-disabled-radius:"][style*="--pb-cta-disabled-radius:"] :is(.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,[data-ordertype],[type="submit"]):not(.pb-t-keep *):not(:is(.ok-loclink,.ok-iconbtn,.chip,.qty button)):is(:disabled,[disabled],[aria-disabled="true"]){ border-radius:var(--pb-cta-disabled-radius) !important; }
 
-/* focus ring — composed, never replaced */
+/* focus ring | composed, never replaced */
 .pb-sec[style*="--pb-cta-focus-shadow:"][style*="--pb-cta-focus-shadow:"] :is(.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,[data-ordertype],[type="submit"]):not(.pb-t-keep *):not(:is(.ok-loclink,.ok-iconbtn,.chip,.qty button)):focus-visible{ box-shadow:var(--pb-cta-focus-shadow,0 0 #0000),0 0 0 2px var(--pb-cta-ring-gap,#fff),0 0 0 4px var(--pb-cta-focus-ring,var(--ok-focus-ring,#141414)) !important; outline:0 !important; }
 .pb-sec[style*="--pb-cta-focus-ring:"][style*="--pb-cta-focus-ring:"] :is(.btn,.ok-cta,.ok-btn-outline,.ok-btn-onyellow,.ok-btn-subscribe,.ok-btn-invert,.ok-more,.ok-loccard-cta,.ok-mobile-order,[data-ordertype],[type="submit"]):not(.pb-t-keep *):not(:is(.ok-loclink,.ok-iconbtn,.chip,.qty button)):focus-visible{ box-shadow:var(--pb-cta-focus-shadow,0 0 #0000),0 0 0 2px var(--pb-cta-ring-gap,#fff),0 0 0 4px var(--pb-cta-focus-ring,var(--ok-focus-ring,#141414)) !important; outline:0 !important; }
 :is(.bg-ink,.ok-footer,.ok-modal,.ok-hero-inner) .pb-sec{ --pb-cta-ring-gap:var(--ok-ink,#141414); }

@@ -20,7 +20,7 @@ LOGO = os.path.join(os.path.dirname(__file__), "..", "static", "img", "logo.png"
 
 
 def _s(text):
-    """Core PDF fonts are latin-1 only — drop anything they can't encode."""
+    """Core PDF fonts are latin-1 only, drop anything they can't encode."""
     return str(text if text is not None else "").encode("latin-1", "replace").decode("latin-1")
 
 
@@ -193,7 +193,7 @@ def build_receipt_pdf(order):
     if order.gift_card_applied and float(order.gift_card_applied) > 0:
         row("Gift card", "-" + _money(order.gift_card_applied), "discount")
 
-    # highlighted TOTAL bar (right half) — keep both cells on one line inside the fill
+    # highlighted TOTAL bar (right half), keep both cells on one line inside the fill
     pdf.ln(2)
     ty = pdf.get_y()
     bx = X + W * 0.55

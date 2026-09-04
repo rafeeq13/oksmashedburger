@@ -25,7 +25,7 @@ def active_integration_config(store, provider):
         return dict(raw[env])
     if ENV_KEYS.intersection(raw.keys()):
         return dict(raw.get(env) or {})
-    # Legacy flat config (pre sandbox/production split) — shared until migrated on save.
+    # Legacy flat config (pre sandbox/production split), shared until migrated on save.
     return {k: v for k, v in raw.items() if k not in ENV_KEYS}
 
 

@@ -21,7 +21,7 @@ def view():
     store = get_current_store()
     summary = cartlib.summary(store)
     # Real "you might also like" suggestions: available items not already in the cart,
-    # favouring sweets/sides — they open the same quick-add modal as the menu.
+    # favouring sweets/sides | they open the same quick-add modal as the menu.
     in_cart = {ln.get("product_id") for ln in summary["lines"]}
     suggestions = []
     if store:
@@ -98,7 +98,7 @@ def promo():
         session["promo"] = code
         s = cartlib.summary(get_current_store())
         # Don't block on the "add $X more" minimum while the cart is still empty
-        # (e.g. starting an order from a deal) — it applies once the cart qualifies.
+        # (e.g. starting an order from a deal), it applies once the cart qualifies.
         if s["promo"]["error"] and s["count"] > 0:
             flash(s["promo"]["error"], "error")
         elif not s["promo"]["error"]:
@@ -133,7 +133,7 @@ def giftcard():
         if s["giftcard"]["error"]:
             flash(s["giftcard"]["error"], "error")
         else:
-            flash(f"Gift card applied — ${s['giftcard']['applied']:.2f} credited.", "success")
+            flash(f"Gift card applied - ${s['giftcard']['applied']:.2f} credited.", "success")
     return redirect("/cart")
 
 

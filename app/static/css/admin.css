@@ -1,5 +1,5 @@
 /* =========================================================
-   OK Smashed Burger — ADMIN LAYER
+   OK Smashed Burger, ADMIN LAYER
    Load order: bootstrap → style → theme → utils → admin → admin-generated
 
    The admin panel used to run on the Tailwind Play CDN with a brand palette
@@ -241,7 +241,7 @@ h1,h2,h3,h4,h5,h6{ font-size:inherit; font-weight:inherit; line-height:inherit; 
   #okNavToggle:checked ~ .adm-backdrop{ display:none; }
 }
 
-/* Sidebar tab navigation — loading overlay while the next page fetches */
+/* Sidebar tab navigation | loading overlay while the next page fetches */
 .adm-content{ position:relative; }
 .adm-nav-loader{
   position:absolute;
@@ -341,7 +341,7 @@ a.sb-navlink.is-loading{ pointer-events:none; opacity:.92; }
   .ok-pageswitch-panel{ width:min(290px,86vw); }
 }
 
-/* Menu modifiers — compact inline addon controls (admin only; premium.css not loaded here) */
+/* Menu modifiers | compact inline addon controls (admin only; premium.css not loaded here) */
 .ok-addon-row__meta{ display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .75rem; margin-bottom:.5rem; }
 .ok-addon-row__controls{
   display:flex !important;

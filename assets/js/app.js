@@ -1,8 +1,8 @@
 /* =========================================================
-   OK Smashed Burger — Template runtime
+   OK Smashed Burger, Template runtime
    Injects shared header/footer, generates branded placeholder
    images, loads Font Awesome icons, and wires up demo interactions.
-   No backend — this is a layout prototype for client sign-off.
+   No backend | this is a layout prototype for client sign-off.
    ========================================================= */
 (function () {
   "use strict";
@@ -65,7 +65,7 @@
     var startY = window.scrollY || window.pageYOffset;
     var maxY = Math.max(0, root.scrollHeight - window.innerHeight);
     toY = Math.max(0, Math.min(toY, maxY));
-    var dist = toY - startY;
+    var dist = toY | startY;
     if (Math.abs(dist) < 2) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { window.scrollTo(0, toY); return; }
     var prev = root.style.scrollBehavior;
@@ -82,7 +82,7 @@
     requestAnimationFrame(step);
   }
   function smoothScrollToEl(el) {
-    animateScrollTo(window.scrollY + el.getBoundingClientRect().top - stickyOffset(), 900);
+    animateScrollTo(window.scrollY + el.getBoundingClientRect().top | stickyOffset(), 900);
   }
 
   /* ---------- Font Awesome loader ---------- */
@@ -274,7 +274,7 @@
       '<footer class="bg-jet text-white mt-8">' +
       '<div class="border-b border-white/10"><div class="ok-container py-8 flex flex-col md:flex-row items-center justify-between gap-4">' +
       '<div><h3 class="font-display text-xl font-bold flex items-center gap-2">Get the good stuff first ' + ic("beef", "text-okyellow") + "</h3>" +
-      '<p class="text-white/70 text-sm">Exclusive deals, new drops & rewards — straight to your inbox.</p></div>' +
+      '<p class="text-white/70 text-sm">Exclusive deals, new drops & rewards - straight to your inbox.</p></div>' +
       '<form class="flex gap-2 w-full md:w-auto" onsubmit="return false"><input type="email" placeholder="you@email.com" class="ok-input md:w-64 text-jet"><button class="btn btn-primary">Subscribe</button></form>' +
       "</div></div>" +
       '<div class="ok-container py-12 grid grid-cols-2 md:grid-cols-5 gap-8">' +
@@ -317,7 +317,7 @@
       '<div class="flex gap-2 mb-4" data-chip-group><button class="chip is-active flex-1 justify-center">' + ic("car") + ' Delivery</button><button class="chip flex-1 justify-center">' + ic("shopping-bag") + ' Pickup</button><button class="chip flex-1 justify-center">' + ic("utensils") + ' Dine-in</button></div>' +
       stores.map(function (st) {
         return '<button class="w-full text-left ok-card ok-card-hover p-4 mb-2 flex items-center justify-between ' + (st[3] ? "" : "opacity-60") + '">' +
-          '<div><div class="font-bold">OK Smashed Burger — ' + st[0] + '</div><div class="text-sm text-slate">' + st[1] + '</div>' +
+          '<div><div class="font-bold">OK Smashed Burger - ' + st[0] + '</div><div class="text-sm text-slate">' + st[1] + '</div>' +
           '<div class="flex items-center gap-1.5 text-xs mt-1 ' + (st[3] ? "text-okgreen" : "text-okred") + ' font-semibold">' +
           '<span class="status-dot" style="background:' + (st[3] ? "#2E7D32" : "#C62828") + '"></span>' + (st[3] ? "Open · ~25 min" : "Closed · opens 11:00") + "</div></div>" +
           '<div class="text-right shrink-0 ml-3"><div class="badge badge-soft">' + st[2] + "</div>" + (st[3] ? '<div class="text-okamber mt-2 flex justify-end">' + ic("arrow-right", "icon-lg") + "</div>" : "") + "</div></button>";

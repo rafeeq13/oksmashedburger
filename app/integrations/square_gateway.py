@@ -145,7 +145,7 @@ def build_square_order(order, store):
     if discounts:
         body["discounts"] = discounts
     if order.notes:
-        body["note"] = ("Web order %s — %s" % (order.number, order.notes))[:500]
+        body["note"] = ("Web order %s | %s" % (order.number, order.notes))[:500]
     else:
         body["note"] = "Web order %s" % order.number
     return body, location_id, currency
@@ -190,7 +190,7 @@ def push_order(store, order, stripe_ref=None):
         loc = (cfg.get("location_id") or "").strip()
         if loc.startswith("sandbox-sq0idb") or loc.startswith("sq0idb-"):
             return {"status": "failed", "reference": None,
-                    "raw": {"error": "location_id is your Application ID — use the Location ID (starts with L). "
+                    "raw": {"error": "location_id is your Application ID | use the Location ID (starts with L). "
                                      "See Admin → Square hint or run tools/list_square_locations.py."}}
         return {"status": "skipped", "reference": None,
                 "raw": {"error": "Square location_id + access_token required"}}

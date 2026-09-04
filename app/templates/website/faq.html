@@ -36,7 +36,7 @@
           {% for g in faq_groups %}<button class="chip" data-faq-filter="{{ g }}">{{ g }}</button>{% endfor %}
         </div>
 
-        <!-- Accordion — items live in Admin > Website Content > FAQ questions -->
+        <!-- Accordion | items live in Admin > Website Content > FAQ questions -->
         {% set faqs = content_list('faq') %}
         <div class="ok-card p-2 ok-paddin-15rem-sm">
           {% for f in faqs %}

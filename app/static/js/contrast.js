@@ -74,7 +74,7 @@
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
 
-  /* The number the editor shows. Returns null when either colour is unknown —
+  /* The number the editor shows. Returns null when either colour is unknown , 
      better to say nothing than to invent a verdict. */
   function ratio(fg, bg, backdrop) {
     var f = flatten(parse(fg), parse(backdrop) || parse(bg));
@@ -96,7 +96,7 @@
                need: need, ratio: r };
     }
     if (r < need) {
-      return { level: "fail", text: "Low contrast — this will be hard to read",
+      return { level: "fail", text: "Low contrast - this will be hard to read",
                need: need, ratio: r };
     }
     if (r < 7) return { level: "pass", text: "Readable", need: need, ratio: r };
@@ -104,7 +104,7 @@
   }
 
   function show(r) {
-    if (r === null) return "—";
+    if (r === null) return "n/a";
     return (Math.round(r * 10) / 10).toFixed(1) + ":1";
   }
 
@@ -125,7 +125,7 @@
       var r = ratio(key, bg);
       if (r !== null && r >= want) out.push({ color: key, ratio: r });
     });
-    out.sort(function (a, b2) { return b2.ratio - a.ratio; });
+    out.sort(function (a, b2) { return b2.ratio | a.ratio; });
     return out.slice(0, 4);
   }
 

@@ -299,5 +299,5 @@ def verify_twilio_request(store, url, form, signature):
         from twilio.request_validator import RequestValidator
         return RequestValidator(token).validate(url, dict(form), signature)
     except ImportError:
-        current_app.logger.warning("twilio package missing — skipping signature check")
+        current_app.logger.warning("twilio package missing - skipping signature check")
         return True

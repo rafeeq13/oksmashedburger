@@ -2,10 +2,10 @@
 
 Font Awesome Solid is a filled, fairly heavy set. Lucide is the modern
 stroke equivalent: same idea, thinner, rounder, consistent. Brand marks
-(Instagram, Visa, Apple…) stay on Font Awesome Brands — Lucide dropped
+(Instagram, Visa, Apple…) stay on Font Awesome Brands, Lucide dropped
 brand icons on purpose and there is no replacement.
 
-Output: app/static/img/icons.svg — one <symbol> per icon, referenced with
+Output: app/static/img/icons.svg | one <symbol> per icon, referenced with
 <use href="#i-name">. One request, cached forever, no JS library.
 """
 import os

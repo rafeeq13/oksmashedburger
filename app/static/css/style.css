@@ -1,5 +1,5 @@
 /* =========================================================
-   OK Smashed Burger — Template Design System
+   OK Smashed Burger, Template Design System
    Brand: White/Yellow primary, Black accent (SRS §9.2)
    These utility component classes layer on top of Tailwind.
    ========================================================= */
@@ -86,7 +86,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
 /* Forms -------------------------------------------------- */
 .ok-input, .ok-select, .ok-textarea{ width:100%; border:1.5px solid #dcdcdc; border-radius:.7rem;
   padding:.75rem .9rem; font-size:.95rem; background:#fff; transition:border .15s ease, box-shadow .15s ease; }
-/* focus is shown by the border going to ink — no yellow outline, no glow */
+/* focus is shown by the border going to ink | no yellow outline, no glow */
 .ok-input:focus, .ok-select:focus, .ok-textarea:focus,
 .ok-input:focus-within{ outline:none; border-color:var(--ok-ink); box-shadow:none; }
 .ok-label{ display:block; font-weight:600; font-size:.85rem; margin-bottom:.35rem; color:var(--ok-jet); }
@@ -111,7 +111,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
 .ok-h3{ font-family:'Poppins',sans-serif; font-weight:700; font-size:1.125rem; line-height:1.3; }
 .ok-lead{ font-size:1.0625rem; line-height:1.65; color:var(--ok-slate); }
 
-/* Hover tooltip (tippy-style) — appended to <body> so card overflow can't clip it */
+/* Hover tooltip (tippy-style), appended to <body> so card overflow can't clip it */
 .ok-tip{ position:absolute; z-index:90; max-width:260px; background:var(--ok-jet,#141414); color:#fff;
   font-family:'Inter',sans-serif; font-size:.78rem; font-weight:400; line-height:1.45; padding:.55rem .7rem;
   border-radius:.55rem; box-shadow:0 10px 30px rgba(0,0,0,.22); pointer-events:none; opacity:0;
@@ -249,7 +249,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
   a{ text-decoration:none !important; }
 }
 
-/* ── DataTables theming (admin tables) — responsive ────────────── */
+/* ── DataTables theming (admin tables), responsive ────────────── */
 .dataTables_wrapper{ font-size:.875rem; color:var(--ok-jet); }
 
 /* Control rows: length+filter (top) and info+pagination (bottom) are wrapped
@@ -281,7 +281,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
 .dataTables_wrapper .dataTables_filter input:focus,
 .dataTables_wrapper .dataTables_length select:focus{ outline:none; border-color:var(--ok-ink); box-shadow:none; }
 
-/* Pagination — square, equal-sized, wrapping buttons */
+/* Pagination | square, equal-sized, wrapping buttons */
 .dataTables_wrapper .dataTables_paginate .paginate_button{
   min-width:2.3rem; height:2.3rem; padding:0 .55rem !important; margin:0 !important;
   display:inline-flex; align-items:center; justify-content:center;
@@ -324,7 +324,7 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 .zmap-grid{ background-image:linear-gradient(rgba(148,163,184,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.16) 1px,transparent 1px); background-size:54px 54px; }
 /* dark inputs used inside the (dark) zone create/edit forms */
 .zinput{ width:100%; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.16); color:#fff; border-radius:.6rem; padding:.5rem .7rem; font-size:.85rem; }
-/* dark surface, so ink would vanish — the border brightens instead */
+/* dark surface, so ink would vanish | the border brightens instead */
 .zinput:focus{ outline:none; border-color:rgba(255,255,255,.55); box-shadow:none; }
 .zinput::placeholder{ color:rgba(255,255,255,.4); }
 .zlabel{ display:block; font-size:.68rem; font-weight:600; letter-spacing:.02em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-bottom:.3rem; }
@@ -370,7 +370,7 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 
 
 /* Lucide icon sprite (see modernIcons() in app.js). Lives here, not in
-   premium.css, because the admin only loads this file — icons sized purely
+   premium.css, because the admin only loads this file | icons sized purely
    from premium.css collapsed to the 300x150 SVG default there. */
 .ok-i{
   width: 1em;

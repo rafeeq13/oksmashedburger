@@ -1,4 +1,4 @@
-{# Inline text editor — rendered only when an admin adds ?edit=1 to a page.
+{# Inline text editor | rendered only when an admin adds ?edit=1 to a page.
 Every pc() string is already wrapped in .ok-ie by the context processor;
 this turns those into contenteditables and saves each on blur. #}
 <script src="{{ url_for('static', filename='js/contrast.js') }}"></script>
@@ -47,7 +47,7 @@ this turns those into contenteditables and saves each on blur. #}
     <input type="url" id="okIeUrl" placeholder="Paste an image link…" aria-label="Image link">
     <input type="file" id="okIeFile" accept="image/*" aria-label="Upload an image from your computer">
     <div class="row">
-      <button type="button" class="reset" id="okIeReset">Delete — use the built-in</button>
+      <button type="button" class="reset" id="okIeReset">Delete | use the built-in</button>
       <button type="button" class="cancel" id="okIeCancel">Cancel</button>
       <button type="button" class="go" id="okIeGo">Apply</button>
     </div>
@@ -324,7 +324,7 @@ this turns those into contenteditables and saves each on blur. #}
 
   /* The font list is an ordinary dropdown, like every other choice in this
      panel. It used to be a button that opened a searchable panel previewing
-     each family in its own face — handsome, and unlike anything else here, so
+     each family in its own face | handsome, and unlike anything else here, so
      it read as a row of pills rather than a setting. Grouped by kind of face,
      and a dropdown brings its own keyboard search with it. */
   .ok-ie-fontsel {
@@ -699,7 +699,7 @@ this turns those into contenteditables and saves each on blur. #}
         .then(function (r) {
           if (r.status === 413) throw new Error("That file is too big to upload.");
           // the server explains a refusal (wrong file type, unknown slot) in the
-          // body — showing a bare status code instead sent the admin hunting
+          // body | showing a bare status code instead sent the admin hunting
           return r.json().then(function (d) {
             if (!r.ok || !d.ok) throw new Error(d && d.error ? d.error : "Could not save (" + r.status + ")");
             return d;
@@ -737,11 +737,11 @@ this turns those into contenteditables and saves each on blur. #}
        A link or a button is a thing to edit here, not a thing to follow. The
        listener runs in the capture phase so it wins before the site's own
        handlers, and it deliberately ignores anything belonging to the editor
-       itself — its bar, its panels and its Design buttons still work. */
+       itself | its bar, its panels and its Design buttons still work. */
     function inEditorChrome(el) {
       return !!(el.closest && el.closest("#okIeBar, #okIeDesign, #okIeSheet, .ok-ie-secbtn"));
     }
-    // things whose whole job is to reveal more of the page — a modal, the cart
+    // things whose whole job is to reveal more of the page | a modal, the cart
     // drawer, a menu, an accordion. Those must keep working, or half the design
     // could never be reached to edit it.
     var OPENERS = "[data-open], [data-item], [data-add], [data-sched-edit], [data-bs-toggle], [data-toggle]";
@@ -778,14 +778,14 @@ this turns those into contenteditables and saves each on blur. #}
       if (href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
 
       // stop the page from changing, but let whatever else is bound to this link
-      // still run — some links open modals rather than navigate
+      // still run | some links open modals rather than navigate
       e.preventDefault();
       if (link.matches(OPENERS)) return;
       var inner = link.querySelector(".ok-ie");
       if (inner) inner.focus();
     }, true);
 
-    // forms must not submit either — Enter in a field would reload the page
+    // forms must not submit either, Enter in a field would reload the page
     document.addEventListener("submit", function (e) {
       if (inEditorChrome(e.target)) return;
       e.preventDefault();
@@ -793,7 +793,7 @@ this turns those into contenteditables and saves each on blur. #}
     }, true);
 
     /* Clicking words while the design panel is open points the text controls at
-       THOSE words — the heading, the sub-heading, the button label and the small
+       THOSE words | the heading, the sub-heading, the button label and the small
        print each keep their own settings, and this is how you reach them. */
     document.addEventListener("click", function (e) {
       var t = e.target;
@@ -832,7 +832,7 @@ this turns those into contenteditables and saves each on blur. #}
 
     /* ---------- section design, on the page itself ----------
        Writes the same style_* keys the Visual editor and Page design write, to
-       the same PageSection row — one place the style lives, so the three ways
+       the same PageSection row | one place the style lives, so the three ways
        of reaching it can never drift apart. */
     var dPanel = document.getElementById("okIeDesign");
     var dBody = document.getElementById("okIeDesignBody");
@@ -860,7 +860,7 @@ this turns those into contenteditables and saves each on blur. #}
      Every role owns its own typography, so restyling a heading can no longer
      drag the sub-heading, the paragraph, the card titles or the button labels
      with it. Rather than stack nine groups of twelve sliders in one panel, the
-     panel shows ONE set and a picker for which text it belongs to — and
+     panel shows ONE set and a picker for which text it belongs to | and
      clicking a piece of text on the page selects its role for you. */
   var TEXT_ROLES = [
     ["title", "Main heading", ".pb-t-title,.ok-hero-title,.ok-title,.ok-display,.ok-h1,.ok-h2,.ok-abt-hero-h,.ok-abt-h,h1,h2"],
@@ -876,7 +876,7 @@ this turns those into contenteditables and saves each on blur. #}
   ];
 
   // key suffix, kind, label, options / [min,max,step,default,unit]
-  // One Size control — phone/tablet/desktop map to size / sizemd / sizelg.
+  // One Size control | phone/tablet/desktop map to size / sizemd / sizelg.
   // Other props get an md/lg key suffix from okIeDeviceKey() so each screen
   // is redesigned on its own.
   var TEXT_PROPS = [
@@ -932,7 +932,7 @@ this turns those into contenteditables and saves each on blur. #}
   }
 
   // group, kind, config key, label, css variable, options / [min,max,step,default,unit]
-  // Everything the section-style system can do is here — the same keys the
+  // Everything the section-style system can do is here | the same keys the
   // Visual editor and Page design write, so all three stay in step.
   var CONTROLS = [
     ["Section", "color", "style_bg", "Background colour", "--pb-bg", "#ffffff"],
@@ -953,7 +953,7 @@ this turns those into contenteditables and saves each on blur. #}
 
     /* The "Type" group used to live here: one heading font, one heading size,
        one body size for the whole section. That is what tied a hero heading to
-       the line underneath it — Heading size set h1/h2 outright, h3 at 70% and
+       the line underneath it, Heading size set h1/h2 outright, h3 at 70% and
        h4-h6 at 58%, so one slider moved three different kinds of text. Every
        one of those settings is now in Text styles below, where it belongs to
        one kind of text and moves nothing else. */
@@ -1034,7 +1034,7 @@ this turns those into contenteditables and saves each on blur. #}
       .then(function (d) {
         say("Saved", 1400);
         // the heading shadow is built on the server from four separate
-        // controls, so there is nothing sensible to preview locally — ask for
+        // controls, so there is nothing sensible to preview locally | ask for
         // the rebuilt value instead of guessing at it
         if (d && d.style !== undefined) {
           /* Keep whatever is NOT ours (position:relative, say) and take the
@@ -1042,7 +1042,7 @@ this turns those into contenteditables and saves each on blur. #}
              rewrites a style attribute as "a: 1; b: 2", so every declaration
              after the first arrives with a leading space and "--pb-" was never
              at index 0. The stale copies were therefore kept and re-appended
-             AFTER the new ones, where they win — which is why the heading
+             AFTER the new ones, where they win | which is why the heading
              shadow controls did nothing once a section had been saved once.
              Only the shadow group showed it: every other control also writes
              its variable directly, so it fixed itself on the next move. */
@@ -1056,9 +1056,9 @@ this turns those into contenteditables and saves each on blur. #}
         /* A page left open across an update still runs the editor it was
            loaded with. Its controls can write settings the site no longer
            has, and the change would sit there looking applied until the next
-           reload threw it away — so say so, and say what to do about it. */
+           reload threw it away | so say so, and say what to do about it. */
         if (e === 400) {
-          say("This page is out of date — press Ctrl+Shift+R to reload the editor," +
+          say("This page is out of date - press Ctrl+Shift+R to reload the editor," +
             " then try again. Nothing was saved.", 9000);
           if (window.console) console.warn("inline-style refused key:", key);
         } else {
@@ -1111,7 +1111,7 @@ this turns those into contenteditables and saves each on blur. #}
 
      This was a button that opened a searchable panel. It previewed each family
      in its own face, which is lovely and completely unlike every other control
-     in this panel — so it read as a set of pills rather than a setting, and the
+     in this panel | so it read as a set of pills rather than a setting, and the
      client asked for a plain list. A dropdown also gives them their own
      keyboard: type "pop" and Poppins is selected. */
   function fontPickerHtml(id, cur) {
@@ -1246,14 +1246,14 @@ this turns those into contenteditables and saves each on blur. #}
       o.disabled = !ok;
     });
     if (keep && have && have.indexOf(parseInt(keep, 10)) < 0) {
-      // the weight in use does not exist in the new family — fall back to the
+      // the weight in use does not exist in the new family | fall back to the
       // nearest one it does have rather than letting the browser invent it
       var near = have.reduce(function (a, b) {
         return Math.abs(b - keep) < Math.abs(a - keep) ? b : a;
       }, have[0]);
       sel.value = String(near);
       sel.dispatchEvent(new Event("change", { bubbles: true }));
-      say("That font has no " + keep + " weight — using " + near + ".", 2600);
+      say("That font has no " + keep + " weight - using " + near + ".", 2600);
     }
   }
 
@@ -1264,7 +1264,7 @@ this turns those into contenteditables and saves each on blur. #}
     var screenNote = document.createElement("p");
     screenNote.className = "hint ok-ie-editing";
     screenNote.textContent = "Screen: " + okIeScreenName() +
-      " — changes here only apply to this screen.";
+      " - changes here only apply to this screen.";
     dBody.appendChild(screenNote);
     /* Text first. People open this panel because they clicked on words, and
        the words are what they came to change; the section's background and
@@ -1291,7 +1291,7 @@ this turns those into contenteditables and saves each on blur. #}
 
   /* ---------- button states ----------
      Five states, each with its own colours. Nothing is shared, so a hover fill
-     never drags the label colour with it — and the panel says out loud whether
+     never drags the label colour with it | and the panel says out loud whether
      the pair a client just chose can actually be read. */
   var CTA_STATES = [
     ["default", "Normal", ""],
@@ -1378,7 +1378,7 @@ this turns those into contenteditables and saves each on blur. #}
 
   /* The button's own colours, read once before any state is previewed. Reading
      them live would mean measuring whatever state the client happens to be
-     looking at — previewing disabled would report the faded colours as if they
+     looking at | previewing disabled would report the faded colours as if they
      were the resting ones. */
   var naturalCta = { bg: "", text: "" };
   function captureNatural(el) {
@@ -1434,7 +1434,7 @@ this turns those into contenteditables and saves each on blur. #}
     }
   }
 
-  /* Never silently repaint what the client chose — offer, and apply only when
+  /* Never silently repaint what the client chose | offer, and apply only when
      they pick one. */
   function offerFix(el) {
     var bg = effective(el, currentState, "bg");
@@ -1542,7 +1542,7 @@ this turns those into contenteditables and saves each on blur. #}
       var label = currentRole;
       TEXT_ROLES.forEach(function (r) { if (r[0] === currentRole) label = r[1]; });
       roleName.textContent = "Editing: " + label + " on " + okIeScreenName() +
-        " — nothing else in this section changes.";
+        " - nothing else in this section changes.";
     }
     textHost.innerHTML = "";
     TEXT_PROPS.forEach(function (p) {
@@ -1553,7 +1553,7 @@ this turns those into contenteditables and saves each on blur. #}
   }
 
   // a quick outline so it is obvious which words the controls are about to
-  // move — the same answer roleOf gives, so the outline never promises more
+  // move | the same answer roleOf gives, so the outline never promises more
   // than the controls deliver
   function flashRole(el, role) {
     var hit = [].slice.call(el.querySelectorAll("*")).filter(function (n) {
@@ -1567,7 +1567,7 @@ this turns those into contenteditables and saves each on blur. #}
   }
 
   /* Which role do these words belong to? Mirrors the CSS contract exactly:
-     a marker wins, then a claimed class, and only then the tag — and the tag
+     a marker wins, then a claimed class, and only then the tag | and the tag
      answer depends on whether the words sit inside a card, because that is
      what separates a card's heading from a section's. */
   var ROLE_CLASSES = [
@@ -1600,7 +1600,7 @@ this turns those into contenteditables and saves each on blur. #}
     var chip = node.closest(".chip");
     if (chip) return chip.matches("a,button") ? "btn" : "eyebrow";
 
-    // an element's own class decides its role, exactly as the CSS does — the
+    // an element's own class decides its role, exactly as the CSS does | the
     // "(optional)" hint inside a form label is a caption, not part of the label
     for (var i = 0; i < ROLE_CLASSES.length; i++) {
       if (node.matches && node.matches(ROLE_CLASSES[i][1])) return ROLE_CLASSES[i][0];
@@ -1629,7 +1629,7 @@ this turns those into contenteditables and saves each on blur. #}
     if (tag === "button") return "btn";
     if (tag === "label") return "eyebrow";
     if (tag === "td" || tag === "th" || tag === "time") return "meta";
-    // a div that is nothing but its own words — the store name, a line total
+    // a div that is nothing but its own words | the store name, a line total
     if (tag === "div" && tagged.children.length === 0) return "meta";
     return null;                                       // a bare span inherits
   }
@@ -1648,7 +1648,7 @@ this turns those into contenteditables and saves each on blur. #}
         Object.keys(d.config).forEach(function (k) {
           var input = dBody.querySelector('[data-ie-key="' + k + '"]');
           if (!input) return;
-          // a file input cannot be given a value, and trying throws — which
+          // a file input cannot be given a value, and trying throws | which
           // stopped the loop dead, so every control after the picture in the
           // list kept whatever it had rather than what is saved
           if (input.type === "file") return;
@@ -1675,7 +1675,7 @@ this turns those into contenteditables and saves each on blur. #}
 
   /* Settings from before every kind of text had its own controls.
 
-     One of these moved several kinds of text at once — "Heading size" set the
+     One of these moved several kinds of text at once, "Heading size" set the
      section heading, the card headings at 70% of it and the sub-headings at
      58%. They still render, so nothing changed under anyone's feet, but they
      are not offered any more and would otherwise be invisible: a section
@@ -1704,7 +1704,7 @@ this turns those into contenteditables and saves each on blur. #}
     box.innerHTML = '<strong>This section still has older settings.</strong>' +
       '<p>' + found.map(function (k) {
         return (OLD_LABELS[k] || k) + " (" + String(cfg[k]).replace(/</g, "") + ")";
-      }).join(", ") + ' — each of these moves more than one kind of text at once. ' +
+      }).join(", ") + ' - each of these moves more than one kind of text at once. ' +
       'Remove them and set what you want under Text styles instead.</p>' +
       '<button type="button">Remove old settings</button>';
     box.querySelector("button").addEventListener("click", function () {
@@ -1749,13 +1749,13 @@ this turns those into contenteditables and saves each on blur. #}
     var chrome = 46 + (hd ? hd.getBoundingClientRect().height : 0) + 8;
     document.querySelectorAll(".pb-sec[data-section]").forEach(function (sec) {
       // :scope keeps a nested section's button from being mistaken for this
-      // one's — the menu page nests a category section inside the list
+      // one's | the menu page nests a category section inside the list
       var btn = sec.querySelector(":scope > .ok-ie-secbtn");
       if (!btn) return;
       var r = sec.getBoundingClientRect();
       if (r.bottom < 0 || r.top > window.innerHeight) return;   // off screen
       // below the pinned chrome, above the bottom of the screen, and never
-      // outside its own section — a tall section otherwise parks its button
+      // outside its own section | a tall section otherwise parks its button
       // off the bottom of the page
       var want = Math.min(chrome - r.top, window.innerHeight - 60 - r.top);
       want = Math.max(8, Math.min(want, Math.max(8, r.height - 44)));
@@ -1771,7 +1771,7 @@ this turns those into contenteditables and saves each on blur. #}
   window.addEventListener("resize", queuePark);
   queuePark();
   // the shared parts (header, footer, the two modals) cannot be hovered on
-  // every page — a modal is not even on screen — so they open from the bar
+  // every page | a modal is not even on screen | so they open from the bar
   var jump = document.getElementById("okIeJump");
   if (jump) jump.addEventListener("change", function () {
     var el = document.querySelector('.pb-sec[data-section="' + jump.value + '"]');
@@ -1782,7 +1782,7 @@ this turns those into contenteditables and saves each on blur. #}
   function resetDesign(el, wholePage) {
     var what = wholePage ? "every section on this page" : "this section";
     var msg = "Put " + what + " back to the built-in design?"
-      + "\n\nYour words and pictures are kept — only the styling is undone.";
+      + "\n\nYour words and pictures are kept - only the styling is undone.";
     if (!confirm(msg)) return;
     say("Resetting…");
     fetch("/admin/inline-style-reset", {
@@ -1818,7 +1818,7 @@ this turns those into contenteditables and saves each on blur. #}
       el.setAttribute("spellcheck", "false");
       var original = el.textContent;
 
-      // Enter commits rather than inserting a newline — these are single strings,
+      // Enter commits rather than inserting a newline | these are single strings,
       // not rich text, and a stray <br> would end up in the saved value.
       el.addEventListener("keydown", function (e) {
         if (e.key === "Enter") { e.preventDefault(); el.blur(); }

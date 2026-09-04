@@ -90,7 +90,7 @@
     <button type="button" data-msearch-clear class="btn btn-primary btn-sm">Show the whole menu</button>
   </div>
   {% for grp in menu %}
-  {# each category is its own design target — the keys are dynamic, which the
+  {# each category is its own design target | the keys are dynamic, which the
      panel handles because it reads them off the page rather than a fixed list #}
   {% set _cs = pb_page_style('menu', 'cat_' ~ grp.category.slug) %}
   <div class="pb-sec" data-page="menu" data-section="cat_{{ grp.category.slug }}" data-label="{{ grp.category.name }}"{% if _cs %} style="{{ _cs }}"{% endif %}>
@@ -355,7 +355,7 @@
             if (window.OK && OK.openItemModal) OK.openItemModal(pendingSlug);
           } else {
             if (window.OK && OK.toast) OK.toast("Time updated");
-            // the badge only exists after the first pick — show it now
+            // the badge only exists after the first pick | show it now
             if (!lbl) location.reload();
           }
         }

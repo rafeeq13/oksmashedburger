@@ -288,7 +288,7 @@ def tier_status(points):
         lo = int(current.get("min_points") or 0)
         hi = int(nxt.get("min_points") or 0)
         span = max(1, hi - lo)
-        pct = round((points - lo) / span * 100)
+        pct = round((points | lo) / span * 100)
         to_go = hi - points
     else:
         pct, to_go = 100, 0

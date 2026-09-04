@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Track Your Order — OK Smashed Burger</title>
+  <title>Track Your Order | OK Smashed Burger</title>
   <meta name="description" content="Live order tracking for OK Smashed Burger. Follow your smash burger from the kitchen to your door with real-time status, driver details and a live map.">
   <link rel="icon" href="assets/img/logo.svg">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -45,7 +45,7 @@
           <div class="w-12 h-12 rounded-full bg-okyellow text-jet grid place-items-center text-2xl shrink-0"><i class="fa-solid fa-location-arrow icon-lg"></i></div>
           <div>
             <div class="text-white/60 text-xs uppercase font-semibold tracking-wide">Order #OK-4021</div>
-            <div class="font-display font-bold leading-tight">OK Smashed Burger — Center City</div>
+            <div class="font-display font-bold leading-tight">OK Smashed Burger, Center City</div>
             <div class="text-white/60 text-sm flex items-center gap-1"><i class="fa-solid fa-car"></i>Delivery · 1234 Walnut St, Apt 5B</div>
           </div>
         </div>
@@ -65,7 +65,7 @@
         <div class="ok-card p-6 md:p-8">
           <div class="text-center mb-8">
             <h1 class="ok-h1 mt-1" id="statusHeadline">Your order is being prepared <i class="fa-solid fa-kitchen-set"></i></h1>
-            <p class="text-slate mt-2" id="statusSub">Hang tight — the grill is hot and your smash is on it.</p>
+            <p class="text-slate mt-2" id="statusSub">Hang tight | the grill is hot and your smash is on it.</p>
           </div>
 
           <!-- Animated 6-stage stepper -->
@@ -235,7 +235,7 @@
         <div class="ok-card mt-6 p-5 md:p-6 flex flex-col sm:flex-row items-center gap-4 justify-between text-center sm:text-left">
           <div>
             <div class="font-display font-bold text-lg">Something wrong with your order?</div>
-            <p class="text-sm text-slate">Our team is here to help — reach out and we'll make it right.</p>
+            <p class="text-sm text-slate">Our team is here to help | reach out and we'll make it right.</p>
           </div>
           <div class="flex flex-wrap gap-3 justify-center shrink-0">
             <a href="contact.html" class="btn btn-secondary">Contact support</a>
@@ -252,9 +252,9 @@
       (function () {
         // --- Stage definitions: keeps stepper, headline, ETA & timeline in sync ---
         var stages = [
-          { eyebrow: "Order received",   headline: "Order placed <i class='fa-solid fa-receipt'></i>",                  sub: "We've got your order — sending it to the kitchen.",        eta: "Arriving in ~24 min", chip: "<i class='fa-solid fa-receipt'></i> Order received" },
+          { eyebrow: "Order received",   headline: "Order placed <i class='fa-solid fa-receipt'></i>",                  sub: "We've got your order - sending it to the kitchen.",        eta: "Arriving in ~24 min", chip: "<i class='fa-solid fa-receipt'></i> Order received" },
           { eyebrow: "Confirmed",        headline: "Your order is confirmed <i class='fa-solid fa-circle-check'></i>",        sub: "Center City has your order and is getting started.",       eta: "Arriving in ~20 min", chip: "<i class='fa-solid fa-circle-check'></i> Confirmed" },
-          { eyebrow: "In the kitchen",   headline: "Your order is being prepared <i class='fa-solid fa-kitchen-set'></i>", sub: "Hang tight — the grill is hot and your smash is on it.",   eta: "Arriving in ~12 min", chip: "<i class='fa-solid fa-kitchen-set'></i> Cooking" },
+          { eyebrow: "In the kitchen",   headline: "Your order is being prepared <i class='fa-solid fa-kitchen-set'></i>", sub: "Hang tight - the grill is hot and your smash is on it.",   eta: "Arriving in ~12 min", chip: "<i class='fa-solid fa-kitchen-set'></i> Cooking" },
           { eyebrow: "Packed & ready",   headline: "Your order is ready <i class='fa-solid fa-bag-shopping'></i>",           sub: "Sealed hot and waiting for your driver.",                  eta: "Arriving in ~9 min",  chip: "<i class='fa-solid fa-bag-shopping'></i> Ready" },
           { eyebrow: "On the move",      headline: "Marcus is on the way <i class='fa-solid fa-car'></i>",           sub: "Your driver has your order and is heading to you now.",    eta: "Arriving in ~5 min",  chip: "<i class='fa-solid fa-car'></i> On the way" },
           { eyebrow: "Delivered",        headline: "Delivered! Enjoy <i class='fa-solid fa-burger'></i>",               sub: "Your order has arrived. Thanks for choosing OK!",          eta: "Delivered",           chip: "<i class='fa-solid fa-house'></i> Delivered" }
@@ -303,7 +303,7 @@
           if (active >= steps.length - 1) {
             clearInterval(timer);
             prompt.classList.remove("hidden");
-            if (window.OK && OK.toast) OK.toast("Order delivered — enjoy! <i class='fa-solid fa-burger'></i>");
+            if (window.OK && OK.toast) OK.toast("Order delivered - enjoy! <i class='fa-solid fa-burger'></i>");
             return;
           }
           active++;

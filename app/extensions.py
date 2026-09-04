@@ -1,4 +1,4 @@
-"""Shared extension singletons — initialised in the app factory."""
+"""Shared extension singletons - initialised in the app factory."""
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager

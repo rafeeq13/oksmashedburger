@@ -39,7 +39,7 @@ def _tracking_map_src(order):
 
 
 def _context(order):
-    """Everything the tracker UI needs — shared by the page render and the JSON
+    """Everything the tracker UI needs | shared by the page render and the JSON
     poll endpoint so live updates stay in sync with the server."""
     idx = stage_index(order.status)
     stages = []

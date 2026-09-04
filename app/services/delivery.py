@@ -83,7 +83,7 @@ def refresh_uber_delivery(order, commit=False):
 
 
 def ensure_delivery_status_current(order, commit=True):
-    """Fix stale Uber rows — sync from order first, then poll Uber if needed."""
+    """Fix stale Uber rows - sync from order first, then poll Uber if needed."""
     delivery = order.delivery
     if not delivery:
         return None

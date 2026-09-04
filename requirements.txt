@@ -1,4 +1,4 @@
-# OK Smashed Burger — Platform (Flask modular monolith, per SRS §2.5)
+# OK Smashed Burger, Platform (Flask modular monolith, per SRS §2.5)
 Flask==3.0.3
 Werkzeug==3.0.4
 Jinja2==3.1.4

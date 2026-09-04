@@ -1,7 +1,7 @@
 """Multi-location stores + per-store hours, delivery zones and INTEGRATIONS.
 
 Each location owns its own menu (see StoreMenuItem in menu.py) and its own
-integration credentials (StoreIntegration) — Stripe/Square/Uber keys, etc.
+integration credentials (StoreIntegration), Stripe/Square/Uber keys, etc.
 """
 import re
 from datetime import datetime, timedelta, time as _time
@@ -60,7 +60,7 @@ class Store(TimestampMixin, db.Model):
     min_order_amount = db.Column(db.Numeric(8, 2), default=10.00)
     avg_prep_minutes = db.Column(db.Integer, default=15)
 
-    # Tipping (shown at checkout) — the store controls whether tips are offered
+    # Tipping (shown at checkout), the store controls whether tips are offered
     # and which quick-percent buttons appear.
     tips_enabled = db.Column(db.Boolean, default=True, nullable=False)
     tip_presets = db.Column(db.JSON, default=lambda: [15, 18, 20])
@@ -68,7 +68,7 @@ class Store(TimestampMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     accepts_delivery = db.Column(db.Boolean, default=True)
     accepts_pickup = db.Column(db.Boolean, default=True)
-    # Operational open/close — controlled by staff/admin. "accepting_orders" gates
+    # Operational open/close | controlled by staff/admin. "accepting_orders" gates
     # ASAP pickup/delivery; "accepting_scheduled" gates order-ahead independently.
     accepting_orders = db.Column(db.Boolean, default=True, nullable=False)
     accepting_scheduled = db.Column(db.Boolean, default=True, nullable=False)
@@ -149,7 +149,7 @@ class Store(TimestampMixin, db.Model):
 
     @property
     def open_now(self):
-        """Accepting immediate (ASAP) pickup/delivery right now — respects the
+        """Accepting immediate (ASAP) pickup/delivery right now | respects the
         manual open/close toggle AND today's opening hours."""
         return bool(self.is_active and self.accepting_orders and self.is_open_at(datetime.now()))
 
@@ -282,7 +282,7 @@ class StoreDeliveryZone(db.Model):
 
 
 class StoreIntegration(TimestampMixin, db.Model):
-    """Per-store integration configuration — 'each location owns its integrations'.
+    """Per-store integration configuration, 'each location owns its integrations'.
 
     `config` holds provider-specific credentials/settings as JSON, e.g.:
       stripe  -> {"account_id": "...", "publishable_key": "...", "secret_key": "..."}

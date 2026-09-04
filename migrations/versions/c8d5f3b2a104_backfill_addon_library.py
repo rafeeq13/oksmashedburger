@@ -58,7 +58,7 @@ def upgrade():
             ), {"name": (name or '').strip()}).scalar()
             lib_by_name[key] = (new_id, price)
         lid, lprice = lib_by_name[key]
-        # Link only when prices match — otherwise keep as a legacy item-only add-on.
+        # Link only when prices match | otherwise keep as a legacy item-only add-on.
         try:
             same_price = price is not None and lprice is not None and round(float(price), 2) == round(float(lprice), 2)
         except (TypeError, ValueError):

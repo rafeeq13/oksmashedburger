@@ -68,7 +68,7 @@ def main():
             db.session.refresh(order)
             print("order_after:", order.number, order.payment_status, "(was %s)" % before)
         else:
-            print("skip handler — no real payment intent on latest order")
+            print("skip handler, no real payment intent on latest order")
 
         # List Stripe webhook endpoints via API if secret key present
         sk = (cfg.get("secret_key") or "").strip()

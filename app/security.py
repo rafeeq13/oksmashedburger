@@ -5,8 +5,8 @@ from flask import session, request, abort
 
 # ── What a saved style value is allowed to look like ─────────────────────
 # A style_* setting is one CSS value: a colour, a number with its unit, a font
-# stack, a shadow. Every character below ends something — a declaration, an
-# HTML attribute, a comment — so a value carrying one stops being a value:
+# stack, a shadow. Every character below ends something | a declaration, an
+# HTML attribute, a comment | so a value carrying one stops being a value:
 #   "red;position:fixed;inset:0"  would bolt extra CSS onto the section, which
 #   every visitor then sees, and
 #   'red" onfocus="…'             would bolt extra attributes onto the editor's
@@ -23,7 +23,7 @@ _SAFE = {"GET", "HEAD", "OPTIONS"}
 # REST API uses JWT; /form-submit receives posts from admin-built (GrapesJS) pages
 # whose arbitrary HTML forms can't carry the session CSRF token; /unsubscribe is
 # posted to by Gmail and Outlook themselves (RFC 8058 one-click), which have no
-# session at all — that route is safe without CSRF because its own signed token
+# session at all | that route is safe without CSRF because its own signed token
 # is the authorisation, and the only thing it can do is opt an address out.
 _EXEMPT_PREFIXES = ("/api/", "/form-submit", "/unsubscribe/", "/webhooks/")
 

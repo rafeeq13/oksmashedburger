@@ -38,7 +38,7 @@ def check_stripe(store):
     if not integration_enabled(store, "stripe"):
         issues.append("Stripe not enabled in admin")
     if sim:
-        issues.append("Stripe will SIMULATE (demo) — not real sandbox API")
+        issues.append("Stripe will SIMULATE (demo) - not real sandbox API")
     elif not sk:
         issues.append("Stripe secret key missing")
     elif not pk:
@@ -85,7 +85,7 @@ def check_square(store):
     if not integration_enabled(store, "square"):
         issues.append("Square not enabled in admin")
     if loc.startswith("sandbox-sq0idb") or loc.startswith("sq0idb-"):
-        issues.append("location_id looks like Application ID — need L… Location ID")
+        issues.append("location_id looks like Application ID - need L… Location ID")
     elif loc and not loc.startswith("L"):
         issues.append("location_id should start with L")
     if not square_gateway.is_enabled(store):
@@ -127,7 +127,7 @@ def main():
     with app.app_context():
         stores = Store.query.filter_by(is_active=True).order_by(Store.name).all()
         base = "https://fooddeliveryaudit.com"
-        print("=== ALL LOCATIONS — STRIPE + SQUARE AUDIT ===\n")
+        print("=== ALL LOCATIONS - STRIPE + SQUARE AUDIT ===\n")
         summary = []
         for store in stores:
             env = integration_env(store)

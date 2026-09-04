@@ -20,7 +20,7 @@
 
           {# A paragraph, not an h4: this is the hero's supporting line, not a
              heading below the h1. It looked like a heading only because the
-             tag was carrying the styling — .ok-hero-sub carries all of it now,
+             tag was carrying the styling, .ok-hero-sub carries all of it now,
              so the semantics are honest and the look is unchanged. #}
           <p class="ok-hero-sub" data-hero-text>{{ cfg.get('slide' ~ loop.index ~ '_text') or s.text }}</p>
 

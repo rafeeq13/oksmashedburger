@@ -62,7 +62,7 @@ class ProductVariant(db.Model):
 
 
 class AddonLibrary(db.Model):
-    """Brand-wide add-on catalog — create once, attach to any menu item."""
+    """Brand-wide add-on catalog | create once, attach to any menu item."""
     __tablename__ = "addon_library"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False, unique=True)
@@ -74,7 +74,7 @@ class AddonLibrary(db.Model):
 
 
 class ProductModifierSection(db.Model):
-    """Admin-defined popup section heading — pick when attaching add-ons."""
+    """Admin-defined popup section heading | pick when attaching add-ons."""
     __tablename__ = "product_modifier_sections"
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)

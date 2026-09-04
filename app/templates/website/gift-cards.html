@@ -39,7 +39,7 @@
           <label class="ok-label">{{ pc('gc_step2') }}</label>
           <div class="d-flex flex-wrap gap-2 ok-mb-3" data-chip-group>
             <button type="button" class="chip">$10</button>
-            {# Amounts — editable in Admin > Website Content #}
+            {# Amounts | editable in Admin > Website Content #}
             {% for a in content_list('giftcard_amounts') %}
             <button type="button" class="chip{{ ' is-active' if loop.first }}">${{ a.amount }}</button>
             {% endfor %}
@@ -186,7 +186,7 @@
         <div class="text-center ok-mb-10"><h2 class="ok-h2">{{ pc('giftcards_how_heading') }}</h2></div>
         <div class="ok-grid ok-grid-md-3 ok-gap-3">
           <div class="text-center">
-            {# How it works — editable in Admin > Website Content #}
+            {# How it works | editable in Admin > Website Content #}
           {% for st in content_list('giftcard_steps') %}
           <div class="ok-card ok-p-3 text-center">
             <h3 class="font-display fw-bold ok-fs-lg mb-1">{{ st.title }}</h3>

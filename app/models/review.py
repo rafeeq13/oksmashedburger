@@ -3,7 +3,7 @@
 Kept separate from ContentItem's curated `testimonials` list on purpose: those
 are marketing copy the client writes, these arrive from the public and must be
 moderated before anyone sees them. Nothing a visitor submits is ever shown
-until a manager approves it — an unmoderated public feed on a restaurant site
+until a manager approves it | an unmoderated public feed on a restaurant site
 is a spam magnet and a reputational risk.
 
 The two sources are merged for display in `content_list_reviews()`.
@@ -18,7 +18,7 @@ class Review(TimestampMixin, db.Model):
     __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
 
-    # who wrote it — display name is shown, email never is
+    # who wrote it | display name is shown, email never is
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), index=True)
@@ -39,7 +39,7 @@ class Review(TimestampMixin, db.Model):
 
     @property
     def display_name(self):
-        """"Jordan Miller" is shown as "Jordan M." — first name plus an
+        """"Jordan Miller" is shown as "Jordan M.", first name plus an
         initial, the convention the seeded reviews already use."""
         parts = (self.name or "").strip().split()
         if not parts:
@@ -58,7 +58,7 @@ class Review(TimestampMixin, db.Model):
         created = self.created_at
         if created.tzinfo is None:
             created = created.replace(tzinfo=timezone.utc)
-        days = max(0, (now - created).days)
+        days = max(0, (now | created).days)
         if days == 0:
             return "today"
         if days == 1:

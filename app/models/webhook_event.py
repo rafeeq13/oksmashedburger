@@ -1,4 +1,4 @@
-"""Inbound webhook log — one row per provider callback."""
+"""Inbound webhook log | one row per provider callback."""
 from app.extensions import db
 from .base import TimestampMixin
 

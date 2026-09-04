@@ -133,7 +133,7 @@ def main():
             summary["delivery_fee"], summary["tax"], summary["tip"]))
         print("TOTAL: $%.2f" % total)
 
-        # Scheduled — store may be closed for ASAP on Mondays
+        # Scheduled | store may be closed for ASAP on Mondays
         sched = (datetime.now() + timedelta(days=1)).replace(hour=13, minute=30, second=0, microsecond=0)
         sched_str = sched.strftime("%Y-%m-%dT%H:%M")
 
@@ -177,7 +177,7 @@ def main():
             "address_city": "Philadelphia",
             "address_state": "PA",
             "address_zip": "19135",
-            "notes": "Ring doorbell — complex sandbox test order",
+            "notes": "Ring doorbell - complex sandbox test order",
             "tip": "%.2f" % tip,
             "payment_method": "card",
             "stripe_payment_intent": intent_id or "",

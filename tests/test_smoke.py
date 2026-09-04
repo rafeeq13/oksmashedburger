@@ -1,7 +1,7 @@
 """End-to-end smoke tests.
 
 Everything in here was verified by hand at least once; this file is what keeps
-it verified. Runs against the configured database and cleans up after itself —
+it verified. Runs against the configured database and cleans up after itself , 
 each test that writes uses an address nobody else would ever use.
 
     python -m pytest tests -q
@@ -12,7 +12,7 @@ import re
 import pytest
 from dotenv import load_dotenv
 
-# Same first move wsgi.py makes — without it the app falls back to the Postgres
+# Same first move wsgi.py makes | without it the app falls back to the Postgres
 # URL baked into config defaults instead of whatever .env points at.
 load_dotenv()
 
@@ -28,7 +28,7 @@ def app():
     Flask's test client reuses an already-active app context instead of
     pushing a fresh one, and `current_user()` memoises onto `g`. Holding one
     context open for the whole session therefore leaks the *first* request's
-    user into every later request — anonymous page hits would make the admin
+    user into every later request | anonymous page hits would make the admin
     look logged out. Real requests never share a context, so this is a
     harness concern only. Tests that need the DB open their own context.
     """
@@ -150,7 +150,7 @@ def test_editing_a_content_item_changes_the_public_page(app):
 
 def test_number_fields_are_stored_as_numbers(app):
     """Regression: stars arrived as "5" and the star loop raised TypeError,
-    which expand_dynamic swallowed — the whole section vanished."""
+    which expand_dynamic swallowed | the whole section vanished."""
     with app.app_context():
         from app.models.content import ContentItem, import_defaults
         c = admin_client(app)
@@ -232,7 +232,7 @@ def test_a_frozen_home_can_be_handed_back_to_its_sections(app):
     """The escape hatch for a home page that already went static.
 
     What was built is kept as a draft copy, and the route refuses to touch any
-    page that is not the home — it blanks whatever it is pointed at, so it must
+    page that is not the home | it blanks whatever it is pointed at, so it must
     not be reachable for an ordinary builder page.
     """
     from app.extensions import db
@@ -362,7 +362,7 @@ def test_a_refused_upload_never_clears_the_slot(app):
     """The bug this endpoint's guard exists for.
 
     inline_image used to fall through to the (empty) url field when it refused a
-    file, which deleted the setting — so picking the wrong file type wiped the
+    file, which deleted the setting | so picking the wrong file type wiped the
     picture that was already there.
     """
     import io as _io
@@ -425,7 +425,7 @@ def test_site_images_sends_each_picture_on_its_own(app):
             assert 'name="%s"' % slot[0] in html, slot[0]
 
     # Enter in a link box submits through the form's first submit button, and
-    # every slot carries a Delete — so the first one must not be a delete
+    # every slot carries a Delete | so the first one must not be a delete
     body = html[html.index("<form"):]
     first_submit = re.search(r"<button[^>]*type=\"submit\"[^>]*>", body)
     assert first_submit, "the form has no submit button"
@@ -555,7 +555,7 @@ def test_static_assets_are_versioned(client):
 
 def test_no_storefront_field_is_missing_an_accessible_name():
     """Regression guard for the 16 inputs that had no label, aria-label or
-    placeholder — a screen reader announced them as nothing at all."""
+    placeholder | a screen reader announced them as nothing at all."""
     import glob
     import os
 
@@ -613,7 +613,7 @@ def test_every_inner_page_section_is_styleable(app):
     from app.models.page import INNER_PAGES, PageSection
     c = admin_client(app)
     with app.app_context():
-        # every page the admin can restyle — the nine content pages plus the
+        # every page the admin can restyle | the nine content pages plus the
         # three whose content is live data (menu, cart, locations)
         assert len(INNER_PAGES) == 12
         for spec in INNER_PAGES:
@@ -659,7 +659,7 @@ def test_inline_editing_is_admin_only_and_saves(app):
 
     page = c.get("/about?edit=1").get_data(as_text=True)
     assert "okIeBar" in page
-    # every pc() field on the page — About's own plus the site-wide footer —
+    # every pc() field on the page, About's own plus the site-wide footer , 
     # becomes editable. Derived, not a literal, so adding copy to the registry
     # does not "fail" this test for doing exactly what it is meant to do.
     from app.models.page import PAGE_CONTENT
@@ -669,7 +669,7 @@ def test_inline_editing_is_admin_only_and_saves(app):
         """Fields that render as words, so they become editable spans.
 
         A field whose value lands in an href is read with pc_attr and stays a
-        plain string — wrapping it would put markup inside an attribute.
+        plain string | wrapping it would put markup inside an attribute.
         """
         return [f for f in by_key[key]["fields"]
                 if not f[0].endswith("_url") and not f[0].endswith("_href")
@@ -721,7 +721,7 @@ def test_a_switched_off_feature_stops_pricing_not_just_showing(app):
     actual bug: the order summary still showed a Discount line and the total
     was still reduced on a site where Deals was switched off.
 
-    The switch is left off inside the `try` on purpose — the fixture builds the
+    The switch is left off inside the `try` on purpose | the fixture builds the
     real app against the real database, so the `finally` matters: a stray "off"
     row would follow every later test into a site with no Deals page.
     """
@@ -919,7 +919,7 @@ def test_a_manager_pinned_to_one_shop_cannot_read_another(app, monkeypatch):
     """?store= is head office's switch, not a way around the pin.
 
     Tested at _admin_store() rather than through a screen because that one
-    function decides the shop for every admin page there is — orders, the CSV
+    function decides the shop for every admin page there is | orders, the CSV
     export, the saved payment and SMS keys.
     """
     import app.blueprints.admin as admin_bp
@@ -1148,7 +1148,7 @@ def test_the_preview_keeps_the_page_in_order(app):
     sync = canvas[canvas.index("function syncOrder"):]
     sync = sync[:sync.index("\n  }")]
     assert "doc.querySelector('.pb-sec')" not in sync, \
-        "the preview is anchored on the first .pb-sec again — that is the header"
+        "the preview is anchored on the first .pb-sec again - that is the header"
     assert "layerKeys()" in sync and "el.parentNode === parent" in sync, \
         "sections must be reordered inside their own parent only"
 
@@ -1184,7 +1184,7 @@ def test_no_editable_value_is_rendered_inside_a_tag(app):
     """In edit mode every text field is wrapped in a clickable <span>.
 
     A field a template puts inside an attribute must be left alone, or the tag
-    closes early and the rest of it lands on the page as text — which is what
+    closes early and the rest of it lands on the page as text | which is what
     happened to the Instagram reels grid: href=".../<span …>oksmashedburger…
     printed half the anchor on the page and killed the tiles.
     """
@@ -1224,7 +1224,7 @@ def test_no_editable_value_is_rendered_inside_a_tag(app):
 def test_a_saved_style_never_leaves_a_stale_copy_behind(app):
     """After a save the panel replaces the section's own variables with the ones
     the server rebuilt. The browser writes a style attribute as "a: 1; b: 2", so
-    the test that spots our variables has to trim first — without it every
+    the test that spots our variables has to trim first | without it every
     declaration after the first was kept and re-appended after the new values,
     where it wins. The heading-shadow controls are composed server-side and have
     no variable of their own, so they were the ones that visibly died."""
@@ -1257,7 +1257,7 @@ def test_the_visual_editor_never_wipes_a_setting_it_cannot_see(app):
 
     Its Save used to store the whole config it was holding, so a tab opened
     before someone styled a heading on the page would, on Save, delete that
-    heading's settings — which is how a section lost the size the client had
+    heading's settings | which is how a section lost the size the client had
     chosen for it.
     """
     from app.models.page import PageSection
@@ -1291,7 +1291,7 @@ def test_the_visual_editor_never_wipes_a_setting_it_cannot_see(app):
 
 def test_a_shadow_belongs_to_one_kind_of_text(app):
     """It used to be one control for the whole section: the same shadow landed
-    on every h1-h6, p, li, span and link at once — the client's own complaint,
+    on every h1-h6, p, li, span and link at once | the client's own complaint,
     in the one place it was still true."""
     from app import TEXT_ROLES
     from app.blueprints.admin import (RETIRED_STYLE_FIELDS, TEXT_ROLE_KEYS,
@@ -1329,7 +1329,7 @@ def test_every_card_control_reaches_every_kind_of_card(app):
     """The tiles, the location cards and the Google review cards.
 
     Only .ok-card was named, so on the Locations section the whole Cards group
-    did nothing — the client has a card background saved there right now and
+    did nothing | the client has a card background saved there right now and
     had never seen it take effect.
     """
     css = (pathlib.Path(__file__).resolve().parents[1] / "app" / "static" / "css"

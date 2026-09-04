@@ -162,7 +162,7 @@ WEBFONTS = [
     ("Syne", "'Syne',sans-serif", "Minimal", [400, 500, 600, 700, 800]),
 ]
 
-# faces already on the machine — no download, always available
+# faces already on the machine | no download, always available
 SYSTEM_FONTS = [
     ("Georgia", "Georgia,'Times New Roman',serif", "System", [400, 700]),
     ("Times New Roman", "'Times New Roman',Times,serif", "System", [400, 700]),

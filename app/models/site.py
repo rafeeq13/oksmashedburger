@@ -1,4 +1,4 @@
-"""Brand-wide site content the admin can edit — e.g. the images shown in each
+"""Brand-wide site content the admin can edit | e.g. the images shown in each
 storefront section (hero slides, catering banner, about photo, …).
 
 Stored as simple key/value rows; templates read them via the `site` context
@@ -19,7 +19,7 @@ class SiteSetting(db.Model):
 # Keep the hero_* URLs in step with the `hero_slides` list in website/index.html.
 # ── Feature switches ────────────────────────────────────────────────────────
 # Whole parts of the storefront the client can turn off. A switch that has
-# never been touched has no row, and no row means ON — turning the system on
+# never been touched has no row, and no row means ON | turning the system on
 # must not silently remove anything that is live today.
 #
 # (key, label, what disappears when it is off)
@@ -60,7 +60,7 @@ def features_from(settings):
     """{'deals': True, …} from a {key: value} map of SiteSetting rows.
 
     Absent or anything other than the string "off" reads as on, so a missing
-    row — and a row written by some older version of the admin — both keep the
+    row | and a row written by some older version of the admin | both keep the
     feature visible rather than hiding a page nobody meant to hide.
     """
     return {k.replace("feature_", ""): (settings.get(k) or "on") != "off"
@@ -81,7 +81,7 @@ SITE_IMAGE_DEFAULTS = {
     "catering_img":  "https://images.unsplash.com/photo-1550547660-d9450f859349?w=1600&h=760&fit=crop&q=70",
     "about_img":     "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=900&h=1000&fit=crop&q=70",
     "franchise_img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1000&h=760&fit=crop&q=70",
-    # Home — Instagram grid (8 tiles)
+    # Home, Instagram grid (8 tiles)
     "ig_1_img": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=400&fit=crop&q=70",
     "ig_2_img": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=400&fit=crop&q=70",
     "ig_3_img": "https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=400&fit=crop&q=70",

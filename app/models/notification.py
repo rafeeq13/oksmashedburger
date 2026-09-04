@@ -1,4 +1,4 @@
-"""Order notifications log — one row per message a store sends about an order.
+"""Order notifications log | one row per message a store sends about an order.
 
 Which channel fires depends on the STORE's own integrations (Twilio for SMS,
 SMTP for email), so two locations can notify differently. In demo mode the

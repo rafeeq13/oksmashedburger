@@ -1,4 +1,4 @@
-"""After checkout — push the same order + charges to Square, Uber, etc."""
+"""After checkout | push the same order + charges to Square, Uber, etc."""
 from flask import current_app
 
 from app.extensions import db

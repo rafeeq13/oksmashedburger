@@ -24,7 +24,7 @@ def main():
         print("secret_key_prefix:", sk[:20] + "..." if sk else "(empty)")
 
         if not sk or sk.startswith("sk_test_south") or "northeast_philadelphia" in sk:
-            print("\nWARN: looks like fake/seed key — no real Stripe dashboard")
+            print("\nWARN: looks like fake/seed key - no real Stripe dashboard")
             return 1
 
         import stripe
@@ -55,7 +55,7 @@ def main():
 
         print("\n--- HOW TO FIND IN DASHBOARD ---")
         print("1. Log in to stripe.com with the email that owns account", acct.id)
-        print("2. Toggle TEST MODE on (top-right — must say 'Test mode')")
+        print("2. Toggle TEST MODE on (top-right - must say 'Test mode')")
         print("3. Go to: Payments  (NOT Orders, NOT Connect)")
         print("4. Search:", pis.data[0].id if pis.data else "pi_...")
         print("5. Direct link pattern: https://dashboard.stripe.com/test/payments/" + (pis.data[0].id if pis.data else ""))

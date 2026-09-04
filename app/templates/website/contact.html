@@ -46,8 +46,8 @@
               </div>
             </div>
 
-            <div class="ok-grid ok-grid-sm-2 ok-gap-3">
-              <div class="ok-float">
+            <div class="ok-grid ok-grid-sm-2 ok-gap-3" id="contact-subject-row">
+              <div class="ok-float" id="contact-subject-wrap">
                 <select id="subject" name="subject" class="ok-select">
                   <option>General enquiry</option>
                   <option>Order issue</option>
@@ -57,7 +57,7 @@
                 </select>
                 <label for="subject">Subject</label>
               </div>
-              <div class="ok-float">
+              <div class="ok-float d-none" id="contact-order-wrap">
                 <input id="order" name="order" type="text" placeholder=" " class="ok-input">
                 <label for="order">Order number (optional)</label>
               </div>
@@ -201,6 +201,22 @@
       if (window.OK && OK.toast) OK.toast("Please check the highlighted fields");
     }
   });
+
+  var subject = document.getElementById("subject");
+  var orderWrap = document.getElementById("contact-order-wrap");
+  var orderInput = document.getElementById("order");
+  var subjectWrap = document.getElementById("contact-subject-wrap");
+  function toggleOrderField() {
+    if (!subject || !orderWrap) return;
+    var show = subject.value === "Order issue";
+    orderWrap.classList.toggle("d-none", !show);
+    if (subjectWrap) subjectWrap.style.gridColumn = show ? "" : "1 / -1";
+    if (!show && orderInput) orderInput.value = "";
+  }
+  if (subject) {
+    subject.addEventListener("change", toggleOrderField);
+    toggleOrderField();
+  }
 })();
 
 // Keep contact details in sync when the visitor changes location in the header/modal.

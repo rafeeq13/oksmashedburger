@@ -98,7 +98,7 @@ def register():
             db.session.commit()
             _mail("welcome", user)
             login_user(user)
-            flash("Welcome to OK Rewards — 100 bonus points added!", "success")
+            flash("Welcome to OK Rewards - 100 bonus points added!", "success")
             return redirect("/account")
     return render_template("pages/register.html")
 
@@ -118,7 +118,7 @@ def forgot_password():
         if user and user.is_active and user.password_hash:
             link = url_for("auth.reset_password", token=_reset_token(user), _external=True)
             _mail("password_reset", user, link)
-        # Same answer either way — never reveal whether an address is registered.
+        # Same answer either way | never reveal whether an address is registered.
         flash("If an account exists for that email, a reset link is on its way.", "success")
     return render_template("pages/forgot-password.html")
 

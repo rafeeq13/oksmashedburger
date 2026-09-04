@@ -1,4 +1,4 @@
-/* Google Places (Legacy API) — one native input + custom suggestion list */
+/* Google Places (Legacy API), one native input + custom suggestion list */
 (function () {
   "use strict";
 
@@ -217,7 +217,7 @@
     var items = [];
     var lastLen = 0;
     var seq = 0;
-    // Philly metro — local results return faster than a country-wide search
+    // Philly metro | local results return faster than a country-wide search
     var locBias = { north: 40.25, south: 39.75, east: -74.85, west: -75.55 };
 
     function hideList() {

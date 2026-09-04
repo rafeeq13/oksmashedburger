@@ -43,7 +43,7 @@
           {% endfor %}
         </div>
 
-        <!-- address (delivery only — hidden for pickup by app.js) -->
+        <!-- address (delivery only | hidden for pickup by app.js) -->
         <div class="ok-mb-5" data-address-row data-address-autocomplete{% if google_maps_api_key %} data-maps-key="{{ google_maps_api_key }}"{% endif %}>
           <label class="ok-label" for="address_search">Search delivery address <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
           <div class="ok-address-search-wrap position-relative ok-mb-3">

@@ -19,9 +19,9 @@
   </div>
   <p class="ok-fs-xs ok-mt-3 ok-mb-0 {% if integration_env == 'production' %}text-ok-red fw-semibold{% else %}text-muted-warm{% endif %}">
     {% if integration_env == 'production' %}
-    <i class="fa-solid fa-circle-exclamation"></i> Live mode — orders charge real payments and send real SMS/email.
+    <i class="fa-solid fa-circle-exclamation"></i> Live mode | orders charge real payments and send real SMS/email.
     {% else %}
-    <i class="fa-solid fa-flask"></i> Test mode — use sandbox/test API keys. Missing keys are simulated safely.
+    <i class="fa-solid fa-flask"></i> Test mode | use sandbox/test API keys. Missing keys are simulated safely.
     {% endif %}
   </p>
 </div>
@@ -182,10 +182,10 @@
                 <tbody>
                   {% for ev in wh_events %}
                   <tr>
-                    <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                    <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else 'n/a' }}</td>
                     <td>{{ ev.event_type }}</td>
                     <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
-                    <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or '—' }}</td>
+                    <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or 'n/a' }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -209,11 +209,11 @@
               <tbody>
                 {% for ev in webhook_events %}
                 <tr>
-                  <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '—' }}</td>
+                  <td class="text-nowrap" data-order="{{ ev.created_at.timestamp() if ev.created_at else 0 }}">{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else 'n/a' }}</td>
                   <td class="text-capitalize">{{ ev.provider.replace('_', ' ') }}</td>
                   <td>{{ ev.event_type }}</td>
                   <td><span class="badge {% if ev.status == 'processed' %}badge-green{% elif ev.status == 'failed' %}badge-soft text-ok-red{% else %}badge-soft{% endif %}">{{ ev.status }}</span></td>
-                  <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or '—' }}</td>
+                  <td class="font-monospace ok-fs-xs text-break">{{ ev.external_id or 'n/a' }}</td>
                 </tr>
                 {% endfor %}
               </tbody>

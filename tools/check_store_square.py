@@ -32,7 +32,7 @@ def main():
 
         issues = []
         if loc.startswith("sandbox-sq0idb") or loc.startswith("sq0idb-"):
-            issues.append("location_id is Application ID — must be L… Location ID")
+            issues.append("location_id is Application ID - must be L… Location ID")
         elif not loc.startswith("L"):
             issues.append("location_id should start with L")
         if not tok:
