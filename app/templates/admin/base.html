@@ -6,8 +6,8 @@
   {% if can_switch and admin_stores %}
   <form method="get" class="d-flex align-items-center ok-gap-15">
     <svg class="ok-i fa-solid fa-store text-muted-warm ok-fs-lg d-none d-sm-inline" aria-hidden="true" focusable="false" width="1em" height="1em"><use href="#i-store"></use></svg>
-    <select name="store" onchange="this.form.submit()" class="ok-select text-ink ok-fs-sm ok-py-15">
-      {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+    <select name="store" onchange="this.form.submit()" class="ok-select ok-admin-store-select text-ink ok-fs-sm ok-py-15">
+      {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.admin_switcher_label }}</option>{% endfor %}
     </select>
   </form>
   {% endif %}
@@ -16,3 +16,5 @@
 {% block content %}
 <div class="p-3 ok-p-lg-6 ok-maxw-1440px">{% block admin %}{% endblock %}</div>
 {% endblock %}
+
+{% block body_extra %}{% block admin_body_extra %}{% endblock %}{% endblock %}

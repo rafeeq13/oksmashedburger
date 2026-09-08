@@ -5,7 +5,7 @@
     <div data-track class="ok-hero-track d-flex h-100">
     {% for s in hero_slides %}
       <div class="position-relative flex-shrink-0 w-100 h-100 overflow-hidden">
-        <img src="{{ site.get('hero_' ~ loop.index ~ '_img') or s.img }}" alt="" class="ok-fill ok-cover" {% if not loop.first %}loading="lazy"{% endif %}>
+        <img src="{{ (site.get('hero_' ~ loop.index ~ '_img') or s.img) | vasset }}" alt="" class="ok-fill ok-cover" {% if not loop.first %}loading="lazy" decoding="async"{% else %}fetchpriority="high" decoding="async"{% endif %}>
         {# .pb-overlay stays so the admin can still dial overlay darkness from the CMS. #}
         <div class="pb-overlay ok-fill" style="background:rgba(0,0,0,.18)"></div>
         <div class="ok-hero-veil"></div>

@@ -26,6 +26,36 @@ def _apply_uber_result(delivery, res):
         delivery.proof = _uber_error_note(res.get("raw"))
 
 
+def sync_order_from_delivery(delivery, notify=False):
+    """Advance order.status when Uber (or own driver) delivery status changes."""
+    order = delivery.order
+    if not order or order.status in ("cancelled", "completed"):
+        return False
+    now = datetime.now(timezone.utc)
+    prev = order.status
+    changed = False
+    if delivery.status == "assigned" and order.status in ("placed", "confirmed", "preparing"):
+        order.status = "ready"
+        changed = True
+    elif delivery.status == "picked_up" and order.status not in ("out_for_delivery", "completed"):
+        order.status = "out_for_delivery"
+        delivery.picked_up_at = delivery.picked_up_at or now
+        changed = True
+    elif delivery.status == "delivered" and order.status != "completed":
+        order.status = "completed"
+        delivery.delivered_at = delivery.delivered_at or now
+        changed = True
+    elif delivery.status == "failed" and order.status not in ("cancelled", "completed"):
+        order.status = "cancelled"
+        changed = True
+    if changed and notify:
+        from app.services.notifications import notify_order_event
+        event = "cancelled" if order.status == "cancelled" else order.status
+        if event != "cancelled" or prev != "cancelled":
+            notify_order_event(order, event)
+    return changed
+
+
 def sync_delivery_from_order(order, commit=False):
     """Keep delivery row in sync when admins advance order status manually."""
     delivery = order.delivery
@@ -77,6 +107,7 @@ def refresh_uber_delivery(order, commit=False):
         delivery.picked_up_at = delivery.picked_up_at or now
     elif mapped == "delivered":
         delivery.delivered_at = delivery.delivered_at or now
+    sync_order_from_delivery(delivery, notify=False)
     if commit:
         db.session.commit()
     return delivery
@@ -120,6 +151,7 @@ def retry_uber_dispatch(order):
         delivery.method = "uber_direct"
         delivery.assigned_at = delivery.assigned_at or now
     _apply_uber_result(delivery, res)
+    sync_order_from_delivery(delivery, notify=False)
     db.session.commit()
     return delivery
 
@@ -144,5 +176,6 @@ def dispatch(order):
                      fee=order.delivery_fee, assigned_at=now if driver else None)
 
     db.session.add(d)
+    sync_order_from_delivery(d, notify=False)
     db.session.commit()
     return d

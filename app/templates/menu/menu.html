@@ -40,7 +40,8 @@
     <!-- delivery / pickup segmented toggle -->
     <div class="d-flex align-items-center gap-1 bg-cream-60 rounded-pill p-1 ok-aligns-auto-lg" data-ordertype-group>
       {% for val, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
-      <button type="button" data-ordertype="{{ val }}" class="ok-px-35 ok-paddin-1rem-md py-2 rounded-pill ok-fs-sm fw-semibold d-inline-flex align-items-center gap-2 transition {% if order_type == val %}bg-ink text-white ok-shadow-md{% else %}text-ink{% endif %}"><i class="fa-solid fa-{{ icon }}"></i> <span>{{ label }}</span></button>
+      {% set ot_enabled = (val == 'delivery' and store.accepts_delivery) or (val == 'pickup' and store.accepts_pickup) %}
+      <button type="button" data-ordertype="{{ val }}" class="ok-px-35 ok-paddin-1rem-md py-2 rounded-pill ok-fs-sm fw-semibold d-inline-flex align-items-center gap-2 transition {% if ot_enabled and order_type == val %}bg-ink text-white ok-shadow-md{% else %}text-ink{% endif %}"{% if not ot_enabled %} disabled aria-disabled="true"{% endif %}><i class="fa-solid fa-{{ icon }}"></i> <span>{{ label }}</span></button>
       {% endfor %}
     </div>
   </div>
@@ -66,7 +67,7 @@
     <div class="menu-catbar position-relative d-flex align-items-center gap-2 ok-py-3" id="menuCatbar">
       <div class="d-flex gap-2 overflow-x-auto hide-scrollbar ok-min-w-0 flex-grow-1" data-chip-group>
         {% for grp in menu %}
-        <a href="#{{ grp.category.slug }}" class="chip chip-cat flex-shrink-0{% if loop.first %} is-active{% endif %}">{% if grp.category.image_url %}<img src="{{ grp.category.image_url }}" alt="" class="chip-thumb" loading="lazy" decoding="async">{% else %}<i class="fa-solid fa-{{ grp.category.icon }}"></i>{% endif %} {{ grp.category.name }}</a>
+        <a href="#{{ grp.category.slug }}" class="chip chip-cat flex-shrink-0{% if loop.first %} is-active{% endif %}">{% if grp.category.image_url %}<img src="{{ grp.category.image_url | vasset }}" alt="" class="chip-thumb" loading="lazy" decoding="async">{% else %}<i class="fa-solid fa-{{ grp.category.icon }}"></i>{% endif %} {{ grp.category.name }}</a>
         {% endfor %}
       </div>
       <button type="button" data-msearch-open class="chip flex-shrink-0 !px-3" aria-label="Search the menu" title="Search the menu"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -124,7 +125,7 @@
         {% elif it.featured %}<span class="badge ok-cardflag"><i class="fa-solid fa-star"></i> Popular</span>{% endif %}
         <!-- RIGHT: image + vertical divider -->
         <div class="ok-media position-relative ok-w-28 ok-width-10rem-sm flex-shrink-0 align-self-stretch border-start ok-bc-varokhairline bg-white !rounded-none">
-          <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          <img src="{{ it.product.image_url | vasset }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
           <form method="post" action="/favorites/toggle" class="position-absolute top-2 right-2 ok-z-10">
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
             <input type="hidden" name="product_id" value="{{ it.product.id }}">

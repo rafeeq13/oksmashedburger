@@ -506,6 +506,7 @@
     locSchedule(false);
   }
   function locPick(card) {
+    if (document.body.dataset.lockStore) return;
     var m = document.getElementById("locModal"); if (!m || !card) return;
     var storeInput = m.querySelector("[data-loc-store]"), nameEl = m.querySelector("[data-loc-storename]");
     if (storeInput) storeInput.value = card.dataset.locPick || "";
@@ -525,6 +526,11 @@
       zip: card.dataset.zip,
       address: card.dataset.address,
       phone: card.dataset.phone || "",
+      open_now: card.dataset.openNow === "1",
+      can_order: card.dataset.canOrder === "1",
+      scheduling_open: card.dataset.schedulingOpen === "1",
+      avg_prep_minutes: card.dataset.avgPrep ? parseInt(card.dataset.avgPrep, 10) : undefined,
+      today_hours: card.dataset.todayHours || "",
     });
     // the location is the thing the visitor came here to change, so close on
     // pick rather than pushing them through a second step
@@ -754,7 +760,15 @@
 
     document.addEventListener("click", function (e) {
       var openT = e.target.closest("[data-open]"), closeT = e.target.closest("[data-close]");
-      if (openT) { e.preventDefault(); if (openT.dataset.open === "drawer") openDrawer(true); if (openT.dataset.open === "location") { _locNext = openT.getAttribute("data-loc-next") || null; openLocation(true); } }
+      if (openT) {
+        e.preventDefault();
+        if (openT.dataset.open === "drawer") openDrawer(true);
+        if (openT.dataset.open === "location") {
+          if (document.body.dataset.lockStore) return;
+          _locNext = openT.getAttribute("data-loc-next") || null;
+          openLocation(true);
+        }
+      }
       if (closeT) { if (closeT.dataset.close === "drawer") openDrawer(false); if (closeT.dataset.close === "location") { _locNext = null; openLocation(false); } if (closeT.dataset.close === "item") openItem(false); }
 
       // read more / less | handle BEFORE data-item so it doesn't open the modal
@@ -814,6 +828,7 @@
       // order-type segmented toggle (delivery / pickup), switches live, no reload
       var otBtn = e.target.closest("[data-ordertype]");
       if (otBtn) {
+        if (otBtn.disabled || otBtn.getAttribute("aria-disabled") === "true") return;
         var otGroup = otBtn.closest("[data-ordertype-group]");
         if (otGroup) otGroup.querySelectorAll("[data-ordertype]").forEach(function (x) {
           var on = x === otBtn;
@@ -822,7 +837,12 @@
           x.classList.toggle("text-ink", !on);
           x.classList.toggle("ok-shadow-md", on);
         });
-        fetch("/api/order-type/" + encodeURIComponent(otBtn.getAttribute("data-ordertype")), { credentials: "same-origin" }).catch(function () {});
+        fetch("/api/order-type/" + encodeURIComponent(otBtn.getAttribute("data-ordertype")), { credentials: "same-origin" })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d && d.ok && (location.pathname || "").replace(/\/$/, "") === "/cart") location.reload();
+          })
+          .catch(function () {});
       }
 
       var addBtn = e.target.closest("[data-add-cart]");

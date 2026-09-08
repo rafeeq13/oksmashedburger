@@ -34,7 +34,7 @@ from app.models.page import (
 from app.models.email_templates import (
     EMAIL_TEMPLATE_GROUPS, EMAIL_LAYOUT, EMAIL_PLACEHOLDERS, email_template_defaults,
     email_layout_defaults, email_image_keys, preview_context, preview_rows,
-    render as render_email, templates_for_admin,
+    render as render_email, templates_for_admin, tracking_url_for,
 )
 from app.models.favorite import Favorite
 from app.models.address import UserAddress
@@ -43,14 +43,18 @@ from app.services.orders import TRACK_STAGES, STAGE_META, advance, set_status
 
 bp = Blueprint("admin", __name__)
 
-ADMIN_ROLES = ("super_admin", "franchise_owner", "store_manager")
+ADMIN_ROLES = (
+    "super_admin", "franchise_owner", "store_manager",
+    "kitchen_staff", "cashier", "driver",
+)
+SUPER_ADMIN_ROLES = ("super_admin",)
 
 # Per-provider config fields shown on the Integrations page.
 PROVIDERS = [
     {"key": "stripe", "name": "Stripe", "icon": "credit-card", "desc": "Online card payments",
      "fields": [{"key": "account_id", "label": "Account ID"}, {"key": "publishable_key", "label": "Publishable key"}, {"key": "secret_key", "label": "Secret key", "secret": True}, {"key": "webhook_secret", "label": "Webhook signing secret", "secret": True, "placeholder": "whsec_...", "hint": "From Stripe → Developers → Webhooks → signing secret. Also set up the webhook URL in the Webhooks tab."}]},
     {"key": "square", "name": "Square POS", "icon": "cash-register",
-     "desc": "Sync web orders to each location's Square terminal (items, tax, delivery, tip)",
+     "desc": "Sync web orders to Square. Kitchen (SP700): items + modifiers + delivery address on kitchen note. Cashier (TSP100): items + total only — no tax/delivery/tip lines, no delivery address in order note. In Square → Printers, disable store address header/footer on the TSP100 receipt profile.",
      "fields": [
          {"key": "application_id", "label": "Application ID",
           "placeholder": "sandbox-sq0idb-…",
@@ -108,30 +112,40 @@ def _admin_store():
     them an empty query string.
     """
     u = current_user()
-    if u and u.store_id:
-        return Store.query.get(u.store_id)
+    assigned = u.assigned_stores() if u else []
+    if len(assigned) == 1:
+        return assigned[0]
     slug = request.args.get("store")
     if not slug and request.method == "POST":
         slug = (request.form.get("store") or "").strip() or None
     if slug:
         s = Store.query.filter_by(slug=slug).first()
-        if s:
+        if s and (not assigned or s in assigned):
             return s
+    if assigned:
+        cur = get_current_store()
+        if cur and cur in assigned:
+            return cur
+        return assigned[0]
     return get_current_store()
 
 
 def _can_switch():
-    return current_user().store_id is None
+    u = current_user()
+    return len(u.assigned_stores()) != 1 if u else True
 
 
 def _optional_store_filter():
     """Head office sees all locations unless ?store= is set; pinned managers stay on their shop."""
     u = current_user()
-    if u and u.store_id:
-        return Store.query.get(u.store_id)
+    assigned = u.assigned_stores() if u else []
+    if len(assigned) == 1:
+        return assigned[0]
     slug = (request.args.get("store") or "").strip()
     if slug:
-        return Store.query.filter_by(slug=slug).first()
+        s = Store.query.filter_by(slug=slug).first()
+        if s and (not assigned or s in assigned):
+            return s
     return None
 
 
@@ -140,15 +154,37 @@ def _qs(store):
 
 
 def _shell(store):
-    return {"admin_store": store, "can_switch": _can_switch(),
-            "admin_stores": active_stores(), "qs": _qs(store)}
+    from app.services.staff_permissions import user_admin_permissions
+    u = current_user()
+    perms = user_admin_permissions(u) if u else set()
+    stores = u.assigned_stores() if u else active_stores()
+    return {
+        "admin_store": store, "can_switch": _can_switch(),
+        "admin_stores": stores, "qs": _qs(store),
+        "admin_perms": perms,
+        "admin_can": lambda key: key in perms,
+    }
+
+
+@bp.before_request
+def _enforce_admin_permissions():
+    from app.services.staff_permissions import can_access_admin, can_access_admin_path
+    u = current_user()
+    if not u:
+        return
+    if not can_access_admin(u):
+        abort(403)
+    if u.role.name == "super_admin":
+        return
+    if not can_access_admin_path(u, request.path):
+        abort(403)
 
 
 # ── Dashboard ────────────────────────────────────────────────────────────
 def _pct_delta(cur, prev):
     if not prev:
         return None
-    return round((cur | prev) / prev * 100)
+    return round((cur - prev) / prev * 100)
 
 
 PERIODS = {"today": 1, "7d": 7, "30d": 30, "all": None}
@@ -170,7 +206,7 @@ def index():
     plen = PERIODS.get(period)
     if plen:
         start = today - timedelta(days=plen - 1)
-        prev_start = start | timedelta(days=plen)
+        prev_start = start - timedelta(days=plen)
         window = [o for o in orders if o.created_at.date() >= start]
         prevw = [o for o in orders if prev_start <= o.created_at.date() < start]
     else:
@@ -192,7 +228,7 @@ def index():
     # 7-day revenue + order-count trend (fixed window, oldest → newest)
     series, max_rev = [], 0.0
     for i in range(6, -1, -1):
-        d = today | timedelta(days=i)
+        d = today - timedelta(days=i)
         d_rev = sum(float(o.total) for o in paid if o.created_at.date() == d)
         d_cnt = sum(1 for o in orders if o.created_at.date() == d)
         series.append({"label": d.strftime("%a"), "date": d.strftime("%b %d"),
@@ -302,8 +338,14 @@ def hours_save():
 @bp.get("/admin/settings")
 @roles_required(*ADMIN_ROLES)
 def settings():
+    from app.integrations.google_maps import store_google_maps_key
+
     store = _admin_store()
     zones = list(store.delivery_zones) if store else []
+    map_zones = [
+        {"name": z.name, "radius_miles": float(z.radius_miles or 0), "color": z.color or "#E0A200"}
+        for z in zones if z.is_active
+    ]
     existing = {h.day_of_week: h for h in store.hours} if store else {}
     hour_rows = []
     for d in range(7):
@@ -312,7 +354,11 @@ def settings():
                           "open": (h.open_time if h and h.open_time else "11:00"),
                           "close": (h.close_time if h and h.close_time else "23:00"),
                           "closed": bool(h.is_closed) if h else False})
-    return render_template("admin/settings.html", s=store, zones=zones, hour_rows=hour_rows, **_shell(store))
+    return render_template(
+        "admin/settings.html", s=store, zones=zones, hour_rows=hour_rows,
+        google_maps_api_key=store_google_maps_key(store),
+        map_zones=map_zones, **_shell(store),
+    )
 
 
 @bp.post("/admin/settings")
@@ -348,6 +394,24 @@ def settings_save():
     db.session.commit()
     flash(f"{store.name} settings saved.", "success")
     return redirect("/admin/settings" + _qs(store) + "#general")
+
+
+@bp.post("/admin/settings/map-pin")
+@roles_required(*ADMIN_ROLES)
+def settings_map_pin():
+    store = _admin_store()
+    if not store:
+        abort(404)
+    lat = _optional_float(request.form.get("latitude"))
+    lng = _optional_float(request.form.get("longitude"))
+    if lat is None or lng is None:
+        flash("Enter a valid map pin location.", "error")
+        return redirect("/admin/settings" + _qs(store) + "#zones")
+    store.latitude = lat
+    store.longitude = lng
+    db.session.commit()
+    flash("Delivery zone map pin saved.", "success")
+    return redirect("/admin/settings" + _qs(store) + "#zones")
 
 
 def _zone_from_form(z, form):
@@ -1085,12 +1149,13 @@ def email_templates_preview(tpl_key):
     ctx = preview_context(tpl_key)
     rows = preview_rows(tpl_key)
     if tpl_key.startswith("order_"):
-        cta = et.tracking_url_for(ctx.get("order_number") or "OK-4012")
+        cta = tracking_url_for(ctx.get("order_number") or "OK-4012")
     else:
         try:
             cta = url_for("website.home", _external=True).rstrip("/") + "/menu"
         except Exception:
-            cta = "https://fooddeliveryaudit.com/menu"
+            from app.helpers import public_site_url
+            cta = public_site_url("/menu")
     _, _, html = render_email(tpl_key, ctx, rows=rows, cta_href=cta,
                               brand=current_app.config.get("BRAND_NAME") or None)
     # Block scripts in pasted email HTML | preview runs same-origin in admin iframes.
@@ -1717,9 +1782,16 @@ def menu():
             "available": mi.is_available if mi else True,
             "price": float(mi.price_override) if (mi and mi.price_override is not None) else float(p.base_price),
         })
+    from app.services.menu_pricing import library_addon_price_for_store, _addon_overrides
+    lib_links = {}
+    for link in ProductAddon.query.filter(ProductAddon.library_id.isnot(None)).all():
+        lib_links.setdefault(link.library_id, []).append(link)
+    addon_ov = _addon_overrides(store) if store else {}
     return render_template("admin/menu.html", rows=rows,
                            categories=Category.query.order_by(Category.sort_order).all(),
                            addon_library=AddonLibrary.query.order_by(AddonLibrary.sort_order, AddonLibrary.name).all(),
+                           library_price=lambda lib: library_addon_price_for_store(
+                               store, lib, lib_links.get(lib.id), addon_ov),
                            **_shell(store))
 
 
@@ -1738,7 +1810,7 @@ def menu_save(pid):
     mi.is_listed = bool(request.form.get("listed"))
     mi.is_available = bool(request.form.get("available"))
     price = request.form.get("price", type=float)
-    mi.price_override = round(price, 2) if (price is not None and abs(price | float(product.base_price)) > 0.001) else None
+    mi.price_override = round(price, 2) if (price is not None and abs(price - float(product.base_price)) > 0.001) else None
     sort_order = request.form.get("sort_order", type=int)
     if sort_order is not None:
         product.sort_order = sort_order
@@ -1756,12 +1828,17 @@ def product_modifiers(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
     attached_lib_ids = {a.library_id for a in product.addons if a.library_id}
+    from app.services.menu_pricing import variant_delta_for_store, addon_price_for_store, _variant_overrides, _addon_overrides
+    variant_ov = _variant_overrides(store)
+    addon_ov = _addon_overrides(store)
     return render_template(
         "admin/product_modifiers.html",
         product=product,
         addon_library=AddonLibrary.query.filter_by(is_active=True)
         .order_by(AddonLibrary.sort_order, AddonLibrary.name).all(),
         attached_lib_ids=attached_lib_ids,
+        variant_price=lambda v: variant_delta_for_store(store, v, variant_ov),
+        addon_price=lambda a: addon_price_for_store(store, a, addon_ov),
         **_shell(store),
     )
 
@@ -1869,6 +1946,26 @@ def variant_default(vid):
     return redirect(f"/admin/menu/{v.product_id}/modifiers" + _qs(store))
 
 
+@bp.post("/admin/menu/variants/<int:vid>/store-price")
+@roles_required(*ADMIN_ROLES)
+def variant_store_price(vid):
+    store = _admin_store()
+    v = ProductVariant.query.get_or_404(vid)
+    if not store:
+        flash("Pick a location first.", "error")
+        return redirect(f"/admin/menu/{v.product_id}/modifiers")
+    try:
+        delta = Decimal(request.form.get("price_delta") or str(v.price_delta or 0))
+    except InvalidOperation:
+        flash("Enter a valid price delta.", "error")
+        return redirect(f"/admin/menu/{v.product_id}/modifiers" + _qs(store))
+    from app.services.menu_pricing import set_store_variant_delta
+    set_store_variant_delta(store, v, delta)
+    db.session.commit()
+    flash(f"“{v.name}” price saved for {store.name}.", "success")
+    return redirect(f"/admin/menu/{v.product_id}/modifiers" + _qs(store))
+
+
 @bp.post("/admin/menu/variants/<int:vid>/delete")
 @roles_required(*ADMIN_ROLES)
 def variant_delete(vid):
@@ -1939,6 +2036,14 @@ def addon_attach(pid):
 def addon_edit(aid):
     store = _admin_store()
     a = ProductAddon.query.get_or_404(aid)
+    store_price = request.form.get("store_price")
+    if store and store_price not in (None, ""):
+        try:
+            from app.services.menu_pricing import set_store_addon_price
+            set_store_addon_price(store, a, Decimal(store_price))
+        except InvalidOperation:
+            flash("Enter a valid price.", "error")
+            return redirect(f"/admin/menu/{a.product_id}/modifiers" + _qs(store))
     if a.library_id:
         if request.form.get("sort_order") not in (None, ""):
             a.sort_order = request.form.get("sort_order", type=int) or 0
@@ -1952,10 +2057,11 @@ def addon_edit(aid):
     name = request.form.get("name", "").strip()
     if name:
         a.name = name
-    try:
-        a.price = Decimal(request.form.get("price") or str(a.price))
-    except InvalidOperation:
-        pass
+    if not store:
+        try:
+            a.price = Decimal(request.form.get("price") or str(a.price))
+        except InvalidOperation:
+            pass
     a.is_required = bool(request.form.get("is_required"))
     if request.form.get("sort_order") not in (None, ""):
         a.sort_order = request.form.get("sort_order", type=int) or 0
@@ -2007,22 +2113,43 @@ def addon_library_add():
 def addon_library_edit(lid):
     store = _admin_store()
     lib = AddonLibrary.query.get_or_404(lid)
+    links = ProductAddon.query.filter_by(library_id=lib.id).all()
+    price_saved_for_store = False
+
     name = request.form.get("name", "").strip()
     if name:
         lib.name = name
-    try:
-        lib.price = Decimal(request.form.get("price") or str(lib.price))
-    except InvalidOperation:
-        pass
+        for link in links:
+            link.name = lib.name
+
+    price_raw = request.form.get("price")
+    if price_raw not in (None, ""):
+        try:
+            price = Decimal(price_raw)
+        except InvalidOperation:
+            flash("Enter a valid price.", "error")
+            return redirect("/admin/menu" + _qs(store))
+        if store:
+            from app.services.menu_pricing import set_store_library_addon_prices
+            set_store_library_addon_prices(store, lib, price)
+            price_saved_for_store = True
+        else:
+            lib.price = price
+            for link in links:
+                link.price = lib.price
+
     if request.form.get("sort_order") is not None:
         lib.sort_order = request.form.get("sort_order", type=int) or 0
-    db.session.flush()
-    for link in ProductAddon.query.filter_by(library_id=lib.id).all():
-        link.name = lib.name
-        link.price = lib.price
-        link.sort_order = lib.sort_order or 0
+        for link in links:
+            link.sort_order = lib.sort_order or 0
+
     db.session.commit()
-    flash(f"“{lib.name}” updated and synced to attached items.", "success")
+    if price_saved_for_store:
+        flash(f"“{lib.name}” price saved for {store.name} only.", "success")
+    elif store:
+        flash(f"“{lib.name}” updated.", "success")
+    else:
+        flash(f"“{lib.name}” updated and synced to attached items (default price for all locations).", "success")
     return redirect("/admin/menu" + _qs(store))
 
 
@@ -2096,15 +2223,16 @@ def _save_image(file, slug, exts=IMAGE_EXTS, quiet=False):
     return f"/static/img/uploads/{fname}"
 
 
-def _apply_product_form(p, form, files):
+def _apply_product_form(p, form, files, update_catalog_price=True):
     p.name = form.get("name", "").strip() or p.name
     cat = Category.query.get(form.get("category_id", type=int)) if form.get("category_id") else None
     if cat:
         p.category = cat
-    try:
-        p.base_price = Decimal(form.get("base_price") or str(p.base_price))
-    except InvalidOperation:
-        pass
+    if update_catalog_price:
+        try:
+            p.base_price = Decimal(form.get("base_price") or str(p.base_price))
+        except InvalidOperation:
+            pass
     p.description = form.get("description", "").strip()
     p.calories = form.get("calories", type=int)
     p.allergens = _csv_list(form.get("allergens"))
@@ -2144,8 +2272,14 @@ def product_add():
 def product_edit(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
+    mi = StoreMenuItem.query.filter_by(store_id=store.id, product_id=pid).first() if store else None
+    display_price = (
+        float(mi.price_override) if (mi and mi.price_override is not None)
+        else float(product.base_price)
+    )
     return render_template("admin/product_edit.html", product=product,
-                           categories=Category.query.order_by(Category.sort_order).all(), **_shell(store))
+                           categories=Category.query.order_by(Category.sort_order).all(),
+                           display_price=display_price, **_shell(store))
 
 
 @bp.post("/admin/menu/<int:pid>/edit")
@@ -2153,10 +2287,29 @@ def product_edit(pid):
 def product_update(pid):
     store = _admin_store()
     product = Product.query.get_or_404(pid)
-    _apply_product_form(product, request.form, request.files)
+    _apply_product_form(product, request.form, request.files, update_catalog_price=not store)
+    if store:
+        raw = request.form.get("base_price")
+        if raw not in (None, ""):
+            try:
+                price = Decimal(raw)
+                mi = StoreMenuItem.query.filter_by(store_id=store.id, product_id=pid).first()
+                if not mi:
+                    mi = StoreMenuItem(store_id=store.id, product_id=pid)
+                    db.session.add(mi)
+                mi.price_override = (
+                    round(price, 2)
+                    if abs(float(price) - float(product.base_price)) > 0.001
+                    else None
+                )
+            except InvalidOperation:
+                pass
     product.is_active = bool(request.form.get("is_active"))
     db.session.commit()
-    flash(f"“{product.name}” updated.", "success")
+    if store:
+        flash(f"“{product.name}” updated. Price saved for {store.name} only.", "success")
+    else:
+        flash(f"“{product.name}” updated.", "success")
     return redirect(f"/admin/menu/{pid}/edit" + _qs(store))
 
 
@@ -2448,7 +2601,7 @@ def integrations_webhook_save(provider):
 
 
 # ── Locations / stores ───────────────────────────────────────────────────
-LOCATION_ROLES = ("super_admin", "franchise_owner")  # who may add/toggle stores
+LOCATION_ROLES = SUPER_ADMIN_ROLES  # who may add/toggle stores
 
 
 def _can_manage_locations():
@@ -2629,9 +2782,9 @@ def _date_window(args):
     if rng == "today":
         since = until = today
     elif rng == "7d":
-        since, until = today | timedelta(days=6), today
+        since, until = today - timedelta(days=6), today
     elif rng == "30d":
-        since, until = today | timedelta(days=29), today
+        since, until = today - timedelta(days=29), today
     elif rng == "all":
         since = until = None
     return rng, since, until
@@ -2693,13 +2846,87 @@ def _scoped_order(number):
     return order
 
 
+def _admin_order_status_payload(order):
+    delivery = None
+    if order.delivery:
+        d = order.delivery
+        delivery = {
+            "status": d.status,
+            "method": d.method,
+            "tracking_url": d.tracking_url or "",
+            "driver": d.driver.name if d.driver else None,
+        }
+    return {
+        "number": order.number,
+        "status": order.status,
+        "payment_status": order.payment_status,
+        "status_label": order.status.replace("_", " ").title(),
+        "delivery": delivery,
+        "terminal": order.status in ("completed", "cancelled"),
+        "reload": order.status in ("completed", "cancelled"),
+    }
+
+
+@bp.get("/admin/api/orders/<number>/status")
+@roles_required(*ADMIN_ROLES)
+def admin_order_status_api(number):
+    order = _scoped_order(number)
+    if order.delivery:
+        try:
+            from app.services.delivery import ensure_delivery_status_current
+            ensure_delivery_status_current(order)
+        except Exception:
+            current_app.logger.exception("Uber sync failed for %s", number)
+            db.session.rollback()
+    try:
+        db.session.refresh(order)
+    except Exception:
+        db.session.expire(order)
+    return jsonify(_admin_order_status_payload(order))
+
+
+@bp.get("/admin/api/orders/status")
+@roles_required(*ADMIN_ROLES)
+def admin_orders_status_api():
+    raw = request.args.getlist("number")
+    if not raw:
+        raw = [n.strip() for n in (request.args.get("numbers") or "").split(",") if n.strip()]
+    numbers = [n.upper() for n in raw]
+    if not numbers:
+        return jsonify([])
+    store = _admin_store()
+    from app.services.delivery import ensure_delivery_status_current
+    out = []
+    for num in numbers:
+        order = Order.query.filter_by(number=num).first()
+        if not order:
+            continue
+        if store and order.store_id != store.id:
+            continue
+        if not _can_switch() and order.store_id != current_user().store_id:
+            continue
+        if order.delivery:
+            try:
+                ensure_delivery_status_current(order)
+            except Exception:
+                current_app.logger.exception("Uber sync failed for %s", num)
+                db.session.rollback()
+        out.append(_admin_order_status_payload(order))
+    db.session.commit()
+    return jsonify(out)
+
+
 @bp.get("/admin/orders/<number>")
 @roles_required(*ADMIN_ROLES)
 def order_detail(number):
     order = _scoped_order(number)
     if order.delivery:
-        from app.services.delivery import ensure_delivery_status_current
-        ensure_delivery_status_current(order)
+        try:
+            from app.services.delivery import ensure_delivery_status_current
+            ensure_delivery_status_current(order)
+        except Exception:
+            current_app.logger.exception("Uber sync failed for %s", number)
+            db.session.rollback()
     store = Store.query.get(order.store_id)
     return render_template("admin/order_detail.html", order=order,
                            stages=TRACK_STAGES, stage_meta=STAGE_META, **_shell(store))
@@ -2798,70 +3025,241 @@ STAFF_ROLES = ["franchise_owner", "store_manager", "kitchen_staff", "cashier", "
 
 
 def _assignable_roles():
-    """super_admin / franchise_owner may assign any staff role; a pinned
-    store_manager may only add line staff to their own store."""
-    if current_user().role.name in ("super_admin", "franchise_owner"):
-        return STAFF_ROLES
-    return ["kitchen_staff", "cashier", "driver"]
+    """Roles super_admin may assign when inviting staff."""
+    return STAFF_ROLES
+
+
+def _staff_action_error(member):
+    if member.id == current_user().id:
+        return "You can't change your own account here."
+    if member.role.name == "super_admin":
+        return "Super admin accounts can't be changed here."
+    if not _can_switch():
+        mine = current_user().assigned_store_ids()
+        theirs = member.assigned_store_ids()
+        if mine and theirs and not (mine & theirs):
+            abort(403)
+    if current_user().role.name == "store_manager" and member.role.name in (
+            "franchise_owner", "store_manager"):
+        return "You can't change that role."
+    return None
+
+
+def _stores_from_form(form, *, fallback=None):
+    """Resolve store rows from checkbox slugs; optional single-store fallback."""
+    slugs = [s.strip() for s in form.getlist("stores") if s.strip()]
+    chosen = []
+    for slug in slugs:
+        s = Store.query.filter_by(slug=slug).first()
+        if s:
+            chosen.append(s)
+    if not chosen and fallback:
+        chosen = [fallback]
+    return chosen
+
+
+def _detach_user_refs(user_id):
+    """Clear FK links so a user row can be deleted safely."""
+    from app.models.delivery import Driver
+    from app.models.review import Review
+    from app.models.order import Order
+    from app.models.favorite import Favorite
+    from app.models.address import UserAddress
+    from app.models.payment_method import UserPaymentMethod
+
+    Driver.query.filter_by(user_id=user_id).update({Driver.user_id: None})
+    Review.query.filter_by(user_id=user_id).update({Review.user_id: None})
+    Review.query.filter_by(moderated_by_id=user_id).update({Review.moderated_by_id: None})
+    Order.query.filter_by(user_id=user_id).update({Order.user_id: None})
+    Favorite.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+    UserAddress.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+    UserPaymentMethod.query.filter_by(user_id=user_id).delete(synchronize_session=False)
 
 
 @bp.get("/admin/staff")
-@roles_required(*ADMIN_ROLES)
+@roles_required("super_admin")
 def staff():
+    from app.services.staff_permissions import ADMIN_PERMISSION_GROUPS, permission_count_for_user, permission_labels_for_user
+    from sqlalchemy.orm import joinedload
     store = _admin_store()
-    q = User.query.join(Role).filter(Role.name.in_(STAFF_ROLES))
+    q = User.query.join(Role).filter(Role.name.in_(STAFF_ROLES)).options(joinedload(User.stores))
     if not _can_switch():
-        q = q.filter(User.store_id == current_user().store_id)
+        store_ids = list(current_user().assigned_store_ids())
+        if store_ids:
+            q = q.filter(
+                db.or_(
+                    User.store_id.in_(store_ids),
+                    User.stores.any(Store.id.in_(store_ids)),
+                )
+            )
     members = q.order_by(User.is_active.desc(), User.first_name).all()
     return render_template("admin/staff.html", members=members,
-                           roles=_assignable_roles(), **_shell(store))
+                           roles=_assignable_roles(),
+                           permission_groups=ADMIN_PERMISSION_GROUPS,
+                           permission_count_for_user=permission_count_for_user,
+                           permission_labels_for_user=permission_labels_for_user,
+                           **_shell(store))
 
 
 @bp.post("/admin/staff")
-@roles_required(*ADMIN_ROLES)
+@roles_required("super_admin")
 def staff_add():
+    from app.services.staff_permissions import permissions_from_form
     store = _admin_store()
     email = request.form.get("email", "").strip().lower()
     role_name = request.form.get("role", "")
+    perms = permissions_from_form(request.form)
     if role_name not in _assignable_roles():
         flash("You're not allowed to assign that role.", "error")
+        return redirect("/admin/staff" + _qs(store))
+    if not perms:
+        flash("Select at least one admin access permission.", "error")
         return redirect("/admin/staff" + _qs(store))
     if not email or "@" not in email or User.query.filter_by(email=email).first():
         flash("Enter a unique, valid email address.", "error")
         return redirect("/admin/staff" + _qs(store))
 
-    # Store assignment: pinned managers use their own store; switchers may choose.
-    target_store_id = current_user().store_id or (store.id if store else None)
     if _can_switch():
-        chosen = Store.query.filter_by(slug=request.form.get("store", "")).first()
-        target_store_id = chosen.id if chosen else (store.id if store else None)
+        chosen_stores = _stores_from_form(request.form, fallback=store)
+    else:
+        chosen_stores = current_user().assigned_stores()[:1]
+    if not chosen_stores:
+        flash("Select at least one location.", "error")
+        return redirect("/admin/staff" + _qs(store))
 
+    temp_password = request.form.get("password", "").strip() or "changeme123"
     member = User(email=email, first_name=request.form.get("first_name", "").strip(),
                   last_name=request.form.get("last_name", "").strip(),
                   role=Role.query.filter_by(name=role_name).first(),
-                  store_id=target_store_id, email_verified=True)
-    member.set_password(request.form.get("password", "").strip() or "changeme123")
+                  email_verified=True,
+                  admin_permissions=perms)
+    member.set_assigned_stores(chosen_stores)
+    member.set_password(temp_password)
     db.session.add(member)
     db.session.commit()
-    flash(f"Added {member.full_name or email} as {role_name.replace('_', ' ')}.", "success")
+    db.session.refresh(member)
+
+    mail_store = member.assigned_stores()[0] if member.assigned_stores() else store
+    store_name = ", ".join(s.name for s in member.assigned_stores()) if member.assigned_stores() else (
+        mail_store.name if mail_store else "OK Smashed Burger"
+    )
+    mail_note = ""
+    try:
+        from app.services import mailer
+        res = mailer.staff_invited(member, role_name, store_name, store=mail_store,
+                                   temp_password=temp_password)
+        status = (res or {}).get("status", "unknown")
+        if status in ("sent", "simulated"):
+            mail_note = " Invite email sent."
+        elif status == "skipped":
+            mail_note = " Invite email was not sent — check SMTP in Integrations."
+            current_app.logger.warning("staff_invited skipped for %s: %s", email, res)
+        elif status == "failed":
+            err = ((res or {}).get("raw") or {}).get("error", "delivery failed")
+            mail_note = f" Invite email failed ({err}). Check Admin → Integrations → SMTP."
+            current_app.logger.warning("staff_invited failed for %s: %s", email, res)
+        else:
+            mail_note = " Invite email may not have been delivered."
+            current_app.logger.warning("staff_invited %s for %s: %s", status, email, res)
+    except Exception:
+        current_app.logger.exception("Failed to email invited staff member %s", email)
+        mail_note = " Invite email failed — check server logs."
+
+    flash(f"Added {member.full_name or email} as {role_name.replace('_', ' ')}.{mail_note}", "success")
+    return redirect("/admin/staff" + _qs(store))
+
+
+@bp.post("/admin/staff/<int:sid>/permissions")
+@roles_required("super_admin")
+def staff_permissions(sid):
+    from app.services.staff_permissions import permissions_from_form
+    store = _admin_store()
+    member = User.query.get_or_404(sid)
+    err = _staff_action_error(member)
+    if err:
+        flash(err, "error")
+        return redirect("/admin/staff" + _qs(store))
+    perms = permissions_from_form(request.form)
+    if not perms:
+        flash("Select at least one admin access permission.", "error")
+        return redirect("/admin/staff" + _qs(store))
+    member.admin_permissions = perms
+    if _can_switch():
+        chosen_stores = _stores_from_form(request.form)
+        if not chosen_stores:
+            flash("Select at least one location.", "error")
+            return redirect("/admin/staff" + _qs(store))
+        member.set_assigned_stores(chosen_stores)
+    db.session.commit()
+    flash(f"Updated access for {member.full_name or member.email}.", "success")
     return redirect("/admin/staff" + _qs(store))
 
 
 @bp.post("/admin/staff/<int:sid>/toggle")
-@roles_required(*ADMIN_ROLES)
+@roles_required("super_admin")
 def staff_toggle(sid):
     store = _admin_store()
     member = User.query.get_or_404(sid)
-    if member.id == current_user().id:
-        flash("You can't deactivate your own account.", "error")
-    elif member.role.name == "super_admin":
-        flash("Super admin accounts can't be changed here.", "error")
-    elif not _can_switch() and member.store_id != current_user().store_id:
-        abort(403)
+    err = _staff_action_error(member)
+    if err:
+        flash(err, "error")
     else:
         member.is_active = not member.is_active
         db.session.commit()
         flash(f"{member.full_name} {'reactivated' if member.is_active else 'deactivated'}.", "success")
+    return redirect("/admin/staff" + _qs(store))
+
+
+@bp.get("/admin/staff/<int:sid>/delete")
+@roles_required("super_admin")
+def staff_delete_get(sid):
+    flash("Use the Delete button on the Staff page to remove a team member.", "error")
+    return redirect("/admin/staff" + _qs(_admin_store()))
+
+
+@bp.post("/admin/staff/<int:sid>/delete")
+@roles_required("super_admin")
+def staff_delete(sid):
+    from sqlalchemy.exc import IntegrityError
+    from app.services import mailer
+
+    store = _admin_store()
+    member = User.query.get(sid)
+    if not member:
+        flash("That staff member was already removed.", "info")
+        return redirect("/admin/staff" + _qs(store))
+    if member.role.name not in STAFF_ROLES:
+        flash("That account is not a staff member.", "error")
+        return redirect("/admin/staff" + _qs(store))
+    err = _staff_action_error(member)
+    if err:
+        flash(err, "error")
+        return redirect("/admin/staff" + _qs(store))
+
+    email = member.email
+    name = member.full_name
+    role_label = member.role.name
+    store_name = member.store_names_display if member.store_names_display != "—" else (
+        store.name if store else "OK Smashed Burger"
+    )
+    mail_store = member.assigned_stores()[0] if member.assigned_stores() else store
+
+    _detach_user_refs(member.id)
+    db.session.delete(member)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        current_app.logger.exception("Failed to delete staff user %s", sid)
+        flash("Could not remove this account because it is still linked to other records.", "error")
+        return redirect("/admin/staff" + _qs(store))
+
+    try:
+        mailer.staff_removed(email, name, role_label, store_name, store=mail_store)
+    except Exception:
+        current_app.logger.exception("Failed to email removed staff member %s", email)
+
+    flash(f"{name or email} permanently removed.", "success")
     return redirect("/admin/staff" + _qs(store))
 
 
@@ -3006,13 +3404,125 @@ def notifications():
 
 
 # ── Contact messages (brand-wide inbox) ──────────────────────────────────
+CONTACT_SUBJECTS = (
+    "General enquiry", "Order issue", "Catering", "Franchising", "Feedback",
+)
+
+
+def _messages_filter_qs(q="", subject="", status="", page=None):
+    from urllib.parse import urlencode
+    params = {}
+    if q:
+        params["q"] = q
+    if subject:
+        params["subject"] = subject
+    if status and status != "all":
+        params["status"] = status
+    if page and int(page) > 1:
+        params["page"] = int(page)
+    return ("?" + urlencode(params)) if params else ""
+
+
+def _messages_redirect_qs():
+    return _messages_filter_qs(
+        (request.values.get("q") or "").strip(),
+        (request.values.get("subject") or "").strip(),
+        (request.values.get("status") or "all").strip(),
+        request.values.get("page"),
+    )
+
+
 @bp.get("/admin/messages")
 @roles_required(*ADMIN_ROLES)
 def messages():
+    from sqlalchemy import or_
     from app.models.contact import ContactMessage
+
     store = _admin_store()
-    rows = ContactMessage.query.order_by(ContactMessage.created_at.desc()).limit(100).all()
-    return render_template("admin/messages.html", rows=rows, **_shell(store))
+    q = (request.args.get("q") or "").strip()
+    subject = (request.args.get("subject") or "").strip()
+    status = (request.args.get("status") or "all").strip().lower()
+    page = max(1, int(request.args.get("page", 1) or 1))
+    per_page = 15
+
+    query = ContactMessage.query
+    if q:
+        like = "%%%s%%" % q
+        query = query.filter(or_(
+            ContactMessage.name.ilike(like),
+            ContactMessage.email.ilike(like),
+            ContactMessage.message.ilike(like),
+            ContactMessage.order_number.ilike(like),
+        ))
+    if subject:
+        query = query.filter(ContactMessage.subject == subject)
+    if status == "unread":
+        query = query.filter(ContactMessage.is_read.is_(False))
+    elif status == "read":
+        query = query.filter(ContactMessage.is_read.is_(True), ContactMessage.replied_at.is_(None))
+    elif status == "replied":
+        query = query.filter(ContactMessage.replied_at.isnot(None))
+
+    query = query.order_by(ContactMessage.created_at.desc())
+    total = query.count()
+    pages = max(1, (total + per_page - 1) // per_page)
+    page = min(page, pages)
+    rows = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    counts = {
+        "all": ContactMessage.query.count(),
+        "unread": ContactMessage.query.filter(ContactMessage.is_read.is_(False)).count(),
+        "replied": ContactMessage.query.filter(ContactMessage.replied_at.isnot(None)).count(),
+    }
+
+    return render_template(
+        "admin/messages.html",
+        rows=rows,
+        q=q,
+        subject=subject,
+        status=status,
+        page=page,
+        pages=pages,
+        total=total,
+        per_page=per_page,
+        subjects=CONTACT_SUBJECTS,
+        counts=counts,
+        filter_qs=_messages_filter_qs,
+        **_shell(store),
+    )
+
+
+@bp.post("/admin/messages/<int:mid>/reply")
+@roles_required(*ADMIN_ROLES)
+def message_reply(mid):
+    from app.models.contact import ContactMessage
+    from app.services.mailer import contact_reply
+
+    store = _admin_store()
+    msg = ContactMessage.query.get_or_404(mid)
+    body = (request.form.get("reply") or "").strip()
+    if not body:
+        flash("Reply cannot be empty.", "error")
+        return redirect("/admin/messages" + _messages_redirect_qs())
+    msg.reply_text = body
+    msg.replied_at = datetime.now(timezone.utc)
+    msg.is_read = True
+    db.session.commit()
+    contact_reply(msg, body, store=store)
+    flash("Reply sent to %s." % (msg.email or "customer"), "success")
+    return redirect("/admin/messages" + _messages_redirect_qs())
+
+
+@bp.post("/admin/messages/<int:mid>/read")
+@roles_required(*ADMIN_ROLES)
+def message_toggle_read(mid):
+    from app.models.contact import ContactMessage
+
+    msg = ContactMessage.query.get_or_404(mid)
+    msg.is_read = not msg.is_read
+    db.session.commit()
+    flash("Marked as %s." % ("read" if msg.is_read else "unread"), "success")
+    return redirect("/admin/messages" + _messages_redirect_qs())
 
 
 # ── Content lists ────────────────────────────────────────────────────────
@@ -3294,6 +3804,87 @@ def subscribers_export():
                     headers={"Content-Disposition": "attachment; filename=subscribers.csv"})
 
 
+@bp.get("/admin/subscribers/template.csv")
+@roles_required(*ADMIN_ROLES)
+def subscribers_template():
+    store = _optional_store_filter() or _admin_store()
+    loc = store.name if store else "Brand-wide"
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["email", "source", "location", "status"])
+    w.writerow(["customer@example.com", "import", loc, "active"])
+    return Response(buf.getvalue(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=subscribers_template.csv"})
+
+
+@bp.post("/admin/subscribers/import")
+@roles_required(*ADMIN_ROLES)
+def subscribers_import():
+    from app.models.contact import Subscriber
+
+    store = _optional_store_filter() or _admin_store()
+    upload = request.files.get("csv")
+    if not upload or not upload.filename:
+        flash("Choose a CSV file to import.", "error")
+        return redirect("/admin/subscribers" + _qs(store))
+
+    try:
+        raw = upload.read()
+        text = raw.decode("utf-8-sig", errors="replace")
+    except Exception:
+        flash("Could not read the CSV file.", "error")
+        return redirect("/admin/subscribers" + _qs(store))
+
+    reader = csv.DictReader(io.StringIO(text))
+    if not reader.fieldnames or "email" not in [h.strip().lower() for h in reader.fieldnames]:
+        flash("CSV must include an email column in the header row.", "error")
+        return redirect("/admin/subscribers" + _qs(store))
+
+    stores_by_name = {s.name.lower(): s for s in Store.query.all()}
+    added = updated = skipped = 0
+
+    for row in reader:
+        email = (row.get("email") or "").strip().lower()
+        if not email or "@" not in email:
+            skipped += 1
+            continue
+
+        status_raw = (row.get("status") or "active").strip().lower()
+        is_active = status_raw not in ("unsubscribed", "inactive", "no", "0", "false")
+
+        loc_raw = (row.get("location") or "").strip()
+        row_store = store
+        if loc_raw and loc_raw.lower() not in ("brand-wide", "brand wide", "all"):
+            row_store = stores_by_name.get(loc_raw.lower()) or row_store
+
+        source = (row.get("source") or "import").strip() or "import"
+        ip_address = (row.get("ip_address") or "").strip() or None
+
+        existing = Subscriber.query.filter_by(email=email).first()
+        if existing:
+            existing.is_active = is_active
+            if source:
+                existing.source = source
+            if row_store and not existing.store_id:
+                existing.store_id = row_store.id
+            if ip_address:
+                existing.ip_address = ip_address
+            updated += 1
+        else:
+            db.session.add(Subscriber(
+                email=email,
+                store_id=row_store.id if row_store else None,
+                source=source,
+                ip_address=ip_address,
+                is_active=is_active,
+            ))
+            added += 1
+
+    db.session.commit()
+    flash(f"Import complete: {added} added, {updated} updated, {skipped} skipped.", "success")
+    return redirect("/admin/subscribers" + _qs(store))
+
+
 # ── Delivery drivers ─────────────────────────────────────────────────────
 # Driver rows only ever came from the seed script; there was no way to add a
 # rider, retire one, or take somebody offline without opening the database.
@@ -3359,21 +3950,32 @@ def driver_toggle(did):
 
 
 @bp.post("/admin/drivers/<int:did>/delete")
-@roles_required("super_admin", "franchise_owner")
+@roles_required("super_admin", "franchise_owner", "store_manager")
 def driver_delete(did):
     from app.models.delivery import Delivery
+    from app.services import mailer
+
+    store = _admin_store()
     d = Driver.query.get_or_404(did)
-    if Delivery.query.filter_by(driver_id=d.id).count():
-        # never orphan delivery history | retire the driver instead
-        d.is_active = False
-        d.is_online = False
-        db.session.commit()
-        flash(d.name + " has deliveries on record, so they were deactivated instead of deleted.",
-              "success")
-    else:
-        db.session.delete(d)
-        db.session.commit()
-        flash("Driver removed.", "success")
+    if store and d.store_id and d.store_id != store.id:
+        abort(403)
+
+    linked = User.query.get(d.user_id) if d.user_id else None
+    email = linked.email if linked else None
+    name = d.name
+    store_name = d.store.name if d.store else (store.name if store else "OK Smashed Burger")
+
+    Delivery.query.filter_by(driver_id=d.id).update({Delivery.driver_id: None})
+    db.session.delete(d)
+    db.session.commit()
+
+    if email:
+        try:
+            mailer.driver_removed(email, name, store_name, store=d.store or store)
+        except Exception:
+            current_app.logger.exception("Failed to email removed driver %s", email)
+
+    flash(name + " permanently removed from the fleet.", "success")
     return redirect("/admin/drivers" + _qs(_admin_store()))
 
 

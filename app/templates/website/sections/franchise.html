@@ -13,7 +13,7 @@
     </div>
     <div class="position-relative ok-minh-300px ok-minh-0-md overflow-hidden">
       <div class="position-absolute ok-fill scale-110">
-        <img src="{{ site.get('franchise_img') or site_defaults.get('franchise_img') }}" alt="Franchise food spread" class="w-100 h-100 ok-cover" data-parallax="0.1" loading="lazy">
+        <img src="{{ (site.get('franchise_img') or site_defaults.get('franchise_img')) | vasset }}" alt="Franchise food spread" class="w-100 h-100 ok-cover" data-parallax="0.1" loading="lazy" decoding="async">
       </div>
     </div>
   </div>

@@ -4,7 +4,7 @@
 
 <!-- ============ HERO ============ -->
 {% set _s = pb_page_style('catering', 'hero') %}<div class="pb-sec" data-page="catering" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
-  <img src="{{ site.get('catering_hero_img') or site_defaults.get('catering_hero_img') }}" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover">
+  <img src="{{ (site.get('catering_hero_img') or site_defaults.get('catering_hero_img')) | vasset }}" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover" fetchpriority="high" decoding="async">
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
     <div class="max-w-2xl mx-auto text-center">

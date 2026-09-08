@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Square Print Demo — Kitchen vs Cashier</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; background: #e8e4dc; margin: 0; padding: 24px; color: #111; }
+  h1 { font-family: system-ui, sans-serif; text-align: center; font-size: 1.25rem; margin: 0 0 8px; }
+  .sub { text-align: center; font-family: system-ui, sans-serif; font-size: 0.85rem; color: #555; margin-bottom: 28px; }
+  .wrap { display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; align-items: flex-start; }
+  .col { text-align: center; }
+  .label { font-family: system-ui, sans-serif; font-weight: 700; font-size: 0.75rem; letter-spacing: .08em; text-transform: uppercase; color: #666; margin-bottom: 10px; }
+  .printer { font-family: system-ui, sans-serif; font-size: 0.7rem; color: #888; margin-bottom: 6px; }
+  .ticket {
+    width: 280px; background: #faf8f2; padding: 18px 16px 22px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.18); text-align: left;
+    font-size: 13px; line-height: 1.35; border: 1px solid #d8d4cc;
+  }
+  .ticket.kitchen { font-size: 14px; }
+  .ticket.cashier { font-size: 12.5px; }
+  .big { font-size: 22px; font-weight: 700; text-align: center; margin: 4px 0 2px; font-family: system-ui, sans-serif; }
+  .center { text-align: center; }
+  .muted { color: #444; font-size: 12px; }
+  .biz { text-align: center; font-weight: 700; font-size: 11px; line-height: 1.45; margin-bottom: 8px; }
+  .dash { border-top: 1px dashed #999; margin: 10px 0; }
+  .line.header { font-weight: 700; margin-top: 6px; }
+  .line.item { font-weight: 700; margin-top: 10px; font-size: 15px; }
+  .line.mod, .mod { padding-left: 10px; font-size: 12.5px; margin-top: 2px; }
+  .line.note, .note { padding-left: 10px; font-style: italic; font-size: 11.5px; margin-top: 4px; color: #333; }
+  .item-row { margin-top: 8px; }
+  .item-top { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+  .item-name { flex: 1; }
+  .item-price { white-space: nowrap; }
+  .item-sub { font-size: 11px; }
+  .totals { margin-top: 12px; }
+  .totals div { display: flex; justify-content: space-between; margin: 3px 0; }
+  .totals .grand { font-weight: 800; font-size: 15px; border-top: 1px solid #333; padding-top: 6px; margin-top: 6px; }
+  .badge { display: inline-block; background: #141414; color: #ffc72c; font-family: system-ui,sans-serif; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-top: 14px; }
+  .ok { color: #1a7f37; font-family: system-ui,sans-serif; font-size: 11px; margin-top: 8px; }
+  .no { color: #c0392b; font-family: system-ui,sans-serif; font-size: 11px; margin-top: 4px; text-decoration: line-through; opacity: .7; }
+</style>
+</head>
+<body>
+<h1>Square Print Preview (after fix)</h1>
+<p class="sub">Same test order PI7q — built from live <code>build_square_order()</code> code</p>
+<div class="wrap">
+  <div class="col">
+    <div class="label">Kitchen ticket</div>
+    <div class="printer">Star SP700</div>
+    <div class="ticket kitchen">
+      <div class="big">Receipt #PI7q</div>
+      <div class="center muted">September 07, 2026  11:05 PM</div>
+      <div class="dash"></div>
+      <div class="line header">WEB ORDER PI7q</div>
+<div class="line header">DELIVERY</div>
+<div class="line header">Muhammad (Test)</div>
+<div class="line header">+12155550199</div>
+<div class="line header">Customer Note : "Hey, 3517 Lancaster Ave, 19104, Location Staff its me Muhammad — this is a test order from our website. Please don't take it serious."</div>
+<div class="line header">DELIVERY</div>
+<div class="line header">3517 Lancaster Ave, Philadelphia, PA 19104</div>
+<div class="line item">1 x Combo #1 - Single x2</div>
+<div class="line mod">+ Patty x2</div>
+<div class="line mod">+ Crispy Cheddar Cheese</div>
+<div class="line mod">+ OK Sauce</div>
+<div class="line mod">+ American Cheese</div>
+<div class="line mod">+ Jalapeno</div>
+<div class="line mod">+ Smoked Beef Bacon</div>
+<div class="line mod">+ Fried Shallot/Fried Onion</div>
+      <div class="dash"></div>
+      <div class="ok">✓ No prices / no subtotal / no tax / no total</div>
+      <div class="no">✗ No "kitchen profile" footer (set in Square → Printers)</div>
+    </div>
+    <span class="badge">KITCHEN</span>
+  </div>
+  <div class="col">
+    <div class="label">Cashier receipt</div>
+    <div class="printer">Star TSP100</div>
+    <div class="ticket cashier">
+      <div class="center muted">September 07, 2026  11:05 PM</div>
+      <div class="center muted">Ticket: Receipt #PI7q</div>
+      <div class="dash"></div>
+      <div class="muted" style="font-size:11px;margin-bottom:8px">WEB ORDER PI7q<br>DELIVERY<br>Muhammad (Test)<br>+12155550199<br>Customer Note : "Hey, 3517 Lancaster Ave, 19104, Location Staff its me Muhammad — this is a test order from our website. Please don't take it serious."</div>
+      <div class="item-row"><div class="item-top"><span class="item-name">Combo #1 - Single x2</span><span class="item-price">$1.97</span></div><div class="item-sub muted">$1.97 total</div>
+<div class="mod">+ Patty x2</div>
+<div class="mod">+ Crispy Cheddar Cheese</div>
+<div class="mod">+ OK Sauce</div>
+<div class="mod">+ American Cheese</div>
+<div class="mod">+ Jalapeno</div>
+<div class="mod">+ Smoked Beef Bacon</div>
+<div class="mod">+ Fried Shallot/Fried Onion</div>
+</div>
+      <div class="dash"></div>
+      <div class="totals">
+        <div class="no"><span>Subtotal</span><span>hidden</span></div>
+        <div class="no"><span>Sales Tax</span><span>hidden</span></div>
+        <div class="no"><span>Delivery</span><span>hidden</span></div>
+        <div class="no"><span>Tip</span><span>hidden</span></div>
+        <div class="grand"><span>Total</span><span>$1.97</span></div>
+        <div><span>Debit/Credit</span><span>$1.97</span></div>
+      </div>
+      <div class="ok" style="margin-top:10px">✓ No store address header · tax/delivery/tip in item price</div>
+    </div>
+    <span class="badge">CASHIER</span>
+  </div>
+</div>
+</body>
+</html>

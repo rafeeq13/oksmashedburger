@@ -5,7 +5,7 @@ from .store import (  # noqa: F401
 )
 from .menu import (  # noqa: F401
     Category, Product, ProductVariant, ProductModifierSection,
-    AddonLibrary, ProductAddon, StoreMenuItem,
+    AddonLibrary, ProductAddon, StoreMenuItem, StoreVariantPrice, StoreAddonPrice,
 )
 from .order import Order, OrderItem, Payment, ORDER_STATUSES  # noqa: F401
 from .delivery import Driver, Delivery, DELIVERY_STATUSES  # noqa: F401

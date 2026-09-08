@@ -61,6 +61,7 @@
     root.querySelectorAll("[data-address-field]").forEach(function (el) {
       el.dispatchEvent(new Event("input", { bubbles: true }));
     });
+    root.dispatchEvent(new CustomEvent("ok-address-filled", { bubbles: true }));
     showStatus(root, "");
   }
 

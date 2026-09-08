@@ -65,10 +65,8 @@ def send(to, subject, body, event, store=None, attachment=None, html=None, heade
 
 
 def _abs(path):
-    try:
-        return url_for("website.home", _external=True).rstrip("/") + path
-    except Exception:
-        return "https://oksmashedburger.com" + path
+    from app.helpers import public_site_url
+    return public_site_url(path)
 
 
 def contact_received(msg, store=None):
@@ -100,6 +98,36 @@ def contact_received(msg, store=None):
         send(msg.email, subj, plain, event="contact_ack", store=store, html=html)
 
 
+def contact_reply(msg, reply_body, store=None):
+    """Email the customer after an admin replies in /admin/messages."""
+    if not msg.email:
+        return {"status": "skipped", "raw": {"error": "no recipient"}}
+    reply_body = (reply_body or "").strip()
+    if not reply_body:
+        return {"status": "skipped", "raw": {"error": "empty reply"}}
+
+    kind = msg.subject or "your enquiry"
+    store_name = store.name if store else et.BRAND
+    first = msg.name.split(" ")[0] if msg.name else "there"
+    ctx = {
+        "store": store_name,
+        "subject": kind,
+        "message": reply_body,
+        "reply": reply_body,
+        "customer_name": first,
+    }
+    rows = [
+        ("Subject", kind),
+        ("Your message", msg.message or ""),
+        ("Our reply", reply_body),
+    ]
+    subj = "Re: %s | %s" % (kind, et.BRAND)
+    subj, plain, html = et.render(
+        "contact_reply", ctx, rows=rows, cta_href=_abs("/contact"),
+    )
+    return send(msg.email, subj, plain, event="contact_reply", store=store, html=html)
+
+
 def welcome(user, points=100):
     ctx = {"customer_name": user.full_name, "points": points, "store": et.BRAND}
     rows = [("Name", user.full_name), ("Email", user.email)]
@@ -117,6 +145,49 @@ def password_changed(user):
     ctx = {"customer_name": user.full_name}
     subj, plain, html = et.render("password_changed", ctx, cta_href=_abs("/login"))
     send(user.email, subj, plain, event="password_changed", html=html)
+
+
+def staff_removed(email, name, role, store_name, store=None):
+    if not email:
+        return {"status": "skipped", "raw": {"error": "no recipient"}}
+    ctx = {
+        "customer_name": name or "there",
+        "role": role.replace("_", " ").title(),
+        "store": store_name,
+    }
+    rows = [("Name", name or email), ("Role", ctx["role"]), ("Location", store_name)]
+    subj, plain, html = et.render("staff_removed", ctx, rows=rows, cta_href=_abs("/contact"))
+    return send(email, subj, plain, event="staff_removed", store=store, html=html)
+
+
+def staff_invited(user, role, store_name, store=None, temp_password=""):
+    if not user.email:
+        return {"status": "skipped", "raw": {"error": "no recipient"}}
+    ctx = {
+        "customer_name": user.full_name or "there",
+        "role": role.replace("_", " ").title(),
+        "store": store_name,
+        "email": user.email,
+        "temp_password": temp_password or "(set by your manager)",
+    }
+    rows = [
+        ("Name", user.full_name or user.email),
+        ("Role", ctx["role"]),
+        ("Location", store_name),
+        ("Email", user.email),
+        ("Temporary password", ctx["temp_password"]),
+    ]
+    subj, plain, html = et.render("staff_invited", ctx, rows=rows, cta_href=_abs("/login"))
+    return send(user.email, subj, plain, event="staff_invited", store=store, html=html)
+
+
+def driver_removed(email, name, store_name, store=None):
+    if not email:
+        return {"status": "skipped", "raw": {"error": "no recipient"}}
+    ctx = {"customer_name": name or "there", "store": store_name}
+    rows = [("Name", name or email), ("Location", store_name)]
+    subj, plain, html = et.render("driver_removed", ctx, rows=rows, cta_href=_abs("/contact"))
+    return send(email, subj, plain, event="driver_removed", store=store, html=html)
 
 
 def unsubscribe_link(email):

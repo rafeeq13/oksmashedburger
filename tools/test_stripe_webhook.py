@@ -26,7 +26,7 @@ def main():
 
         cfg = active_integration_config(store, "stripe")
         wh_cfg = webhook_settings(store)
-        base = "https://fooddeliveryaudit.com"
+        base = os.environ.get("PUBLIC_SITE_URL", "https://oksmashedburger.com").rstrip("/")
         resolved = resolve_webhook_url(store, "stripe", base)
         default = default_webhook_url(store, "stripe", base)
 

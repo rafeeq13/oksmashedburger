@@ -1,9 +1,20 @@
 <header class="ok-header" id="okHeader"><div class="ok-container">
   <div class="d-flex align-items-center ok-gap-3 ok-gap-15rem-md ok-h-16 ok-height-5rem-md">
     <a href="/" class="d-flex align-items-center flex-shrink-0" aria-label="{{ brand_name }} home">
-      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ brand_name }}" class="ok-h-11 ok-height-35rem-md w-auto">
+      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ brand_name }}" class="ok-h-11 ok-height-35rem-md w-auto" decoding="async" fetchpriority="high">
     </a>
 
+    {% if lock_store_location %}
+    <div class="d-none d-md-flex align-items-center ok-gap-25 text-start ok-pl-25 ok-pr-35 ok-py-15 rounded-pill border border-transparent flex-shrink-0 text-nowrap" aria-label="Ordering from {{ current_store.name if current_store else 'selected store' }}">
+      <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center text-ink flex-shrink-0"><i class="fa-solid fa-location-dot"></i></span>
+      <span class="ok-lh-tight">
+        <span class="d-block ok-fs-62rem text-muted-warm text-uppercase fw-bold ok-ls-12em">Ordering from</span>
+        <span class="d-flex align-items-center ok-gap-15 ok-fs-sm fw-bold">
+          <span data-store-label>{% if current_store %}{{ current_store.city }} · {{ current_store.zip_code }}{% else %}Selected store{% endif %}</span>
+        </span>
+      </span>
+    </div>
+    {% else %}
     <button data-open="location" class="d-none d-md-flex align-items-center ok-gap-25 text-start ok-pl-25 ok-pr-35 ok-py-15 rounded-pill border border-transparent   transition-all duration-200 flex-shrink-0 text-nowrap">
       <span class="ok-w-9 ok-h-9 rounded-pill bg-cream ok-grid ok-place-center text-ink flex-shrink-0"><i class="fa-solid fa-location-dot"></i></span>
       <span class="ok-lh-tight">
@@ -14,6 +25,7 @@
         </span>
       </span>
     </button>
+    {% endif %}
 
     <nav class="d-none d-lg-flex align-items-center ok-gap-3 ok-gap-175rem-xl">
       {% for n in nav_links %}
@@ -47,7 +59,7 @@
           <button type="button" data-search-close class="ok-iconbtn ok-w-8 ok-h-8 text-muted-warm flex-shrink-0" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button>
         </form></div>
       </div>
-      {% if current_user and current_user.role and current_user.role.name in ['super_admin','franchise_owner','store_manager'] %}
+      {% if show_admin_link %}
       <a href="/admin" class="d-none d-md-inline-flex btn btn-secondary btn-sm" title="Admin">Admin</a>
       {% endif %}
       {% if current_user and current_user.role and current_user.role.name == 'driver' %}
@@ -64,7 +76,7 @@
 <div class="drawer-backdrop" data-close="drawer"></div>
 <aside class="drawer" id="okDrawer" aria-label="Mobile menu">
   <div class="d-flex align-items-center justify-content-between ok-mb-5">
-    <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-12" alt="{{ brand_name }}">
+    <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-12" alt="{{ brand_name }}" decoding="async">
     <button data-close="drawer" class="ok-iconbtn ok-w-9 ok-h-9" aria-label="Close"><i class="fa-solid fa-xmark icon-lg"></i></button>
   </div>
   {# Search lives in the header on every screen size now, so the drawer no
@@ -91,5 +103,7 @@
   <a href="/account" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">My Account</a>
   <a href="/orders" class="d-block ok-py-3 ok-fs-lg fw-semibold border-bottom ok-bc-varokline">My Orders</a>
   <a href="/menu" class="btn btn-primary btn-block ok-mt-3">Order Now</a>
+  {% if not lock_store_location %}
   <button data-open="location" class="btn btn-secondary btn-block ok-mt-3"><i class="fa-solid fa-location-dot"></i> Change Location</button>
+  {% endif %}
 </aside>

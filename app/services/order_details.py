@@ -15,29 +15,148 @@ def addon_total(addon):
     return round(float(a.get("price", 0)) * addon_qty(a), 2)
 
 
-def format_item_options(item):
+def item_option_lines(item, include_prices=False):
+    """Structured modifier lines for emails and admin (not Square tickets)."""
     opts = item.options if hasattr(item, "options") else (item or {})
     if not isinstance(opts, dict):
         opts = {}
-    parts = []
+    lines = []
     if opts.get("variant"):
         v = opts["variant"]
         vd = opts.get("variant_delta")
-        if vd not in (None, "", 0, 0.0):
-            parts.append("%s (%s%s)" % (v, "+" if float(vd) >= 0 else "−", _money(abs(float(vd)))))
+        if include_prices and vd not in (None, "", 0, 0.0):
+            lines.append("%s (%s%s)" % (v, "+" if float(vd) >= 0 else "−", _money(abs(float(vd)))))
         else:
-            parts.append(v)
+            lines.append(v)
     for a in opts.get("addons") or []:
         qty = addon_qty(a)
         label = a.get("name", "Add-on")
-        total = addon_total(a)
         if qty > 1:
-            parts.append("+%s ×%d (+%s)" % (label, qty, _money(total)))
+            prefix = "+ %s x%d" % (label, qty)
         else:
-            parts.append("+%s (+%s)" % (label, _money(total)))
+            prefix = "+ %s" % label
+        if include_prices:
+            total = addon_total(a)
+            if total:
+                prefix += " (+%s)" % _money(total)
+        lines.append(prefix)
     if opts.get("notes"):
-        parts.append('"%s"' % opts["notes"])
-    return " · ".join(parts)
+        lines.append('"%s"' % opts["notes"])
+    return lines
+
+
+def square_line_item_name(item):
+    """Main line on Square kitchen/cashier tickets (size in the title, not as a modifier)."""
+    opts = item.options if hasattr(item, "options") else (item or {})
+    if not isinstance(opts, dict):
+        opts = {}
+    name = item.name if hasattr(item, "name") else str(item)
+    variant = (opts.get("variant") or "").strip()
+    if variant:
+        name = "%s - %s" % (name, variant)
+    return name[:512]
+
+
+def square_modifier_lines(item):
+    """Modifiers only — printed under the item name on Square tickets."""
+    opts = item.options if hasattr(item, "options") else (item or {})
+    if not isinstance(opts, dict):
+        opts = {}
+    lines = []
+    for a in opts.get("addons") or []:
+        qty = addon_qty(a)
+        label = a.get("name", "Add-on")
+        if qty > 1:
+            lines.append("+ %s x%d" % (label, qty))
+        else:
+            lines.append("+ %s" % label)
+    note = (opts.get("notes") or "").strip()
+    if note:
+        lines.append("- %s" % note)
+    return lines
+
+
+def square_line_item_modifiers(item, currency="USD"):
+    """Structured add-ons for Square tickets (one modifier per line, no prices on kitchen)."""
+    opts = item.options if hasattr(item, "options") else (item or {})
+    if not isinstance(opts, dict):
+        opts = {}
+    mods = []
+    for a in opts.get("addons") or []:
+        qty = addon_qty(a)
+        label = a.get("name", "Add-on")
+        if qty > 1:
+            name = "+ %s x%d" % (label, qty)
+        else:
+            name = "+ %s" % label
+        mods.append({
+            "name": name[:255],
+            "quantity": "1",
+            "base_price_money": {"amount": 0, "currency": (currency or "USD").upper()},
+        })
+    return mods
+
+
+def square_line_item_instruction(item):
+    """Per-item special instructions (not add-ons) on a Square line item."""
+    opts = item.options if hasattr(item, "options") else (item or {})
+    if not isinstance(opts, dict):
+        return ""
+    return (opts.get("notes") or "").strip()[:2000]
+
+
+def square_item_note(item):
+    """Legacy note field — prefer modifiers + square_line_item_instruction."""
+    return square_line_item_instruction(item)
+
+
+def square_order_header_note(order, include_delivery_address=False):
+    """Order note on Square tickets — no delivery address (kitchen gets that via fulfillment note)."""
+    parts = ["WEB ORDER %s" % (order.number or "—")]
+    otype = (order.order_type or "").strip().upper()
+    if otype:
+        parts.append(otype.replace("_", " "))
+    if order.customer_name:
+        parts.append(order.customer_name)
+    if order.customer_phone:
+        parts.append(order.customer_phone)
+    if include_delivery_address and order.order_type == "delivery" and order.address:
+        parts.append((order.address or "")[:160])
+    note_text = (order.notes or "").strip()
+    if note_text:
+        parts.extend(["", ""])
+        parts.append('Customer Note : "%s"' % note_text[:240])
+    return "\n".join(parts)[:500]
+
+
+def square_kitchen_fulfillment_note(order):
+    """Delivery address on kitchen ticket only (Square fulfillment note)."""
+    if (order.order_type or "").lower() != "delivery":
+        return ""
+    bits = ["DELIVERY"]
+    addr = (order.address or "").strip()
+    if not addr and getattr(order, "address_line1", None):
+        parts = [order.address_line1]
+        if getattr(order, "address_line2", None):
+            parts.append(order.address_line2)
+        city = getattr(order, "address_city", None)
+        state = getattr(order, "address_state", None)
+        zipc = getattr(order, "address_zip", None)
+        if city or state or zipc:
+            parts.append(", ".join(p for p in [city, state, zipc] if p))
+        addr = ", ".join(p for p in parts if p)
+    if addr:
+        bits.append(addr[:220])
+    return "\n".join(bits)[:500]
+
+
+def format_item_options(item):
+    lines = item_option_lines(item, include_prices=True)
+    return " · ".join(lines)
+
+
+def format_item_options_multiline(item, include_prices=False):
+    return "\n".join(item_option_lines(item, include_prices=include_prices))
 
 
 def order_email_rows(order):
@@ -53,11 +172,11 @@ def order_email_rows(order):
     if order.address:
         rows.append(("Address", order.address))
     for it in order.items:
-        detail = format_item_options(it)
+        detail_lines = item_option_lines(it, include_prices=True)
         label = "%d× %s" % (it.qty, it.name)
         value = _money(it.line_total)
-        if detail:
-            value = "%s | %s" % (value, detail)
+        if detail_lines:
+            value = "%s\n%s" % (value, "\n".join(detail_lines))
         rows.append((label, value))
     rows.extend(order_charge_rows(order))
     return rows
@@ -83,10 +202,15 @@ def order_email_html(order):
         parts.append('<p style="margin:0 0 6px;font-size:13px;color:#777">%s</p>' % _esc(order.customer_name))
     if order.address:
         parts.append('<p style="margin:0;font-size:13px;color:#777">%s</p>' % _esc(order.address))
+    if order.notes:
+        parts.append(
+            '<p style="margin:10px 0 0;font-size:13px;color:#141414;line-height:1.5">'
+            '<strong>Instructions:</strong> %s</p>' % _esc(order.notes)
+        )
 
     parts.append('<div style="margin-top:22px;padding-top:18px;border-top:1px solid #e3e0d8">')
     for it in order.items:
-        detail = format_item_options(it)
+        detail_lines = item_option_lines(it, include_prices=True)
         item_label = _esc("%d× %s" % (it.qty, it.name))
         line_price = _esc(_money(it.line_total))
         parts.append(
@@ -96,8 +220,11 @@ def order_email_html(order):
             '<div style="font-size:15px;font-weight:700;color:#141414;line-height:1.35">'
             + item_label + '</div>'
         )
-        if detail:
-            parts.append('<div style="font-size:12px;color:#888;margin-top:4px;line-height:1.5">%s</div>' % _esc(detail))
+        for line in detail_lines:
+            parts.append(
+                '<div style="font-size:12px;color:#c0392b;margin-top:3px;line-height:1.45;padding-left:8px">'
+                + _esc(line) + '</div>'
+            )
         parts.append(
             '</td><td align="right" style="vertical-align:top;padding:0 0 0 12px;'
             'font-size:15px;font-weight:700;color:#141414;white-space:nowrap">'

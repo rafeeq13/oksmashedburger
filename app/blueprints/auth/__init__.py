@@ -98,6 +98,8 @@ def register():
             db.session.commit()
             _mail("welcome", user)
             login_user(user)
+            from app.services.meta_pixel import queue_fbq_event
+            queue_fbq_event("CompleteRegistration")
             flash("Welcome to OK Rewards - 100 bonus points added!", "success")
             return redirect("/account")
     return render_template("pages/register.html")

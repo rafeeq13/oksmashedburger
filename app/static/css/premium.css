@@ -356,6 +356,16 @@ p {
   box-shadow: none !important;
 }
 
+.btn-primary:disabled,
+.btn-primary[disabled],
+.btn-primary.disabled {
+  background: #d4d4d4 !important;
+  background-image: none !important;
+  color: #737373 !important;
+  border-color: #d4d4d4 !important;
+  opacity: 1;
+}
+
 .btn:disabled::before,
 .btn[disabled]::before {
   display: none;
@@ -2097,7 +2107,7 @@ html.ok-loading {
 .ok-abt-media img{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
   border:0; background:#000; }
 .search-toggle{
-  color: #c1adad !important;
+  color: var(--ok-ink, #141414) !important;
 }
 
 /* YouTube facade: our own cover so the branded overlay never shows unplayed */

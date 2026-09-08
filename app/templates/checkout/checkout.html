@@ -35,8 +35,9 @@
         <!-- order type -->
         <div class="ok-grid ok-grid-2 gap-2 ok-mb-5">
           {% for ot, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
-          <label class="ok-choice d-flex align-items-center justify-content-center ok-gap-25 ok-pointer transition ok-bc-varokline ok-checkable">
-            <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if sel_order_type == ot %}checked{% endif %}>
+          {% set ot_enabled = (ot == 'delivery' and store.accepts_delivery) or (ot == 'pickup' and store.accepts_pickup) %}
+          <label class="ok-choice d-flex align-items-center justify-content-center ok-gap-25 ok-pointer transition ok-bc-varokline ok-checkable{% if not ot_enabled %} opacity-50 pe-none{% endif %}">
+            <input type="radio" name="order_type" value="{{ ot }}" class="visually-hidden" {% if ot_enabled and sel_order_type == ot %}checked{% endif %}{% if not ot_enabled %} disabled{% endif %}>
             <i class="fa-solid fa-{{ icon }} ok-fs-lg text-gold"></i>
             <span class="ok-fs-sm fw-semibold">{{ label }}</span>
           </label>
@@ -59,8 +60,8 @@
               <input id="address_line1" name="address_line1" data-address-field required class="ok-input" placeholder="1520 Chestnut St" value="{{ addr_line1 }}">
             </div>
             <div class="ok-gridco-span2span2-sm">
-              <label class="ok-label" for="address_line2">Apt / suite <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
-              <input id="address_line2" name="address_line2" data-address-field required class="ok-input" placeholder="Apt 4B" value="{{ addr_line2 }}">
+              <label class="ok-label" for="address_line2">Apt / suite <span class="text-muted-warm fw-normal">(optional)</span></label>
+              <input id="address_line2" name="address_line2" data-address-field class="ok-input" placeholder="Apt 4B" value="{{ addr_line2 }}">
             </div>
             <div>
               <label class="ok-label" for="address_city">City</label>
@@ -79,28 +80,28 @@
           </div>
           <input type="hidden" name="address_lat" value="{{ form.get('address_lat', '') }}">
           <input type="hidden" name="address_lng" value="{{ form.get('address_lng', '') }}">
+          <div data-delivery-zone-ok class="d-none ok-mt-3 ok-rounded-xl bg-ok-green-10 text-ok-green ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-check"></i> <span data-delivery-zone-ok-text></span></div>
+          <div data-delivery-zone-alert class="d-none ok-mt-3 ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-exclamation"></i> <span data-delivery-zone-alert-text></span></div>
+          <div data-delivery-min-alert class="d-none ok-mt-3 ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-exclamation"></i> <span data-delivery-min-alert-text></span></div>
           <p class="ok-hint ok-mt-2 d-none" data-address-maps-status></p>
           {% if not google_maps_api_key %}<p class="ok-hint ok-mt-2"><i class="fa-solid fa-circle-info"></i> Add a Google Maps API key in Admin → Integrations (enable Google Maps and save your key).</p>{% endif %}
         </div>
 
         <!-- timing -->
-        {% if not store or not store.can_order %}
-        <div class="ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold"><i class="fa-solid fa-circle-exclamation"></i> {{ store.name if store else 'This store' }} is currently closed and not accepting orders. Please try again later.</div>
-        {% else %}
-        <div class="ok-grid ok-grid-sm-2 gap-2">
-          <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline {% if not store.open_now %}ok-opacity-60{% endif %}">
-            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'asap' %}checked{% endif %} {% if not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
-            <span class="ok-fs-xs text-muted-warm ok-asap-note" data-checkout-asap-note>{% if store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
-          </label>
-          {% if store.scheduling_open %}
-          <label class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline">
-            <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'scheduled' %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
-            <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ form.get('scheduled_for') or default_schedule }}">
-          </label>
-          {% endif %}
+        <div data-checkout-closed-banner class="ok-rounded-xl bg-ok-red-10 text-ok-red ok-px-3 ok-py-3 ok-fs-sm fw-semibold{% if store and store.can_order %} d-none{% endif %}"><i class="fa-solid fa-circle-exclamation"></i> <span data-checkout-closed-store-name>{{ store.name if store else 'This store' }}</span> is currently closed and not accepting orders. Please try again later.</div>
+        <div data-checkout-fulfillment class="{% if not store or not store.can_order %}d-none{% endif %}">
+          <div class="ok-grid ok-grid-sm-2 gap-2">
+            <label data-checkout-asap-option class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline {% if not store or not store.open_now %}ok-opacity-60{% endif %}">
+              <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="asap" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'asap' %}checked{% endif %} {% if not store or not store.open_now %}disabled{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-bolt text-gold"></i> ASAP</span></span>
+              <span class="ok-fs-xs text-muted-warm ok-asap-note" data-checkout-asap-note>{% if store and store.open_now %}Ready in ~{{ store.avg_prep_minutes }} min{% else %}Closed right now{% endif %}</span>
+            </label>
+            <label data-checkout-schedule-option class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline{% if not store or not store.scheduling_open %} d-none{% endif %}">
+              <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'scheduled' %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
+              <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ form.get('scheduled_for') or default_schedule }}">
+            </label>
+          </div>
+          <p class="ok-hint ok-mt-3 text-ok-red{% if not store or store.open_now or not store.scheduling_open %} d-none{% endif %}" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours>{{ store.today_hours if store else '' }}</span>).</p>
         </div>
-        {% if not store.open_now and store.scheduling_open %}<p class="ok-hint ok-mt-3 text-ok-red" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours>{{ store.today_hours }}</span>).</p>{% else %}<p class="ok-hint ok-mt-3 text-ok-red d-none" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours></span>).</p>{% endif %}
-        {% endif %}
         {% if store %}
         <div data-pickup-location class="ok-mt-4 ok-rounded-xl border ok-bc-varokline bg-cream-60 ok-p-3{% if sel_order_type != 'pickup' %} d-none{% endif %}">
           <div class="ok-fs-xs text-muted-warm text-uppercase fw-bold mb-1">Pickup location</div>
@@ -212,7 +213,7 @@
           {% for line in summary.lines %}
           <div class="d-flex ok-gap-3">
             <div class="position-relative ok-w-12 ok-h-12 ok-rounded-lg overflow-hidden flex-shrink-0 bg-cream">
-              <img src="{{ line.image or logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-100 h-100 ok-cover">
+              <img src="{{ (line.image or logo_url) | vasset }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
               <span class="position-absolute -top-1.5 -right-1.5 ok-w-5 ok-h-5 rounded-pill bg-ink text-white ok-fs-65rem fw-bold ok-grid ok-place-center">{{ line.qty }}</span>
             </div>
             <div class="flex-grow-1 ok-min-w-0">
@@ -252,11 +253,8 @@
             <div><div class="text-white ok-fs-base text-uppercase tracking-wide fw-bold">Total</div>{% if features.rewards and user %}<div class="ok-fs-sm text-yellow fw-semibold">Earn ~{{ summary.total|int }} points</div>{% endif %}</div>
             <span class="font-display ok-fw-800 ok-fs-3xl" data-total-display data-base-total="{{ '%.2f'|format(summary.total) }}" data-total-delivery="{{ '%.2f'|format(checkout_total_delivery) }}" data-total-pickup="{{ '%.2f'|format(checkout_total_pickup) }}" data-delivery-fee="{{ '%.2f'|format(checkout_delivery_fee) }}" data-delivery-free="{{ '1' if checkout_delivery_free else '0' }}">${{ '%.2f'|format(summary.total) }}</span>
           </div>
-          {% if store and store.can_order %}
-          <button type="submit" class="btn btn-primary btn-block btn-lg ok-btn-invert"><span data-total-btn>Place order · ${{ '%.2f'|format(summary.total) }}</span></button>
-          {% else %}
-          <button type="button" disabled class="btn btn-block btn-lg bg-w-15 text-w-60 cursor-not-allowed"><i class="fa-solid fa-lock"></i> Store closed</button>
-          {% endif %}
+          <button type="submit" data-checkout-place-order class="btn btn-primary btn-block btn-lg ok-btn-invert{% if not store or not store.can_order %} d-none{% endif %}"><span data-total-btn>Place order · ${{ '%.2f'|format(summary.total) }}</span></button>
+          <button type="button" disabled data-checkout-closed-cta class="btn btn-block btn-lg bg-w-15 text-w-60 cursor-not-allowed{% if store and store.can_order %} d-none{% endif %}"><i class="fa-solid fa-lock"></i> Store closed</button>
         </div>
       </div>
 
@@ -270,6 +268,11 @@
   </div>
 </form>
 
+<script>
+if (typeof fbq === "function") {
+  fbq("track", "InitiateCheckout", { value: {{ summary.total }}, currency: "USD" });
+}
+</script>
 <script>
 (function () {
   var form = document.querySelector('form[action="/checkout"]');
@@ -351,6 +354,146 @@
   applyTip();
   syncOrderType();
 
+  // ----- Delivery zone quote (fee + out-of-zone alert) -----
+  var zoneOk = form.querySelector("[data-delivery-zone-ok]");
+  var zoneOkText = form.querySelector("[data-delivery-zone-ok-text]");
+  var zoneAlert = form.querySelector("[data-delivery-zone-alert]");
+  var zoneAlertText = form.querySelector("[data-delivery-zone-alert-text]");
+  var minAlert = form.querySelector("[data-delivery-min-alert]");
+  var minAlertText = form.querySelector("[data-delivery-min-alert-text]");
+  var quoteTimer = null;
+  var quoteSeq = 0;
+
+  function currentTip() {
+    if (customRadio && customRadio.checked && customInput) {
+      customRadio.value = String(Math.max(0, parseFloat(customInput.value) || 0));
+    }
+    var sel = form.querySelector('input[name="tip"]:checked');
+    return sel ? (parseFloat(sel.value) || 0) : 0;
+  }
+
+  function setOutOfZone(out) {
+    form.dataset.outOfZone = out ? "1" : "0";
+    var placeBtn = form.querySelector("[data-checkout-place-order]");
+    if (placeBtn && isDelivery()) placeBtn.disabled = !!out;
+  }
+
+  function deliveryAddressLabel() {
+    var search = form.querySelector("#address_search");
+    if (search && (search.value || "").trim()) return search.value.trim();
+    var get = function (sel) {
+      var el = form.querySelector(sel);
+      return el ? (el.value || "").trim() : "";
+    };
+    var parts = [
+      get("#address_line1"),
+      get("#address_line2"),
+      get("#address_city"),
+      [get("#address_state"), get("#address_zip")].filter(Boolean).join(" ")
+    ].filter(Boolean);
+    return parts.join(", ");
+  }
+
+  function applyDeliveryQuote(data) {
+    if (!totalEl || !data) return;
+    if (typeof data.total_before_tip === "number") {
+      totalEl.setAttribute("data-total-delivery", data.total_before_tip.toFixed(2));
+    }
+    if (typeof data.delivery_fee === "number") {
+      totalEl.setAttribute("data-delivery-fee", data.delivery_fee.toFixed(2));
+    }
+    totalEl.setAttribute("data-delivery-free", data.delivery_free ? "1" : "0");
+    syncDeliveryLine();
+    applyTip();
+
+    var showOk = isDelivery() && data.in_zone;
+    var showBad = isDelivery() && data.in_zone === false && (data.message || "");
+    var belowMin = showOk && data.min_order && data.subtotal < data.min_order;
+
+    if (zoneOk) zoneOk.classList.toggle("d-none", !showOk || belowMin);
+    if (zoneOkText && showOk) {
+      var feeTxt = data.delivery_free ? "FREE delivery" : ("$" + data.delivery_fee.toFixed(2) + " delivery");
+      var eta = data.est_minutes ? (" · ~" + data.est_minutes + " min") : "";
+      var zone = data.zone_name ? (" · " + data.zone_name) : "";
+      var to = data.address_label ? (" to " + data.address_label) : "";
+      zoneOkText.textContent = "Delivery available" + to + zone + " · " + feeTxt + eta;
+    }
+    if (zoneAlert) zoneAlert.classList.toggle("d-none", !showBad);
+    if (zoneAlertText && showBad) zoneAlertText.textContent = data.message;
+    if (minAlert) minAlert.classList.toggle("d-none", !belowMin);
+    if (minAlertText && belowMin) {
+      minAlertText.textContent = "Minimum order for your area is $" + data.min_order.toFixed(2)
+        + " (your subtotal is $" + data.subtotal.toFixed(2) + ").";
+    }
+
+    setOutOfZone(showBad || belowMin);
+  }
+
+  function refreshDeliveryQuote() {
+    if (!isDelivery()) {
+      if (zoneOk) zoneOk.classList.add("d-none");
+      if (zoneAlert) zoneAlert.classList.add("d-none");
+      if (minAlert) minAlert.classList.add("d-none");
+      setOutOfZone(false);
+      return;
+    }
+    var zipEl = form.querySelector("#address_zip");
+    var latEl = form.querySelector('[name="address_lat"]');
+    var lngEl = form.querySelector('[name="address_lng"]');
+    var zip = zipEl ? (zipEl.value || "").trim() : "";
+    var lat = latEl ? (latEl.value || "").trim() : "";
+    var lng = lngEl ? (lngEl.value || "").trim() : "";
+    var addrLabel = deliveryAddressLabel();
+    if (!zip && !lat && !addrLabel) {
+      if (zoneOk) zoneOk.classList.add("d-none");
+      if (zoneAlert) zoneAlert.classList.add("d-none");
+      if (minAlert) minAlert.classList.add("d-none");
+      setOutOfZone(false);
+      return;
+    }
+    if (quoteTimer) clearTimeout(quoteTimer);
+    quoteTimer = setTimeout(function () {
+      var my = ++quoteSeq;
+      var qs = new URLSearchParams();
+      if (zip) qs.set("zip", zip);
+      if (lat) qs.set("lat", lat);
+      if (lng) qs.set("lng", lng);
+      if (addrLabel) qs.set("address", addrLabel);
+      var line1 = form.querySelector("#address_line1");
+      var line2 = form.querySelector("#address_line2");
+      var city = form.querySelector("#address_city");
+      var state = form.querySelector("#address_state");
+      var search = form.querySelector("#address_search");
+      if (line1 && line1.value) qs.set("line1", line1.value.trim());
+      if (line2 && line2.value) qs.set("line2", line2.value.trim());
+      if (city && city.value) qs.set("city", city.value.trim());
+      if (state && state.value) qs.set("state", state.value.trim());
+      if (search && search.value) qs.set("search", search.value.trim());
+      qs.set("tip", String(currentTip()));
+      fetch("/api/delivery-quote?" + qs.toString(), { credentials: "same-origin" })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (my !== quoteSeq) return;
+          if (data && data.ok) applyDeliveryQuote(data);
+        })
+        .catch(function () {});
+    }, 280);
+  }
+
+  form.querySelectorAll("[data-address-field], [name=address_lat], [name=address_lng], #address_search").forEach(function (el) {
+    el.addEventListener("input", refreshDeliveryQuote);
+    el.addEventListener("change", refreshDeliveryQuote);
+  });
+  form.addEventListener("ok-address-filled", refreshDeliveryQuote);
+  form.querySelectorAll('input[name="order_type"]').forEach(function (r) {
+    r.addEventListener("change", function () { setTimeout(refreshDeliveryQuote, 0); });
+  });
+  form.querySelectorAll('input[name="tip"]').forEach(function (r) {
+    r.addEventListener("change", refreshDeliveryQuote);
+  });
+  if (customInput) customInput.addEventListener("input", refreshDeliveryQuote);
+  refreshDeliveryQuote();
+
   function applyCheckoutStore(d) {
     if (!d) return;
     var pickup = form.querySelector("[data-pickup-location]");
@@ -365,7 +508,7 @@
       if (phoneWrap && d.phone != null) phoneWrap.classList.toggle("d-none", !d.phone);
     }
     if (d.name != null) {
-      form.querySelectorAll("[data-checkout-store-name]").forEach(function (el) {
+      form.querySelectorAll("[data-checkout-store-name], [data-checkout-closed-store-name]").forEach(function (el) {
         el.textContent = d.name;
       });
     }
@@ -374,16 +517,40 @@
         el.textContent = d.today_hours;
       });
     }
-    if (d.avg_prep_minutes != null) {
+    if (d.open_now != null) {
       form.querySelectorAll("[data-checkout-asap-note]").forEach(function (el) {
         el.textContent = d.open_now
-          ? ("Ready in ~" + d.avg_prep_minutes + " min")
+          ? ("Ready in ~" + (d.avg_prep_minutes != null ? d.avg_prep_minutes : "?") + " min")
           : "Closed right now";
       });
+      var asapRadio = form.querySelector('input[name="fulfillment"][value="asap"]');
+      var asapOption = form.querySelector("[data-checkout-asap-option]");
+      if (asapRadio) {
+        asapRadio.disabled = !d.open_now;
+        if (!d.open_now && asapRadio.checked) {
+          var schedRadio = form.querySelector('input[name="fulfillment"][value="scheduled"]');
+          if (schedRadio && !schedRadio.disabled) schedRadio.checked = true;
+        }
+      }
+      if (asapOption) asapOption.classList.toggle("ok-opacity-60", !d.open_now);
+    }
+    if (d.scheduling_open != null) {
+      var schedOption = form.querySelector("[data-checkout-schedule-option]");
+      if (schedOption) schedOption.classList.toggle("d-none", !d.scheduling_open);
     }
     var schedHint = form.querySelector("[data-checkout-schedule-hint]");
     if (schedHint && d.open_now != null && d.scheduling_open != null) {
       schedHint.classList.toggle("d-none", !(d.scheduling_open && !d.open_now));
+    }
+    if (d.can_order != null) {
+      var closedBanner = form.querySelector("[data-checkout-closed-banner]");
+      var fulfillment = form.querySelector("[data-checkout-fulfillment]");
+      var placeBtn = form.querySelector("[data-checkout-place-order]");
+      var closedBtn = form.querySelector("[data-checkout-closed-cta]");
+      if (closedBanner) closedBanner.classList.toggle("d-none", !!d.can_order);
+      if (fulfillment) fulfillment.classList.toggle("d-none", !d.can_order);
+      if (placeBtn) placeBtn.classList.toggle("d-none", !d.can_order);
+      if (closedBtn) closedBtn.classList.toggle("d-none", !!d.can_order);
     }
   }
   document.addEventListener("ok:store", function (e) { applyCheckoutStore(e.detail || {}); });
@@ -391,23 +558,15 @@
   form.addEventListener("submit", function (e) {
     var picked = form.querySelector('input[name="order_type"]:checked');
     var isDel = !picked || picked.value === "delivery";
-    var apt = form.querySelector("#address_line2");
-    if (isDel && apt) {
-      if (!(apt.value || "").trim()) {
-        e.preventDefault();
-        apt.classList.add("is-invalid");
-        apt.focus();
-        if (window.OK && OK.toast) OK.toast("Please enter your apt / suite number.");
-        return;
-      }
-      apt.classList.remove("is-invalid");
+    if (isDel && form.dataset.outOfZone === "1") {
+      e.preventDefault();
+      var msg = zoneAlertText && zoneAlertText.textContent
+        ? zoneAlertText.textContent
+        : (minAlertText && minAlertText.textContent ? minAlertText.textContent : "We can't deliver to that address.");
+      if (window.OK && OK.toast) OK.toast(msg);
+      return;
     }
   });
-  var aptEl = form.querySelector("#address_line2");
-  if (aptEl) aptEl.addEventListener("input", function () {
-    if ((aptEl.value || "").trim()) aptEl.classList.remove("is-invalid");
-  });
-
   // ----- Stripe Elements (sandbox / live test keys) -----
   var stripeMode = {{ stripe_checkout_mode|tojson }};
   var stripePubKey = {{ stripe_pub_key|tojson }};
@@ -479,12 +638,12 @@
     if (form.dataset.stripeDone === "1") return;
     var picked = form.querySelector('input[name="order_type"]:checked');
     var isDel = !picked || picked.value === "delivery";
-    var apt = form.querySelector("#address_line2");
-    if (isDel && apt && !(apt.value || "").trim()) {
+    if (isDel && form.dataset.outOfZone === "1") {
       e.preventDefault();
-      apt.classList.add("is-invalid");
-      apt.focus();
-      if (window.OK && OK.toast) OK.toast("Please enter your apt / suite number.");
+      var msg = zoneAlertText && zoneAlertText.textContent
+        ? zoneAlertText.textContent
+        : (minAlertText && minAlertText.textContent ? minAlertText.textContent : "We can't deliver to that address.");
+      if (window.OK && OK.toast) OK.toast(msg);
       return;
     }
     e.preventDefault();

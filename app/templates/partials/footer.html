@@ -7,12 +7,12 @@
 
   <div class="ok-container ok-py-14 ok-grid ok-grid-2 ok-grid-md-5 ok-gap-8 position-relative">
     <div class="col-span-2 ok-gridco-span1span1-md">
-      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-16 ok-mb-3" alt="{{ brand_name }}">
+      <img src="{{ logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" class="ok-h-16 ok-mb-3" alt="{{ brand_name }}" decoding="async">
       <p class="text-w-55 ok-fs-sm ok-mb-5 ok-lh-relaxed">{{ pc('footer_tagline') }}</p>
-      <div class="d-flex ok-gap-25">
-        <a href="{{ pc_attr('footer_instagram_url') }}" aria-label="Instagram" class="ok-social ok-w-10 ok-h-10 ok-grid ok-place-center rounded-pill bg-w-10"><i class="fa-brands fa-instagram icon-lg"></i></a>
-        <a href="{{ pc_attr('footer_facebook_url') }}" aria-label="Facebook" class="ok-social ok-w-10 ok-h-10 ok-grid ok-place-center rounded-pill bg-w-10"><i class="fa-brands fa-facebook-f icon-lg"></i></a>
-        <a href="{{ pc_attr('footer_youtube_url') }}" aria-label="YouTube" class="ok-social ok-w-10 ok-h-10 ok-grid ok-place-center rounded-pill bg-w-10"><i class="fa-brands fa-youtube icon-lg"></i></a>
+      <div class="d-flex flex-wrap align-items-center ok-gap-2">
+        {% for s in footer_socials %}
+        <a href="{{ s.url }}" target="_blank" rel="noopener" aria-label="{{ s.label }}" title="{{ s.label }}" class="ok-social ok-w-8 ok-h-8 ok-grid ok-place-center rounded-pill bg-w-10 text-gold flex-shrink-0"><i class="{{ s.icon }} ok-fs-sm"></i></a>
+        {% endfor %}
       </div>
     </div>
     <div><h4 class="font-display fw-bold ok-mb-3 text-white ok-fs-78rem text-uppercase ok-ls-16em">{{ pc('footer_col1_heading') }}</h4><ul class="ok-stack-25">

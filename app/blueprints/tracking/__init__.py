@@ -125,4 +125,12 @@ def status_json(number):
     order = Order.query.filter_by(number=number).first()
     if not order:
         return jsonify({"error": "not found"}), 404
+    if order.delivery:
+        try:
+            from app.services.delivery import ensure_delivery_status_current
+            ensure_delivery_status_current(order)
+        except Exception:
+            from flask import current_app
+            current_app.logger.exception("Uber sync failed for tracking %s", number)
+            db.session.rollback()
     return jsonify(_context(order))

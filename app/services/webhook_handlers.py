@@ -238,18 +238,13 @@ def handle_uber(store, payload):
     if tracking:
         delivery.tracking_url = tracking
     order = delivery.order
-    if mapped == "picked_up" and order:
-        order.status = "out_for_delivery"
+    if mapped == "picked_up":
         delivery.picked_up_at = delivery.picked_up_at or datetime.now(timezone.utc)
-    elif mapped == "delivered" and order:
-        order.status = "completed"
+    elif mapped == "delivered":
         delivery.delivered_at = delivery.delivered_at or datetime.now(timezone.utc)
-    elif mapped == "failed" and order:
-        prev = order.status
-        order.status = "cancelled"
-        if prev != "cancelled":
-            from app.services.notifications import notify_order_event
-            notify_order_event(order, "cancelled")
+    if order:
+        from app.services.delivery import sync_order_from_delivery
+        sync_order_from_delivery(delivery, notify=True)
 
     db.session.commit()
     log_event(store, "uber_direct", etype, external_id=external_id, status="processed",

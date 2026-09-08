@@ -9,6 +9,24 @@
   <meta name="color-scheme" content="light only">
   <title>{% block title %}{{ brand_name }}{% endblock %}</title>
   <meta name="description" content="{% block description %}Order OK Smashed Burger for delivery or pickup.{% endblock %}">
+  <meta name="facebook-domain-verification" content="nky62big80q4mbspr70y87t7zql7tx">
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '2349517139211682');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=2349517139211682&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
   <link rel="icon" href="{{ favicon_url }}">
   <link rel="apple-touch-icon" href="{{ app_icon_url }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,7 +57,7 @@
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block head_extra %}{% endblock %}
 </head>
-<body class="font-body bg-white text-ink antialiased">
+<body class="font-body bg-white text-ink antialiased"{% if lock_store_location %} data-lock-store="1"{% endif %}>
   {# Modern (Lucide) icon sprite. app.js swaps every fa-solid/fa-regular
      glyph for one of these; fa-brands stays on Font Awesome because
      Lucide deliberately ships no brand marks. #}
@@ -87,6 +105,7 @@
 
   <div class="ok-veil" data-veil aria-hidden="true"></div>
   {% if inline_edit %}{% include "partials/inline_editor.html" %}{% endif %}
+  {% include "partials/meta_pixel_events.html" %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

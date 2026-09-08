@@ -1,6 +1,6 @@
 <!-- hero image: flush to the top and both sides, content below stays padded -->
 <div class="ok-modal-hero">
-  <img src="{{ product.image_url or logo_url }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ product.name }}" class="w-100 ok-ar-1610 ok-cover bg-cream">
+  <img src="{{ (product.image_url or logo_url) | vasset }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/logo.png') }}'" alt="{{ product.name }}" class="w-100 ok-ar-1610 ok-cover bg-cream" loading="lazy" decoding="async">
 </div>
 
 <h3 class="font-display fw-bold ok-fs-sm text-uppercase tracking-tight ok-lh-snug ok-pr-8">{{ product.name }}</h3>

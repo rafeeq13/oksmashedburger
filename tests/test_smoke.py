@@ -6,6 +6,7 @@ each test that writes uses an address nobody else would ever use.
 
     python -m pytest tests -q
 """
+import os
 import pathlib
 import re
 
@@ -551,6 +552,22 @@ def test_security_headers_present(client):
 def test_static_assets_are_versioned(client):
     html = client.get("/").get_data(as_text=True)
     assert re.search(r'/static/css/premium\.css\?v=\d+', html)
+
+
+def test_upload_images_get_version_query(client, app, tmp_path):
+    """Uploaded /static/img/uploads/ URLs should bust cache via ?v=mtime."""
+    updir = os.path.join(app.static_folder, "img", "uploads")
+    os.makedirs(updir, exist_ok=True)
+    path = os.path.join(updir, "audit-test.jpg")
+    with open(path, "wb") as f:
+        f.write(b"ok")
+    from app.helpers import versioned_asset_url
+
+    with app.app_context():
+        out = versioned_asset_url("/static/img/uploads/audit-test.jpg")
+    assert "?v=" in out
+    assert out.startswith("/static/img/uploads/audit-test.jpg?v=")
+    os.remove(path)
 
 
 def test_no_storefront_field_is_missing_an_accessible_name():

@@ -16,7 +16,7 @@ from app.auth import current_user
 
 bp = Blueprint("website", __name__)
 
-_PB_EDIT_ROLES = {"super_admin", "franchise_owner", "store_manager"}
+_PB_EDIT_ROLES = {"super_admin"}
 
 # A builder page can drop live "dynamic section" blocks; on render we replace each
 # <section data-dyn="KEY">…</section> placeholder with the real, data-driven partial.
@@ -336,6 +336,8 @@ def contact_send():
     except Exception as e:
         current_app.logger.warning("contact mail failed: %s", e)
 
+    from app.services.meta_pixel import queue_fbq_event
+    queue_fbq_event("Lead")
     flash("Thanks! Your message has been sent. We'll reply within one business day.", "success")
     return redirect(back)
 
@@ -542,5 +544,7 @@ def subscribe():
             current_app.logger.warning("subscribe mail failed: %s", e)
 
     loc = (" at %s" % store.name) if store else ""
+    from app.services.meta_pixel import queue_fbq_event
+    queue_fbq_event("Lead")
     flash("You're on the list%s. Check your inbox!" % loc, "success")
     return redirect(back)

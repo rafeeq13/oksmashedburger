@@ -120,3 +120,35 @@ class StoreMenuItem(db.Model):
     __table_args__ = (
         db.UniqueConstraint("store_id", "product_id", name="uq_store_product"),
     )
+
+
+class StoreVariantPrice(db.Model):
+    """Per-location override for a size/variant price delta."""
+    __tablename__ = "store_variant_prices"
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=False)
+    variant_id = db.Column(db.Integer, db.ForeignKey("product_variants.id"), nullable=False)
+    price_delta = db.Column(db.Numeric(8, 2), nullable=False)
+
+    store = db.relationship("Store")
+    variant = db.relationship("ProductVariant")
+
+    __table_args__ = (
+        db.UniqueConstraint("store_id", "variant_id", name="uq_store_variant_price"),
+    )
+
+
+class StoreAddonPrice(db.Model):
+    """Per-location override for an item add-on price."""
+    __tablename__ = "store_addon_prices"
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"), nullable=False)
+    addon_id = db.Column(db.Integer, db.ForeignKey("product_addons.id"), nullable=False)
+    price = db.Column(db.Numeric(8, 2), nullable=False)
+
+    store = db.relationship("Store")
+    addon = db.relationship("ProductAddon")
+
+    __table_args__ = (
+        db.UniqueConstraint("store_id", "addon_id", name="uq_store_addon_price"),
+    )

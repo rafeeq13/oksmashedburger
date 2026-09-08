@@ -95,14 +95,14 @@
 <details class="ok-card ok-p-5 mb-4">
   <summary class="ok-pointer fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-puzzle-piece"></i>
     Shared add-ons <span class="text-muted-warm ok-fs-xs fw-normal">({{ addon_library|length }})</span></summary>
-  <p class="ok-fs-xs text-muted-warm mt-2 mb-3">Shared add-ons sync to every attached item. Existing item add-ons are kept | a migration imports their names into this library automatically.</p>
+  <p class="ok-fs-xs text-muted-warm mt-2 mb-3">{% if admin_store %}<strong>{{ admin_store.name }}:</strong> price changes here apply to this location only. Name and sort order update the shared catalog.{% else %}<strong>All locations:</strong> pick a location to set per-store prices.{% endif %}</p>
   <div class="ok-stack-2">
     {% for lib in addon_library %}
     <form method="post" action="/admin/catalog/addons/{{ lib.id }}/edit{{ qs }}"
       class="d-flex flex-wrap align-items-center gap-2 {% if not lib.is_active %}ok-opacity-60{% endif %}">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input name="name" value="{{ lib.name }}" class="ok-input ok-py-15 ok-fs-sm ok-flex-1 ok-min-w-0" {% if not lib.is_active %}disabled{% endif %}>
-      <div class="d-flex align-items-center gap-1"><span class="text-muted-warm">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(lib.price) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-24" {% if not lib.is_active %}disabled{% endif %}></div>
+      <div class="d-flex align-items-center gap-1"><span class="text-muted-warm">$</span><input name="price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(library_price(lib)) }}" class="ok-input ok-py-15 ok-fs-sm ok-w-24" {% if not lib.is_active %}disabled{% endif %} title="{% if admin_store %}Price at {{ admin_store.name }}{% else %}Default catalog price{% endif %}"></div>
       <input name="sort_order" type="number" value="{{ lib.sort_order }}" class="ok-input ok-py-15 ok-fs-sm ok-w-14" title="Sort order" {% if not lib.is_active %}disabled{% endif %}>
       {% if not lib.is_active %}<span class="badge badge-soft">Inactive</span>{% endif %}
       <button class="btn btn-secondary btn-sm flex-shrink-0" {% if not lib.is_active %}disabled{% endif %}>Save</button>

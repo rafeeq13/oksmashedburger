@@ -6,7 +6,7 @@
 
 <!-- ============ HERO ============ -->
 {% set _s = pb_page_style('careers', 'hero') %}<div class="pb-sec" data-page="careers" data-section="hero" data-label="Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
-  <img src="{{ site.get('careers_hero_img') or site_defaults.get('careers_hero_img') }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1600&h=760&fit=crop&q=72'" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover">
+  <img src="{{ (site.get('careers_hero_img') or site_defaults.get('careers_hero_img')) | vasset }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=1600&h=760&fit=crop&q=72'" alt="" class="position-absolute ok-fill w-100 h-100 ok-cover" fetchpriority="high" decoding="async">
   <div class="ok-pagehero-veil"></div>
   <div class="ok-container">
     <div class="max-w-2xl mx-auto text-center">

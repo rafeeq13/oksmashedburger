@@ -126,7 +126,7 @@ def main():
     app = create_app()
     with app.app_context():
         stores = Store.query.filter_by(is_active=True).order_by(Store.name).all()
-        base = "https://fooddeliveryaudit.com"
+        base = os.environ.get("PUBLIC_SITE_URL", "https://oksmashedburger.com").rstrip("/")
         print("=== ALL LOCATIONS - STRIPE + SQUARE AUDIT ===\n")
         summary = []
         for store in stores:

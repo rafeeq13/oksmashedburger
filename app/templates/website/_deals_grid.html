@@ -3,7 +3,7 @@
   {% for c in coupons %}
   <article class="ok-card ok-card-hover ok-dealcard overflow-hidden ok-hovergroup d-flex flex-column">
     <div class="position-relative ok-ar-1610 overflow-hidden">
-      {% if c.image_url %}<img src="{{ c.image_url }}" alt="{{ c.description or c.code }}" class="ph-img transition">
+      {% if c.image_url %}<img src="{{ c.image_url | vasset }}" alt="{{ c.description or c.code }}" class="ph-img transition" loading="lazy" decoding="async">
       {% else %}<img data-ph="{{ c.description or c.code }}" data-ph-type="food" data-ph-ratio="16/10" class="ph-img transition" alt="">{% endif %}
       {% if c.kind == 'free_delivery' %}<span class="badge badge-green position-absolute top-3 left-3">Free delivery</span>
       {% elif c.kind == 'percent' %}<span class="badge badge-green position-absolute top-3 left-3">-{{ c.value|int }}%</span>

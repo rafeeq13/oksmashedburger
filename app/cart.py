@@ -15,13 +15,19 @@ def _save(cart):
     session.modified = True
 
 
-def add_item(product, qty=1, variant=None, addon_ids=None, notes=""):
+def add_item(product, qty=1, variant=None, addon_ids=None, notes="", store=None):
+    from app.services.menu_pricing import variant_delta_for_store, addon_price_for_store
     unit = float(product.base_price)
+    if store:
+        mi = next((m for m in store.menu_items if m.product_id == product.id), None)
+        if mi and mi.price_override is not None:
+            unit = float(mi.price_override)
     options = {}
     if variant:
-        unit += float(variant.price_delta)
+        delta = variant_delta_for_store(store, variant)
+        unit += delta
         options["variant"] = variant.name
-        options["variant_delta"] = float(variant.price_delta)
+        options["variant_delta"] = delta
     # An add-on can be taken more than once | the id simply repeats, which also
     # keeps every existing caller (and a re-order built from a past order)
     # working without knowing anything about quantities.
@@ -35,8 +41,9 @@ def add_item(product, qty=1, variant=None, addon_ids=None, notes=""):
         if not addon or addon.product_id != product.id:
             continue
         n = max(1, list(addon_ids).count(aid))
-        unit += float(addon.price) * n
-        addons.append({"name": addon.name, "price": float(addon.price), "qty": n})
+        price = addon_price_for_store(store, addon)
+        unit += price * n
+        addons.append({"name": addon.name, "price": price, "qty": n})
     if addons:
         options["addons"] = addons
     if notes:
@@ -99,7 +106,9 @@ def unavailable_at_store(store):
     return names
 
 
-def summary(store, tip=0.0, order_type="delivery"):
+def summary(store, tip=0.0, order_type="delivery", address_zip=None, address_lat=None, address_lng=None,
+            address_label=None, address_line1=None, address_line2=None, address_city=None,
+            address_state=None, address_search=None):
     """Full pricing incl. promo code, loyalty-points redemption and gift card,
     all resolved from the session + current user (SRS §4.9)."""
     from flask import session
@@ -123,15 +132,29 @@ def summary(store, tip=0.0, order_type="delivery"):
 
     tax_rate = float(store.tax_rate) if store else 0.08
     base_delivery = 0.0
+    delivery_zone = None
     if order_type == "delivery" and store:
-        # Use the closest active delivery zone (smallest radius) as this store's fee.
-        active = [z for z in store.delivery_zones if z.is_active]
-        pool = active or list(store.delivery_zones)
-        if pool:
-            closest = min(pool, key=lambda z: (z.radius_miles or 0))
-            base_delivery = float(closest.delivery_fee)
+        from app.services.delivery_zones import match_delivery_zone
+
+        has_address = bool((address_zip or "").strip()) or address_lat is not None
+        if has_address:
+            delivery_zone = match_delivery_zone(
+                store, address_zip, address_lat, address_lng,
+                address_label=address_label, line1=address_line1, line2=address_line2,
+                city=address_city, state=address_state, search=address_search,
+            )
+            if delivery_zone["in_zone"]:
+                base_delivery = float(delivery_zone["delivery_fee"])
+            else:
+                base_delivery = 0.0
         else:
-            base_delivery = 2.99
+            active = [z for z in store.delivery_zones if z.is_active]
+            pool = active or list(store.delivery_zones)
+            if pool:
+                closest = min(pool, key=lambda z: (z.radius_miles or 0))
+                base_delivery = float(closest.delivery_fee)
+            else:
+                base_delivery = 2.99
 
     # ── Promo code ────────────────────────────────────────────
     promo = {"code": None, "discount": 0.0, "delivery_discount": 0.0, "error": None, "desc": None}
@@ -152,7 +175,7 @@ def summary(store, tip=0.0, order_type="delivery"):
                 promo["error"] = err
 
     order_discount = promo["discount"]
-    delivery_fee = max(0.0, round(base_delivery | promo["delivery_discount"], 2))
+    delivery_fee = max(0.0, round(base_delivery - promo["delivery_discount"], 2))
 
     # ── Loyalty points redemption (100 pts = $1) ──────────────
     user = current_user()
@@ -161,14 +184,14 @@ def summary(store, tip=0.0, order_type="delivery"):
         points["available"] = 0
     if (feats.get("rewards", True) and session.get("redeem_points")
             and user and user.loyalty_points > 0):
-        cap = max(0.0, round(subtotal | order_discount, 2))
+        cap = max(0.0, round(subtotal - order_discount, 2))
         dollars = round(min(user.loyalty_points * 0.01, cap), 2)
         if dollars > 0:
             points.update(redeemed=True, dollars=dollars, points_used=int(round(dollars * 100)))
             order_discount += dollars
 
     order_discount = round(order_discount, 2)
-    taxed_base = max(0.0, round(subtotal | order_discount, 2))
+    taxed_base = max(0.0, round(subtotal - order_discount, 2))
     tax = round(taxed_base * tax_rate, 2)
     tip = round(float(tip or 0), 2)
     total_before_gc = round(taxed_base + tax + delivery_fee + tip, 2)
@@ -185,11 +208,12 @@ def summary(store, tip=0.0, order_type="delivery"):
         else:
             giftcard.update(code=gc_code, error="Invalid gift card.")
 
-    total = round(total_before_gc | giftcard["applied"], 2)
+    total = round(total_before_gc - giftcard["applied"], 2)
     return {
         "lines": lines, "count": sum(l["qty"] for l in lines),
         "subtotal": subtotal, "tax": tax, "tax_rate": tax_rate,
         "delivery_fee": delivery_fee, "base_delivery": round(base_delivery, 2),
+        "delivery_zone": delivery_zone,
         "tip": tip, "order_discount": order_discount, "total": total,
         "promo": promo, "points": points, "giftcard": giftcard,
     }

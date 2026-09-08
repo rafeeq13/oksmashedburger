@@ -18,11 +18,63 @@ def normalize_map_embed(val):
     m = re.search(r'src=["\']([^"\']+)', val, re.I)
     return m.group(1).strip() if m else val
 
+
+def coords_from_map_url(url):
+    """Parse lat/lng from a Google Maps or embed URL when present."""
+    from urllib.parse import unquote
+
+    url = unquote((url or "").strip())
+    if not url:
+        return None
+    m = re.search(r'!3d([-\d.]+)!4d([-\d.]+)', url)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    m = re.search(r'!2d([-\d.]+)!3d([-\d.]+)', url)
+    if m:
+        return float(m.group(2)), float(m.group(1))
+    m = re.search(r'@([-\d.]+),([-\d.]+)', url)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    m = re.search(r'[?&]q=([^&]+)', url)
+    if m:
+        q = unquote(m.group(1).replace('+', ' ')).strip()
+        parts = [p.strip() for p in q.split(',')]
+        if len(parts) == 2:
+            try:
+                lat, lng = float(parts[0]), float(parts[1])
+                if -90 <= lat <= 90 and -180 <= lng <= 180:
+                    return lat, lng
+            except (TypeError, ValueError):
+                pass
+    return None
+
+
 def _parse_hm(s):
+    """Parse 'HH:MM' opening-hours string to time."""
+    if not s:
+        return None
     try:
-        return datetime.strptime(s, "%H:%M").time()
+        return datetime.strptime(str(s).strip(), "%H:%M").time()
     except (ValueError, TypeError):
         return None
+
+
+def query_from_map_url(url):
+    """Return the ?q= search text from a locations-page style embed URL."""
+    from urllib.parse import unquote
+
+    url = unquote((url or "").strip())
+    if not url:
+        return None
+    m = re.search(r'[?&]q=([^&]+)', url)
+    if not m:
+        return None
+    q = unquote(m.group(1).replace('+', ' ')).strip()
+    if not q:
+        return None
+    if coords_from_map_url(f"?q={q}") is not None:
+        return None
+    return q
 
 # Providers a store can be independently connected to (SRS §5.2)
 INTEGRATION_PROVIDERS = [
@@ -87,10 +139,41 @@ class Store(TimestampMixin, db.Model):
         return f"{self.address_line}, {self.city}, {self.state} {self.zip_code}"
 
     @property
+    def admin_label(self):
+        """Short location label for admin store switchers."""
+        name = (self.name or "").strip()
+        street = (self.address_line or "").strip()
+        zip_code = (self.zip_code or "").strip()
+        short = ", ".join(p for p in (street, zip_code) if p)
+        if name and short:
+            return f"{name} | {short}"
+        return name or short or self.full_address
+
+    @property
+    def admin_switcher_label(self):
+        """Address-only label for the admin top-bar store switcher."""
+        street = (self.address_line or "").strip()
+        zip_code = (self.zip_code or "").strip()
+        short = ", ".join(p for p in (street, zip_code) if p)
+        return short or self.full_address
+
+    @property
     def map_query(self):
         if self.latitude is not None and self.longitude is not None:
             return f"{self.latitude},{self.longitude}"
         return self.full_address
+
+    @property
+    def map_pin_coords(self):
+        """Lat/lng parsed from the locations page map embed URL."""
+        return coords_from_map_url(self.map_embed_src)
+
+    @property
+    def map_embed_geocode_query(self):
+        """Address query from the locations page embed, when not numeric coords."""
+        if self.map_pin_coords:
+            return None
+        return query_from_map_url(self.map_embed_src) or self.full_address
 
     @property
     def map_embed_src(self):

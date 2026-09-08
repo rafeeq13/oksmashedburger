@@ -7,9 +7,17 @@ import json
 import uuid
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 
 from app.integrations.config import active_integration_config, integration_enabled, integration_env, should_simulate
-from app.services.order_details import format_item_options, money_cents
+from app.services.order_details import (
+    square_kitchen_fulfillment_note,
+    square_line_item_instruction,
+    square_line_item_modifiers,
+    square_line_item_name,
+    square_order_header_note,
+    money_cents,
+)
 
 SQUARE_VERSION = "2024-10-17"
 
@@ -68,39 +76,53 @@ def _build_line_items(order):
     currency = (order.currency or "USD").upper()
     for it in order.items:
         li = {
-            "name": it.name[:512],
+            "name": square_line_item_name(it),
             "quantity": str(it.qty),
             "base_price_money": {"amount": money_cents(it.unit_price), "currency": currency},
         }
-        note = format_item_options(it)
-        if note:
-            li["note"] = note[:2000]
+        mods = square_line_item_modifiers(it, currency)
+        if mods:
+            li["modifiers"] = mods
+        instruction = square_line_item_instruction(it)
+        if instruction:
+            li["note"] = instruction
         items.append(li)
+    return _embed_cashier_charges(order, items)
+
+
+def _embed_cashier_charges(order, items):
+    """Roll tax, delivery, and tip into line-item prices | cashier shows items + total only."""
+    extra = money_cents(order.delivery_fee) + money_cents(order.tip) + money_cents(order.tax)
+    if extra <= 0 or not items:
+        return items
+
+    weighted = []
+    for li in items:
+        qty = max(1, int(float(li.get("quantity", "1"))))
+        weighted.append([li, qty, li["base_price_money"]["amount"] * qty])
+
+    total_w = sum(w[2] for w in weighted)
+    if total_w <= 0:
+        return items
+
+    allocated = 0
+    for i, (li, qty, line_cents) in enumerate(weighted):
+        add = (extra - allocated) if i == len(weighted) - 1 else (line_cents * extra) // total_w
+        allocated += add
+        new_total = line_cents + add
+        if new_total % qty != 0 and qty > 1:
+            base_name = li.get("name") or "Item"
+            li["name"] = ("%s x%s" % (base_name, qty))[:512]
+            li["quantity"] = "1"
+            li["base_price_money"]["amount"] = new_total
+        else:
+            li["base_price_money"]["amount"] = new_total // qty
     return items
 
 
 def _build_service_charges(order):
-    currency = (order.currency or "USD").upper()
-    charges = []
-    if float(order.tax or 0) > 0:
-        charges.append({
-            "name": "Sales Tax",
-            "amount_money": {"amount": money_cents(order.tax), "currency": currency},
-            "calculation_phase": "TOTAL_PHASE",
-        })
-    if order.order_type == "delivery" and float(order.delivery_fee or 0) > 0:
-        charges.append({
-            "name": "Delivery",
-            "amount_money": {"amount": money_cents(order.delivery_fee), "currency": currency},
-            "calculation_phase": "TOTAL_PHASE",
-        })
-    if float(order.tip or 0) > 0:
-        charges.append({
-            "name": "Tip",
-            "amount_money": {"amount": money_cents(order.tip), "currency": currency},
-            "calculation_phase": "TOTAL_PHASE",
-        })
-    return charges
+    """No separate charge lines on cashier receipt."""
+    return []
 
 
 def _build_discounts(order):
@@ -121,6 +143,54 @@ def _build_discounts(order):
     }]
 
 
+def _iso_utc(dt):
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+
+def _prep_duration(minutes):
+    return "PT%dM" % max(1, int(minutes or 15))
+
+
+def _build_fulfillments(order, store):
+    """Pickup fulfillment so paid web orders route to Square KDS + kitchen/cashier printers."""
+    prep_min = (store.avg_prep_minutes if store else None) or 15
+    recipient = {
+        "display_name": (order.customer_name or "Guest")[:255],
+    }
+    if order.customer_phone:
+        recipient["phone_number"] = order.customer_phone[:17]
+    if order.customer_email:
+        recipient["email_address"] = order.customer_email[:254]
+    # Delivery address goes in fulfillment note (kitchen) — not structured address
+    # (structured address can print on the cashier receipt header/footer).
+
+    pickup_details = {"recipient": recipient}
+    kitchen_note = square_kitchen_fulfillment_note(order)
+    if kitchen_note:
+        pickup_details["note"] = kitchen_note
+
+    if order.scheduled_for:
+        pickup_details["schedule_type"] = "SCHEDULED"
+        pickup_details["pickup_at"] = _iso_utc(order.scheduled_for)
+        pickup_details["prep_time_duration"] = _prep_duration(prep_min)
+    else:
+        pickup_details["schedule_type"] = "ASAP"
+        # Short prep so the ticket hits KDS/printers right after payment (sound alert).
+        pickup_details["prep_time_duration"] = "PT1M"
+        pickup_details["pickup_at"] = _iso_utc(datetime.now(timezone.utc) + timedelta(minutes=1))
+
+    return [{
+        "type": "PICKUP",
+        "state": "PROPOSED",
+        "uid": str(uuid.uuid4()),
+        "pickup_details": pickup_details,
+    }]
+
+
 def build_square_order(order, store):
     cfg = store_square_config(store)
     location_id = (cfg.get("location_id") or "").strip()
@@ -128,6 +198,7 @@ def build_square_order(order, store):
     body = {
         "location_id": location_id,
         "reference_id": (order.number or "")[:40],
+        "ticket_name": (order.number or "WEB")[:30],
         "line_items": _build_line_items(order),
         "metadata": {
             "order_number": order.number or "",
@@ -135,8 +206,12 @@ def build_square_order(order, store):
             "order_type": order.order_type or "",
             "customer_name": (order.customer_name or "")[:100],
             "customer_email": (order.customer_email or "")[:100],
+            "customer_phone": (order.customer_phone or "")[:30],
             "payment_method": order.payment_method or "",
+            "source": "website",
         },
+        "source": {"name": "OK Website"},
+        "fulfillments": _build_fulfillments(order, store),
     }
     service_charges = _build_service_charges(order)
     if service_charges:
@@ -144,10 +219,7 @@ def build_square_order(order, store):
     discounts = _build_discounts(order)
     if discounts:
         body["discounts"] = discounts
-    if order.notes:
-        body["note"] = ("Web order %s | %s" % (order.number, order.notes))[:500]
-    else:
-        body["note"] = "Web order %s" % order.number
+    body["note"] = square_order_header_note(order)
     return body, location_id, currency
 
 
@@ -159,10 +231,12 @@ def _pay_external(store, order, square_order_id, location_id, currency, stripe_r
         "source_id": "EXTERNAL",
         "location_id": location_id,
         "order_id": square_order_id,
+        "reference_id": (order.number or "")[:40],
+        "note": ("Web %s" % (order.number or ""))[:500],
         "external_details": {
             "type": "CARD",
-            "source": "Stripe" if stripe_ref else "Online",
-            "source_id": (stripe_ref or order.number or "")[:255],
+            "source": "Stripe" if stripe_ref else "Website",
+            "source_id": (order.number or stripe_ref or "")[:255],
         },
     }
     return _request(store, "POST", "/v2/payments", payload)

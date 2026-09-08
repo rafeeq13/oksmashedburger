@@ -13,6 +13,17 @@
   </div>
 </div>
 
+<div class="ok-card ok-p-5 ok-mb-5">
+  <h3 class="ok-h3 mb-2">Import subscribers (CSV)</h3>
+  <p class="text-muted-warm ok-fs-sm mb-3">Download the template, add your subscribers, then upload the file.</p>
+  <a href="/admin/subscribers/template.csv{{ qs }}" class="btn btn-secondary btn-sm mb-3"><i class="fa-solid fa-download"></i> Download template CSV</a>
+  <form method="post" action="/admin/subscribers/import{{ qs }}" enctype="multipart/form-data" class="d-flex flex-wrap align-items-end gap-2">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="file" name="csv" accept=".csv,text/csv" class="ok-input ok-fs-sm" required>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-upload"></i> Import CSV</button>
+  </form>
+</div>
+
 <div class="ok-grid ok-grid-sm-3 gap-3 ok-mb-5">
   <div class="ok-card p-3"><div class="ok-fs-xs text-muted-warm fw-semibold text-uppercase ok-ls-wide">Total</div><div class="font-display fw-bold ok-fs-2xl mt-1">{{ total }}</div></div>
   <div class="ok-card p-3"><div class="ok-fs-xs text-muted-warm fw-semibold text-uppercase ok-ls-wide">Subscribed</div><div class="font-display fw-bold ok-fs-2xl mt-1">{{ active }}</div></div>

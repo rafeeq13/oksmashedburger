@@ -3,7 +3,7 @@
 <section class="ok-band {{ _bg }}">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-5 ok-gap-5rem-lg align-items-center">
     <div class="ok-mask position-relative ok-r-175rem overflow-hidden ok-shadow-2xl">
-      <img src="{{ site.get('about_img') or site_defaults.get('about_img') }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=900&h=1000&fit=crop&q=70'" alt="The {{ brand_name }} team" data-el="img" class="w-100 ok-ar-45 ok-cover"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>
+      <img src="{{ (site.get('about_img') or site_defaults.get('about_img')) | vasset }}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=900&h=1000&fit=crop&q=70'" alt="The {{ brand_name }} team" data-el="img" class="w-100 ok-ar-45 ok-cover" loading="lazy" decoding="async"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>
       <!-- single overlay chip, anchored inside the frame -->
       <div class="position-absolute left-6 bottom-6 ok-rounded-2xl ok-px-5 ok-py-35 text-ink" style="background:var(--grad-gold); box-shadow:var(--sh-gold);">
         <div class="font-display ok-fw-900 ok-fs-2xl ok-lh-none">2021</div>

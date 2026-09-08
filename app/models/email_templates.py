@@ -12,6 +12,10 @@ from app.models.site import SiteSetting
 
 BRAND = "OK Smashed Burger"
 
+# Email logo display sizes (px) — keeps headers compact across clients.
+EMAIL_HEADER_LOGO_W = 120
+EMAIL_FOOTER_LOGO_W = 72
+
 # Global email chrome | the Design tab in admin
 # (field, label, default, kind, hint)
 _EMAIL_IMAGE_SLOTS = [
@@ -22,9 +26,9 @@ _EMAIL_IMAGE_SLOTS = [
 
 EMAIL_LAYOUT = [
     ("header_logo", "Header logo", "/static/img/logo.svg", "image",
-     "Shown on the dark bar at the top. SVG or PNG, ~280×56 px."),
+     "Shown on the dark bar at the top. SVG or PNG, ~160×40 px (displays at 120px wide)."),
     ("footer_logo", "Footer logo", "/static/img/logo.svg", "image",
-     "Small logo above the footer text. ~120×40 px."),
+     "Small logo above the footer text. ~100×32 px (displays at 72px wide)."),
 ] + _EMAIL_IMAGE_SLOTS + [
     ("default_cta_label", "Default CTA label", "Order now", "text",
      "Fallback button text when a template leaves CTA blank."),
@@ -60,10 +64,15 @@ LEGACY_TEMPLATE_COPY = {
     "order_out_for_delivery": {"title": "On the way", "body": "Your order <strong>{order_number}</strong> from {store} is out for delivery.", "footer_note": "Tap below to follow your order in real time.", "cta": "Track your order"},
     "order_completed": {"title": "Enjoy!", "body": "Order <strong>{order_number}</strong> from {store} is complete. Thanks for choosing {brand}!", "footer_note": "Your itemised receipt is attached to this email.", "cta": "Track your order"},
     "order_cancelled": {"title": "Order cancelled", "body": "Your order <strong>{order_number}</strong> at {store} has been cancelled.", "footer_note": "Your receipt is attached. Reply or call us with any questions.", "cta": "Track your order"},
+    "order_store_new": {"title": "New web order", "body": "A new <strong>{order_type}</strong> order <strong>{order_number}</strong> just came in from the website.", "footer_note": "Open admin to confirm and send it to the kitchen.", "cta": "View in admin"},
     "welcome": {"title": "Welcome to OK Rewards", "body": "Your account is live and {points} bonus points are already on it. Every order earns more.", "footer_note": "Track your points any time from your account page.", "cta": "Start an order"},
     "password_reset": {"title": "Reset your password", "body": "We got a request to reset the password on your account. This link works once and expires in 60 minutes.", "footer_note": "If this wasn't you, ignore this email, nothing has changed.", "cta": "Reset your password"},
     "password_changed": {"title": "Password updated", "body": "The password on your account was just changed.", "footer_note": "If this wasn't you, contact us immediately.", "cta": "Sign in"},
+    "staff_removed": {"title": "Staff access removed", "body": "Your <strong>{role}</strong> account at <strong>{store}</strong> has been permanently removed. You will no longer be able to sign in.", "footer_note": "If you think this was a mistake, contact your manager.", "cta": "Contact us"},
+    "staff_invited": {"title": "You're on the team", "body": "You've been added as <strong>{role}</strong> at <strong>{store}</strong>. Sign in with the email and temporary password below, then change your password after your first login.", "footer_note": "Keep your login details private. Contact your manager if you did not expect this invite.", "cta": "Sign in"},
+    "driver_removed": {"title": "Removed from delivery fleet", "body": "You have been removed from the delivery fleet at <strong>{store}</strong>.", "footer_note": "If you think this was a mistake, contact your manager.", "cta": "Contact us"},
     "contact_ack": {"title": "Thanks, we've got it", "body": "We have your message and will reply within one business day.", "footer_note": "", "cta": "Browse the menu"},
+    "contact_reply": {"title": "Re: {subject}", "body": "{reply}", "footer_note": "Your original message is quoted below for reference.", "cta": "Contact us"},
     "contact_new": {"title": "New website enquiry", "body": "Someone just submitted the contact form.", "footer_note": "Reply straight to the sender's email.", "cta": ""},
     "subscribed": {"title": "You're on the list", "body": "Thanks for subscribing to <b>{store}</b>! Deals, new drops and rewards news land in your inbox first.", "footer_note": '<a href="{link}">Unsubscribe</a> any time.', "cta": "See this week's deals"},
     "gift_card": {"title": "You've been sent a gift card", "body": "Use the code at checkout, online or in store. It never expires.", "footer_note": "", "cta": "Spend it"},
@@ -78,6 +87,17 @@ def default_html_starter(tpl_key):
     title = legacy.get("title", "{title}")
     body = legacy.get("body", "{body}")
     footer = legacy.get("footer_note", "")
+    hw, fw = EMAIL_HEADER_LOGO_W, EMAIL_FOOTER_LOGO_W
+    header_img = (
+        '<img src="{header_logo}" alt="{brand}" width="%d" '
+        'style="display:block;margin:0 auto;max-width:%dpx;height:auto;border:0">'
+        % (hw, hw)
+    )
+    footer_img = (
+        '<img src="{footer_logo}" alt="" width="%d" '
+        'style="display:block;margin:0 auto 14px;border:0;max-width:%dpx;height:auto;opacity:.95">'
+        % (fw, fw)
+    )
     return (
         '<div style="margin:0;padding:0;background:#e8e6e0">'
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -91,11 +111,10 @@ def default_html_starter(tpl_key):
         # header
         '<tr><td style="background:#141414;padding:0">'
         '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
-        '<tr><td style="padding:28px 32px 8px;text-align:center">'
-        '<img src="{header_logo}" alt="{brand}" width="180" '
-        'style="display:block;margin:0 auto;max-width:180px;height:auto;border:0">'
+        '<tr><td style="padding:18px 28px 4px;text-align:center">'
+        + header_img +
         '</td></tr>'
-        '<tr><td style="padding:0 32px 24px;text-align:center">'
+        '<tr><td style="padding:0 28px 18px;text-align:center">'
         '<div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;'
         'color:#FFC72C;margin-bottom:6px">{brand}</div>'
         '<div style="font-size:13px;font-weight:600;color:#f0f0f0;letter-spacing:.04em">{store}</div>'
@@ -115,8 +134,7 @@ def default_html_starter(tpl_key):
         '</td></tr>'
         # footer
         '<tr><td style="background:#141414;padding:32px 28px 28px;text-align:center">'
-        '<img src="{footer_logo}" alt="" width="96" '
-        'style="display:block;margin:0 auto 16px;border:0;opacity:.95">'
+        + footer_img +
         '{social_footer}'
         '<div style="font-size:14px;font-weight:700;color:#FFC72C;margin-bottom:8px">{footer_line1}</div>'
         '<div style="font-size:13px;line-height:1.6;color:#c8c8c8;margin-bottom:14px">{footer_line2}</div>'
@@ -182,6 +200,7 @@ def _tpl(tpl_key, tpl_label, subject_default):
 # (group_key, group_label, icon, [(tpl_key, tpl_label, fields), ...])
 EMAIL_TEMPLATE_GROUPS = [
     ("orders", "Order updates", "receipt", [
+        _order_tpl("order_store_new", "New order (staff alert)", "[{store}] New order {order_number}"),
         _order_tpl("order_placed", "Order received", "We received order {order_number}"),
         _order_tpl("order_confirmed", "Order confirmed", "Order {order_number} is confirmed"),
         _order_tpl("order_preparing", "Being prepared", "Order {order_number} is being prepared"),
@@ -194,10 +213,14 @@ EMAIL_TEMPLATE_GROUPS = [
         _tpl("welcome", "Welcome / sign-up", "Welcome to OK Rewards"),
         _tpl("password_reset", "Password reset", "Reset your password"),
         _tpl("password_changed", "Password changed", "Your password was changed"),
+        _tpl("staff_removed", "Staff access removed", "Your staff access at {store} was removed"),
+        _tpl("staff_invited", "Staff invite", "You've been added to the team at {store}"),
+        _tpl("driver_removed", "Driver fleet removed", "Removed from the fleet at {store}"),
     ]),
     ("marketing", "Contact & marketing", "bullhorn", [
         _tpl("contact_new", "Contact form | staff alert", "[{brand}] New enquiry from {customer_name}"),
         _tpl("contact_ack", "Contact form | customer receipt", "We got your message, {customer_name}"),
+        _tpl("contact_reply", "Contact form | staff reply", "Re: {subject}"),
         _tpl("subscribed", "Newsletter welcome", "You're on the list"),
         _tpl("gift_card", "Gift card to recipient", "{sender_name} sent you a {brand} gift card"),
         _tpl("newsletter", "Newsletter blast", "News from {brand}"),
@@ -317,7 +340,8 @@ def abs_media(url):
             from flask import url_for
             return url_for("website.home", _external=True).rstrip("/") + url
         except Exception:
-            return "https://oksmashedburger.com" + url
+            from app.helpers import public_site_url
+            return public_site_url(url)
     return url
 
 
@@ -338,7 +362,7 @@ def _site_setting(key):
 # Fallback social URLs when page content links are unset (#)
 DEFAULT_SOCIAL_URLS = {
     "instagram": "https://www.instagram.com/oksmashedburger",
-    "facebook": "https://www.facebook.com/oksmashedburger",
+    "facebook": "https://www.facebook.com/profile.php?id=61564601972830",
     "tiktok": "https://www.tiktok.com/@oksmashedburger",
     "youtube": "https://www.youtube.com/@oksmashedburger",
     "google": "https://www.google.com/search?q=OK+Smashed+Burger+Philadelphia",
@@ -415,7 +439,8 @@ def tracking_url_for(order_number, external=True):
             from flask import url_for
             return url_for("tracking.tracking_number", number=order_number, _external=True)
         except Exception:
-            return "https://fooddeliveryaudit.com" + path
+            from app.helpers import public_site_url
+            return public_site_url(path)
     return path
 
 
@@ -457,11 +482,12 @@ def html_shell(title, intro, rows=None, cta=None, footer_note=None, brand=None,
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" '
         'style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;'
         'box-shadow:0 8px 28px rgba(20,20,20,.08)">',
-        '<tr><td style="background:#141414;padding:20px 28px;text-align:left">',
+        '<tr><td style="background:#141414;padding:14px 24px;text-align:left">',
     ]
     if header_logo:
-        parts.append('<img src="%s" alt="%s" width="168" style="display:block;max-width:168px;height:auto;border:0">'
-                     % (_url_attr(header_logo), _esc(brand)))
+        parts.append(
+            '<img src="%s" alt="%s" width="%d" style="display:block;max-width:%dpx;height:auto;border:0">'
+            % (_url_attr(header_logo), _esc(brand), EMAIL_HEADER_LOGO_W, EMAIL_HEADER_LOGO_W))
     else:
         parts.append('<span style="color:#FFC72C;font-size:20px;font-weight:800;letter-spacing:.03em">%s</span>'
                      % _esc(brand))
@@ -516,8 +542,10 @@ def html_shell(title, intro, rows=None, cta=None, footer_note=None, brand=None,
 
     parts.append('<tr><td style="padding:22px 28px 26px;background:#141414;text-align:center">')
     if footer_logo:
-        parts.append('<img src="%s" alt="%s" width="96" style="display:block;margin:0 auto 12px;'
-                       'max-width:96px;height:auto;border:0;opacity:.95">' % (_url_attr(footer_logo), _esc(brand)))
+        parts.append(
+            '<img src="%s" alt="%s" width="%d" style="display:block;margin:0 auto 10px;'
+            'max-width:%dpx;height:auto;border:0;opacity:.95">'
+            % (_url_attr(footer_logo), _esc(brand), EMAIL_FOOTER_LOGO_W, EMAIL_FOOTER_LOGO_W))
     social_html = _social_footer_html(social_urls(brand))
     if social_html:
         parts.append(social_html)
@@ -631,6 +659,29 @@ def merge_render_context(tpl_key, ctx, title, body, footer_note, hero_image, row
     return merged
 
 
+def _normalize_email_logo_sizes(html):
+    """Shrink legacy header/footer logo tags in saved HTML templates."""
+    if not html:
+        return html
+    hw, fw = EMAIL_HEADER_LOGO_W, EMAIL_FOOTER_LOGO_W
+    header_widths = (180, 168, 200, 220, 280)
+
+    def _fix_img(match):
+        tag = match.group(0)
+        if re.search(r'\bwidth="96"', tag, re.I):
+            tag = re.sub(r'\bwidth="96"', 'width="%d"' % fw, tag, flags=re.I)
+            tag = re.sub(r'max-width:\s*96px', 'max-width:%dpx' % fw, tag, flags=re.I)
+            return tag
+        for old in header_widths:
+            if re.search(r'\bwidth="%d"' % old, tag, re.I):
+                tag = re.sub(r'\bwidth="%d"' % old, 'width="%d"' % hw, tag, flags=re.I)
+                tag = re.sub(r'max-width:\s*%dpx' % old, 'max-width:%dpx' % hw, tag, flags=re.I)
+                return tag
+        return tag
+
+    return re.sub(r'<img[^>]+>', _fix_img, html, flags=re.I)
+
+
 def html_to_plain(html):
     """Rough plain-text version for multipart email clients."""
     if not html:
@@ -664,13 +715,15 @@ def render(tpl_key, ctx, rows=None, cta_href=None, brand=None):
             from flask import url_for
             cta_url = url_for("website.home", _external=True).rstrip("/") + cta_url
         except Exception:
-            cta_url = "https://oksmashedburger.com" + cta_url
+            from app.helpers import public_site_url
+            cta_url = public_site_url(cta_url)
     cta = (cta_label.strip(), cta_url.strip()) if cta_label and cta_url else None
     html_raw = (get_field(tpl_key, "html_body", brand) or "").strip()
     if not html_raw:
         html_raw = default_html_starter(tpl_key)
     rich = merge_render_context(tpl_key, ctx, title, body, footer_note, hero_image, rows, cta, brand)
     html = format_text(html_raw, rich)
+    html = _normalize_email_logo_sizes(html)
     plain = html_to_plain(html) or plain_text(body, rows=rows, cta=cta, footer_note=footer_note or None, brand=brand)
     return subject, plain, html
 
@@ -685,7 +738,7 @@ def preview_context(tpl_key):
         return base
     if tpl_key == "gift_card":
         return base
-    if tpl_key == "contact_ack" or tpl_key == "contact_new":
+    if tpl_key == "contact_ack" or tpl_key == "contact_new" or tpl_key == "contact_reply":
         return base
     if tpl_key == "newsletter":
         return dict(base, message="<p>Looking to cater an office lunch for 20 people.</p>")
@@ -711,6 +764,8 @@ def preview_rows(tpl_key):
         return [("Code", "GIFT-OK-1234"), ("Value", "$25.00"), ("From", "Jordan")]
     if tpl_key == "contact_ack":
         return [("Subject", "Catering enquiry"), ("What you sent", "Office lunch for 20 people.")]
+    if tpl_key == "contact_reply":
+        return [("Subject", "Catering enquiry"), ("Your message", "Office lunch for 20 people."), ("Our reply", "We would love to help!")]
     if tpl_key == "contact_new":
         return [("From", "Alex Morgan"), ("Email", "alex@example.com"), ("Message", "Office lunch for 20.")]
     return None

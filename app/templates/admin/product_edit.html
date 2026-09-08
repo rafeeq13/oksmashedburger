@@ -8,6 +8,9 @@
 </div>
 
 <h2 class="ok-h2 ok-mb-5">Edit item</h2>
+{% if admin_store %}
+<p class="ok-fs-sm text-muted-warm ok-mb-4">Catalog details (name, description, image) are shared across all locations. The price below applies to <strong>{{ admin_store.name }}</strong> only (catalog base ${{ '%.2f'|format(product.base_price) }}).</p>
+{% endif %}
 
 <div class="ok-grid ok-gc-220px1fr-lg gap-4 align-items-start">
   <div class="ok-card p-3">
@@ -20,7 +23,7 @@
     <div class="ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Name</label><input name="name" value="{{ product.name }}" required class="ok-input py-2 ok-fs-sm"></div>
     <div><label class="ok-label ok-fs-xs">Category</label>
       <select name="category_id" class="ok-select py-2 ok-fs-sm">{% for c in categories %}<option value="{{ c.id }}" {% if c.id == product.category_id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
-    <div><label class="ok-label ok-fs-xs">Base price ($)</label><input name="base_price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(product.base_price) }}" class="ok-input py-2 ok-fs-sm"></div>
+    <div><label class="ok-label ok-fs-xs">{% if admin_store %}Price at {{ admin_store.name }} ($){% else %}Base price ($){% endif %}</label><input name="base_price" type="number" step="0.01" min="0" value="{{ '%.2f'|format(display_price if admin_store else product.base_price) }}" class="ok-input py-2 ok-fs-sm"></div>
     <div class="ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Description</label><textarea name="description" rows="2" class="ok-textarea ok-fs-sm">{{ product.description or '' }}</textarea></div>
     <div><label class="ok-label ok-fs-xs">Image URL</label><input name="image_url" value="{{ product.image_url or '' }}" class="ok-input py-2 ok-fs-sm" placeholder="https://…"></div>
     <div><label class="ok-label ok-fs-xs d-flex align-items-center gap-2 flex-wrap">…or upload new photo <span class="badge badge-yellow ok-fs-6rem text-nowrap" title="Build the image at this size">1200×1200</span></label><input name="image_file" type="file" accept="image/*" class="ok-input ok-py-15 ok-fs-sm"></div>

@@ -2,6 +2,7 @@
 {% block title %}{{ order.number }}, {{ brand_name }}{% endblock %}
 
 {% block admin %}
+<div data-admin-order-detail data-order-number="{{ order.number }}" data-order-status="{{ order.status }}" data-delivery-status="{{ order.delivery.status if order.delivery else '' }}">
 <div class="ok-mb-5 d-flex align-items-center justify-content-between ok-gap-3">
   <a href="/admin/orders{{ qs }}" class="link-underline ok-fs-sm"><i class="fa-solid fa-arrow-left"></i> Back to orders</a>
   <a href="/admin/orders/{{ order.number }}/receipt.pdf" target="_blank" rel="noopener" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-pdf"></i> Receipt PDF</a>
@@ -158,4 +159,9 @@
     </div>
   </div>
 </div>
+</div>
+{% endblock %}
+
+{% block admin_body_extra %}
+<script src="{{ url_for('static', filename='js/admin-orders-poll.js') }}"></script>
 {% endblock %}

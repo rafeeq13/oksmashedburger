@@ -12,6 +12,8 @@ class ContactMessage(TimestampMixin, db.Model):
     order_number = db.Column(db.String(30))
     message = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
+    reply_text = db.Column(db.Text)
+    replied_at = db.Column(db.DateTime(timezone=True))
 
 
 class Subscriber(db.Model):

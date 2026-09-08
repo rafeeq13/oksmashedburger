@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, session, flash,
 
 from app.extensions import db
 from app import cart as cartlib
-from app.helpers import get_current_store
+from app.helpers import fulfillment_available, get_current_store, get_order_type, store_accepts_order_type
 from app.auth import current_user
 from app.models.order import Order, OrderItem, Payment
 from app.models.promo import Coupon, GiftCard
@@ -69,15 +69,29 @@ def _checkout_error(message):
 
 def _render_checkout(store, form=None):
     form = form or {}
-    ot = form.get("order_type") or session.get("order_type", "delivery")
-    session["order_type"] = ot
+    ot = form.get("order_type") or get_order_type()
+    if ot:
+        session["order_type"] = ot
     try:
         tip = float(form.get("tip") or 0)
     except (TypeError, ValueError):
         tip = 0.0
-    s = cartlib.summary(store, tip=tip, order_type=ot)
-    s_delivery = s if ot == "delivery" else cartlib.summary(store, tip=tip, order_type="delivery")
-    s_pickup = s if ot == "pickup" else cartlib.summary(store, tip=tip, order_type="pickup")
+    addr_zip = (form.get("address_zip") or "").strip()
+    addr_lat = form.get("address_lat")
+    addr_lng = form.get("address_lng")
+    try:
+        addr_lat_f = float(addr_lat) if addr_lat else None
+    except (TypeError, ValueError):
+        addr_lat_f = None
+    try:
+        addr_lng_f = float(addr_lng) if addr_lng else None
+    except (TypeError, ValueError):
+        addr_lng_f = None
+    addr_kw = {"address_zip": addr_zip, "address_lat": addr_lat_f, "address_lng": addr_lng_f}
+    calc_ot = ot or "pickup"
+    s = cartlib.summary(store, tip=tip, order_type=calc_ot, **addr_kw)
+    s_delivery = s if calc_ot == "delivery" else cartlib.summary(store, tip=tip, order_type="delivery", **addr_kw)
+    s_pickup = s if calc_ot == "pickup" else cartlib.summary(store, tip=tip, order_type="pickup", **addr_kw)
     u = current_user()
     default_address = None
     if u:
@@ -107,9 +121,14 @@ def checkout():
     store = get_current_store()
     if not cartlib.get_cart():
         return redirect("/menu")
+    if not fulfillment_available(store):
+        flash("Delivery and pickup are unavailable at this location right now.", "error")
+        return redirect("/cart")
 
     if request.method == "POST":
-        order_type = request.form.get("order_type", "delivery")
+        order_type = (request.form.get("order_type") or "").strip()
+        if not order_type or not store_accepts_order_type(store, order_type):
+            return _checkout_error("That order type isn't available at this location.")
         method = request.form.get("payment_method", "card")
         tip = request.form.get("tip", type=float) or 0.0
 
@@ -138,10 +157,32 @@ def checkout():
         addr = address_from_form(request.form)
         if order_type == "delivery" and not addr["line1"]:
             return _checkout_error("Please enter a delivery street address.")
-        if order_type == "delivery" and not (addr["line2"] or "").strip():
-            return _checkout_error("Please enter your apt / suite number.")
 
-        s = cartlib.summary(store, tip=tip, order_type=order_type)
+        if order_type == "delivery":
+            from app.services.delivery_zones import match_delivery_zone
+            zone = match_delivery_zone(
+                store, addr["zip"], addr["lat"], addr["lng"],
+                line1=addr["line1"], line2=addr["line2"], city=addr["city"],
+                state=addr["state"], search=request.form.get("address_search", "").strip(),
+            )
+            if not zone["in_zone"]:
+                return _checkout_error(zone["message"] or "We can't deliver to that address.")
+
+        s = cartlib.summary(
+            store, tip=tip, order_type=order_type,
+            address_zip=addr["zip"], address_lat=addr["lat"], address_lng=addr["lng"],
+            address_line1=addr["line1"], address_line2=addr["line2"],
+            address_city=addr["city"], address_state=addr["state"],
+            address_search=request.form.get("address_search", "").strip(),
+        )
+
+        if order_type == "delivery":
+            min_order = (s.get("delivery_zone") or {}).get("min_order")
+            if min_order and s["subtotal"] < min_order:
+                return _checkout_error(
+                    "Minimum order for your delivery area is $%.2f (your subtotal is $%.2f)."
+                    % (min_order, s["subtotal"])
+                )
 
         order = Order(
             store=store, user=current_user(), order_type=order_type,
@@ -237,8 +278,9 @@ def checkout():
         sync_order_integrations(order, payment_result=payment_result)
 
         # Notify the customer via THIS store's own SMS/email integrations.
-        from app.services.notifications import notify_order_event
+        from app.services.notifications import notify_order_event, notify_store_new_order
         notify_order_event(order, order.status)
+        notify_store_new_order(order)
 
         cartlib.clear()
         session.pop("checkout_draft", None)
@@ -255,8 +297,8 @@ def checkout():
 def checkout_payment_intent():
     """Create a Stripe PaymentIntent for Elements confirmation before order submit."""
     store = get_current_store()
-    if not store:
-        return jsonify(ok=False, error="No store selected"), 400
+    if not store or not fulfillment_available(store):
+        return jsonify(ok=False, error="Delivery and pickup are unavailable at this location."), 400
     payload = request.get_json(silent=True) or {}
     try:
         amount = float(payload.get("amount") or request.form.get("amount") or 0)

@@ -89,13 +89,13 @@
     </tr></thead>
     <tbody>
       {% for o in orders %}
-      <tr class="border-bottom ok-bc-varokline ok-last-border-0 ok-transition">
+      <tr class="border-bottom ok-bc-varokline ok-last-border-0 ok-transition" data-admin-order-row data-order-number="{{ o.number }}" data-order-status="{{ o.status }}" data-delivery-status="{{ o.delivery.status if o.delivery else '' }}" data-terminal="{{ '1' if o.status in ['completed','cancelled'] else '0' }}">
         <td class="ok-p-3 fw-bold"><a href="/admin/orders/{{ o.number }}{{ qs }}" class="">{{ o.number }}</a></td>
         <td class="ok-p-3 text-muted-warm text-nowrap">{{ o.created_at_local.strftime('%b %d, %I:%M %p') }}</td>
         <td class="ok-p-3">{{ o.customer_name or '-' }}</td>
-        <td class="ok-p-3 text-capitalize">{{ o.order_type }}{% if o.delivery %} <span class="ok-fs-xs text-muted-warm ok-normal-case">({{ 'Uber' if o.delivery.method == 'uber_direct' else 'Own' }})</span>{% endif %}</td>
+        <td class="ok-p-3 text-capitalize" data-order-type-cell>{{ o.order_type }}{% if o.delivery %} <span class="ok-fs-xs text-muted-warm ok-normal-case">({{ 'Uber' if o.delivery.method == 'uber_direct' else 'Own' }}{% if o.delivery.method == 'uber_direct' and o.delivery.status == 'assigned' %} · Rider assigned{% elif o.delivery.method == 'uber_direct' and o.delivery.status == 'picked_up' %} · En route{% endif %})</span>{% endif %}</td>
         <td class="ok-p-3">{{ o.item_count }}</td>
-        <td class="ok-p-3">{% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow text-capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}</td>
+        <td class="ok-p-3" data-order-status-cell>{% if o.status == 'completed' %}<span class="badge badge-green">Completed</span>{% elif o.status == 'cancelled' %}<span class="badge badge-red">Cancelled</span>{% else %}<span class="badge badge-yellow text-capitalize">{{ o.status.replace('_',' ') }}</span>{% endif %}{% if o.delivery and o.delivery.method == 'uber_direct' and o.delivery.status == 'assigned' %} <span class="ok-fs-xs text-ok-green fw-semibold">· Rider assigned</span>{% elif o.delivery and o.delivery.method == 'uber_direct' and o.delivery.status == 'picked_up' %} <span class="ok-fs-xs text-ok-green fw-semibold">· On the way</span>{% endif %}</td>
         <td class="ok-p-3">{% if o.payment_status == 'paid' %}<span class="text-ok-green fw-semibold">Paid</span>{% else %}<span class="text-muted-warm">{{ o.payment_status }}</span>{% endif %}</td>
         <td class="ok-p-3 text-end fw-bold">${{ '%.2f'|format(o.total) }}</td>
         <td class="ok-p-3 text-end"><a href="/admin/orders/{{ o.number }}{{ qs }}" class="link-underline">Manage</a></td>
@@ -107,4 +107,8 @@
 {% else %}
 <div class="ok-card p-5 text-center text-muted-warm">No orders match these filters.</div>
 {% endif %}
+{% endblock %}
+
+{% block admin_body_extra %}
+<script src="{{ url_for('static', filename='js/admin-orders-poll.js') }}"></script>
 {% endblock %}

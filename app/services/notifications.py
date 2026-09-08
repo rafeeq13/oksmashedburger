@@ -3,7 +3,7 @@ from app.extensions import db
 from app.models.notification import Notification
 from app.models import email_templates as et
 from app.integrations import twilio_gateway, smtp_gateway
-from app.services.mailer import sending_store
+from app.services.mailer import sending_store, business_inbox
 from app.services.order_details import order_email_rows
 from app.services.receipts import build_receipt_attachment
 
@@ -75,6 +75,51 @@ def notify_order_event(order, event):
     if created:
         db.session.commit()
     return created
+
+
+def notify_store_new_order(order):
+    """Email the store inbox when a web order is placed (staff alert)."""
+    store = order.store if order else None
+    if not order or not store:
+        return None
+    to = business_inbox(store)
+    if not to:
+        note = _record(order, store, "email", "smtp", "", None, "", "store_new",
+                        {"status": "skipped", "raw": {"error": "no_business_inbox"}})
+        db.session.commit()
+        return note
+
+    from app.helpers import public_site_url
+    admin_url = public_site_url("/admin/orders/%s" % (order.number or ""))
+    ctx = {
+        "brand": et.BRAND,
+        "store": store.name if store else et.BRAND,
+        "order_number": order.number,
+        "order_type": (order.order_type or "pickup").title(),
+        "customer_name": order.customer_name or "Guest",
+        "customer_email": order.customer_email or "",
+        "customer_phone": order.customer_phone or "",
+        "tracking_url": admin_url,
+        "order": order,
+        "b": et.BRAND,
+        "n": order.number,
+    }
+    attachment = build_receipt_attachment(order)
+    email_subject, email_plain, email_html = et.render(
+        "order_store_new", ctx, rows=order_email_rows(order), cta_href=admin_url,
+    )
+    smtp_store = sending_store(store)
+    if not smtp_store or not smtp_gateway.is_enabled(smtp_store):
+        note = _record(order, store, "email", "smtp", to, email_subject, email_plain,
+                        "store_new", {"status": "skipped", "raw": {"error": "smtp_not_configured"}})
+        db.session.commit()
+        return note
+
+    res = smtp_gateway.send_email(smtp_store, to, email_subject, email_plain,
+                                  attachment=attachment, html=email_html)
+    note = _record(order, store, "email", "smtp", to, email_subject, email_plain, "store_new", res)
+    db.session.commit()
+    return note
 
 
 def _record(order, store, channel, provider, recipient, subject, body, event, res):

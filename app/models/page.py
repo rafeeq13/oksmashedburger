@@ -202,7 +202,7 @@ PAGE_CONTENT = [
         ("footer_col4_heading", "Column 4 heading", "Support"),
         ("footer_legal", "Copyright line", "© 2026 {brand} · OK Brands, Philadelphia. All rights reserved."),
         ("footer_instagram_url", "Instagram link", "#"),
-        ("footer_facebook_url", "Facebook link", "#"),
+        ("footer_facebook_url", "Facebook link", "https://www.facebook.com/profile.php?id=61564601972830"),
         ("footer_youtube_url", "YouTube link", "#"),
         ("footer_tiktok_url", "TikTok link", "#"),
         ("footer_google_url", "Google / reviews link", "#")]},

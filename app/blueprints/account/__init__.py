@@ -126,7 +126,7 @@ def reorder(number):
             addon = ProductAddon.query.filter_by(product_id=product.id, name=a.get("name")).first()
             if addon:
                 addon_ids.append(addon.id)
-        cartlib.add_item(product, it.qty, variant, addon_ids, opts.get("notes", ""))
+        cartlib.add_item(product, it.qty, variant, addon_ids, opts.get("notes", ""), store=order.store)
         added += 1
 
     if added and skipped:

@@ -35,7 +35,7 @@
           {% if s.image_url %}
           <div class="col-12 col-md-6 order-1 ok-p-3 ok-paddin-125rem-md">
             <div class="h-100 ok-minh-220px ok-minh-260px-md ok-rounded-xl overflow-hidden">
-              <img src="{{ s.image_url }}" alt="{{ s.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+              <img src="{{ s.image_url | vasset }}" alt="{{ s.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
             </div>
           </div>
           {% endif %}

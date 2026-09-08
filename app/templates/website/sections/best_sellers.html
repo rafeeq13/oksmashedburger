@@ -13,7 +13,7 @@
       {% for it in best_sellers %}
       <article class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
         <a href="/item/{{ it.product.slug }}" data-item="{{ it.product.slug }}" class="ok-media ok-ratio d-block !rounded-none">
-          <img src="{{ it.product.image_url }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          <img src="{{ it.product.image_url | vasset }}" alt="{{ it.product.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
           {% if it.featured %}<span class="badge badge-new position-absolute top-3 left-3 ok-z-10"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
         </a>
         <div class="ok-card-body">

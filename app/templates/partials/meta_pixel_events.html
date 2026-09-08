@@ -1,0 +1,7 @@
+{% for ev in fbq_events %}
+<script>
+if (typeof fbq === "function") {
+  fbq("track", {{ ev.event|tojson }}, {{ ev.params|tojson }});
+}
+</script>
+{% endfor %}

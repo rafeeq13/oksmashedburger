@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, abort, session, flash
 
 from app import cart as cartlib
-from app.helpers import get_current_store
+from app.helpers import fulfillment_available, get_current_store, get_order_type
 from app.models.menu import Product, ProductVariant
 
 bp = Blueprint("cart", __name__)
@@ -19,7 +19,8 @@ def _feature_on(name):
 @bp.get("/cart")
 def view():
     store = get_current_store()
-    summary = cartlib.summary(store)
+    ot = get_order_type() or "pickup"
+    summary = cartlib.summary(store, order_type=ot)
     # Real "you might also like" suggestions: available items not already in the cart,
     # favouring sweets/sides | they open the same quick-add modal as the menu.
     in_cart = {ln.get("product_id") for ln in summary["lines"]}
@@ -34,6 +35,7 @@ def view():
 
 @bp.post("/cart/add")
 def add():
+    store = get_current_store()
     slug = request.form.get("product_slug")
     product = Product.query.filter_by(slug=slug, is_active=True).first() if slug else None
     if not product:
@@ -69,9 +71,23 @@ def add():
         flash(f"Please select required add-on(s): {', '.join(missing)}.", "error")
         return redirect(request.form.get("next") or f"/item/{product.slug}")
 
-    cartlib.add_item(product, qty, variant, addon_ids, notes)
+    cartlib.add_item(product, qty, variant, addon_ids, notes, store=store)
+    cart = cartlib.get_cart()
+    if cart:
+        last = cart[-1]
+        from app.services.meta_pixel import queue_fbq_event
+        queue_fbq_event("AddToCart", {
+            "content_ids": [str(product.id)],
+            "content_name": last.get("name") or product.name,
+            "content_type": "product",
+            "value": round(float(last.get("unit_price", 0)) * int(last.get("qty", 1)), 2),
+            "currency": "USD",
+        })
 
     if request.form.get("buy_now"):
+        if not fulfillment_available(store):
+            flash("Delivery and pickup are unavailable at this location right now.", "error")
+            return redirect("/cart")
         return redirect("/checkout")
     return redirect(request.form.get("next") or "/cart")
 

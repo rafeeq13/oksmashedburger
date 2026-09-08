@@ -7,6 +7,12 @@ from .base import TimestampMixin
 
 _ph = PasswordHasher()
 
+user_stores = db.Table(
+    "user_stores",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    db.Column("store_id", db.Integer, db.ForeignKey("stores.id", ondelete="CASCADE"), primary_key=True),
+)
+
 # The 8 user classes from SRS §2.3
 ROLES = [
     "super_admin", "franchise_owner", "store_manager", "kitchen_staff",
@@ -38,9 +44,13 @@ class User(TimestampMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False)
     role = db.relationship("Role", back_populates="users")
 
-    # Staff are scoped to a store (nullable for corporate / customers)
+    # Staff are scoped to store(s). store_id is set when pinned to one location.
     store_id = db.Column(db.Integer, db.ForeignKey("stores.id"))
-    store = db.relationship("Store")
+    store = db.relationship("Store", foreign_keys=[store_id])
+    stores = db.relationship("Store", secondary=user_stores, lazy="select")
+
+    # Admin areas this user may open (set by super_admin on Staff screen).
+    admin_permissions = db.Column(db.JSON, nullable=True)
 
     loyalty_points = db.Column(db.Integer, default=0, nullable=False)
 
@@ -63,3 +73,40 @@ class User(TimestampMixin, db.Model):
     @property
     def full_name(self):
         return f"{self.first_name or ''} {self.last_name or ''}".strip() or self.email
+
+    def assigned_stores(self):
+        """Active stores this user may access in admin."""
+        from app.helpers import active_stores
+
+        if self.role and self.role.name == "super_admin":
+            return active_stores()
+        if self.stores:
+            return [s for s in self.stores if s.is_active]
+        if self.store_id and self.store:
+            return [self.store] if self.store.is_active else []
+        return []
+
+    def assigned_store_ids(self):
+        return {s.id for s in self.assigned_stores()}
+
+    def sync_primary_store(self):
+        """Keep store_id aligned with assigned stores (single = pinned)."""
+        ids = [s.id for s in self.stores] if self.stores else []
+        if len(ids) == 1:
+            self.store_id = ids[0]
+        elif len(ids) > 1:
+            self.store_id = None
+
+    def set_assigned_stores(self, store_list):
+        self.stores = list(store_list or [])
+        if self.stores:
+            self.sync_primary_store()
+        elif not self.stores:
+            self.store_id = None
+
+    @property
+    def store_names_display(self):
+        stores = self.assigned_stores()
+        if stores:
+            return ", ".join(s.name for s in stores)
+        return "—"

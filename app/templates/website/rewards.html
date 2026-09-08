@@ -5,7 +5,7 @@
     <!-- ============ HERO + POINTS CARD ============ -->
     {% set _s = pb_page_style('rewards', 'hero_points_card') %}<div class="pb-sec" data-page="rewards" data-section="hero_points_card" data-label="Hero + Points Card"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-pagehero">
       <div class="position-absolute ok-fill ok-opacity-30">
-        {% if site.get('rewards_hero_img') %}<img src="{{ site.get('rewards_hero_img') }}" class="w-100 h-100 ok-cover" alt="">{% else %}<img data-ph="OK Rewards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="" data-ie-slot="rewards_hero_img">{% endif %}
+        {% if site.get('rewards_hero_img') %}<img src="{{ site.get('rewards_hero_img') | vasset }}" class="w-100 h-100 ok-cover" alt="" fetchpriority="high" decoding="async">{% else %}<img data-ph="OK Rewards" data-ph-type="banner" data-ph-ratio="16/6" class="ph-img" alt="" data-ie-slot="rewards_hero_img">{% endif %}
       </div>
       <div class="ok-pagehero-veil"></div>
       <div class="position-absolute -right-24 -top-24 ok-w-96 ok-h-96 rounded-pill bg-yellow-20 blur-3xl" data-float aria-hidden="true"></div>
@@ -112,7 +112,7 @@
             {% set _locked = _cost > _bal %}
             <article class="ok-card overflow-hidden{% if _locked %} ok-opacity-60{% else %} ok-card-hover ok-hovergroup{% endif %}">
               <div class="position-relative ok-ar-1610 overflow-hidden">
-                {% if r.img %}<img src="{{ r.img }}" alt="{{ r.name }}" class="ph-img transition{% if _locked %} grayscale{% endif %}">
+                {% if r.img %}<img src="{{ r.img | vasset }}" alt="{{ r.name }}" class="ph-img transition{% if _locked %} grayscale{% endif %}" loading="lazy" decoding="async">
                 {% else %}<img data-ph="{{ r.name }}" data-ph-ratio="16/10" class="ph-img transition{% if _locked %} grayscale{% endif %}" alt="">{% endif %}
                 {% if r.badge and not _locked %}<span class="badge badge-deal position-absolute top-3 left-3">{{ r.badge }}</span>{% endif %}
                 <span class="badge {{ 'badge-soft' if _locked else 'badge-yellow' }} position-absolute top-3 {{ 'left-3' if _locked or not r.badge else 'right-3' }}">{{ '{:,}'.format(_cost) }} pts</span>
@@ -275,7 +275,7 @@
             </div>
             <div class="justify-self-center ok-justif-end-md w-100 max-w-xs">
               <div class="ok-card overflow-hidden rotate-2 ok-shadow-2xl">
-                {% if site.get('rewards_refer_img') %}<img src="{{ site.get('rewards_refer_img') }}" alt="Refer a Friend" class="ph-img">{% else %}<img data-ph="Refer a Friend" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="rewards_refer_img">{% endif %}
+                {% if site.get('rewards_refer_img') %}<img src="{{ site.get('rewards_refer_img') | vasset }}" alt="Refer a Friend" class="ph-img" loading="lazy" decoding="async">{% else %}<img data-ph="Refer a Friend" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="rewards_refer_img">{% endif %}
               </div>
             </div>
           </div>

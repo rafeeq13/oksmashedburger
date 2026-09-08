@@ -30,6 +30,7 @@ class Config:
     GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
 
     BRAND_NAME = "OK Smashed Burger"
+    PUBLIC_SITE_URL = os.environ.get("PUBLIC_SITE_URL", "https://oksmashedburger.com").rstrip("/")
 
     # Admin email templates: full HTML designs exceed Werkzeug's 500 KB default.
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024

@@ -27,8 +27,8 @@
           <button class="btn btn-secondary btn-sm">{{ 'Set offline' if d.is_online else 'Set online' }}</button></form>
         <form method="post" action="/admin/drivers/{{ d.id }}/toggle" class="d-inline"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="field" value="is_active">
           <button class="btn btn-secondary btn-sm">{{ 'Deactivate' if d.is_active else 'Reactivate' }}</button></form>
-        <form method="post" action="/admin/drivers/{{ d.id }}/delete" class="d-inline" onsubmit="return confirm('Remove {{ d.name }}?')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button class="ok-w-8 ok-h-8 ok-grid ok-place-center ok-rounded-lg text-ok-red ok-hov-bg-red-10" title="Remove"><i class="fa-solid fa-trash"></i></button></form>
+        <form method="post" action="/admin/drivers/{{ d.id }}/delete" class="d-inline" onsubmit="return confirm('Permanently delete {{ d.name }} from the fleet?{% if d.user_id %} The linked login will be emailed.{% endif %}')"><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button class="ok-w-8 ok-h-8 ok-grid ok-place-center ok-rounded-lg text-ok-red ok-hov-bg-red-10" title="Delete permanently"><i class="fa-solid fa-trash"></i></button></form>
       </div>
     </div>
 

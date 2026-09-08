@@ -2,6 +2,7 @@
 import os
 import re
 
+import click
 from flask import Flask, render_template, request, session, g
 
 from .config import get_config
@@ -536,6 +537,13 @@ def create_app(config_object=None):
         else:
             day = dt.strftime("%a %b %d")
         return "%s at %s" % (day, dt.strftime("%I:%M %p").lstrip("0"))
+
+    from .helpers import versioned_asset_url
+
+    @app.template_filter("vasset")
+    def _vasset_filter(url):
+        return versioned_asset_url(url)
+
     app.jinja_env.globals["testimonials_feed"] = testimonials_feed
     app.jinja_env.globals["tier_status"] = tier_status
 
@@ -596,9 +604,16 @@ def create_app(config_object=None):
         # contenteditable. Ordinary visitors get the bare string, so the public
         # HTML is byte-identical to before.
         _u = current_user()
+        from .services.staff_permissions import user_admin_permissions, can_access_admin
+        try:
+            from .services.meta_pixel import pop_fbq_events
+            fbq_events = pop_fbq_events()
+        except Exception:
+            fbq_events = []
         _inline = (bool(request.args.get("edit"))
                    and _u is not None and _u.role is not None
-                   and _u.role.name in ("super_admin", "franchise_owner", "store_manager"))
+                   and can_access_admin(_u)
+                   and "pages" in user_admin_permissions(_u))
 
         def pc(key, fallback=""):
             val = site.get(key) or pc_defaults.get(key) or fallback
@@ -625,9 +640,13 @@ def create_app(config_object=None):
         # the logo is not something only a developer can change.
         from flask import url_for as _url_for
         def _asset(key, fallback):
-            return site.get(key) or _url_for("static", filename=fallback)
+            if site.get(key):
+                return versioned_asset_url(site.get(key))
+            return _url_for("static", filename=fallback)
 
         from .integrations.google_maps import store_google_maps_key
+        from .helpers import footer_social_links, normalize_order_type, store_location_locked
+        from .services.staff_permissions import can_access_admin
         return {
             "brand_name": app.config["BRAND_NAME"],
             "logo_url": _asset("brand_logo", "img/logo.png"),
@@ -669,11 +688,15 @@ def create_app(config_object=None):
             "cart_count": sum(i.get("qty", 0) for i in session.get("cart", [])),
             "current_user": user,
             "favorite_ids": favorite_ids,
-            "order_type": session.get("order_type", "delivery"),
+            "order_type": normalize_order_type(current),
             "schedule_at": session.get("schedule_at"),
             "needs_location": not session.get("context_set"),
             "google_maps_api_key": store_google_maps_key(current),
             "csrf_token": get_csrf_token(),
+            "footer_socials": footer_social_links(),
+            "lock_store_location": store_location_locked(),
+            "show_admin_link": can_access_admin(user),
+            "fbq_events": fbq_events,
         }
 
     # ── CLI ─────────────────────────────────────────────────────
@@ -688,6 +711,18 @@ def create_app(config_object=None):
         """Seed roles + two locations, each with its own menu & integrations."""
         from .seed_data import run_seed
         run_seed()
+
+    @app.cli.command("clean-test-data")
+    @click.option("--confirm", is_flag=True, help="Required. Permanently deletes test customer data.")
+    def clean_test_data_cmd(confirm):
+        """Remove test notifications, emails, subscribers, customers, and orders."""
+        if not confirm:
+            raise click.ClickException("Pass --confirm to delete test data.")
+        from .services.test_data_cleanup import clean_test_data
+        counts = clean_test_data()
+        for key, n in counts.items():
+            print(f"  {key}: {n}")
+        print("[ok] production cleanup complete — staff accounts and store config kept")
 
     @app.get("/healthz")
     def healthz():

@@ -1,8 +1,8 @@
 """Store locator + choosing which location you're ordering from."""
-from flask import Blueprint, render_template, session, redirect, request, abort, flash
+from flask import Blueprint, render_template, session, redirect, request, abort, flash, jsonify
 
 from app import cart as cartlib
-from app.helpers import active_stores, find_store_for_zip, get_current_store
+from app.helpers import active_stores, find_store_for_zip, get_current_store, normalize_order_type, store_accepts_order_type
 from app.models.store import Store
 
 bp = Blueprint("stores", __name__)
@@ -55,6 +55,8 @@ def api_select_store(slug):
             "can_order": store.can_order,
             "scheduling_open": store.scheduling_open,
             "avg_prep_minutes": store.avg_prep_minutes,
+            "accepts_delivery": store.accepts_delivery,
+            "accepts_pickup": store.accepts_pickup,
             "cart_unavailable": unavailable}
 
 
@@ -85,9 +87,59 @@ def api_order_type(otype):
     """Switch delivery / pickup without a reload."""
     if otype not in ORDER_TYPES:
         return {"ok": False}, 400
+    store = get_current_store()
+    if not store_accepts_order_type(store, otype):
+        return {"ok": False, "error": "That order type isn't available at this location."}, 400
     session["order_type"] = otype
     session["context_set"] = True
     return {"ok": True, "order_type": otype}
+
+
+@bp.get("/api/delivery-quote")
+def api_delivery_quote():
+    """Return zone-based delivery fee and availability for the current store."""
+    store = get_current_store()
+    if not store:
+        return jsonify(ok=False, error="No store selected"), 400
+
+    zip_code = (request.args.get("zip") or "").strip()
+    lat = request.args.get("lat", type=float)
+    lng = request.args.get("lng", type=float)
+    tip = request.args.get("tip", type=float) or 0.0
+    from app.address import format_address
+    address_label = (request.args.get("address") or "").strip()
+    line1 = (request.args.get("line1") or "").strip()
+    line2 = (request.args.get("line2") or "").strip()
+    city = (request.args.get("city") or "").strip()
+    state = (request.args.get("state") or "").strip()
+    search = (request.args.get("search") or "").strip()
+    if not address_label:
+        address_label = format_address(line1, line2, city, state, zip_code) or search
+
+    s = cartlib.summary(
+        store, tip=tip, order_type="delivery",
+        address_zip=zip_code, address_lat=lat, address_lng=lng,
+        address_label=address_label, address_line1=line1, address_line2=line2,
+        address_city=city, address_state=state, address_search=search,
+    )
+    zone = s.get("delivery_zone") or {}
+    return jsonify(
+        ok=True,
+        in_zone=bool(zone.get("in_zone")),
+        zone_name=zone.get("zone_name"),
+        delivery_fee=s["delivery_fee"],
+        base_delivery=s["base_delivery"],
+        delivery_free=bool(s["promo"].get("delivery_discount")),
+        min_order=zone.get("min_order"),
+        est_minutes=zone.get("est_minutes"),
+        distance_miles=zone.get("distance_miles"),
+        message=zone.get("message") or "",
+        address_label=zone.get("address_label") or address_label,
+        subtotal=s["subtotal"],
+        tax=s["tax"],
+        total=s["total"],
+        total_before_tip=round(s["total"] - s["tip"], 2),
+    )
 
 
 @bp.post("/order-context")
@@ -113,8 +165,10 @@ def order_context():
     session["context_set"] = True  # user has chosen store/type → stop auto-opening the modal
 
     ot = request.form.get("order_type", "delivery")
-    if ot in ORDER_TYPES:
+    if ot in ORDER_TYPES and store_accepts_order_type(store or get_current_store(), ot):
         session["order_type"] = ot
+    else:
+        session["order_type"] = normalize_order_type(store)
 
     if request.form.get("schedule") == "later" and request.form.get("schedule_at"):
         session["schedule_at"] = request.form.get("schedule_at")

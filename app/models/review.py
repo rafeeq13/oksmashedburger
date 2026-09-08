@@ -58,7 +58,7 @@ class Review(TimestampMixin, db.Model):
         created = self.created_at
         if created.tzinfo is None:
             created = created.replace(tzinfo=timezone.utc)
-        days = max(0, (now | created).days)
+        days = max(0, (now - created).days)
         if days == 0:
             return "today"
         if days == 1:

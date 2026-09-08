@@ -33,7 +33,7 @@
               {% for p in products %}
               <article class="position-relative ok-card ok-card-hover overflow-hidden ok-hovergroup">
                 <a href="/item/{{ p.slug }}" class="d-block position-relative ok-aspect-square overflow-hidden">
-                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="w-100 h-100 ok-cover transition">
+                  <img src="{{ p.image_url | vasset }}" alt="{{ p.name }}" class="w-100 h-100 ok-cover transition" loading="lazy" decoding="async">
                 </a>
                 <form method="post" action="/favorites/toggle" class="position-absolute top-3 right-3 ok-z-10">
                   <input type="hidden" name="_csrf" value="{{ csrf_token }}">

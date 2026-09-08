@@ -18,7 +18,7 @@
       {% for line in summary.lines %}
       <article class="ok-p-3 ok-paddin-125rem-md d-flex ok-gap-3">
         <a href="/item/{{ line.slug }}" class="d-block ok-w-24 ok-h-24 ok-width-7rem-md ok-height-7rem-md ok-rounded-xl overflow-hidden flex-shrink-0">
-          <img src="{{ line.image }}" alt="{{ line.name }}" class="w-100 h-100 ok-cover">
+          <img src="{{ line.image | vasset }}" alt="{{ line.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
         </a>
         <div class="flex-grow-1 ok-min-w-0">
           <div class="d-flex align-items-start justify-content-between ok-gap-3">
@@ -65,6 +65,15 @@
     <aside class="ok-card ok-p-5 ok-positi-sticky-lg ok-top-7rem-lg">
       <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Order summary</h2>
       {% if store %}<p class="ok-fs-sm text-muted-warm ok-mb-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-location-dot text-gold"></i> {{ store.name }}</p>{% endif %}
+
+      {% if store %}
+      <div class="d-flex align-items-center gap-1 bg-cream-60 rounded-pill p-1 ok-mb-4" data-ordertype-group>
+        {% for val, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
+        {% set ot_enabled = (val == 'delivery' and store.accepts_delivery) or (val == 'pickup' and store.accepts_pickup) %}
+        <button type="button" data-ordertype="{{ val }}" class="flex-fill ok-px-3 py-2 rounded-pill ok-fs-sm fw-semibold d-inline-flex align-items-center justify-content-center gap-2 transition {% if ot_enabled and order_type == val %}bg-ink text-white ok-shadow-md{% else %}text-ink{% endif %}"{% if not ot_enabled %} disabled aria-disabled="true"{% endif %}><i class="fa-solid fa-{{ icon }}"></i> <span>{{ label }}</span></button>
+        {% endfor %}
+      </div>
+      {% endif %}
 
       <!-- Promo code -->
       {% if features.deals %}
@@ -115,12 +124,18 @@
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
         {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
         <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
-        <div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery fee</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>
+        {% if order_type == 'delivery' %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery fee</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>{% endif %}
         {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
       </div>
       <div class="divider ok-my-3"></div>
       <div class="d-flex justify-content-between align-items-center ok-mb-5"><span class="font-display fw-bold ok-fs-lg">Total</span><span class="font-display ok-fw-800 ok-fs-2xl">${{ '%.2f'|format(summary.total) }}</span></div>
+      {% set can_checkout = store and (store.accepts_delivery or store.accepts_pickup) %}
+      {% if can_checkout %}
       <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
+      {% else %}
+      <button type="button" class="btn btn-primary btn-block btn-lg" disabled aria-disabled="true">Proceed to Checkout</button>
+      <p class="ok-fs-xs text-ok-red text-center ok-mt-2">Delivery and pickup are unavailable at this location.</p>
+      {% endif %}
       <p class="ok-fs-xs text-muted-warm text-center ok-mt-3 d-flex align-items-center justify-content-center gap-1"><i class="fa-solid fa-lock"></i> Secure checkout</p>
     </aside>
   </div>

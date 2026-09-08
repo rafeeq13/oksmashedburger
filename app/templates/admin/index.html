@@ -47,8 +47,8 @@ endif -%}
             class="text-ok-green fw-semibold">on</span>{% else %}<span class="text-ok-red fw-semibold">off</span>{%
           endif %}{% if not admin_store.open_now and admin_store.accepting_scheduled %} · customers can still order
           ahead{% endif %}</div>
-        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }} · <a
-            href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a></div>
+        <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }}{% if current_user and current_user.role and current_user.role.name == 'super_admin' %} · <a
+            href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a>{% endif %}</div>
       </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
@@ -260,17 +260,33 @@ endif -%}
 
 <!-- Quick actions -->
 <div class="ok-grid ok-grid-2 ok-grid-lg-4 gap-3">
-  {% for href, label, icon, desc in [
-  ('/admin/menu', 'Menu', 'bars', 'Listing, prices, 86'),
-  ('/admin/coupons', 'Coupons', 'tag', 'Promo codes'),
-  ('/admin/integrations', 'Integrations', 'plug', 'This store’s keys'),
-  ('/admin/notifications', 'Notifications', 'bell', 'SMS & email log')] %}
-  <a href="{{ href }}{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
-    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i
-        class="fa-solid fa-{{ icon }} icon-lg"></i></div>
-    <div class="font-display fw-bold">{{ label }}</div>
-    <div class="ok-fs-xs text-muted-warm">{{ desc }}</div>
+  {% if admin_can('menu') %}
+  <a href="/admin/menu{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
+    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i class="fa-solid fa-bars icon-lg"></i></div>
+    <div class="font-display fw-bold">Menu</div>
+    <div class="ok-fs-xs text-muted-warm">Listing, prices, 86</div>
   </a>
-  {% endfor %}
+  {% endif %}
+  {% if admin_can('coupons') %}
+  <a href="/admin/coupons{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
+    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i class="fa-solid fa-tag icon-lg"></i></div>
+    <div class="font-display fw-bold">Coupons</div>
+    <div class="ok-fs-xs text-muted-warm">Promo codes</div>
+  </a>
+  {% endif %}
+  {% if admin_can('integrations') %}
+  <a href="/admin/integrations{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
+    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i class="fa-solid fa-plug icon-lg"></i></div>
+    <div class="font-display fw-bold">Integrations</div>
+    <div class="ok-fs-xs text-muted-warm">This store’s keys</div>
+  </a>
+  {% endif %}
+  {% if admin_can('notifications') %}
+  <a href="/admin/notifications{{ qs }}" class="ok-card ok-card-hover ok-p-5 d-flex flex-column gap-2">
+    <div class="ok-w-10 ok-h-10 ok-rounded-xl bg-cream text-gold ok-grid ok-place-center"><i class="fa-solid fa-bell icon-lg"></i></div>
+    <div class="font-display fw-bold">Notifications</div>
+    <div class="ok-fs-xs text-muted-warm">SMS & email log</div>
+  </a>
+  {% endif %}
 </div>
 {% endblock %}

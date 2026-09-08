@@ -3,51 +3,155 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Staff</h2>
-<p class="text-muted-warm ok-fs-sm ok-mb-5">Managers, kitchen, cashiers and drivers for {{ 'your locations' if can_switch else admin_store.name }}.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">Add team members and choose exactly what each person can access in admin.</p>
 
 <!-- Add staff -->
-<form method="post" action="/admin/staff{{ qs }}" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
+<form method="post" action="/admin/staff{{ qs }}" class="ok-card ok-p-5 mb-4">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <div><label class="ok-label ok-fs-xs">First name</label><input name="first_name" class="ok-input py-2 ok-fs-sm" placeholder="Alex"></div>
-  <div><label class="ok-label ok-fs-xs">Last name</label><input name="last_name" class="ok-input py-2 ok-fs-sm" placeholder="Rivera"></div>
-  <div class="ok-col-span-lg-2"><label class="ok-label ok-fs-xs">Email</label><input name="email" type="email" required class="ok-input py-2 ok-fs-sm" placeholder="alex@oksmashedburger.com"></div>
-  <div><label class="ok-label ok-fs-xs">Role</label>
-    <select name="role" class="ok-select py-2 ok-fs-sm">
-      {% for r in roles %}<option value="{{ r }}">{{ r.replace('_',' ')|title }}</option>{% endfor %}
-    </select>
+  <div class="ok-grid ok-grid-1 ok-grid-sm-2 ok-grid-lg-4 ok-gap-3 align-items-end ok-mb-4 staff-add-grid min-w-0">
+    <div><label class="ok-label ok-fs-xs">First name</label><input name="first_name" class="ok-input py-2 ok-fs-sm" placeholder="Alex"></div>
+    <div><label class="ok-label ok-fs-xs">Last name</label><input name="last_name" class="ok-input py-2 ok-fs-sm" placeholder="Rivera"></div>
+    <div class="ok-col-span-sm-2"><label class="ok-label ok-fs-xs">Email</label><input name="email" type="email" required class="ok-input py-2 ok-fs-sm" placeholder="alex@oksmashedburger.com"></div>
+    <div><label class="ok-label ok-fs-xs">Role</label>
+      <select name="role" class="ok-select py-2 ok-fs-sm">
+        {% for r in roles %}<option value="{{ r }}">{{ r.replace('_',' ')|title }}</option>{% endfor %}
+      </select>
+    </div>
+    <div><label class="ok-label ok-fs-xs">Temp password</label><input name="password" class="ok-input py-2 ok-fs-sm" placeholder="changeme123"></div>
+    {% if can_switch %}
+    <div class="ok-col-span-sm-2">
+      <label class="ok-label ok-fs-xs">Locations</label>
+      <div class="ok-stack-2 ok-mt-1 staff-loc-list">
+        {% for s in admin_stores %}
+        <label class="d-flex align-items-center gap-2 ok-fs-sm staff-loc-row">
+          <input type="checkbox" name="stores" value="{{ s.slug }}" class="ok-w-4 ok-h-4 ok-accent-yellow flex-shrink-0"
+            {% if admin_store and s.id == admin_store.id %}checked{% endif %}>
+          <span class="min-w-0 text-break">{{ s.admin_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </div>
-  {% if can_switch %}
-  <div><label class="ok-label ok-fs-xs">Store</label>
-    <select name="store" class="ok-select py-2 ok-fs-sm">
-      {% for s in admin_stores %}<option value="{{ s.slug }}" {% if admin_store and s.id == admin_store.id %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
-    </select>
+
+  <div class="border-top ok-bc-varokline pt-4">
+    <div class="fw-semibold ok-fs-sm mb-3">Admin access</div>
+    <div class="ok-grid ok-grid-sm-2 ok-grid-lg-3 gap-4">
+      {% for group_key, group_label, items in permission_groups %}
+      <div>
+        <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm mb-2">{{ group_label }}</div>
+        <div class="ok-stack-2">
+          {% for perm_key, perm_label, _path in items %}
+          <label class="d-flex align-items-center gap-2 ok-fs-sm">
+            <input type="checkbox" name="permissions" value="{{ perm_key }}" class="ok-w-4 ok-h-4 ok-accent-yellow">
+            <span>{{ perm_label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-  {% endif %}
-  <div class="{% if not can_switch %}ok-col-span-lg-2{% endif %}"><label class="ok-label ok-fs-xs">Temp password</label><input name="password" class="ok-input py-2 ok-fs-sm" placeholder="changeme123"></div>
-  <div class="ok-col-span-sm-2 ok-col-span-lg-6"><button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add staff member</button></div>
+
+  <div class="mt-4">
+    <button class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Add staff member</button>
+  </div>
 </form>
 
 <div class="ok-card overflow-x-auto">
   <table data-table data-page-size="10" class="w-100 ok-fs-sm">
     <thead><tr class="text-start text-muted-warm border-bottom ok-bc-varokline">
-      <th class="ok-p-3 fw-semibold">Name</th><th class="ok-p-3 fw-semibold">Email</th><th class="ok-p-3 fw-semibold">Role</th><th class="ok-p-3 fw-semibold">Store</th><th class="ok-p-3 fw-semibold">Status</th><th class="ok-p-3"></th>
+      <th class="ok-p-3 fw-semibold">Name</th><th class="ok-p-3 fw-semibold">Email</th><th class="ok-p-3 fw-semibold">Role</th><th class="ok-p-3 fw-semibold">Locations</th><th class="ok-p-3 fw-semibold">Access</th><th class="ok-p-3 fw-semibold">Status</th><th class="ok-p-3"></th>
     </tr></thead>
     <tbody>
       {% for m in members %}
+      {% set member_store_ids = m.assigned_store_ids() %}
       <tr class="border-bottom ok-bc-varokline ok-last-border-0 {% if not m.is_active %}ok-opacity-60{% endif %}">
         <td class="ok-p-3 fw-semibold">{{ m.full_name }}</td>
         <td class="ok-p-3 text-muted-warm">{{ m.email }}</td>
         <td class="ok-p-3 text-capitalize">{{ m.role.name.replace('_',' ') }}</td>
-        <td class="ok-p-3">{{ m.store.name if m.store else '-' }}</td>
+        <td class="ok-p-3">{{ m.store_names_display }}</td>
+        <td class="ok-p-3">
+          <button type="button" class="link-underline ok-fs-xs border-0 bg-transparent p-0"
+            data-staff-access-open="{{ m.id }}" data-staff-name="{{ m.full_name or m.email }}"
+            onclick="window.openStaffAccess && window.openStaffAccess(this)">
+            {{ permission_count_for_user(m) }} areas
+          </button>
+        </td>
         <td class="ok-p-3">{% if m.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-soft">Disabled</span>{% endif %}</td>
         <td class="ok-p-3 text-end">
-          <form method="post" action="/admin/staff/{{ m.id }}/toggle{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs {% if m.is_active %}text-ok-red{% endif %}">{{ 'Deactivate' if m.is_active else 'Activate' }}</button></form>
+          <div class="d-inline-flex align-items-center gap-2 justify-content-end">
+            <form method="post" action="/admin/staff/{{ m.id }}/toggle{{ qs }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs {% if m.is_active %}text-muted-warm{% endif %}">{{ 'Deactivate' if m.is_active else 'Activate' }}</button></form>
+            {% if m.role.name != 'super_admin' and m.id != current_user.id %}
+            <form method="post" action="/admin/staff/{{ m.id }}/delete{{ qs }}" onsubmit="return confirm('Permanently delete {{ m.full_name or m.email }}? They will be emailed and cannot sign in again.')"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link-underline ok-fs-xs text-ok-red">Delete</button></form>
+            {% endif %}
+          </div>
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="6" class="ok-p-8 text-center text-muted-warm">No staff yet, add your first team member above.</td></tr>
+      <tr><td colspan="7" class="ok-p-8 text-center text-muted-warm">No staff yet — add your first team member above.</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+<div id="staffAccessModal" class="ok-modal staff-access-modal" hidden>
+  <div class="staff-access-dialog bg-white ok-rounded-xl d-flex flex-column">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom ok-bc-varokline">
+      <div>
+        <div class="font-display fw-bold" id="staffAccessTitle">Admin access</div>
+        <div class="ok-fs-xs text-muted-warm" id="staffAccessSubtitle"></div>
+      </div>
+      <button type="button" id="staffAccessClose" class="text-muted-warm ok-hov-text-ink"><i class="fa-solid fa-xmark ok-fs-lg"></i></button>
+    </div>
+    <div class="p-3 staff-access-body min-w-0">
+      {% for m in members %}
+      {% set member_store_ids = m.assigned_store_ids() %}
+      <form method="post" action="/admin/staff/{{ m.id }}/permissions{{ qs }}" class="staff-access-panel" data-staff-id="{{ m.id }}" hidden>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if can_switch %}
+        <div class="ok-mb-4">
+          <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm mb-2">Locations</div>
+          <div class="staff-loc-list d-flex flex-column gap-2">
+            {% for s in admin_stores %}
+            <label class="d-flex align-items-center gap-2 ok-fs-sm staff-loc-row">
+              <input type="checkbox" name="stores" value="{{ s.slug }}" class="ok-w-4 ok-h-4 ok-accent-yellow flex-shrink-0"
+                {% if s.id in member_store_ids %}checked{% endif %}>
+              <span class="min-w-0 text-break">{{ s.admin_label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="ok-mb-4">
+          <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm mb-2">Current access</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for label in permission_labels_for_user(m) %}
+            <span class="badge badge-soft">{{ label }}</span>
+            {% else %}
+            <span class="text-muted-warm ok-fs-sm">No access assigned</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="border-top ok-bc-varokline pt-3">
+          <div class="ok-fs-xs fw-bold text-uppercase ok-ls-wide text-muted-warm mb-2">Edit access</div>
+          <div class="ok-grid ok-grid-1 ok-grid-sm-2 gap-2 ok-mb-3 min-w-0">
+            {% for group_key, group_label, items in permission_groups %}
+              {% for perm_key, perm_label, _path in items %}
+              <label class="d-flex align-items-center gap-2 ok-fs-sm">
+                <input type="checkbox" name="permissions" value="{{ perm_key }}" class="ok-w-4 ok-h-4"
+                  {% if m.admin_permissions and perm_key in m.admin_permissions %}checked{% elif m.admin_permissions is none and m.role.name in ['franchise_owner','store_manager'] and group_key == 'management' %}checked{% endif %}>
+                <span>{{ perm_label }}</span>
+              </label>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
+        </div>
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>document.dispatchEvent(new Event("pjax:complete"));</script>
 {% endblock %}

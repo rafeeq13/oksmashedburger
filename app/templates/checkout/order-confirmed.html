@@ -83,6 +83,15 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+if (typeof fbq === "function") {
+  fbq("track", "Purchase", {
+    value: {{ order.total | float }},
+    currency: "USD",
+    content_ids: [{% for it in order.items %}"{{ it.product_id }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+  });
+}
+</script>
 {% if order and not order.user %}
 <script>
   document.getElementById("guestOrdersBtn")?.addEventListener("click", function () {

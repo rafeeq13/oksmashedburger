@@ -199,6 +199,62 @@ h1,h2,h3,h4,h5,h6{ font-size:inherit; font-weight:inherit; line-height:inherit; 
   .ok-modal > *, .ok-modal.is-open > *, .ok-modal.is-closing > *{ transform:none; transition:none; }
 }
 
+/* Staff access popup — iOS-safe: fixed overlay, no slide, no horizontal scroll */
+.staff-access-modal{
+  position:fixed !important;
+  inset:0;
+  z-index:60;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:.75rem;
+  background:rgba(0,0,0,.5);
+  overflow:hidden;
+  overscroll-behavior:none;
+  touch-action:none;
+  max-width:100%;
+}
+.staff-access-modal[hidden]{ display:none !important; }
+.staff-access-modal.is-open{
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+.staff-access-modal > *{
+  transform:none !important;
+  transition:none !important;
+}
+.staff-access-dialog{
+  width:100%;
+  max-width:min(42rem, 100%);
+  max-height:min(85vh, 100%);
+  min-width:0;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+.staff-access-modal .staff-access-body{
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  min-width:0;
+}
+.staff-loc-list, .staff-loc-row{ max-width:100%; min-width:0; }
+.staff-loc-row span{ word-break:break-word; overflow-wrap:anywhere; }
+.staff-add-grid, .staff-add-grid > *{ min-width:0; max-width:100%; }
+html.staff-modal-open, body.staff-modal-open{
+  overflow:hidden !important;
+  overflow-x:hidden !important;
+  max-width:100%;
+}
+body.staff-modal-open{
+  position:fixed;
+  left:0;
+  right:0;
+  width:100%;
+}
+
 /* ---------------------------------------------------------
    5. COMPONENTS
    Behaviour Tailwind expressed with the `peer` sibling trick,
@@ -412,4 +468,9 @@ a.sb-navlink.is-loading{ pointer-events:none; opacity:.92; }
   .ok-addon-row__controls, .ok-modsec-row{ flex-wrap:wrap !important; }
 }
 .ok-addon-attach-row{ width:100%; }
+
+.ok-admin-store-select{
+  min-width:min(22rem, 72vw);
+  max-width:34rem;
+}
 .ok-addon-attach-row .ok-addon-row__controls{ width:100%; flex:1 1 100%; }

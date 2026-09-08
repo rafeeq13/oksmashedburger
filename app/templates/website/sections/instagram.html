@@ -20,7 +20,7 @@
       {% set _reel = site.get('ig_' ~ loop.index ~ '_reel') %}
       <a href="{{ _reel or ('https://instagram.com/' ~ _handle ~ '/reels/') }}" target="_blank" rel="noopener"
          class="ok-tile ok-ratio-reel d-block ok-rounded-2xl bg-ink ok-shadow-md">
-        <img src="{{ img }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy">
+        <img src="{{ img | vasset }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
         <span class="ok-reel-badge"><i class="fa-solid fa-play"></i></span>
         <span class="tile-icon"><i class="fa-brands fa-instagram"></i></span>
       </a>

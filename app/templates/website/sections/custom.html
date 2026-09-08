@@ -12,7 +12,7 @@
   {% set _sub = 'text-w-80' if _theme == 'dark' else 'text-slate' %}
   <section class="ok-section {{ _bg }} border-top ok-bc-varokline">
     <div class="ok-container {% if _t == 'image' %}ok-grid ok-grid-md-2 ok-gap-8 ok-gap-3rem-md align-items-center{% else %}text-center max-w-3xl mx-auto{% endif %}">
-      {% if cfg.get('image') %}<img src="{{ cfg.get('image') }}" alt="" data-el="img" class="w-100 {% if _t == 'image' %}aspect-[4/3]{% else %}max-h-80{% endif %} ok-cover ok-rounded-2xl {% if _t != 'image' %}ok-mb-8{% endif %} ok-shadow-lg"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>{% endif %}
+      {% if cfg.get('image') %}<img src="{{ cfg.get('image') | vasset }}" alt="" data-el="img" class="w-100 {% if _t == 'image' %}aspect-[4/3]{% else %}max-h-80{% endif %} ok-cover ok-rounded-2xl {% if _t != 'image' %}ok-mb-8{% endif %} ok-shadow-lg" loading="lazy" decoding="async"{% set _is = pb_img_style(cfg) %}{% if _is %} style="{{ _is }}"{% endif %}>{% endif %}
       <div>
         {% if cfg.get('heading') %}<h2 class="font-display ok-fw-800 ok-fs-2xl ok-fs-md-4xl text-uppercase tracking-tight ok-mb-3">{{ cfg.get('heading') }}</h2>{% endif %}
         {% if cfg.get('subheading') %}<p class="{{ _sub }} ok-fs-md-lg ok-mb-3 whitespace-pre-line pb-t-sub">{{ cfg.get('subheading') }}</p>{% endif %}

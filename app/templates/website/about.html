@@ -8,7 +8,7 @@
 
 <!-- ============ 1. HERO ============ -->
 {% set _s = pb_page_style('about', '1_hero') %}<div class="pb-sec" data-page="about" data-section="1_hero" data-label="1. Hero"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-abt-hero position-relative overflow-hidden">
-  <img src="{{ site.get('about_hero_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
+  <img src="{{ (site.get('about_hero_img') or site_defaults.get('catering_img')) | vasset }}" alt="" class="ok-fill ok-cover" fetchpriority="high" decoding="async">
   <div class="ok-abt-hero-veil"></div>
   <div class="ok-container position-relative text-center">
     <h1 class="ok-abt-hero-h">{{ pc('about_hero_heading') }}</h1>
@@ -50,7 +50,7 @@
           {% set _embed = _base ~ '?controls=0&rel=0&playsinline=1&enablejsapi=1&origin=' ~ request.url_root.rstrip('/') %}
         {% endif %}
         <div class="ok-vidbg" data-ytbg>
-          <img src="{{ site.get('about_video_poster') or site.get('about_img') or site_defaults.get('about_img') }}" alt="" class="ok-vidbg-poster">
+          <img src="{{ (site.get('about_video_poster') or site.get('about_img') or site_defaults.get('about_img')) | vasset }}" alt="" class="ok-vidbg-poster" loading="lazy" decoding="async">
           <div class="ok-vidbg-frame">
             <iframe src="{{ _embed }}" title="About {{ brand_name }}" tabindex="-1" aria-hidden="true"
                     allow="autoplay; encrypted-media" frameborder="0"></iframe>
@@ -62,7 +62,7 @@
           <source src="{{ _vid }}" type="video/mp4">
         </video>
       {% else %}
-        <img src="{{ site.get('about_kitchen_img') or site.get('about_img') or site_defaults.get('about_img') }}" alt="Inside an {{ brand_name }} kitchen" class="w-100 ok-cover">
+        <img src="{{ (site.get('about_kitchen_img') or site.get('about_img') or site_defaults.get('about_img')) | vasset }}" alt="Inside an {{ brand_name }} kitchen" class="w-100 ok-cover" loading="lazy" decoding="async">
       {% endif %}
     </div>
     <div>
@@ -78,7 +78,7 @@
     <div class="ok-grid ok-grid-md-2 ok-gap-8">
       <article class="ok-card overflow-hidden d-flex flex-column">
         <div class="ok-media ok-ratio !rounded-none">
-          {% if site.get('about_card1_img') %}<img src="{{ site.get('about_card1_img') }}" alt="Cooked fresh from scratch" class="ph-img">{% else %}<img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card1_img">{% endif %}
+          {% if site.get('about_card1_img') %}<img src="{{ site.get('about_card1_img') | vasset }}" alt="Cooked fresh from scratch" class="ph-img" loading="lazy" decoding="async">{% else %}<img data-ph="Cooked fresh from scratch" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card1_img">{% endif %}
         </div>
         <div class="ok-card-body">
           <h3 class="ok-abt-cardh">{{ pc('about_card1_heading') }}</h3>
@@ -87,7 +87,7 @@
       </article>
       <article class="ok-card overflow-hidden d-flex flex-column">
         <div class="ok-media ok-ratio !rounded-none">
-          {% if site.get('about_card2_img') %}<img src="{{ site.get('about_card2_img') }}" alt="Community focused" class="ph-img">{% else %}<img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card2_img">{% endif %}
+          {% if site.get('about_card2_img') %}<img src="{{ site.get('about_card2_img') | vasset }}" alt="Community focused" class="ph-img" loading="lazy" decoding="async">{% else %}<img data-ph="Community focused" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_card2_img">{% endif %}
         </div>
         <div class="ok-card-body">
           <h3 class="ok-abt-cardh">{{ pc('about_card2_heading') }}</h3>
@@ -104,7 +104,7 @@
 {% set _s = pb_page_style('about', 'section_5') %}<div class="pb-sec" data-page="about" data-section="section_5" data-label="Section 5"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-band ok-band--white">
   <div class="ok-container ok-grid ok-grid-md-2 ok-gap-12 align-items-center">
     <div class="ok-abt-frame">
-      {% if site.get('about_table_img') %}<img src="{{ site.get('about_table_img') }}" alt="Meet us at the table" class="ph-img">{% else %}<img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_table_img">{% endif %}
+      {% if site.get('about_table_img') %}<img src="{{ site.get('about_table_img') | vasset }}" alt="Meet us at the table" class="ph-img" loading="lazy" decoding="async">{% else %}<img data-ph="Meet us at the table" data-ph-type="food" data-ph-ratio="4/3" class="ph-img" alt="" data-ie-slot="about_table_img">{% endif %}
     </div>
     <div>
       <h2 class="ok-abt-h">{{ pc('about_table_heading') }}</h2>
@@ -117,7 +117,7 @@
 
 <!-- ============ 6. FULL-BLEED BAND + OVERLAPPING CARD ============ -->
 {% set _s = pb_page_style('about', '6_full_bleed_band_overlapping_card') %}<div class="pb-sec" data-page="about" data-section="6_full_bleed_band_overlapping_card" data-label="6. Full-Bleed Band + Overlapping Card"{% if _s %} style="{{ _s }}"{% endif %}><section class="ok-abt-band position-relative overflow-hidden">
-  <img src="{{ site.get('about_band_img') or site.get('catering_img') or site_defaults.get('catering_img') }}" alt="" class="ok-fill ok-cover">
+  <img src="{{ (site.get('about_band_img') or site.get('catering_img') or site_defaults.get('catering_img')) | vasset }}" alt="" class="ok-fill ok-cover" loading="lazy" decoding="async">
   <div class="ok-container position-relative">
     <div class="ok-abt-band-card">
       <h2 class="ok-abt-h">{{ pc('about_values_heading') }}</h2>
@@ -138,7 +138,7 @@
       <a href="/menu" class="btn btn-primary ok-mt-5">Order online</a>
     </div>
     <div class="ok-abt-tilt">
-      {% if site.get('about_crew_img') %}<img src="{{ site.get('about_crew_img') }}" alt="The OK crew" class="ph-img">{% else %}<img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="" data-ie-slot="about_crew_img">{% endif %}
+      {% if site.get('about_crew_img') %}<img src="{{ site.get('about_crew_img') | vasset }}" alt="The OK crew" class="ph-img" loading="lazy" decoding="async">{% else %}<img data-ph="The OK crew" data-ph-type="food" data-ph-ratio="1/1" class="ph-img" alt="" data-ie-slot="about_crew_img">{% endif %}
     </div>
   </div>
 </section></div>
@@ -170,7 +170,7 @@
       {% set _reel = site.get('about_ig_' ~ i ~ '_reel') or site.get('ig_' ~ i ~ '_reel') %}
       <a href="{{ _reel or 'https://instagram.com/oksmashedburger/reels/' }}" target="_blank" rel="noopener"
          class="ok-tile ok-ratio-reel d-block ok-rounded-xl bg-ink">
-        <img src="{{ site.get('about_ig_' ~ i ~ '_img') or site.get('ig_' ~ i ~ '_img') or site_defaults.get('ig_' ~ i ~ '_img') }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy">
+        <img src="{{ (site.get('about_ig_' ~ i ~ '_img') or site.get('ig_' ~ i ~ '_img') or site_defaults.get('ig_' ~ i ~ '_img')) | vasset }}" alt="Instagram reel" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
         <span class="ok-reel-badge"><i class="fa-solid fa-play"></i></span>
         <span class="tile-icon"><i class="fa-brands fa-instagram"></i></span>
       </a>

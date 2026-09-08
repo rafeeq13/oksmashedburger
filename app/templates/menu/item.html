@@ -10,7 +10,7 @@
     <!-- Gallery -->
     <div class="ok-positi-sticky-lg ok-top-7rem-lg">
       <div class="ok-card overflow-hidden position-relative ok-aspect-square">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="w-100 h-100 ok-cover">
+        <img src="{{ product.image_url | vasset }}" alt="{{ product.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
         {% if 'popular' in (product.tags or []) %}<span class="badge badge-new position-absolute top-4 left-4"><i class="fa-solid fa-star fill-current"></i> Popular</span>{% endif %}
         {% if not available %}<span class="badge badge-red position-absolute top-4 right-4">Sold out here</span>{% endif %}
         <form method="post" action="/favorites/toggle" class="position-absolute bottom-4 right-4">
@@ -92,6 +92,17 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+if (typeof fbq === "function") {
+  fbq("track", "ViewContent", {
+    content_ids: ["{{ product.id }}"],
+    content_name: {{ product.name|tojson }},
+    content_type: "product",
+    value: {{ price }},
+    currency: "USD"
+  });
+}
+</script>
 <script>
   // Sync the quantity stepper into the hidden field on submit.
   var addForm = document.getElementById("addForm");

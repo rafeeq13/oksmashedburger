@@ -17,7 +17,7 @@
       {% for c in grid_cats %}
       <a href="/menu#{{ c.slug }}" class="ok-card ok-card-hover overflow-hidden d-flex flex-column ok-hovergroup">
         <div class="ok-media ok-ratio bg-ink !rounded-none">
-          {% if c.image_url %}<img src="{{ c.image_url }}" alt="{{ c.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+          {% if c.image_url %}<img src="{{ c.image_url | vasset }}" alt="{{ c.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
           {% else %}<div class="w-100 h-100 ok-grid ok-place-center ok-fs-4xl text-gold"><i class="fa-solid fa-{{ c.icon or 'utensils' }}"></i></div>{% endif %}
         </div>
         <div class="ok-card-body">
@@ -32,7 +32,7 @@
     {% if feature %}
     <a href="/menu#{{ feature.slug }}" class="ok-card ok-card-hover overflow-hidden ok-grid ok-grid-md-2 ok-mt-clamp115rem17vw15r ok-hovergroup" data-reveal="up">
       <div class="ok-media ok-ratio-wide bg-ink !rounded-none">
-        {% if feature.image_url %}<img src="{{ feature.image_url }}" alt="{{ feature.name }}" class="w-100 h-100 ok-cover" loading="lazy">
+        {% if feature.image_url %}<img src="{{ feature.image_url | vasset }}" alt="{{ feature.name }}" class="w-100 h-100 ok-cover" loading="lazy" decoding="async">
         {% else %}<div class="w-100 h-100 ok-grid ok-place-center ok-fs-5xl text-gold ok-minh-16rem"><i class="fa-solid fa-{{ feature.icon or 'utensils' }}"></i></div>{% endif %}
       </div>
       <div class="ok-card-body justify-content-center !p-8 ok-p-3rem-md">

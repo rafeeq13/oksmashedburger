@@ -1,7 +1,7 @@
 <!-- Catering (full-bleed statement band) -->
 <section class="position-relative overflow-hidden bg-ink">
   <div class="position-absolute ok-fill scale-110">
-    <img src="{{ site.get('catering_img') or site_defaults.get('catering_img') }}" alt="Catering spread" class="w-100 h-100 ok-cover" data-parallax="0.14" loading="lazy">
+    <img src="{{ (site.get('catering_img') or site_defaults.get('catering_img')) | vasset }}" alt="Catering spread" class="w-100 h-100 ok-cover" data-parallax="0.14" loading="lazy" decoding="async">
   </div>
   <div class="pb-overlay position-absolute ok-fill bg-gradient-to-r from-jet/80 via-jet/35 to-transparent"></div>
   <div class="position-absolute ok-fill bg-gradient-to-t from-jet/55 via-transparent to-jet/20 pe-none"></div>

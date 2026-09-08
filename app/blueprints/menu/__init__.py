@@ -42,7 +42,7 @@ def _item_context(slug):
         "price": price,
         "available": available,
         "store": store,
-        "modifier_sections": product_modifier_sections(product),
+        "modifier_sections": product_modifier_sections(product, store),
     }
 
 

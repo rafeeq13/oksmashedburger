@@ -23,8 +23,6 @@
 
     <!-- Radius map -->
     <div class="position-relative ok-rounded-2xl ok-bgc-0b0f16 border border-w-10 overflow-hidden ok-mb-5" style="min-height:300px">
-      <div class="position-absolute ok-fill zmap-grid ok-opacity-90"></div>
-
       <!-- Legend -->
       <div class="position-absolute ok-top-4 ok-left-4 ok-z-20 bg-black-45 ok-blur ok-rounded-xl ok-px-35 ok-py-25 ok-stack-15">
         {% for z in active_zones|sort(attribute='radius_miles') %}
@@ -37,15 +35,39 @@
         {% endfor %}
       </div>
 
-      <!-- Concentric radius circles -->
+      {% set pin = s.map_pin_coords if s else none %}
+      {% set geo = s.map_embed_geocode_query if s else none %}
+      {% set init_lat = s.latitude if s and s.latitude is not none else (pin[0] if pin else none) %}
+      {% set init_lng = s.longitude if s and s.longitude is not none else (pin[1] if pin else none) %}
+      {% if google_maps_api_key and s %}
+      <div id="adminZoneMap" class="w-100" data-maps-key="{{ google_maps_api_key }}" style="min-height:300px"></div>
+      <script type="application/json" id="adminZoneMapData">{{ {"lat": init_lat, "lng": init_lng, "geocode_query": geo if init_lat is none else none, "name": s.name, "address": s.full_address, "zones": map_zones, "save_url": "/admin/settings/map-pin" ~ qs}|tojson }}</script>
+      <div class="position-absolute ok-bottom-4 ok-right-4 ok-z-20 bg-black-55 ok-blur ok-rounded-xl ok-px-35 ok-py-25 ok-maxw-20rem">
+        <div class="text-white ok-fs-72rem fw-semibold ok-lh-tight ok-mb-1">Map pin</div>
+        <p class="text-w-70 ok-fs-7rem ok-lh-tight ok-mb-2">Drag the pin or click the map to set the delivery zone center.</p>
+        <form method="post" action="/admin/settings/map-pin{{ qs }}" id="adminZonePinForm" class="ok-stack-2">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <div class="d-flex gap-2">
+            <div class="flex-grow-1">
+              <label class="text-w-60 ok-fs-7rem d-block">Latitude</label>
+              <input id="adminZoneMapLat" name="latitude" type="number" step="any" class="zinput w-100" value="{{ init_lat if init_lat is not none else '' }}" required>
+            </div>
+            <div class="flex-grow-1">
+              <label class="text-w-60 ok-fs-7rem d-block">Longitude</label>
+              <input id="adminZoneMapLng" name="longitude" type="number" step="any" class="zinput w-100" value="{{ init_lng if init_lng is not none else '' }}" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-location-dot"></i> Save pin</button>
+        </form>
+      </div>
+      {% elif s %}
+      <div class="position-relative ok-fill zmap-grid ok-opacity-90" style="min-height:300px"></div>
       <svg viewBox="0 0 900 360" class="w-100 d-block position-relative z-0" style="max-height:360px" preserveAspectRatio="xMidYMid meet">
         {% for z in active_zones|sort(attribute='radius_miles', reverse=true) %}
         <circle cx="450" cy="180" r="{{ (z.radius_miles * scale)|round(1) }}"
                 fill="{{ z.color }}" fill-opacity="0.055" stroke="{{ z.color }}" stroke-width="2"></circle>
         {% endfor %}
       </svg>
-
-      <!-- Store pin + label (centred over the circles) -->
       <div class="position-absolute ok-fill ok-z-10 d-flex flex-column align-items-center justify-content-center pe-none">
         <span class="position-relative d-flex ok-h-4 ok-w-4">
           <span class="ok-ping position-absolute d-inline-flex h-100 w-100 rounded-pill bg-red-500 ok-opacity-60"></span>
@@ -54,16 +76,20 @@
         {% if s %}
         <div class="mt-2 bg-black-70 ok-blur ok-rounded-lg ok-px-3 ok-py-15 text-center">
           <div class="text-white ok-fs-sm fw-semibold ok-lh-tight">{{ s.name }}</div>
-          <div class="text-w-60 ok-fs-7rem ok-lh-tight">{{ s.address_line or s.full_address }}</div>
+          <div class="text-w-60 ok-fs-7rem ok-lh-tight">{{ s.full_address }}</div>
         </div>
         {% endif %}
       </div>
-
-      <!-- Live-map hint -->
-      <div class="position-absolute ok-bottom-4 ok-right-4 ok-z-20 bg-black-55 ok-blur ok-rounded-xl ok-px-35 py-2 ok-maxw-16rem">
+      <div class="position-absolute ok-bottom-4 ok-right-4 ok-z-20 bg-black-55 ok-blur ok-rounded-xl ok-px-35 py-2 ok-maxw-18rem">
+        {% if not google_maps_api_key %}
         <div class="text-white ok-fs-72rem fw-semibold ok-lh-tight">Google Maps integration</div>
         <a href="/admin/integrations{{ qs }}" class="text-yellow ok-fs-72rem ok-lh-tight ok-hov-underline">Add API key in Integrations to enable live map</a>
+        {% elif s and (s.latitude is none or s.longitude is none) %}
+        <div class="text-white ok-fs-72rem fw-semibold ok-lh-tight">Store coordinates missing</div>
+        <a href="/admin/locations{{ qs }}" class="text-yellow ok-fs-72rem ok-lh-tight ok-hov-underline">Set latitude &amp; longitude in Locations</a>
+        {% endif %}
       </div>
+      {% endif %}
     </div>
 
     <!-- Count + create -->
@@ -246,6 +272,20 @@
     if (document.readyState === 'complete') openFromHash();
     else window.addEventListener('load', openFromHash);
     window.addEventListener('hashchange', openFromHash);
+  })();
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin-zone-map.js') }}"></script>
+<script>
+  (function () {
+    function bootZoneMap() {
+      if (window.initAdminZoneMap) window.initAdminZoneMap();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootZoneMap);
+    else bootZoneMap();
+    document.addEventListener('pjax:complete', bootZoneMap);
   })();
 </script>
 {% endblock %}
