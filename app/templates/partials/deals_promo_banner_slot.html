@@ -1,0 +1,65 @@
+{% if promo_banner and promo_banner.placement == placement %}
+{% set _pbs = pb_page_style('site', 'promo_banner') %}
+{% set _headline_style = 'color: ' ~ promo_banner.text_color ~ '; font-size: ' ~ promo_banner.text_size ~ 'px;' %}
+{% if promo_banner.text_font %}{% set _headline_style = _headline_style ~ ' font-family: ' ~ promo_banner.text_font ~ ';' %}{% endif %}
+{% set _promo_cls = 'ok-deals-promo ok-deals-promo--' ~ promo_banner.width %}
+{% if promo_banner.border_style == 'blink' %}{% set _promo_cls = _promo_cls ~ ' ok-deals-promo--blink' %}
+{% elif promo_banner.border_style == 'static' %}{% set _promo_cls = _promo_cls ~ ' ok-deals-promo--border' %}{% endif %}
+{% if not promo_banner.use_image %}{% set _promo_cls = _promo_cls ~ ' ok-deals-promo--text-only' %}{% endif %}
+{% if promo_banner.show_subscribe %}{% set _promo_cls = _promo_cls ~ ' ok-deals-promo--has-sub' %}{% if not promo_banner.subscribe_bar_transparent %}{% set _promo_cls = _promo_cls ~ ' ok-deals-promo--sub-bar-solid' %}{% endif %}{% endif %}
+<div class="pb-sec" data-page="site" data-section="promo_banner" data-label="Deals promo banner" data-sectype="chrome"{% if _pbs %} style="{{ _pbs }}"{% endif %}>
+  {% if promo_banner.show_subscribe %}
+  <div class="{{ _promo_cls }} pb-t-keep" style="--ok-promo-h: {{ promo_banner.height }}px; --ok-promo-deals-size: {{ promo_banner.deals_link_size }}px; --ok-promo-email-size: {{ promo_banner.subscribe_input_size }}px; --ok-promo-btn-size: {{ promo_banner.subscribe_btn_size }}px; --ok-promo-m-headline: {{ promo_banner.mobile_text_size }}px; --ok-promo-m-deals: {{ promo_banner.mobile_deals_link_size }}px; --ok-promo-m-email: {{ promo_banner.mobile_subscribe_input_size }}px; --ok-promo-m-btn: {{ promo_banner.mobile_subscribe_btn_size }}px; --ok-promo-deals-link: {{ promo_banner.deals_link_color }}; --ok-promo-sub-border: {{ promo_banner.subscribe_border_color }}; --ok-promo-sub-input-color: {{ promo_banner.subscribe_input_color }}; --ok-promo-sub-placeholder: {{ promo_banner.subscribe_placeholder_color }}; --ok-promo-sub-btn-text: {{ promo_banner.subscribe_btn_text_color }}; --ok-promo-sub-btn-bg: {{ promo_banner.subscribe_btn_bg_color }}; --ok-promo-sub-bar-bg: {% if promo_banner.subscribe_bar_transparent %}transparent{% else %}{{ promo_banner.subscribe_bar_bg_color }}{% endif %};{% if not promo_banner.subscribe_bar_transparent %} background-color: {{ promo_banner.subscribe_bar_bg_color }};{% else %} background-color: transparent;{% endif %}{% if not promo_banner.use_image %} --ok-promo-bg: {{ promo_banner.bg_color }};{% endif %}">
+    <span class="ok-deals-promo-frame">
+      {% if promo_banner.use_image and promo_banner.image %}
+      <img src="{{ promo_banner.image | vasset }}" alt="" class="ok-deals-promo-img" style="object-position: {{ promo_banner.image_position }};" loading="lazy" decoding="async"{% if inline_edit %} data-ie-slot="{{ promo_banner_image_key }}" title="Click to change this picture"{% endif %}>
+      {% elif not promo_banner.use_image %}
+      <span class="ok-deals-promo-scrim ok-deals-promo-scrim--solid" aria-hidden="true"></span>
+      {% endif %}
+      <div class="ok-deals-promo-content">
+        <div class="ok-deals-promo-panel">
+          <div class="ok-deals-promo-copy">
+            {% if promo_banner.show_text and promo_banner.text %}
+            <p class="ok-deals-promo-headline" style="{{ _headline_style }}">
+              {% if inline_edit %}<span class="ok-ie" data-promo="text" title="Click to edit banner text">{{ promo_banner.text }}</span>{% else %}{{ promo_banner.text }}{% endif %}
+            </p>
+            {% endif %}
+            {% if promo_banner.show_deals_link and promo_banner.link %}
+            <a href="{{ promo_banner.link }}" class="ok-deals-promo-deals-cta"{% if inline_edit %} onclick="return false;"{% endif %}>{% if inline_edit %}<span class="ok-ie" data-pc="promo_banner_deals_link" title="Click to edit link label">{{ pc('promo_banner_deals_link', 'View deals') }}</span>{% else %}{{ pc('promo_banner_deals_link', 'View deals') }}{% endif %}</a>
+            {% endif %}
+          </div>
+          <div class="ok-deals-promo-signup">
+            {% if promo_banner.show_deals_link and promo_banner.link and not inline_edit %}
+            <a href="{{ promo_banner.link }}" class="ok-deals-promo-deals-cta ok-deals-promo-deals-cta--bar">{{ pc('promo_banner_deals_link_mobile', 'Deals') }}</a>
+            {% endif %}
+            <form method="post" action="/subscribe" class="ok-deals-promo-sub"{% if inline_edit %} onclick="return false;"{% endif %}>
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+              <input type="hidden" name="source" value="promo_banner">
+              <input type="hidden" name="redirect" value="/deals">
+              {% if current_store %}<input type="hidden" name="store_slug" value="{{ current_store.slug }}">{% endif %}
+              <label class="visually-hidden" for="okPromoSubEmail-{{ placement }}">Email for deals and promotions</label>
+              <input id="okPromoSubEmail-{{ placement }}" type="email" name="email" required autocomplete="email" placeholder="Email" class="ok-deals-promo-sub-input">
+              <button type="submit" class="ok-deals-promo-sub-btn">{% if inline_edit %}<span class="ok-ie" data-promo="subscribe_label" title="Click to edit button text">{{ promo_banner.subscribe_label }}</span>{% else %}{{ promo_banner.subscribe_label }}{% endif %}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </span>
+  </div>
+  {% else %}
+  <a href="{{ promo_banner.link }}" class="{{ _promo_cls }} pb-t-keep" style="--ok-promo-h: {{ promo_banner.height }}px;{% if not promo_banner.use_image %} --ok-promo-bg: {{ promo_banner.bg_color }};{% endif %}" aria-label="{{ promo_banner.text }}">
+    <span class="ok-deals-promo-frame">
+      {% if promo_banner.use_image and promo_banner.image %}
+      <img src="{{ promo_banner.image | vasset }}" alt="" class="ok-deals-promo-img" style="object-position: {{ promo_banner.image_position }};" loading="lazy" decoding="async"{% if inline_edit %} data-ie-slot="{{ promo_banner_image_key }}" title="Click to change this picture"{% endif %}>
+      <span class="ok-deals-promo-overlay" style="opacity: {{ promo_banner.overlay }};"></span>
+      {% endif %}
+      {% if promo_banner.show_text and promo_banner.text %}
+      <span class="ok-deals-promo-text" style="{{ _headline_style }}">{% if inline_edit %}<span class="ok-ie" data-promo="text" title="Click to edit banner text">{{ promo_banner.text }}</span>{% else %}{{ promo_banner.text }}{% endif %}</span>
+      {% elif inline_edit %}
+      <span class="ok-deals-promo-text" style="{{ _headline_style }}"><span class="ok-ie" data-promo="text" title="Click to edit banner text">{{ promo_banner.text }}</span></span>
+      {% endif %}
+    </span>
+  </a>
+  {% endif %}
+</div>
+{% endif %}

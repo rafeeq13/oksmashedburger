@@ -1,0 +1,65 @@
+<section id="mobile-header-chip" class="ok-mt-0">
+  <h3 class="ok-h3 mb-1">Mobile promo image (below header)</h3>
+  <p class="text-muted-warm ok-fs-sm ok-mb-3">
+    Phones only: full-width strip under the navigation bar. Tap opens your deals link. (No longer shown inside the header.)
+  </p>
+
+  <form id="mobileChipForm" method="post" action="/admin/mobile-header-deals" enctype="multipart/form-data" class="ok-card ok-p-5 ok-stack-4 ok-maxw-36rem">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="enabled" value="1" {% if mobile_chip.enabled %}checked{% endif %}>
+      <span class="fw-semibold">Show mobile promo strip</span>
+    </label>
+
+    {% set selected_pages = mobile_chip.show_pages %}
+    {% set legend = 'Show mobile promo on these pages' %}
+    {% include "admin/_promo_page_checkboxes.html" %}
+
+    <div class="ok-grid ok-grid-2 gap-3">
+      <div>
+        <label class="ok-label" for="chip_width_px">Display width (px)</label>
+        <input id="chip_width_px" name="width_px" type="number" min="280" max="1200" step="1" required class="ok-input w-100" value="{{ mobile_chip.width_px | default(1200) }}">
+      </div>
+      <div>
+        <label class="ok-label" for="chip_height_px">Display height (px)</label>
+        <input id="chip_height_px" name="height_px" type="number" min="32" max="240" step="1" required class="ok-input w-100" value="{{ mobile_chip.height_px | default(mobile_chip.display_height_px) | default(72) }}">
+      </div>
+    </div>
+
+    <div class="ok-mt-2">
+      <label class="d-flex align-items-center gap-2 ok-pointer">
+        <input type="checkbox" name="blink_enabled" value="1" id="chip_blink_enabled" {% if mobile_chip.blink_enabled %}checked{% endif %}>
+        <span class="fw-semibold">Blinking animation</span>
+      </label>
+      <label class="ok-label ok-mt-2" for="chip_blink_duration_s">Blink speed (seconds per pulse)</label>
+      <input id="chip_blink_duration_s" name="blink_duration_s" type="number" step="0.05" min="0.4" max="3" class="ok-input w-100" value="{{ mobile_chip.blink_duration_s }}">
+    </div>
+
+    <div>
+      <label class="ok-label" for="chip_image_file">Upload image</label>
+      <input id="chip_image_file" name="image_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" class="ok-input w-100">
+      <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Target <b id="chipDimUploadHint">{{ mobile_chip.upload_size }}</b> px when possible.</p>
+    </div>
+    <div>
+      <label class="ok-label" for="chip_image">Or image URL</label>
+      <input id="chip_image" name="image" type="text" class="ok-input w-100" value="{{ mobile_chip.image }}" placeholder="/static/img/uploads/…" autocomplete="off">
+    </div>
+
+    {% if mobile_chip.image %}
+    <div>
+      <p class="ok-label mb-1">Preview ({{ mobile_chip.display_size }} px)</p>
+      <div class="border ok-bc-varokline ok-rounded-lg ok-p-3 d-inline-block w-100" style="max-width: {{ mobile_chip.width_px }}px;">
+        <img src="{{ mobile_chip.image | vasset }}" alt="" class="w-100" style="height: {{ mobile_chip.height_px }}px; object-fit: cover;">
+      </div>
+    </div>
+    {% endif %}
+
+    <div>
+      <label class="ok-label" for="chip_link">Link when tapped</label>
+      <input id="chip_link" name="link" class="ok-input w-100" value="{{ mobile_chip.link }}" placeholder="/deals">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save mobile promo</button>
+  </form>
+</section>

@@ -1,6 +1,9 @@
 {# Inline text editor | rendered only when an admin adds ?edit=1 to a page.
 Every pc() string is already wrapped in .ok-ie by the context processor;
 this turns those into contenteditables and saves each on blur. #}
+{% if promo_banner_inline_cfg %}
+<script>window.okPromoBannerCfg = {{ promo_banner_inline_cfg | tojson }};</script>
+{% endif %}
 <script src="{{ url_for('static', filename='js/contrast.js') }}"></script>
 <div id="okIeBar">
   <span class="ok-ie-dot"></span>
@@ -18,6 +21,7 @@ this turns those into contenteditables and saves each on blur. #}
     <option value="footer">Footer</option>
     <option value="item_modal">Item quick-add sheet</option>
     <option value="location_modal">Location picker</option>
+    <option value="promo_banner">Deals promo banner</option>
   </select>
   <a href="{{ request.path }}" class="ok-ie-exit">Done</a>
 </div>
@@ -499,6 +503,27 @@ this turns those into contenteditables and saves each on blur. #}
     opacity: 1;
   }
 
+  /* Thin promo strip: floating Design pill covered the whole bar */
+  .pb-sec[data-section="promo_banner"] > .ok-ie-secbtn {
+    display: none;
+  }
+
+  .ok-ie-promo-fab {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9600;
+    border: 0;
+    border-radius: 999px;
+    padding: .5rem 1rem;
+    font: 700 12px/1 Quicksand, sans-serif;
+    background: #101820;
+    color: #fff;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+    cursor: pointer;
+  }
+
   #okIeDesign {
     position: fixed;
     top: 56px;
@@ -678,20 +703,24 @@ this turns those into contenteditables and saves each on blur. #}
     }
     function closeSheet() { sheet.classList.remove("is-open"); current = null; }
 
-    document.querySelectorAll("img, video").forEach(function (el) {
-      // a slot with nothing in it yet renders the styled placeholder, which
-      // carries its key as an attribute instead of on the URL
-      var k = keyOf(el.getAttribute("src") || el.getAttribute("poster") || "")
-        || el.getAttribute("data-ie-slot");
-      if (!k) return;
-      el.classList.add("ok-ie-img");
-      el.setAttribute("data-ie-img", k);
-      el.setAttribute("title", "Click to change this picture");
-      el.addEventListener("click", function (e) {
-        e.preventDefault(); e.stopPropagation();
-        openSheet(el, k);
+    function wireEditableImages(root) {
+      (root || document).querySelectorAll("img, video").forEach(function (el) {
+        if (el.dataset.ieImgWired) return;
+        var k = keyOf(el.getAttribute("src") || el.getAttribute("poster") || "")
+          || el.getAttribute("data-ie-slot");
+        if (!k) return;
+        el.dataset.ieImgWired = "1";
+        el.classList.add("ok-ie-img");
+        el.setAttribute("data-ie-img", k);
+        el.setAttribute("title", "Click to change this picture");
+        el.addEventListener("click", function (e) {
+          e.preventDefault(); e.stopPropagation();
+          openSheet(el, k);
+        });
       });
-    });
+    }
+    wireEditableImages(document);
+    window.okIeWireImages = wireEditableImages;
 
     function saveImage(body) {
       say("Saving…");
@@ -714,6 +743,7 @@ this turns those into contenteditables and saves each on blur. #}
           say("Saved", 1600);
           closeSheet();
           if (!d.url) location.reload();       // back to the built-in default
+          if (window.okIeRefreshPromoPreview) window.okIeRefreshPromoPreview();
         })
         .catch(function (err) { say(err.message || "Could not save", 4000); });
     }
@@ -1257,6 +1287,289 @@ this turns those into contenteditables and saves each on blur. #}
     }
   }
 
+  function iePreviewFrame() {
+    var f = document.getElementById("okIeFrame");
+    if (!f || !document.body.classList.contains("ok-ie-device-preview")) return null;
+    return f;
+  }
+
+  function promoLiveScope() {
+    var f = iePreviewFrame();
+    if (f && f.contentDocument) {
+      var sec = f.contentDocument.querySelector('.pb-sec[data-section="promo_banner"]');
+      if (sec) return { doc: f.contentDocument, sec: sec };
+    }
+    var sec = document.querySelector('.pb-sec[data-section="promo_banner"]');
+    return { doc: document, sec: sec };
+  }
+
+  function promoLiveRoot() {
+    var sc = promoLiveScope();
+    if (!sc.sec) return null;
+    return sc.sec.querySelector(".ok-offer-modal__card")
+      || sc.sec.querySelector(".ok-deals-promo--has-sub")
+      || sc.sec.querySelector(".ok-deals-promo");
+  }
+
+  function refreshPromoPreview() {
+    var f = iePreviewFrame();
+    if (!f) return;
+    var u = f.getAttribute("src");
+    if (u) f.src = u;
+  }
+  window.okIeRefreshPromoPreview = refreshPromoPreview;
+
+  function savePromoField(field, value, reload) {
+    say("Saving…");
+    return fetch("/admin/inline-promo-banner", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
+      body: JSON.stringify({ field: field, value: value })
+    })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function () {
+        say("Saved", 1600);
+        refreshPromoPreview();
+        if (reload) location.reload();
+      })
+      .catch(function (e) { say("Could not save (" + e + ")", 4000); });
+  }
+
+  function buildPromoBannerControls(el) {
+    var cfg = window.okPromoBannerCfg || {};
+    var head = document.createElement("div");
+    head.className = "grp";
+    head.textContent = "Promo banner";
+    dBody.appendChild(head);
+    var hint = document.createElement("p");
+    hint.className = "hint ok-fs-sm";
+    hint.innerHTML = "Changes apply to the customer’s selected location" +
+      (cfg.store_name ? (" (“" + cfg.store_name + "”)") : "") +
+      ". Click banner text or picture to edit. Phone preview: use controls here (bar → Deals promo banner). " +
+      '<a href="/admin/promo-banner" class="text-ok-yellow">Full settings</a>';
+    dBody.appendChild(hint);
+
+    function row(label, input) {
+      var w = document.createElement("div");
+      w.className = "ok-mb-3";
+      var lab = document.createElement("label");
+      lab.className = "ok-label";
+      lab.textContent = label;
+      w.appendChild(lab);
+      w.appendChild(input);
+      dBody.appendChild(w);
+      return input;
+    }
+
+    var en = document.createElement("input");
+    en.type = "checkbox";
+    en.checked = !!cfg.enabled;
+    en.addEventListener("change", function () { savePromoField("enabled", en.checked); });
+    row("Show on site", en);
+
+    var place = document.createElement("select");
+    place.className = "ok-select w-100";
+    [["above_header", "Above navigation"], ["below_header", "Below navigation"], ["above_footer", "Above footer"]].forEach(function (o) {
+      var opt = document.createElement("option");
+      opt.value = o[0]; opt.textContent = o[1];
+      if (cfg.placement === o[0]) opt.selected = true;
+      place.appendChild(opt);
+    });
+    place.addEventListener("change", function () { savePromoField("placement", place.value, true); });
+    row("Position on page", place);
+
+    var wid = document.createElement("select");
+    wid.className = "ok-select w-100";
+    [["container", "Centered width"], ["full", "Full screen width"]].forEach(function (o) {
+      var opt = document.createElement("option");
+      opt.value = o[0]; opt.textContent = o[1];
+      if (cfg.width === o[0]) opt.selected = true;
+      wid.appendChild(opt);
+    });
+    wid.addEventListener("change", function () {
+      var root = promoLiveRoot();
+      if (root) {
+        root.classList.toggle("ok-deals-promo--full", wid.value === "full");
+        root.classList.toggle("ok-deals-promo--container", wid.value !== "full");
+      }
+      savePromoField("width", wid.value);
+    });
+    row("Banner width", wid);
+
+    var h = document.createElement("input");
+    h.type = "number"; h.min = "16"; h.max = "220"; h.className = "ok-input w-100";
+    h.value = cfg.height || 88;
+    h.addEventListener("input", function () {
+      var px = (parseInt(h.value, 10) || 88) + "px";
+      var link = promoLiveRoot();
+      if (link) link.style.setProperty("--ok-promo-h", px);
+    });
+    h.addEventListener("change", function () { savePromoField("height", parseInt(h.value, 10) || 88); });
+    row("Height (px)", h);
+
+    var foc = document.createElement("select");
+    foc.className = "ok-select w-100";
+    ["center center", "center top", "center bottom", "left center", "right center"].forEach(function (v) {
+      var opt = document.createElement("option");
+      opt.value = v; opt.textContent = v.replace(" center", "");
+      if (cfg.image_position === v) opt.selected = true;
+      foc.appendChild(opt);
+    });
+    foc.addEventListener("change", function () {
+      var img = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-img");
+      if (img) img.style.objectPosition = foc.value;
+      savePromoField("image_position", foc.value);
+    });
+    row("Image crop focus", foc);
+
+    var lnk = document.createElement("input");
+    lnk.className = "ok-input w-100"; lnk.placeholder = "/deals";
+    lnk.value = cfg.link || "";
+    lnk.addEventListener("change", function () {
+      promoLiveScope().doc.querySelectorAll(".ok-deals-promo-deals-cta").forEach(function (a) {
+        a.setAttribute("href", lnk.value || "/deals");
+      });
+      savePromoField("link", lnk.value);
+    });
+    row("Link when tapped", lnk);
+
+    function promoColorField(field, label, cssVar, apply) {
+      var inp = document.createElement("input");
+      inp.type = "color";
+      inp.className = "ok-input w-100";
+      inp.value = cfg[field] || "#ffffff";
+      inp.addEventListener("input", function () {
+        var root = promoLiveRoot();
+        if (root && cssVar) root.style.setProperty(cssVar, inp.value);
+        if (apply) apply(inp.value, promoLiveScope().sec || el);
+      });
+      inp.addEventListener("change", function () { savePromoField(field, inp.value); });
+      row(label, inp);
+    }
+
+    promoColorField("text_color", "Headline colour", null, function (v, sec) {
+      var sc = promoLiveScope();
+      (sc.sec || sec).querySelectorAll(".ok-deals-promo-headline, .ok-deals-promo-text").forEach(function (n) {
+        n.style.color = v;
+      });
+    });
+
+    if (cfg.show_subscribe) {
+      promoColorField("deals_link_color", "View deals link", "--ok-promo-deals-link", function (v) {
+        promoLiveScope().doc.querySelectorAll(".ok-deals-promo-deals-cta").forEach(function (a) { a.style.color = v; });
+      });
+      promoColorField("subscribe_placeholder_color", "Email placeholder", "--ok-promo-sub-placeholder", null);
+      promoColorField("subscribe_btn_text_color", "Button text", "--ok-promo-sub-btn-text", function (v) {
+        var b = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-sub-btn");
+        if (b) b.style.color = v;
+      });
+      promoColorField("subscribe_btn_bg_color", "Button background", "--ok-promo-sub-btn-bg", function (v) {
+        var b = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-sub-btn");
+        if (b) b.style.backgroundColor = v;
+      });
+      promoColorField("subscribe_border_color", "Email field border", "--ok-promo-sub-border", function (v) {
+        var form = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-sub");
+        if (form) form.style.borderColor = v;
+      });
+      promoColorField("subscribe_input_color", "Email text (typed)", "--ok-promo-sub-input-color", function (v) {
+        var input = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-sub-input");
+        if (input) input.style.color = v;
+      });
+      promoColorField("subscribe_bar_bg_color", "Banner bar background", "--ok-promo-sub-bar-bg", function (v) {
+        var root = promoLiveRoot();
+        if (root && !cfg.subscribe_bar_transparent) {
+          root.style.backgroundColor = v;
+          var fr = root.querySelector(".ok-deals-promo-frame");
+          if (fr) fr.style.backgroundColor = v;
+        }
+      });
+      function promoMobilePx(field, label, cssVar) {
+        var inp = document.createElement("input");
+        inp.type = "number";
+        inp.min = "8";
+        inp.max = "28";
+        inp.className = "ok-input w-100";
+        inp.value = cfg[field] || 11;
+        inp.addEventListener("input", function () {
+          var root = promoLiveRoot();
+          var px = (parseInt(inp.value, 10) || 11) + "px";
+          if (root && cssVar) root.style.setProperty(cssVar, px);
+        });
+        inp.addEventListener("change", function () {
+          savePromoField(field, parseInt(inp.value, 10) || 11);
+        });
+        row(label, inp);
+      }
+      var mHint = document.createElement("p");
+      mHint.className = "hint ok-fs-sm ok-mt-2";
+      mHint.textContent = "Mobile text sizes (px) — use phone preview";
+      dBody.appendChild(mHint);
+      promoMobilePx("mobile_text_size", "Headline (if shown)", "--ok-promo-m-headline");
+      promoMobilePx("mobile_deals_link_size", "Deals link", "--ok-promo-m-deals");
+      promoMobilePx("mobile_subscribe_input_size", "Email field", "--ok-promo-m-email");
+      promoMobilePx("mobile_subscribe_btn_size", "Button", "--ok-promo-m-btn");
+      var barTrans = document.createElement("input");
+      barTrans.type = "checkbox";
+      barTrans.checked = !!cfg.subscribe_bar_transparent;
+      barTrans.addEventListener("change", function () {
+        var root = promoLiveRoot();
+        if (root) {
+          root.style.setProperty(
+            "--ok-promo-sub-bar-bg",
+            barTrans.checked ? "transparent" : (cfg.subscribe_bar_bg_color || "#0c0c0c")
+          );
+        }
+        savePromoField("subscribe_bar_transparent", barTrans.checked, true);
+      });
+      row("Transparent bar background", barTrans);
+    }
+
+    var ov = document.createElement("input");
+    ov.type = "range"; ov.min = "0"; ov.max = "0.85"; ov.step = "0.05";
+    ov.className = "w-100"; ov.value = cfg.overlay != null ? cfg.overlay : 0.45;
+    ov.addEventListener("input", function () {
+      var lay = promoLiveScope().sec && promoLiveScope().sec.querySelector(".ok-deals-promo-overlay");
+      if (lay) lay.style.opacity = ov.value;
+    });
+    ov.addEventListener("change", function () { savePromoField("overlay", parseFloat(ov.value)); });
+    row("Dark overlay", ov);
+
+    var st = document.createElement("input");
+    st.type = "checkbox"; st.checked = !!cfg.show_text;
+    st.addEventListener("change", function () { savePromoField("show_text", st.checked, true); });
+    row("Show text on banner", st);
+
+    var tsz = document.createElement("input");
+    tsz.type = "number"; tsz.min = "10"; tsz.max = "48"; tsz.className = "ok-input w-100";
+    tsz.value = cfg.text_size || 15;
+    tsz.addEventListener("change", function () {
+      promoLiveScope().doc.querySelectorAll(".ok-deals-promo-headline, .ok-deals-promo-text").forEach(function (t) {
+        t.style.fontSize = (parseInt(tsz.value, 10) || 15) + "px";
+      });
+      savePromoField("text_size", parseInt(tsz.value, 10) || 15);
+    });
+    row("Text size (px)", tsz);
+
+    var bdr = document.createElement("select");
+    bdr.className = "ok-select w-100";
+    [["none", "None"], ["static", "Border only"], ["blink", "Whole banner blinks"]].forEach(function (o) {
+      var opt = document.createElement("option");
+      opt.value = o[0]; opt.textContent = o[1];
+      var cur = cfg.border_style || (cfg.blink_border ? "blink" : "none");
+      if (cur === o[0]) opt.selected = true;
+      bdr.appendChild(opt);
+    });
+    bdr.addEventListener("change", function () {
+      var a = promoLiveRoot();
+      if (a) {
+        a.classList.toggle("ok-deals-promo--blink", bdr.value === "blink");
+        a.classList.toggle("ok-deals-promo--border", bdr.value === "static");
+      }
+      savePromoField("border_style", bdr.value);
+    });
+    row("Attention effect", bdr);
+  }
+
   function buildPanel(el) {
     currentSec = el;
     dName.textContent = el.getAttribute("data-label") || el.getAttribute("data-section") || "Section";
@@ -1266,6 +1579,9 @@ this turns those into contenteditables and saves each on blur. #}
     screenNote.textContent = "Screen: " + okIeScreenName() +
       " - changes here only apply to this screen.";
     dBody.appendChild(screenNote);
+    if (el.getAttribute("data-section") === "promo_banner") {
+      buildPromoBannerControls(el);
+    }
     /* Text first. People open this panel because they clicked on words, and
        the words are what they came to change; the section's background and
        padding are the rarer job. It used to sit under eight other groups, so
@@ -1727,6 +2043,7 @@ this turns those into contenteditables and saves each on blur. #}
 
   document.querySelectorAll(".pb-sec[data-section]").forEach(function (el) {
     if (getComputedStyle(el).position === "static") el.style.position = "relative";
+    if (el.getAttribute("data-section") === "promo_banner") return;
     var b = document.createElement("button");
     b.type = "button";
     b.className = "ok-ie-secbtn";
@@ -1748,6 +2065,7 @@ this turns those into contenteditables and saves each on blur. #}
     var hd = document.querySelector(".pb-sec[data-section='header']");
     var chrome = 46 + (hd ? hd.getBoundingClientRect().height : 0) + 8;
     document.querySelectorAll(".pb-sec[data-section]").forEach(function (sec) {
+      if (sec.getAttribute("data-section") === "promo_banner") return;
       // :scope keeps a nested section's button from being mistaken for this
       // one's | the menu page nests a category section inside the list
       var btn = sec.querySelector(":scope > .ok-ie-secbtn");
@@ -1777,6 +2095,12 @@ this turns those into contenteditables and saves each on blur. #}
     var el = document.querySelector('.pb-sec[data-section="' + jump.value + '"]');
     if (el) buildPanel(el);
     jump.value = "";
+  });
+
+  window.addEventListener("message", function (e) {
+    if (e.data !== "okOpenPromoPanel") return;
+    var sec = document.querySelector('.pb-sec[data-section="promo_banner"]');
+    if (sec) buildPanel(sec);
   });
 
   function resetDesign(el, wholePage) {
@@ -1832,12 +2156,17 @@ this turns those into contenteditables and saves each on blur. #}
         // two kinds of editable string: a Page Content field, and a home
         // section's own words. They save to different places.
         var isSection = el.hasAttribute("data-sc");
-        fetch(isSection ? "/admin/inline-section-text" : "/admin/inline-save", {
+        var promoField = el.getAttribute("data-promo");
+        var url = isSection ? "/admin/inline-section-text"
+          : (promoField ? "/admin/inline-promo-banner" : "/admin/inline-save");
+        var payload = isSection
+          ? { section: el.getAttribute("data-scsec"), field: el.getAttribute("data-sc"), value: val }
+          : (promoField ? { field: promoField, value: val }
+            : { key: el.getAttribute("data-pc"), value: val });
+        fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-CSRF-Token": "{{ csrf_token }}" },
-          body: JSON.stringify(isSection
-            ? { section: el.getAttribute("data-scsec"), field: el.getAttribute("data-sc"), value: val }
-            : { key: el.getAttribute("data-pc"), value: val })
+          body: JSON.stringify(payload)
         })
           .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
           .then(function () {
@@ -1880,6 +2209,17 @@ this turns those into contenteditables and saves each on blur. #}
       if (bar) bar.style.display = "none";
       document.body.style.paddingTop = "0";
       document.documentElement.style.setProperty("--ok-chrome-top", "0px");
+      if (document.querySelector('.pb-sec[data-section="promo_banner"]')) {
+        var fab = document.createElement("button");
+        fab.type = "button";
+        fab.className = "ok-ie-promo-fab";
+        fab.textContent = "Banner settings";
+        fab.addEventListener("click", function () {
+          try { parent.postMessage("okOpenPromoPanel", "*"); } catch (err) { }
+        });
+        document.body.appendChild(fab);
+      }
+      if (window.okIeWireImages) window.okIeWireImages(document);
       return;
     }
 
@@ -1928,8 +2268,19 @@ this turns those into contenteditables and saves each on blur. #}
 
       document.body.classList.add("ok-ie-device-preview");
       if (stage) stage.hidden = false;
-      if (frame && frame.getAttribute("src") !== embedUrl()) frame.src = embedUrl();
+      if (frame && frame.getAttribute("src") !== embedUrl()) {
+        frame.src = embedUrl();
+      }
       requestAnimationFrame(fitPreview);
+    }
+
+    if (frame) {
+      frame.addEventListener("load", function () {
+        var doc = frame.contentDocument;
+        if (!doc) return;
+        if (window.okIeWireImages) window.okIeWireImages(doc);
+        if (window.okIeRefresh) window.okIeRefresh(doc);
+      });
     }
 
     devices.querySelectorAll("button").forEach(function (b) {

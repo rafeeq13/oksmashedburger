@@ -353,6 +353,66 @@
     });
   }
 
+  function reverseGeocode(apiKey, lat, lng) {
+    return loadMaps(apiKey).then(function () {
+      return new Promise(function (resolve, reject) {
+        if (!window.google || !google.maps || !google.maps.Geocoder) {
+          reject(new Error("no geocoder"));
+          return;
+        }
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, status) {
+          if (status === "OK" && results && results[0]) {
+            resolve(results[0].formatted_address || "");
+          } else {
+            reject(new Error(status || "geocode failed"));
+          }
+        });
+      });
+    });
+  }
+
+  function useDeviceLocation(root, btn) {
+    if (!navigator.geolocation) {
+      showStatus(root, "Location is not available in this browser.", true);
+      return;
+    }
+    var apiKey = root.getAttribute("data-maps-key");
+    var search = root.querySelector("[data-address-search]");
+    if (!apiKey) {
+      showStatus(root, "Address search is not configured for this store.", true);
+      return;
+    }
+    var original = btn ? btn.innerHTML : "";
+    if (btn) {
+      btn.setAttribute("aria-busy", "true");
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating…';
+    }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      loadMaps(apiKey).then(function () {
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: lat, lng: lng } }, function (results, status) {
+          if (status === "OK" && results && results[0]) {
+            fillFromPlace(root, results[0], search);
+          } else {
+            if (search) search.value = "Your location";
+            setVal(root, "address_lat", String(lat));
+            setVal(root, "address_lng", String(lng));
+            root.dispatchEvent(new CustomEvent("ok-address-filled", { bubbles: true }));
+          }
+          if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
+        });
+      }).catch(function () {
+        if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
+        showStatus(root, "Could not load maps for your location.", true);
+      });
+    }, function () {
+      if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
+      showStatus(root, "Could not get your location. Please allow access and try again.", true);
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  }
+
   function initRoot(root) {
     if (!root || root._addrInit) return;
     var apiKey = root.getAttribute("data-maps-key");
@@ -360,6 +420,14 @@
     var list = root.querySelector("[data-address-predictions]");
     if (!apiKey || !search || !list) return;
     root._addrInit = true;
+
+    var geoBtn = root.querySelector("[data-address-geo]");
+    if (geoBtn) {
+      geoBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        useDeviceLocation(root, geoBtn);
+      });
+    }
 
     loadMaps(apiKey).then(function () {
       attachAutocomplete(root, search, list);
@@ -382,4 +450,5 @@
   window.OK.initAddressAutocomplete = initRoot;
   window.OK.initLocationPicker = initLocationPicker;
   window.OK.preloadMaps = function (apiKey) { return apiKey ? loadMaps(apiKey) : Promise.resolve(); };
+  window.OK.reverseGeocode = reverseGeocode;
 })();

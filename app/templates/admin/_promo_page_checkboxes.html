@@ -1,0 +1,13 @@
+{% set _selected = selected_pages if selected_pages is defined else [] %}
+<fieldset class="ok-mt-2">
+  <legend class="ok-label fw-semibold mb-2">{{ legend|default('Show on these pages') }}</legend>
+  <p class="ok-fs-xs text-muted-warm ok-mb-2 mb-0">Only checked pages show this promo. Turn off <b>Show banner on site</b> to hide it everywhere.</p>
+  <div class="ok-grid ok-grid-2 gap-2">
+    {% for pid, label in promo_page_choices|default([], true) %}
+    <label class="d-flex align-items-center gap-2 ok-pointer ok-fs-sm mb-0">
+      <input type="checkbox" name="show_pages" value="{{ pid }}" {% if pid in _selected %}checked{% endif %}>
+      <span>{{ label }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</fieldset>

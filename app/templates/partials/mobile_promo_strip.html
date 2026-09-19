@@ -1,0 +1,9 @@
+{% if mobile_promo_strip %}
+<aside class="ok-mob-promo-strip d-md-none" aria-label="Deals promotion" data-mobile-promo-strip
+  style="--ok-mob-promo-w: {{ mobile_promo_strip.width_px }}px; --ok-mob-promo-h: {{ mobile_promo_strip.height_px }}px; --ok-mob-promo-blink-dur: {{ mobile_promo_strip.blink_duration_s }}s;">
+  <a href="{{ mobile_promo_strip.link }}" class="ok-mob-promo-strip__link{% if not mobile_promo_strip.blink_enabled %} ok-mob-promo-strip--steady{% endif %}">
+    <img src="{{ mobile_promo_strip.image | vasset }}" alt="" class="ok-mob-promo-strip__img"
+      width="{{ mobile_promo_strip.width_px }}" height="{{ mobile_promo_strip.height_px }}" decoding="async" loading="lazy">
+  </a>
+</aside>
+{% endif %}

@@ -49,6 +49,9 @@ endif -%}
           ahead{% endif %}</div>
         <div class="ok-fs-xs text-muted-warm ok-mt-05">Hours today: {{ admin_store.today_hours }}{% if current_user and current_user.role and current_user.role.name == 'super_admin' %} · <a
             href="/admin/settings{{ qs }}#hours" class="link-underline">Edit hours</a>{% endif %}</div>
+        {% if not admin_store.open_now and admin_store.asap_unavailable_reason %}
+        <div class="ok-fs-xs fw-semibold text-ok-red ok-mt-05">{{ admin_store.asap_unavailable_reason }}</div>
+        {% endif %}
       </div>
     </div>
     <div class="d-flex flex-wrap gap-2">

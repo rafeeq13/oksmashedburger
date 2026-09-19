@@ -56,6 +56,8 @@ _PATH_RULES = sorted(
 _EXTRA_PATH_RULES = (
     ("/admin/catalog", "menu"),
     ("/admin/inline-image", "images"),
+    ("/admin/promo-banner", "images"),
+    ("/admin/inline-promo-banner", "images"),
     ("/admin/inline-section-text", "pages"),
     ("/admin/inline-style", "pages"),
     ("/admin/email-image", "email_templates"),

@@ -3,7 +3,10 @@
 
 {% block admin %}
 <h2 class="ok-h2 mb-1">Coupons &amp; promotions</h2>
-<p class="text-muted-warm ok-fs-sm ok-mb-5">Brand-wide promo codes customers can apply at checkout.</p>
+<p class="text-muted-warm ok-fs-sm ok-mb-5">
+  Promo codes and automatic deals. Set <b>Location</b> to one store for a deal only at that restaurant, or leave <b>All locations</b> for every store.
+  {% if coupon_filter_store %}Showing deals for <b>{{ coupon_filter_store.name }}</b> plus brand-wide offers.{% elif can_switch %}Use <b>?store=</b> in the URL or the location switcher to focus one store.{% endif %}
+</p>
 
 <form method="post" action="/admin/coupons{{ qs }}" enctype="multipart/form-data" class="ok-card ok-p-5 mb-4 ok-grid ok-grid-sm-2 ok-grid-lg-6 ok-gap-3 align-items-end">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">

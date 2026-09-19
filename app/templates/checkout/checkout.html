@@ -47,13 +47,16 @@
         <!-- address (delivery only | hidden for pickup by app.js) -->
         <div class="ok-mb-5" data-address-row data-address-autocomplete{% if google_maps_api_key %} data-maps-key="{{ google_maps_api_key }}"{% endif %}>
           <label class="ok-label" for="address_search">Search delivery address <span class="text-ok-red fw-normal" aria-hidden="true">*</span></label>
-          <div class="ok-address-search-wrap position-relative ok-mb-3">
+          <div class="ok-address-search-wrap position-relative ok-mb-2">
             <div class="d-flex align-items-center gap-2 ok-input">
               <span class="text-muted-warm flex-shrink-0" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
               <input id="address_search" name="address_search" data-address-search type="search" autocomplete="off" class="w-100 bg-transparent ok-nofocus ok-fs-base" placeholder="Start typing your address…" value="{{ addr_search }}">
             </div>
             <ul data-address-predictions class="ok-address-predictions d-none" role="listbox" aria-label="Address suggestions"></ul>
           </div>
+          <a href="#" role="button" data-address-geo class="ok-geo-link ok-mb-3">
+            <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i> Use my current location
+          </a>
           <div class="ok-grid ok-grid-sm-2 ok-gap-3">
             <div class="ok-gridco-span2span2-sm">
               <label class="ok-label" for="address_line1">Street address</label>
@@ -118,7 +121,7 @@
         <div class="ok-grid ok-grid-sm-2 ok-gap-3">
           <div><label class="ok-label" for="name">Name</label><input id="name" name="name" required class="ok-input" value="{{ form.get('name') or (user.full_name if user else '') }}" placeholder="Jordan Miller"></div>
           <div><label class="ok-label" for="phone">Phone</label><input id="phone" name="phone" class="ok-input" value="{{ form.get('phone') or (user.phone if user else '') }}" placeholder="(215) 555-0100"></div>
-          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="email">Email</label><input id="email" name="email" type="email" class="ok-input" value="{{ form.get('email') or (user.email if user else '') }}" placeholder="you@email.com"></div>
+          <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="email">Email <span class="text-muted-warm fw-normal">(required)</span></label><input id="email" name="email" type="email" required autocomplete="email" class="ok-input" value="{{ form.get('email') or (user.email if user else '') }}" placeholder="you@email.com"></div>
           <div class="ok-gridco-span2span2-sm"><label class="ok-label" for="notes">Order notes <span class="text-muted-warm fw-normal">(optional)</span></label><textarea id="notes" name="notes" rows="2" class="ok-textarea" placeholder="Gate code, allergies, no onions…">{{ form.get('notes', '') }}</textarea></div>
         </div>
       </section>
@@ -646,6 +649,16 @@ if (typeof fbq === "function") {
       if (window.OK && OK.toast) OK.toast(msg);
       return;
     }
+    var emailVal = billingDetails().email;
+    if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      e.preventDefault();
+      var emailInput = document.getElementById("email");
+      if (emailInput) emailInput.focus();
+      var emailMsg = "Please enter a valid email address before paying.";
+      if (window.OK && OK.toast) OK.toast(emailMsg);
+      else alert(emailMsg);
+      return;
+    }
     e.preventDefault();
     applyTip();
     var btn = form.querySelector('button[type="submit"]');
@@ -658,7 +671,7 @@ if (typeof fbq === "function") {
         "Content-Type": "application/json",
         "X-CSRF-Token": csrf ? csrf.value : ""
       },
-      body: JSON.stringify({ amount: checkoutTotal() })
+      body: JSON.stringify({ amount: checkoutTotal(), email: emailVal })
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {

@@ -7,6 +7,7 @@ from flask import url_for
 
 from app.extensions import db
 from app.integrations import smtp_gateway
+from app.services.email_delivery import is_blocked, is_valid_email
 from app.models.notification import Notification
 from app.models.store import Store
 from app.models import email_templates as et
@@ -31,15 +32,24 @@ def sending_store(preferred=None):
 
 def business_inbox(store=None):
     store = store or sending_store()
+    addr = ""
     if store and store.email:
-        return store.email
-    cfg = smtp_gateway.store_smtp_config(store)
-    return cfg.get("from_email") or ""
+        addr = (store.email or "").strip()
+    if not addr:
+        cfg = smtp_gateway.store_smtp_config(store)
+        addr = (cfg.get("from_email") or "").strip()
+    if not is_valid_email(addr) or is_blocked(addr):
+        return ""
+    return addr
 
 
 def send(to, subject, body, event, store=None, attachment=None, html=None, headers=None):
+    to = (to or "").strip()
     if not to:
         return {"status": "skipped", "raw": {"error": "no recipient"}}
+    if is_blocked(to) or not is_valid_email(to):
+        print("[mail] %s -> %s (skipped: blocked or invalid address)" % (event, to))
+        return {"status": "skipped", "raw": {"error": "recipient_blocked_or_invalid", "to": to}}
     store = sending_store(store)
     if not smtp_gateway.is_enabled(store):
         db.session.add(Notification(

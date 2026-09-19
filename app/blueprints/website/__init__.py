@@ -2,7 +2,7 @@
 import re
 import secrets
 
-from flask import Blueprint, render_template, request, redirect, flash, current_app, g, session
+from flask import Blueprint, render_template, request, redirect, flash, current_app, g, session, jsonify
 from markupsafe import escape
 
 from app.extensions import db, limiter
@@ -369,6 +369,17 @@ def deals():
     return render_template("website/deals.html", coupons=coupons, store=store)
 
 
+@bp.get("/deals/promo-popup")
+def deals_promo_popup_partial():
+    """Visit-popup markup after select-store (when it was not in the first HTML)."""
+    from app.services.promo_banners import deals_visit_popup_partial_context
+
+    ctx = deals_visit_popup_partial_context()
+    if not ctx:
+        return "", 204
+    return render_template("partials/deals_promo_visit_popup.html", **ctx)
+
+
 @bp.get("/deals/partial")
 def deals_partial():
     """HTML fragment for the deals grid (location changes on /deals)."""
@@ -500,6 +511,15 @@ def review_submit():
     return redirect(back)
 
 
+def _safe_subscribe_redirect(raw):
+    path = (raw or "").strip()
+    if not path or "://" in path or path.startswith("//"):
+        return ""
+    if not path.startswith("/"):
+        path = "/" + path
+    return path[:500]
+
+
 @bp.post("/subscribe")
 @limiter.limit("6 per minute; 30 per hour")
 def subscribe():
@@ -508,7 +528,10 @@ def subscribe():
     an address was already on the list."""
     email = request.form.get("email", "").strip().lower()
     back = request.referrer or "/"
+    wants_json = request.headers.get("X-Requested-With") == "XMLHttpRequest"
     if "@" not in email or "." not in email.split("@")[-1]:
+        if wants_json:
+            return jsonify({"ok": False, "message": "Please enter a valid email address."}), 400
         flash("Please enter a valid email address.", "error")
         return redirect(back)
 
@@ -519,32 +542,44 @@ def subscribe():
     if store is None:
         store = get_current_store()
 
-    existing = Subscriber.query.filter_by(email=email).first()
-    ip = request.remote_addr
+    from app.services.subscribers import ensure_subscriber
 
-    if existing:
-        existing.is_active = True
-        if store:
-            existing.store_id = store.id
-        existing.ip_address = ip
-        existing.source = "footer"
-        db.session.commit()
-    else:
-        db.session.add(Subscriber(
-            email=email,
-            source="footer",
-            store_id=store.id if store else None,
-            ip_address=ip,
-        ))
-        db.session.commit()
+    src = (request.form.get("source") or "footer").strip()[:40] or "footer"
+    existing = Subscriber.query.filter_by(email=email).first()
+    was_new = existing is None
+    was_inactive = bool(existing and not existing.is_active)
+    send_welcome = was_new or was_inactive
+    if src == "promo_banner" and (was_new or was_inactive):
+        send_welcome = True
+    ensure_subscriber(
+        email,
+        store=store,
+        source=src,
+        ip_address=request.remote_addr,
+    )
+    db.session.commit()
+
+    if send_welcome:
+        from app.services import mailer
         try:
-            from app.services import mailer
-            mailer.subscribed(email, store=store)
-        except Exception as e:
-            current_app.logger.warning("subscribe mail failed: %s", e)
+            res = mailer.subscribed(email, store=store)
+            st = (res or {}).get("status", "")
+            if st not in ("sent", "simulated", "ok"):
+                current_app.logger.warning(
+                    "subscribe welcome email for %s: %s", email, res
+                )
+        except Exception:
+            current_app.logger.exception("subscribe welcome email failed for %s", email)
 
     loc = (" at %s" % store.name) if store else ""
     from app.services.meta_pixel import queue_fbq_event
     queue_fbq_event("Lead")
-    flash("You're on the list%s. Check your inbox!" % loc, "success")
-    return redirect(back)
+    msg = "You're on the list%s. Check your inbox!" % loc
+    after = _safe_subscribe_redirect(request.form.get("redirect"))
+    if wants_json:
+        payload = {"ok": True, "message": msg}
+        if after:
+            payload["redirect"] = after
+        return jsonify(payload)
+    flash(msg, "success")
+    return redirect(after or back)

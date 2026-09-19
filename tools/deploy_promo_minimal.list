@@ -1,0 +1,8 @@
+app/services/promo_banners.py
+app/blueprints/admin/__init__.py
+app/templates/admin/promo_banner.html
+app/templates/partials/deals_promo_visit_popup.html
+app/templates/partials/deals_promo_popup_content.html
+app/templates/layouts/base.html
+app/static/css/premium.css
+app/static/js/app.js

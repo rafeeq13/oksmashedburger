@@ -109,6 +109,7 @@
             {% if admin_can('pages') %}{{ navlink('/admin/canvas', 'Pages', 'layer-group') }}{% endif %}
             {% if admin_can('content') %}{{ navlink('/admin/content', 'Content lists', 'list-ul') }}{% endif %}
             {% if admin_can('images') %}{{ navlink('/admin/site-images', 'Images', 'image') }}{% endif %}
+            {% if admin_can('images') %}{{ navlink('/admin/promo-banner', 'Promo banner', 'rectangle-ad') }}{% endif %}
             {% if admin_can('theme') %}{{ navlink('/admin/theme', 'Brand & theme', 'palette') }}{% endif %}
             {% if admin_can('builder') %}{{ navlink('/admin/builder', 'Extra pages', 'pen-ruler') }}{% endif %}
             {% if admin_can('features') %}{{ navlink('/admin/features', 'Features on / off', 'sliders') }}{% endif %}

@@ -123,6 +123,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
 .ok-tip[data-place="bottom"]::after{ bottom:100%; border-bottom-color:var(--ok-jet,#141414); }
 
 /* Header --------------------------------------------------*/
+:root{ --ok-header-mobile-h:4rem; }
 .ok-header{ position:sticky; top:0; z-index:50; background:#fff; border-bottom:1px solid var(--ok-line);
   transition:box-shadow .2s ease; }
 .ok-header.is-scrolled{ box-shadow:0 6px 20px rgba(20,20,20,.08); }
@@ -197,7 +198,7 @@ h1,h2,h3,.font-display{ font-family:'Poppins','Inter',sans-serif; }
   width:100%; max-width:28rem; padding-inline:.75rem; }
 
 /* Toast -------------------------------------------------- */
-#ok-toast-wrap{ position:fixed; z-index:100; bottom:1.25rem; left:50%; transform:translateX(-50%);
+#ok-toast-wrap{ position:fixed; z-index:1100; bottom:1.25rem; left:50%; transform:translateX(-50%);
   display:flex; flex-direction:column; gap:.5rem; align-items:center; pointer-events:none; }
 .ok-toast{ background:var(--ok-jet); color:#fff; padding:.75rem 1.1rem; border-radius:.7rem; font-weight:600;
   font-size:.9rem; box-shadow:0 10px 30px rgba(0,0,0,.25); display:flex; gap:.5rem; align-items:center;
@@ -454,6 +455,8 @@ table.dataTable.no-footer{ border-bottom:0 !important; }
 .pb-sec.pb-chrome{ display:contents; }
 /* The header's pb-sec wrapper must not block .ok-header's position:sticky */
 .pb-sec[data-section="header"]{ display:contents; }
+/* Promo above the nav scrolls away; the bar below stays sticky */
+.pb-sec[data-section="promo_banner"]{ position:relative; z-index:45; }
 
 /* ── An extra picture dropped into a section ───────────────────────────────
    Drawn as a pseudo-element on the section wrapper, so a client can add a

@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% block title %}Mobile header deals chip, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+<h2 class="ok-h2 mb-1">Mobile header deals chip</h2>
+<p class="text-muted-warm ok-fs-sm ok-mb-3">
+  On <b>phones only</b>, a blinking image sits between the logo and search. Tap opens your deals link.
+</p>
+
+<form id="mobileChipForm" method="post" action="/admin/mobile-header-deals" enctype="multipart/form-data" class="ok-card ok-p-5 ok-stack-4 ok-maxw-36rem">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+  <label class="d-flex align-items-center gap-2 ok-pointer">
+    <input type="checkbox" name="enabled" value="1" {% if cfg.enabled %}checked{% endif %}>
+    <span class="fw-semibold">Show on mobile header</span>
+  </label>
+
+  <div>
+    <label class="ok-label" for="width_px">Display width on mobile (px)</label>
+    <input id="width_px" name="width_px" type="number" min="32" max="160" class="ok-input w-100" value="{{ cfg.width_px }}">
+    <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Height stays <b>{{ cfg.display_height_px }} px</b>. Dimensions above update when you change this.</p>
+  </div>
+
+  <div>
+    <label class="ok-label" for="image_file">Upload image</label>
+    <input id="image_file" name="image_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" class="ok-input w-100">
+    <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Build or export at <b id="chipDimUploadHint">{{ cfg.upload_size }}</b> px when possible, then <b>Save</b>.</p>
+  </div>
+  <div>
+    <label class="ok-label" for="image">Or image URL</label>
+    <input id="image" name="image" type="text" class="ok-input w-100" value="{{ cfg.image }}" placeholder="/static/img/uploads/…" autocomplete="off">
+  </div>
+
+  {% if cfg.image %}
+  <div>
+    <p class="ok-label mb-1">Preview ({{ cfg.display_size }} px on site)</p>
+    <div class="border ok-bc-varokline ok-rounded-lg ok-p-3 d-inline-flex align-items-center" style="height: {{ cfg.display_height_px }}px;">
+      <img src="{{ cfg.image | vasset }}" alt="" style="height: {{ cfg.display_height_px }}px; width: {{ cfg.width_px }}px; object-fit: contain;">
+    </div>
+  </div>
+  {% endif %}
+
+  <div>
+    <label class="ok-label" for="link">Link when tapped</label>
+    <input id="link" name="link" class="ok-input w-100" value="{{ cfg.link }}" placeholder="/deals">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+<script>
+(function () {
+  var h = {{ cfg.display_height_px }};
+  var wIn = document.getElementById("width_px");
+  var onSite = document.getElementById("chipDimOnSite");
+  var upload = document.getElementById("chipDimUpload");
+  var hint = document.getElementById("chipDimUploadHint");
+  function upd() {
+    var w = parseInt(wIn && wIn.value, 10) || {{ cfg.width_px }};
+    w = Math.max(32, Math.min(160, w));
+    var text = w + "×" + h;
+    var up = (w * 2) + "×" + (h * 2);
+    if (onSite) onSite.textContent = text;
+    if (upload) upload.textContent = up;
+    if (hint) hint.textContent = up;
+  }
+  if (wIn) wIn.addEventListener("input", upd);
+  upd();
+})();
+</script>
+{% endblock %}

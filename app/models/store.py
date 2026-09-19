@@ -59,6 +59,18 @@ def _parse_hm(s):
         return None
 
 
+def _store_tz(store):
+    from zoneinfo import ZoneInfo
+
+    tz_name = (store.timezone if store else None) or "America/New_York"
+    for name in (tz_name, "America/New_York", "UTC"):
+        try:
+            return ZoneInfo(name)
+        except Exception:
+            continue
+    return ZoneInfo("UTC")
+
+
 def query_from_map_url(url):
     """Return the ?q= search text from a locations-page style embed URL."""
     from urllib.parse import unquote
@@ -197,6 +209,13 @@ class Store(TimestampMixin, db.Model):
         """StoreHours row for a Python weekday (Mon=0…Sun=6)."""
         return next((h for h in self.hours if h.day_of_week == weekday), None)
 
+    def local_now(self):
+        """Current date/time in this store's timezone (naive local)."""
+        now = datetime.now(_store_tz(self))
+        if now.tzinfo is not None:
+            return now.replace(tzinfo=None)
+        return now
+
     def is_open_at(self, dt):
         """Is the store within its opening hours at datetime dt?"""
         if not self.is_active:
@@ -216,7 +235,8 @@ class Store(TimestampMixin, db.Model):
 
     @property
     def today_hours(self):
-        h = self.hours_for(datetime.now().weekday())
+        now = self.local_now()
+        h = self.hours_for(now.weekday())
         if not h or h.is_closed:
             return "Closed today"
         return f"{h.open_time}–{h.close_time}"
@@ -224,8 +244,9 @@ class Store(TimestampMixin, db.Model):
     @property
     def today_hours_with_day(self):
         labels = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-        day = labels[datetime.now().weekday()]
-        h = self.hours_for(datetime.now().weekday())
+        now = self.local_now()
+        day = labels[now.weekday()]
+        h = self.hours_for(now.weekday())
         if not h or h.is_closed:
             return f"{day}: Closed"
         return f"{day}: {h.open_time}–{h.close_time}"
@@ -234,7 +255,21 @@ class Store(TimestampMixin, db.Model):
     def open_now(self):
         """Accepting immediate (ASAP) pickup/delivery right now | respects the
         manual open/close toggle AND today's opening hours."""
-        return bool(self.is_active and self.accepting_orders and self.is_open_at(datetime.now()))
+        return bool(self.is_active and self.accepting_orders and self.is_open_at(self.local_now()))
+
+    @property
+    def asap_unavailable_reason(self):
+        """Why ASAP orders show as closed (None if open_now). For admin messaging."""
+        if not self.is_active:
+            return "This location is inactive."
+        if not self.accepting_orders:
+            return "Staff closed ASAP orders (dashboard “Close store”) — hours unchanged."
+        if not self.is_open_at(self.local_now()):
+            h = self.hours_for(self.local_now().weekday())
+            if not h or h.is_closed:
+                return "Today is marked closed in opening hours."
+            return f"Outside today’s window ({h.open_time}–{h.close_time} {self.timezone or 'America/New_York'})."
+        return None
 
     @property
     def scheduling_open(self):
@@ -261,7 +296,7 @@ class Store(TimestampMixin, db.Model):
         A day with no open hours is skipped entirely rather than shown empty,
         and today only offers times that are still reachable.
         """
-        now = now or datetime.now()
+        now = now or self.local_now()
         earliest = now + timedelta(minutes=self.SCHED_LEAD)
         out = []
         for offset in range(self.SCHED_DAYS):

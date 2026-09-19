@@ -76,7 +76,9 @@ HERO_SLIDES = [
     ("Deals that hit different.", "Free delivery on your first order with code OKFIRST."),
 ]
 _hero_fields = [("eyebrow", "Eyebrow label", "Craft Smashed Burgers"),
-                ("cta_text", "Button text", "Start Your Order")]
+                ("cta_text", "Button text", "Start Your Order"),
+                ("deals_cta_text", "Deals button text", "Explore Our Deals"),
+                ("deals_cta_href", "Deals button link", "/deals")]
 for _i, (_t, _x) in enumerate(HERO_SLIDES, 1):
     _hero_fields.append(("slide%d_title" % _i, "Slide %d title" % _i, _t))
     _hero_fields.append(("slide%d_text" % _i, "Slide %d text" % _i, _x))

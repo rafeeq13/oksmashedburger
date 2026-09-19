@@ -1,0 +1,483 @@
+{% extends "admin/base.html" %}
+{% block title %}Promo banner, {{ brand_name }}{% endblock %}
+
+{% block admin %}
+{# promo-admin-v3: server-side ?view=popup|mobile #}
+{% set promo_view = promo_view|default('popup') %}
+{% set promo_is_mobile = promo_view == 'mobile' %}
+{% macro promo_view_href(v) -%}
+/admin/promo-banner?{% if banner_scope and can_switch %}store={{ banner_scope.slug | urlencode }}&{% endif %}view={{ v }}
+{%- endmacro %}
+
+<h2 class="ok-h2 mb-2">Promo banner</h2>
+
+<nav class="d-flex flex-wrap gap-2 ok-mb-3 ok-pb-3 border-bottom ok-bc-varokline" aria-label="Promotion popup or mobile header image">
+  <a href="{{ promo_view_href('popup') }}" class="btn {% if not promo_is_mobile %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="fa-solid fa-window-maximize ok-me-1"></i> Promotion popup (desktop)
+  </a>
+  <a href="{{ promo_view_href('mobile') }}" class="btn {% if promo_is_mobile %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="fa-solid fa-image ok-me-1"></i> Mobile promo strip
+  </a>
+</nav>
+{% if promo_is_mobile %}
+<p class="text-muted-warm ok-fs-sm ok-mb-3">
+  Blinking deals image in the <b>mobile header</b> (between logo and search). Separate from the visiting popup.
+</p>
+{% else %}
+<p class="text-muted-warm ok-fs-sm ok-mb-3">
+  Visiting popup and site strips — image, colours, subscribe, and sizes for tablets &amp; computers.
+</p>
+{% endif %}
+
+{% if can_switch %}
+<div class="ok-mb-4">
+  <label class="ok-label" for="bannerScopePick">Editing banner for</label>
+  <select id="bannerScopePick" class="ok-select ok-maxw-20rem" onchange="window.location.href='/admin/promo-banner?' + (this.value ? ('store=' + encodeURIComponent(this.value) + '&') : '') + 'view={{ promo_view }}'">
+    <option value="" {% if not banner_scope %}selected{% endif %}>Brand default (fallback)</option>
+    {% for s in admin_stores %}
+    <option value="{{ s.slug }}" {% if banner_scope and banner_scope.slug == s.slug %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% elif banner_scope %}
+<p class="ok-fs-sm ok-mb-4">Location: <b>{{ banner_scope.name }}</b></p>
+{% endif %}
+
+{% if banner_scope and banner_has_override %}
+<form method="post" action="/admin/promo-banner/reset{% if can_switch %}?store={{ banner_scope.slug }}{% else %}{{ qs }}{% endif %}" class="ok-mb-4">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if can_switch %}<input type="hidden" name="store" value="{{ banner_scope.slug }}">{% endif %}
+  <button type="submit" class="btn btn-outline-secondary btn-sm" onclick="return confirm('Remove this location\\'s custom banner and use the brand default?')">Use brand default for {{ banner_scope.name }}</button>
+</form>
+{% endif %}
+
+{% if not promo_is_mobile %}
+<form id="promoBannerSaveForm" method="post" action="/admin/promo-banner{% if banner_scope and can_switch %}?store={{ banner_scope.slug }}{% else %}{{ qs }}{% endif %}" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if banner_scope and can_switch %}<input type="hidden" name="store" value="{{ banner_scope.slug }}">{% endif %}
+
+  <div class="ok-grid ok-grid-lg-2 gap-4 align-items-start">
+  <div class="ok-card ok-p-5 ok-stack-4">
+    <h3 class="ok-h3">Promotion popup &amp; banner</h3>
+    <p class="ok-fs-xs text-muted-warm ok-mb-0">Each location can use its own settings. <b>Brand default</b> applies when a store has no override.</p>
+
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="enabled" value="1" {% if cfg.enabled %}checked{% endif %}>
+      <span class="fw-semibold">Show banner on site</span>
+    </label>
+
+    {% set selected_pages = cfg.show_pages %}
+    {% include "admin/_promo_page_checkboxes.html" %}
+
+    <div>
+      <label class="ok-label" for="placement">Location on page</label>
+      <select id="placement" name="placement" class="ok-select w-100">
+        <option value="visit_popup" {% if cfg.placement == 'visit_popup' %}selected{% endif %}>Visiting popup (once per session, all devices)</option>
+        <option value="below_header" {% if cfg.placement == 'below_header' %}selected{% endif %}>Below navigation (strip)</option>
+        <option value="above_footer" {% if cfg.placement == 'above_footer' %}selected{% endif %}>Above footer (strip)</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="ok-label" for="width">Banner width</label>
+      <select id="width" name="width" class="ok-select w-100">
+        <option value="container" {% if cfg.width == 'container' %}selected{% endif %}>Centered (max content width)</option>
+        <option value="full" {% if cfg.width == 'full' %}selected{% endif %}>Full screen width</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="ok-label" for="height">Banner height on the site (px)</label>
+      <input id="height" name="height" type="number" min="16" max="220" class="ok-input w-100" value="{{ cfg.height }}">
+    </div>
+
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="use_image" value="1" id="use_image" {% if cfg.use_image %}checked{% endif %}>
+      <span>Use a background image</span>
+    </label>
+    <p class="ok-fs-xs text-muted-warm">Must be <b>on</b> to see the upload box below. Turn off for text-only (background colour).</p>
+
+    <div id="promoImageFields" class="ok-stack-3">
+      <p class="ok-fs-xs text-muted-warm mb-0">Wide banner works best around <b>{{ promo_image_spec.build_size }}</b> px (JPG/PNG). Image is cropped to fit — keep the main subject centered.</p>
+      <div class="border ok-bc-varokline ok-rounded-xl ok-p-3 ok-stack-2">
+        <h4 class="ok-h4 ok-mb-0">Add or change picture</h4>
+        <div>
+          <label class="ok-label" for="image_file"><i class="fa-solid fa-upload"></i> Upload from your computer</label>
+          <input id="image_file" name="image_file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/*" class="ok-input w-100">
+          <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Then click <b>Save banner</b>.</p>
+        </div>
+        <div class="ok-fs-xs text-muted-warm text-center">— or paste a link —</div>
+        <div>
+          <label class="ok-label" for="image">Image URL</label>
+          <input id="image" name="image" type="text" class="ok-input w-100" value="{{ cfg.image if cfg.use_image else '' }}" placeholder="https://… or /static/img/uploads/…" data-promo-preview="image" autocomplete="off">
+        </div>
+      </div>
+
+      <div>
+        <label class="ok-label" for="image_position">Image focus (crop position)</label>
+        <select id="image_position" name="image_position" class="ok-select w-100" data-promo-preview="image_position">
+          <option value="center center" {% if cfg.image_position == 'center center' %}selected{% endif %}>Center</option>
+          <option value="center top" {% if cfg.image_position == 'center top' %}selected{% endif %}>Top</option>
+          <option value="center bottom" {% if cfg.image_position == 'center bottom' %}selected{% endif %}>Bottom</option>
+          <option value="left center" {% if cfg.image_position == 'left center' %}selected{% endif %}>Left</option>
+          <option value="right center" {% if cfg.image_position == 'right center' %}selected{% endif %}>Right</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="ok-label" for="overlay">Dark overlay on image (0–0.85)</label>
+        <input id="overlay" name="overlay" type="number" step="0.05" min="0" max="0.85" class="ok-input w-100" value="{{ cfg.overlay }}" data-promo-preview="overlay">
+      </div>
+    </div>
+
+    <div id="promoPopupCloseFields" class="ok-stack-3">
+      <h4 class="ok-h4 ok-mb-0">Visiting popup — close (×) button</h4>
+      <div>
+        <label class="ok-label" for="popup_close_size">Button size (px)</label>
+        <input id="popup_close_size" name="popup_close_size" type="number" min="24" max="56" class="ok-input w-100" value="{{ cfg.popup_close_size }}">
+        <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Circle diameter; X scales with it. Default 36 — try 30–34 if it feels too big.</p>
+      </div>
+      <div class="ok-grid ok-grid-2 gap-3">
+        <div>
+          <label class="ok-label" for="popup_close_bg_color">Circle background</label>
+          <input id="popup_close_bg_color" name="popup_close_bg_color" type="color" class="ok-input w-100" value="{{ cfg.popup_close_bg_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="popup_close_color">X colour</label>
+          <input id="popup_close_color" name="popup_close_color" type="color" class="ok-input w-100" value="{{ cfg.popup_close_color }}">
+        </div>
+      </div>
+    </div>
+
+    <div id="promoBgFields">
+      <label class="ok-label" for="bg_color">Background colour (text-only / popup headline panel)</label>
+      <input id="bg_color" name="bg_color" type="color" class="ok-input w-100" value="{{ cfg.bg_color }}" data-promo-preview="bg_color">
+      <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">For the <b>visiting popup</b>, this colour is also the box behind the headline text.</p>
+    </div>
+
+    <div>
+      <label class="ok-label" for="link">“View deals” link URL</label>
+      <input id="link" name="link" class="ok-input w-100" value="{{ cfg.link }}" placeholder="/deals">
+      <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Used when the View deals button is shown (popup and on-page banner).</p>
+    </div>
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="show_deals_link" value="1" id="show_deals_link" {% if cfg.show_deals_link %}checked{% endif %}>
+      <span class="fw-semibold">Show “View deals” button</span>
+    </label>
+
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="show_subscribe" value="1" id="show_subscribe" {% if cfg.show_subscribe %}checked{% endif %}>
+      <span class="fw-semibold">Email subscribe on banner</span>
+    </label>
+    <p class="ok-fs-xs text-muted-warm">Adds email + button (same list as footer). Sends welcome email to new sign-ups.</p>
+    <div id="promoSubscribeFields" class="ok-mb-3">
+      <label class="ok-label" for="subscribe_label">Subscribe button text</label>
+      <input id="subscribe_label" name="subscribe_label" class="ok-input w-100" value="{{ cfg.subscribe_label }}" maxlength="40" placeholder="Get deals">
+      <p class="ok-fs-xs text-muted-warm ok-mb-2 mb-0">Text colours (subscribe banner)</p>
+      <div class="ok-grid ok-grid-2 gap-3 ok-mt-2">
+        <div>
+          <label class="ok-label" for="deals_link_color">“View deals” button background</label>
+          <input id="deals_link_color" name="deals_link_color" type="color" class="ok-input w-100" value="{{ cfg.deals_link_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="deals_btn_text_color">“View deals” button text</label>
+          <input id="deals_btn_text_color" name="deals_btn_text_color" type="color" class="ok-input w-100" value="{{ cfg.deals_btn_text_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_placeholder_color">Email placeholder</label>
+          <input id="subscribe_placeholder_color" name="subscribe_placeholder_color" type="color" class="ok-input w-100" value="{{ cfg.subscribe_placeholder_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_btn_text_color">Button text</label>
+          <input id="subscribe_btn_text_color" name="subscribe_btn_text_color" type="color" class="ok-input w-100" value="{{ cfg.subscribe_btn_text_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_btn_bg_color">Button background</label>
+          <input id="subscribe_btn_bg_color" name="subscribe_btn_bg_color" type="color" class="ok-input w-100" value="{{ cfg.subscribe_btn_bg_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_border_color">Email field border</label>
+          <input id="subscribe_border_color" name="subscribe_border_color" type="color" class="ok-input w-100" value="{{ cfg.subscribe_border_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_input_color">Email text (typed)</label>
+          <input id="subscribe_input_color" name="subscribe_input_color" type="color" class="ok-input w-100" value="{{ cfg.subscribe_input_color }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_bar_bg_color_picker">Subscribe area background (popup strip)</label>
+          <input type="hidden" name="subscribe_bar_bg_color" id="subscribe_bar_bg_color" value="{{ cfg.subscribe_bar_bg_color }}">
+          <input id="subscribe_bar_bg_color_picker" type="color" class="ok-input w-100" value="{{ cfg.subscribe_bar_bg_color }}" aria-labelledby="subscribe_bar_bg_color_picker">
+        </div>
+      </div>
+      <label class="d-flex align-items-center gap-2 ok-pointer ok-mt-2">
+        <input type="checkbox" name="subscribe_bar_transparent" value="1" id="subscribe_bar_transparent" {% if cfg.subscribe_bar_transparent %}checked{% endif %}>
+        <span>Transparent bar (image only, no fill colour)</span>
+      </label>
+      <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Email field stays transparent; bar colour fills behind the logo when the image does not cover the strip.</p>
+      <div class="ok-mt-4 ok-pt-3 border-top ok-bc-varokline">
+        <h4 class="ok-h4 ok-mb-2">Desktop visiting popup — size &amp; subscribe row</h4>
+        <p class="ok-fs-xs text-muted-warm ok-mb-2 mb-0">Popup modal and email row (gap 0 = field touches button).</p>
+        <label class="d-flex align-items-center gap-2 ok-pointer ok-mb-2">
+          <input type="checkbox" name="popup_subscribe_join_bg" value="1" id="popup_subscribe_join_bg" {% if cfg.popup_subscribe_join_bg %}checked{% endif %}>
+          <span class="fw-semibold">Show background behind email + button</span>
+        </label>
+        <p class="ok-fs-xs text-muted-warm ok-mb-3 mb-0">Off = only the white field and yellow button (no dark padded frame). On = use <b>Subscribe area background</b> colour above (or transparent).</p>
+        <div class="ok-grid ok-grid-2 gap-3">
+          <div>
+            <label class="ok-label" for="popup_modal_width_px">Popup width (px)</label>
+            <input id="popup_modal_width_px" name="popup_modal_width_px" type="number" min="280" max="520" class="ok-input w-100" value="{{ cfg.popup_modal_width_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_modal_min_height_px">Popup min height (px)</label>
+            <input id="popup_modal_min_height_px" name="popup_modal_min_height_px" type="number" min="280" max="640" class="ok-input w-100" value="{{ cfg.popup_modal_min_height_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_join_width_px">Subscribe bar width (px)</label>
+            <input id="popup_join_width_px" name="popup_join_width_px" type="number" min="0" max="520" class="ok-input w-100" value="{{ cfg.popup_join_width_px }}">
+            <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">0 = match popup width (recommended). Otherwise a custom max width in px.</p>
+          </div>
+          <div>
+            <label class="ok-label" for="popup_subscribe_gap_px">Gap email ↔ button (px)</label>
+            <input id="popup_subscribe_gap_px" name="popup_subscribe_gap_px" type="number" min="0" max="16" class="ok-input w-100" value="{{ cfg.popup_subscribe_gap_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_field_height_px">Email field height (px)</label>
+            <input id="popup_field_height_px" name="popup_field_height_px" type="number" min="32" max="72" class="ok-input w-100" value="{{ cfg.popup_field_height_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_btn_height_px">Button height (px)</label>
+            <input id="popup_btn_height_px" name="popup_btn_height_px" type="number" min="32" max="72" class="ok-input w-100" value="{{ cfg.popup_btn_height_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_btn_min_width_px">Button min width (px)</label>
+            <input id="popup_btn_min_width_px" name="popup_btn_min_width_px" type="number" min="72" max="220" class="ok-input w-100" value="{{ cfg.popup_btn_min_width_px }}">
+          </div>
+          <div>
+            <label class="ok-label" for="popup_email_width_pct">Email field width (% of row)</label>
+            <input id="popup_email_width_pct" name="popup_email_width_pct" type="number" min="52" max="92" class="ok-input w-100" value="{{ cfg.popup_email_width_pct }}">
+            <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Higher = more room for long addresses. Default 82. Pair with a smaller button min width if needed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <label class="d-flex align-items-center gap-2 ok-pointer">
+      <input type="checkbox" name="show_text" value="1" {% if cfg.show_text %}checked{% endif %} data-promo-preview-toggle="text">
+      <span>Show text on banner</span>
+    </label>
+
+    <div data-promo-text-fields>
+      <label class="ok-label" for="text">Banner text</label>
+      <input id="text" name="text" class="ok-input w-100" value="{{ cfg.text }}" data-promo-preview="text">
+
+      <div class="ok-mt-3">
+        <label class="ok-label" for="text_color">Headline colour</label>
+        <input id="text_color" name="text_color" type="color" class="ok-input w-100" value="{{ cfg.text_color }}" data-promo-preview="text_color">
+        <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0">Phone headline size is in <b>Phone popup text sizes</b> below.</p>
+      </div>
+      <div class="ok-mt-3">
+        <label class="ok-label" for="text_font">Font family</label>
+        <select id="text_font" name="text_font" class="ok-select w-100" data-promo-preview="text_font">
+          {% for stack, label in promo_fonts %}
+          <option value="{{ stack }}" {% if cfg.text_font == stack %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="ok-label" for="border_style">Attention effect</label>
+      <select id="border_style" name="border_style" class="ok-select w-100" data-promo-preview="border_style">
+        <option value="none" {% if cfg.border_style == 'none' %}selected{% endif %}>None</option>
+        <option value="static" {% if cfg.border_style == 'static' %}selected{% endif %}>Border only (fixed outline)</option>
+        <option value="blink" {% if cfg.border_style == 'blink' %}selected{% endif %}>Whole banner blinks (pulse)</option>
+      </select>
+      <p class="ok-fs-xs text-muted-warm ok-mt-1 mb-0"><b>Border only</b> = black frame, no animation. <b>Whole banner blinks</b> = entire strip softly pulses.</p>
+    </div>
+
+    <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
+      <h4 class="ok-h4 ok-mb-2">Desktop text sizes (px)</h4>
+      <p class="ok-fs-xs text-muted-warm ok-mb-2 mb-0">Tablets and computers.</p>
+      <div class="ok-grid ok-grid-2 gap-3">
+        <div>
+          <label class="ok-label" for="text_size">Headline (if shown)</label>
+          <input id="text_size" name="text_size" type="number" min="10" max="48" class="ok-input w-100" value="{{ cfg.text_size }}" data-promo-preview="text_size">
+        </div>
+        <div>
+          <label class="ok-label" for="deals_link_size">View deals button</label>
+          <input id="deals_link_size" name="deals_link_size" type="number" min="8" max="32" class="ok-input w-100" value="{{ cfg.deals_link_size }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_input_size">Email field</label>
+          <input id="subscribe_input_size" name="subscribe_input_size" type="number" min="8" max="32" class="ok-input w-100" value="{{ cfg.subscribe_input_size }}">
+        </div>
+        <div>
+          <label class="ok-label" for="subscribe_btn_size">Subscribe button</label>
+          <input id="subscribe_btn_size" name="subscribe_btn_size" type="number" min="8" max="32" class="ok-input w-100" value="{{ cfg.subscribe_btn_size }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="ok-mt-3 ok-pt-3 border-top ok-bc-varokline">
+      <h4 class="ok-h4 ok-mb-2">Phone popup text sizes (px)</h4>
+      <p class="ok-fs-xs text-muted-warm ok-mb-2 mb-0">When the popup or strip shows on a phone.</p>
+      <div class="ok-grid ok-grid-2 gap-3">
+        <div>
+          <label class="ok-label" for="mobile_text_size">Headline (if shown)</label>
+          <input id="mobile_text_size" name="mobile_text_size" type="number" min="8" max="28" class="ok-input w-100" value="{{ cfg.mobile_text_size }}">
+        </div>
+        <div>
+          <label class="ok-label" for="mobile_deals_link_size">View deals button</label>
+          <input id="mobile_deals_link_size" name="mobile_deals_link_size" type="number" min="8" max="28" class="ok-input w-100" value="{{ cfg.mobile_deals_link_size }}">
+        </div>
+        <div>
+          <label class="ok-label" for="mobile_subscribe_input_size">Email field</label>
+          <input id="mobile_subscribe_input_size" name="mobile_subscribe_input_size" type="number" min="8" max="28" class="ok-input w-100" value="{{ cfg.mobile_subscribe_input_size }}">
+        </div>
+        <div>
+          <label class="ok-label" for="mobile_subscribe_btn_size">Subscribe button</label>
+          <input id="mobile_subscribe_btn_size" name="mobile_subscribe_btn_size" type="number" min="8" max="28" class="ok-input w-100" value="{{ cfg.mobile_subscribe_btn_size }}">
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary ok-mt-2"><i class="fa-solid fa-floppy-disk"></i> Save promotion popup</button>
+  </div>
+
+  <div class="ok-card ok-p-5">
+    <h3 class="ok-h3 ok-mb-3">Preview</h3>
+    <div id="promoPreview" class="ok-deals-promo ok-deals-promo--container{% if cfg.border_style == 'blink' %} ok-deals-promo--blink{% elif cfg.border_style == 'static' %} ok-deals-promo--border{% endif %}{% if not cfg.use_image %} ok-deals-promo--text-only{% endif %}" style="--ok-promo-h: {{ cfg.height }}px;{% if not cfg.use_image %} --ok-promo-bg: {{ cfg.bg_color }};{% endif %} position: relative;">
+      <span class="ok-deals-promo-frame" id="promoPreviewFrame">
+        <img src="{{ cfg.image | vasset }}" alt="" class="ok-deals-promo-img" id="promoPreviewImg" style="object-position: {{ cfg.image_position }};{% if not cfg.use_image %} display:none;{% endif %}">
+        <span class="ok-deals-promo-overlay" id="promoPreviewOverlay" style="opacity: {{ cfg.overlay }};{% if not cfg.use_image %} display:none;{% endif %}"></span>
+        <span class="ok-deals-promo-text" id="promoPreviewText" style="color: {{ cfg.text_color }}; font-size: {{ cfg.text_size }}px;{% if cfg.text_font %} font-family: {{ cfg.text_font }};{% endif %}">{{ cfg.text }}</span>
+      </span>
+    </div>
+    <p class="ok-fs-xs text-muted-warm ok-mt-3">Requires <b>Deals</b> on. Hidden on <code>/deals</code> and admin.</p>
+  </div>
+  </div>
+</form>
+{% else %}
+  {% include "admin/_mobile_header_deals_section.html" %}
+{% endif %}
+
+<script>
+(function () {
+  var chipWIn = document.getElementById("chip_width_px");
+  var chipHIn = document.getElementById("chip_height_px");
+  var chipOnSite = document.getElementById("chipDimOnSite");
+  var chipUpload = document.getElementById("chipDimUpload");
+  var chipHint = document.getElementById("chipDimUploadHint");
+  function updChipDims() {
+    if (!chipWIn) return;
+    var w = parseInt(chipWIn.value, 10) || {{ mobile_chip.width_px }};
+    var h = parseInt(chipHIn && chipHIn.value, 10) || {{ mobile_chip.height_px }};
+    w = Math.max(280, Math.min(1200, w));
+    h = Math.max(32, Math.min(240, h));
+    var text = w + "×" + h;
+    var up = (w * 2) + "×" + (h * 2);
+    if (chipOnSite) chipOnSite.textContent = text;
+    if (chipUpload) chipUpload.textContent = up;
+    if (chipHint) chipHint.textContent = up;
+  }
+  if (chipWIn) chipWIn.addEventListener("input", updChipDims);
+  if (chipHIn) chipHIn.addEventListener("input", updChipDims);
+  updChipDims();
+})();
+(function () {
+  var form = document.getElementById('promoBannerSaveForm');
+  if (!form) return;
+  var preview = document.getElementById('promoPreview');
+  var img = document.getElementById('promoPreviewImg');
+  var overlay = document.getElementById('promoPreviewOverlay');
+  var text = document.getElementById('promoPreviewText');
+  function upd() {
+    var h = form.querySelector('[name=height]');
+    if (h && preview) preview.style.setProperty('--ok-promo-h', (parseInt(h.value, 10) || 88) + 'px');
+    var useImg = form.querySelector('[name=use_image]');
+    var imageMode = useImg && useImg.checked;
+    if (preview) {
+      preview.classList.toggle('ok-deals-promo--text-only', !imageMode);
+      if (!imageMode) {
+        var bg = form.querySelector('[name=bg_color]');
+        if (bg) preview.style.setProperty('--ok-promo-bg', bg.value);
+      }
+    }
+    if (img) img.style.display = imageMode ? '' : 'none';
+    if (overlay) overlay.style.display = imageMode ? '' : 'none';
+    var url = form.querySelector('[name=image]');
+    if (url && img && url.value && imageMode) img.src = url.value;
+    var pos = form.querySelector('[name=image_position]');
+    if (pos && img) img.style.objectPosition = pos.value;
+    var ov = form.querySelector('[name=overlay]');
+    if (ov && overlay) overlay.style.opacity = ov.value;
+    var tx = form.querySelector('[name=text]');
+    if (tx && text) text.textContent = tx.value;
+    var col = form.querySelector('[name=text_color]');
+    if (col && text) text.style.color = col.value;
+    var sz = form.querySelector('[name=text_size]');
+    if (sz && text) text.style.fontSize = (parseInt(sz.value, 10) || 15) + 'px';
+    var font = form.querySelector('[name=text_font]');
+    if (font && text) text.style.fontFamily = font.value || '';
+    var show = form.querySelector('[name=show_text]');
+    if (text && show) text.style.display = show.checked ? '' : 'none';
+    var border = form.querySelector('[name=border_style]');
+    if (preview && border) {
+      preview.classList.toggle('ok-deals-promo--blink', border.value === 'blink');
+      preview.classList.toggle('ok-deals-promo--border', border.value === 'static');
+    }
+    var w = form.querySelector('[name=width]');
+    if (preview && w) {
+      preview.classList.toggle('ok-deals-promo--full', w.value === 'full');
+      preview.classList.toggle('ok-deals-promo--container', w.value !== 'full');
+    }
+    var imgFields = document.getElementById('promoImageFields');
+    if (imgFields) imgFields.style.display = imageMode ? '' : 'none';
+    var placement = form.querySelector('[name=placement]');
+    var popupCloseFields = document.getElementById('promoPopupCloseFields');
+    if (popupCloseFields && placement) {
+      popupCloseFields.style.display = placement.value === 'visit_popup' ? '' : 'none';
+    }
+    var subOn = form.querySelector('[name=show_subscribe]');
+    var subFields = document.getElementById('promoSubscribeFields');
+    if (subFields) subFields.style.display = subOn && subOn.checked ? '' : 'none';
+    if (preview) preview.classList.toggle('ok-deals-promo--has-sub', subOn && subOn.checked);
+    var barBg = form.querySelector('[name=subscribe_bar_bg_color]');
+    var barPicker = document.getElementById('subscribe_bar_bg_color_picker');
+    var barTrans = form.querySelector('[name=subscribe_bar_transparent]');
+    if (barPicker && barBg) barBg.value = barPicker.value || barBg.value || '#0c0c0c';
+    if (barPicker && barTrans) barPicker.disabled = barTrans.checked;
+    if (preview && barBg && barTrans) {
+      var barVal = barTrans.checked ? 'transparent' : (barPicker ? barPicker.value : barBg.value) || '#0c0c0c';
+      preview.style.setProperty('--ok-promo-sub-bar-bg', barVal);
+      preview.style.backgroundColor = barTrans.checked ? 'transparent' : barVal;
+      var pframe = preview.querySelector('.ok-deals-promo-frame');
+      if (pframe) pframe.style.backgroundColor = barTrans.checked ? 'transparent' : barVal;
+    }
+  }
+  var barPickerEl = document.getElementById('subscribe_bar_bg_color_picker');
+  if (barPickerEl) {
+    barPickerEl.addEventListener('input', function () {
+      var hid = form.querySelector('[name=subscribe_bar_bg_color]');
+      if (hid) hid.value = barPickerEl.value;
+      upd();
+    });
+  }
+  form.addEventListener('submit', function () {
+    var hid = form.querySelector('[name=subscribe_bar_bg_color]');
+    var pick = document.getElementById('subscribe_bar_bg_color_picker');
+    if (hid && pick && !pick.disabled) hid.value = pick.value;
+  });
+  form.addEventListener('input', upd);
+  form.addEventListener('change', upd);
+  upd();
+  var file = form.querySelector('[name=image_file]');
+  if (file) file.addEventListener('change', function () {
+    if (!file.files || !file.files[0]) return;
+    var r = new FileReader();
+    r.onload = function () { if (img) img.src = r.result; };
+    r.readAsDataURL(file.files[0]);
+  });
+})();
+</script>
+{% endblock %}

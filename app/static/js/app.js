@@ -236,6 +236,25 @@
     setTimeout(function () { t.style.opacity = "0"; t.style.transition = "opacity .3s"; setTimeout(function () { t.remove(); }, 300); }, 2200);
   }
 
+  var OK_PROMO_SUBSCRIBE_TOAST_KEY = "okPromoSubscribeToast";
+
+  function queuePromoSubscribeToast(msg) {
+    try {
+      if (msg) sessionStorage.setItem(OK_PROMO_SUBSCRIBE_TOAST_KEY, msg);
+    } catch (err) {}
+  }
+
+  function flushPromoSubscribeToast() {
+    try {
+      var path = (window.location.pathname || "").replace(/\/+$/, "") || "/";
+      if (path !== "/deals") return;
+      var msg = sessionStorage.getItem(OK_PROMO_SUBSCRIBE_TOAST_KEY);
+      if (!msg) return;
+      sessionStorage.removeItem(OK_PROMO_SUBSCRIBE_TOAST_KEY);
+      toast(msg);
+    } catch (err) {}
+  }
+
   /* ---------- overlays ---------- */
   // Keep the page behind an open overlay from scrolling. Counted, because the
   // location modal can be opened from inside the drawer.
@@ -339,12 +358,14 @@
   // `optimistic` (name/city/zip) updates the UI instantly before the request returns.
   function selectStore(slug, optimistic) {
     if (!slug) return;
+    var promoAfterPick = document.body.getAttribute("data-needs-location") === "1";
     if (optimistic) document.dispatchEvent(new CustomEvent("ok:store", { detail: Object.assign({ slug: slug }, optimistic) }));
     return fetch("/api/select-store/" + encodeURIComponent(slug), { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.ok) {
           document.dispatchEvent(new CustomEvent("ok:store", { detail: d }));
+          if (promoAfterPick) ensureDealsPromoPopAfterStorePick(d);
           if (d.cart_unavailable && d.cart_unavailable.length) {
             var msg = "These items aren't available at " + (d.name || "this location") + ": "
               + d.cart_unavailable.join(", ")
@@ -539,7 +560,7 @@
   }
   function locMiles(la1, lo1, la2, lo2) {
     var R = 3958.8, r = Math.PI / 180;
-    var dLa = (la2 | la1) * r, dLo = (lo2 | lo1) * r;
+    var dLa = (la2 - la1) * r, dLo = (lo2 - lo1) * r;
     var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
       Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -573,6 +594,50 @@
     if (!best && /^\d{3}/.test(zip)) cards.forEach(function (c) { if (!best && (c.dataset.zip || "").slice(0, 3) === zip.slice(0, 3)) best = c; });
     if (!best) { if (window.OK && OK.toast) OK.toast("No store matches that address"); return; }
     locPick(best);
+  }
+  function locGeoFail(msg) {
+    if (window.OK && OK.toast) OK.toast(msg);
+    else alert(msg);
+  }
+  function locUseCurrentPosition(btn) {
+    if (!navigator.geolocation) {
+      locGeoFail("Location is not available in this browser.");
+      return;
+    }
+    var m = document.getElementById("locModal");
+    var el = document.getElementById("locZip");
+    if (!m || !el) return;
+    var original = btn ? btn.innerHTML : "";
+    if (btn) {
+      btn.setAttribute("aria-busy", "true");
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating…';
+    }
+    ensureLocAutocomplete(function () {
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      el.dataset.locLat = String(lat);
+      el.dataset.locLng = String(lng);
+      delete el.dataset.locZip;
+      el.dataset.locQuery = "your location";
+      function done(label) {
+        if (label) el.value = label;
+        if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
+        locFind();
+      }
+      var root = document.querySelector("[data-loc-autocomplete]");
+      var mapsKey = root && root.getAttribute("data-maps-key");
+      if (mapsKey && window.OK && OK.reverseGeocode) {
+        OK.reverseGeocode(mapsKey, lat, lng).then(function (label) {
+          done(label || "Your location");
+        }).catch(function () { done("Your location"); });
+        return;
+      }
+      done("Your location");
+    }, function () {
+      if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
+      locGeoFail("Could not get your location. Please allow access and try again.");
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    });
   }
 
   function wire() {
@@ -781,6 +846,8 @@
       var locPickEl = e.target.closest("[data-loc-pick]");
       if (locPickEl) { e.preventDefault(); locPick(locPickEl); return; }
       if (e.target.closest("[data-loc-find]")) { e.preventDefault(); locFind(); return; }
+      var locGeo = e.target.closest("[data-loc-geo]");
+      if (locGeo) { e.preventDefault(); locUseCurrentPosition(locGeo); return; }
       if (e.target.closest("[data-loc-back]")) { e.preventDefault(); locStep(1); return; }
       if (e.target.closest("[data-loc-schedule]")) { e.preventDefault(); locSchedule(true); return; }
       if (e.target.closest("[data-loc-schedback]")) { e.preventDefault(); locSchedule(false); return; }
@@ -1043,11 +1110,289 @@
     });
   }
 
+  var OK_DEALS_PROMO_DISMISS_MS = 15 * 60 * 1000;
+
+  function okDealsPromoSubKey(dismissKey) {
+    return dismissKey + ":subscribed";
+  }
+
+  function okDealsPromoSubscribedThisSession(dismissKey) {
+    try {
+      return sessionStorage.getItem(okDealsPromoSubKey(dismissKey)) === "1";
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function okDealsPromoMarkSubscribed(dismissKey) {
+    try {
+      sessionStorage.setItem(okDealsPromoSubKey(dismissKey), "1");
+    } catch (err) {}
+  }
+
+  function okDealsPromoDismissedRecently(storageKey) {
+    try {
+      var raw = sessionStorage.getItem(storageKey);
+      if (!raw) return false;
+      var ts = raw === "1" ? 0 : parseInt(raw, 10);
+      if (!ts || isNaN(ts)) {
+        sessionStorage.removeItem(storageKey);
+        return false;
+      }
+      if (Date.now() - ts < OK_DEALS_PROMO_DISMISS_MS) return true;
+      sessionStorage.removeItem(storageKey);
+      return false;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function okDealsPromoShouldSkip(dismissKey) {
+    if (okDealsPromoSubscribedThisSession(dismissKey)) return true;
+    return okDealsPromoDismissedRecently(dismissKey);
+  }
+
+  function okDealsPromoDismissKeyForSlug(slug) {
+    return "okDealsPromoDismiss" + (slug ? ":" + slug : "");
+  }
+
+  var _promoAfterLocationSlug = null;
+  var _promoBlockedUntilStorePick = document.body.getAttribute("data-needs-location") === "1";
+
+  function locModalOpenForPromo() {
+    var m = document.getElementById("locModal");
+    if (!m) return false;
+    if (m.classList.contains("is-open")) return true;
+    return m.style.visibility === "visible" && m.style.pointerEvents !== "none";
+  }
+
+  function openDealsPromoPopElement(pop, delayMs, afterStorePick) {
+    if (!pop) return;
+    if (!afterStorePick && _promoBlockedUntilStorePick) return;
+    var wait = delayMs == null ? 400 : delayMs;
+    function go() {
+      if (!afterStorePick && _promoBlockedUntilStorePick) return;
+      if (locModalOpenForPromo()) {
+        setTimeout(go, 120);
+        return;
+      }
+      var sk = okDealsPromoDismissKeyForSlug(_storeSlug || pop.getAttribute("data-store-slug") || "");
+      if (okDealsPromoShouldSkip(sk)) return;
+      setTimeout(function () {
+        pop.removeAttribute("hidden");
+        pop.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { pop.classList.add("is-open"); });
+        });
+        lockScroll(true);
+      }, wait);
+    }
+    go();
+  }
+
+  function ensureDealsPromoPopAfterStorePick(detail) {
+    if (!detail || !detail.slug) return;
+    if (_promoAfterLocationSlug === detail.slug) return;
+    _promoAfterLocationSlug = detail.slug;
+    _promoBlockedUntilStorePick = false;
+    document.body.setAttribute("data-needs-location", "0");
+
+    function mountAndOpen(node) {
+      if (!node) return;
+      node.setAttribute("data-store-slug", detail.slug);
+      if (!node._okPromoInit) initDealsPromoPopup();
+      initPromoSubscribeAjax();
+      openDealsPromoPopElement(node, 300, true);
+    }
+
+    var pop = document.getElementById("okDealsPromoPopup");
+    if (pop) {
+      mountAndOpen(pop);
+      return;
+    }
+    fetch("/api/deals-promo-popup", {
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "X-Requested-With": "fetch" },
+    })
+      .then(function (r) {
+        if (r.status === 204) return "";
+        if (!r.ok) return "";
+        return r.text();
+      })
+      .then(function (html) {
+        if (!(html || "").trim()) return;
+        var wrap = document.createElement("div");
+        wrap.innerHTML = html.trim();
+        mountAndOpen(wrap.firstElementChild);
+      })
+      .catch(function () {});
+  }
+
+  function okDealsPromoCloseUi(pop) {
+    if (!pop) return;
+    pop.classList.remove("is-open");
+    pop.setAttribute("aria-hidden", "true");
+    lockScroll(false);
+    setTimeout(function () {
+      if (!pop.classList.contains("is-open")) pop.setAttribute("hidden", "");
+    }, 300);
+  }
+
+  function initDealsPromoPopup() {
+    var pop = document.getElementById("okDealsPromoPopup");
+    if (!pop || pop._okPromoInit) return;
+    pop._okPromoInit = true;
+    var isEdit = /(?:\?|&)edit=1(?:&|$)/.test(window.location.search || "");
+
+    function promoDismissKey() {
+      var s = _storeSlug || pop.getAttribute("data-store-slug") || "";
+      return okDealsPromoDismissKeyForSlug(s);
+    }
+    function openPop() {
+      openDealsPromoPopElement(pop, 0);
+    }
+    function closePop(remember) {
+      pop.classList.remove("is-open");
+      pop.setAttribute("aria-hidden", "true");
+      lockScroll(false);
+      if (remember && !isEdit) {
+        try { sessionStorage.setItem(promoDismissKey(), String(Date.now())); } catch (err) {}
+      }
+      setTimeout(function () {
+        if (!pop.classList.contains("is-open")) pop.setAttribute("hidden", "");
+      }, 300);
+    }
+
+    pop.addEventListener("click", function (e) {
+      if (e.target.closest("[data-deals-promo-close]")) {
+        e.preventDefault();
+        closePop(true);
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && pop.classList.contains("is-open")) closePop(true);
+    });
+
+    var shop = pop.querySelector(".ok-offer-modal__shop");
+    if (shop && !shop.dataset.okPromoNav) {
+      shop.dataset.okPromoNav = "1";
+      shop.addEventListener("click", function (e) {
+        if (shop.onclick) return;
+        var href = shop.getAttribute("href");
+        if (!href) return;
+        try {
+          var dest = new URL(href, window.location.origin);
+          if (dest.origin === window.location.origin && dest.pathname === window.location.pathname) {
+            e.preventDefault();
+            closePop(true);
+          }
+        } catch (err) {}
+      });
+    }
+
+    if (isEdit || pop.classList.contains("is-open")) {
+      openPop();
+      return;
+    }
+
+    var needsLoc = document.body.getAttribute("data-needs-location") === "1";
+    var hasStore = !!((_storeSlug || pop.getAttribute("data-store-slug") || "").trim());
+    var autoOnPage = pop.getAttribute("data-promo-auto-open") !== "0";
+
+    if (needsLoc && !hasStore) {
+      _promoBlockedUntilStorePick = true;
+      pop.setAttribute("hidden", "");
+      pop.classList.remove("is-open");
+      pop.setAttribute("aria-hidden", "true");
+      requestAnimationFrame(function () {
+        if (window.OK && OK.openLocation) OK.openLocation();
+      });
+      document.addEventListener("ok:store", function (e) {
+        var d = e.detail;
+        if (!d || !d.slug || !d.ok) return;
+        ensureDealsPromoPopAfterStorePick(d);
+      });
+      return;
+    }
+
+    if (!autoOnPage) return;
+
+    if (_promoBlockedUntilStorePick) return;
+
+    if (okDealsPromoShouldSkip(promoDismissKey())) return;
+    if (_promoAfterLocationSlug) return;
+    if (locModalOpenForPromo()) {
+      document.addEventListener("ok:store", function (e) {
+        var d = e.detail;
+        if (!d || !d.slug || !d.ok) return;
+        ensureDealsPromoPopAfterStorePick(d);
+      }, { once: true });
+      return;
+    }
+    setTimeout(openPop, 700);
+  }
+
+  function initPromoSubscribeAjax() {
+    var forms = document.querySelectorAll(".ok-offer-modal__form, form.ok-deals-promo-sub");
+    forms.forEach(function (form) {
+      if (form._okSubAjax || form.getAttribute("onclick")) return;
+      form._okSubAjax = true;
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var btn = form.querySelector('button[type="submit"], .ok-offer-modal__submit');
+        if (btn) btn.disabled = true;
+        var fd = new FormData(form);
+        fetch(form.getAttribute("action") || "/subscribe", {
+          method: "POST",
+          body: fd,
+          credentials: "same-origin",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        })
+          .then(function (res) {
+            return res.json().then(function (data) {
+              if (!res.ok) throw data;
+              return data;
+            });
+          })
+          .then(function (data) {
+            var pop = document.getElementById("okDealsPromoPopup");
+            var slug = (fd.get("store_slug") || "").toString().trim();
+            if (pop) slug = pop.getAttribute("data-store-slug") || slug;
+            var sk = okDealsPromoDismissKeyForSlug(slug);
+            okDealsPromoMarkSubscribed(sk);
+
+            var msg = (data && data.message) || "You're on the list!";
+            form.reset();
+            okDealsPromoCloseUi(pop);
+
+            var dest = data && data.redirect;
+            if (dest) {
+              queuePromoSubscribeToast(msg);
+              window.location.assign(dest);
+            } else {
+              toast(msg);
+            }
+          })
+          .catch(function (err) {
+            var msg = (err && err.message) || "Could not subscribe. Try again.";
+            toast(msg);
+          })
+          .finally(function () {
+            if (btn) btn.disabled = false;
+          });
+      });
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    flushPromoSubscribeToast();
     hydratePlaceholders(document);
     wire();
     initReadMore(document);
     initAccountNav();
+    initDealsPromoPopup();
+    initPromoSubscribeAjax();
     // Admin tables are enhanced by DataTables (loaded in the admin layout).
   });
   window.addEventListener("resize", function () { initReadMore(document); });

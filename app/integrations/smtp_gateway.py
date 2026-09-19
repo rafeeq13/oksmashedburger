@@ -11,6 +11,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from app.integrations.config import active_integration_config, integration_enabled, should_simulate
+from app.services.email_delivery import should_skip, note_failure
 
 _HOST_SCHEME_RE = re.compile(r"^(?:smtp|smtps|https?|mailto)://", re.I)
 _INVALID_PLACEHOLDER_HOSTS = frozenset({"smtp", "mail", "email", "server"})
@@ -66,6 +67,10 @@ def is_enabled(store):
 
 def send_email(store, to, subject, body, attachment=None, html=None, headers=None):
     """Send via the store's SMTP server. Returns {status, raw}."""
+    to = (to or "").strip()
+    if should_skip(to):
+        return {"status": "skipped", "raw": {"error": "recipient_blocked_or_invalid", "to": to}}
+
     cfg = store_smtp_config(store)
     att_name = attachment.get("filename") if attachment else None
     host = normalize_smtp_host(cfg.get("smtp_host"))
@@ -126,5 +131,11 @@ def send_email(store, to, subject, body, attachment=None, html=None, headers=Non
                     smtp.login(user, password)
                 smtp.sendmail(sender, [to], msg.as_string())
         return {"status": "sent", "raw": {"host": host, "to": to, "attachment": att_name}}
+    except smtplib.SMTPRecipientsRefused as e:
+        err = str(e)
+        note_failure(to, err)
+        return {"status": "failed", "raw": {"error": err, "permanent": True}}
     except Exception as e:
-        return {"status": "failed", "raw": {"error": "%s: %s" % (type(e).__name__, e)}}
+        err = "%s: %s" % (type(e).__name__, e)
+        note_failure(to, err)
+        return {"status": "failed", "raw": {"error": err}}

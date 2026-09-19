@@ -153,6 +153,23 @@ def _qs(store):
     return f"?store={store.slug}" if (_can_switch() and store) else ""
 
 
+def _promo_banner_scope_store():
+    """Which location's banner override is being edited (None = brand default)."""
+    slug = (request.args.get("store") or request.form.get("store") or "").strip()
+    u = current_user()
+    assigned = u.assigned_stores() if u else []
+    if slug:
+        s = Store.query.filter_by(slug=slug).first()
+        if s and (not assigned or s in assigned):
+            return s
+        return None
+    if len(assigned) == 1:
+        return assigned[0]
+    if _can_switch():
+        return None
+    return get_current_store()
+
+
 def _shell(store):
     from app.services.staff_permissions import user_admin_permissions
     u = current_user()
@@ -618,6 +635,190 @@ def site_images_save():
     return redirect("/admin/site-images" + _qs(store))
 
 
+@bp.get("/admin/mobile-header-deals")
+@roles_required(*ADMIN_ROLES)
+def mobile_header_deals_admin():
+    return redirect("/admin/promo-banner?view=mobile")
+
+
+@bp.post("/admin/mobile-header-deals")
+@roles_required(*ADMIN_ROLES)
+def mobile_header_deals_save():
+    from app.services.mobile_header_deals import load_mobile_header_deals, save_mobile_header_deals
+    existing = load_mobile_header_deals()
+    sent = request.files.get("image_file")
+    uploaded = _save_image(sent, "mobile-header-deals")
+    if sent and getattr(sent, "filename", "") and not uploaded:
+        flash("That image could not be uploaded — use JPG, PNG, or WebP.", "error")
+    image = existing.get("image", "")
+    if uploaded:
+        image = uploaded
+    else:
+        url = (request.form.get("image") or "").strip()
+        if url:
+            image = url
+    def _strip_int(field, default, lo, hi):
+        raw = request.form.get(field)
+        try:
+            n = int(raw) if raw not in (None, "") else int(default)
+        except (TypeError, ValueError):
+            n = int(default)
+        return max(lo, min(hi, n))
+
+    cfg = {
+        "enabled": bool(request.form.get("enabled")),
+        "image": image,
+        "width_px": _strip_int("width_px", existing.get("width_px", 1200), 280, 1200),
+        "height_px": _strip_int("height_px", existing.get("height_px", 72), 32, 240),
+        "link": request.form.get("link", "").strip() or existing.get("link", "/deals"),
+        "show_pages": request.form.getlist("show_pages"),
+        "blink_enabled": bool(request.form.get("blink_enabled")),
+        "blink_duration_s": request.form.get("blink_duration_s"),
+    }
+    saved = save_mobile_header_deals(cfg)
+    flash(
+        "Mobile promo saved (%s×%s px on site)."
+        % (saved["width_px"], saved["height_px"]),
+        "success",
+    )
+    return redirect("/admin/promo-banner?view=mobile")
+
+
+@bp.get("/admin/promo-banner")
+@roles_required(*ADMIN_ROLES)
+def promo_banner_admin():
+    from app.services.promo_banners import (
+        load_promo_banner, load_promo_banner_global, store_has_banner_override,
+        PROMO_IMAGE_SPEC,
+    )
+    shell_store = _admin_store()
+    scope = _promo_banner_scope_store()
+    cfg = load_promo_banner(scope) if scope else load_promo_banner_global()
+    from app.services.mobile_header_deals import load_mobile_header_deals
+    from app.services.promo_page_targets import PROMO_PAGE_CHOICES
+    promo_view = (request.args.get("view") or "popup").strip().lower()
+    if promo_view not in ("popup", "mobile"):
+        promo_view = "popup"
+    return render_template(
+        "admin/promo_banner.html",
+        cfg=cfg,
+        mobile_chip=load_mobile_header_deals(),
+        promo_page_choices=PROMO_PAGE_CHOICES,
+        promo_view=promo_view,
+        banner_scope=scope,
+        banner_has_override=store_has_banner_override(scope) if scope else False,
+        promo_fonts=CANVAS_FONT_CHOICES,
+        promo_image_spec=PROMO_IMAGE_SPEC,
+        **_shell(shell_store),
+    )
+
+
+@bp.post("/admin/promo-banner")
+@roles_required(*ADMIN_ROLES)
+def promo_banner_save():
+    from app.services.promo_banners import load_promo_banner, load_promo_banner_global, save_promo_banner
+    shell_store = _admin_store()
+    scope = _promo_banner_scope_store()
+    existing = load_promo_banner(scope) if scope else load_promo_banner_global()
+    slug = scope.slug if scope else ""
+    sent = request.files.get("image_file")
+    uploaded = _save_image(
+        sent,
+        "promo-banner" + ("-" + slug if slug else ""),
+    )
+    if sent and getattr(sent, "filename", "") and not uploaded:
+        flash("That image could not be uploaded — use JPG, PNG, or WebP.", "error")
+    use_image = bool(request.form.get("use_image"))
+    cfg = {
+        "enabled": bool(request.form.get("enabled")),
+        "placement": request.form.get("placement", "").strip(),
+        "width": request.form.get("width", "").strip(),
+        "height": request.form.get("height"),
+        "use_image": use_image,
+        "image": (uploaded or request.form.get("image", "").strip()) if use_image else "",
+        "image_position": request.form.get("image_position", "").strip(),
+        "bg_color": request.form.get("bg_color", "").strip(),
+        "link": request.form.get("link", "").strip(),
+        "show_deals_link": bool(request.form.get("show_deals_link")),
+        "text": request.form.get("text", "").strip(),
+        "text_color": request.form.get("text_color", "").strip(),
+        "text_size": request.form.get("text_size"),
+        "text_font": request.form.get("text_font", "").strip(),
+        "show_text": bool(request.form.get("show_text")),
+        "overlay": request.form.get("overlay"),
+        "border_style": (request.form.get("border_style") or "none").strip(),
+        "show_subscribe": bool(request.form.get("show_subscribe")),
+        "subscribe_label": request.form.get("subscribe_label", "").strip(),
+        "subscribe_border_color": request.form.get("subscribe_border_color", "").strip(),
+        "subscribe_input_color": request.form.get("subscribe_input_color", "").strip(),
+        "subscribe_bar_transparent": bool(request.form.get("subscribe_bar_transparent")),
+        "deals_link_color": request.form.get("deals_link_color", "").strip(),
+        "subscribe_placeholder_color": request.form.get("subscribe_placeholder_color", "").strip(),
+        "subscribe_btn_text_color": request.form.get("subscribe_btn_text_color", "").strip(),
+        "subscribe_btn_bg_color": request.form.get("subscribe_btn_bg_color", "").strip(),
+        "deals_link_size": request.form.get("deals_link_size"),
+        "subscribe_input_size": request.form.get("subscribe_input_size"),
+        "subscribe_btn_size": request.form.get("subscribe_btn_size"),
+        "deals_btn_text_color": request.form.get("deals_btn_text_color", "").strip(),
+        "mobile_text_size": request.form.get("mobile_text_size"),
+        "mobile_deals_link_size": request.form.get("mobile_deals_link_size"),
+        "mobile_subscribe_input_size": request.form.get("mobile_subscribe_input_size"),
+        "mobile_subscribe_btn_size": request.form.get("mobile_subscribe_btn_size"),
+        "popup_close_size": request.form.get("popup_close_size"),
+        "popup_close_bg_color": request.form.get("popup_close_bg_color", "").strip(),
+        "popup_close_color": request.form.get("popup_close_color", "").strip(),
+        "popup_modal_width_px": request.form.get("popup_modal_width_px"),
+        "popup_modal_min_height_px": request.form.get("popup_modal_min_height_px"),
+        "popup_join_width_px": request.form.get("popup_join_width_px"),
+        "popup_subscribe_gap_px": request.form.get("popup_subscribe_gap_px"),
+        "popup_field_height_px": request.form.get("popup_field_height_px"),
+        "popup_btn_height_px": request.form.get("popup_btn_height_px"),
+        "popup_btn_min_width_px": request.form.get("popup_btn_min_width_px"),
+        "popup_email_width_pct": request.form.get("popup_email_width_pct"),
+        "popup_subscribe_join_bg": bool(request.form.get("popup_subscribe_join_bg")),
+    }
+    _bar_bg = request.form.get("subscribe_bar_bg_color")
+    if _bar_bg is not None:
+        cfg["subscribe_bar_bg_color"] = _bar_bg.strip()
+    else:
+        cfg["subscribe_bar_bg_color"] = existing.get("subscribe_bar_bg_color")
+    _promo_pages = request.form.getlist("show_pages")
+    if _promo_pages:
+        cfg["show_pages"] = _promo_pages
+    cfg = {**existing, **cfg}
+    try:
+        save_promo_banner(cfg, store=scope)
+    except Exception:
+        current_app.logger.exception("promo_banner_save failed")
+        flash("Could not save the banner. Try again or use a smaller image.", "error")
+        if scope and _can_switch():
+            return redirect(f"/admin/promo-banner?store={scope.slug}")
+        if scope:
+            return redirect("/admin/promo-banner" + _qs(shell_store))
+        return redirect("/admin/promo-banner")
+    label = scope.name if scope else "brand default"
+    flash(f"Promo banner saved ({label}).", "success")
+    if scope and _can_switch():
+        return redirect(f"/admin/promo-banner?store={scope.slug}")
+    if scope:
+        return redirect("/admin/promo-banner" + _qs(shell_store))
+    return redirect("/admin/promo-banner")
+
+
+@bp.post("/admin/promo-banner/reset")
+@roles_required(*ADMIN_ROLES)
+def promo_banner_reset_store():
+    from app.services.promo_banners import clear_store_promo_banner
+    shell_store = _admin_store()
+    scope = _promo_banner_scope_store()
+    if not scope:
+        flash("Pick a location to reset its banner to the brand default.", "error")
+        return redirect("/admin/promo-banner" + _qs(shell_store))
+    clear_store_promo_banner(scope)
+    flash(f"{scope.name} now uses the brand default banner.", "success")
+    return redirect("/admin/promo-banner" + _qs(scope))
+
+
 # ── Features: switch whole areas of the storefront off ───────────────────
 @bp.get("/admin/features")
 @roles_required(*ADMIN_ROLES)
@@ -658,7 +859,9 @@ def inline_image():
     Same guard as inline-save: only keys the Site images registry knows about,
     so this cannot become a way to write arbitrary settings rows.
     """
+    from app.services.promo_banners import INLINE_IMAGE_KEY, set_promo_banner_image
     allowed = {slot[0] for _t, rows in SITE_IMAGE_SLOTS for slot in rows}
+    allowed.add(INLINE_IMAGE_KEY)
     key = (request.form.get("key") or "").strip()
     if key not in allowed:
         return {"ok": False, "error": "unknown image"}, 400
@@ -666,13 +869,18 @@ def inline_image():
     # the About page's video slot takes MP4/WEBM, every other slot only images
     exts = VIDEO_EXTS if key.endswith("_video") else IMAGE_EXTS
     sent = request.files.get("file")
-    url = _save_image(sent, "site-" + key.replace("_", "-"), exts, quiet=True)
+    slug = "promo-banner" if key == INLINE_IMAGE_KEY else "site-" + key.replace("_", "-")
+    url = _save_image(sent, slug, exts, quiet=True)
     if sent and getattr(sent, "filename", "") and not url:
         # a file WAS chosen and we refused it; falling through to the url field
         # here would quietly clear the slot instead of reporting the problem
         return {"ok": False, "error": "That file type is not allowed here | use %s."
                 % ", ".join(e.lstrip(".").upper() for e in exts)}, 400
     url = url or (request.form.get("url") or "").strip()
+    if key == INLINE_IMAGE_KEY:
+        saved = set_promo_banner_image(url, store=get_current_store())
+        return {"ok": True, "key": key, "url": saved.get("image") or ""}
+
     row = SiteSetting.query.filter_by(key=key).first()
     if url:
         if row:
@@ -683,6 +891,22 @@ def inline_image():
         db.session.delete(row)          # cleared → back to the built-in default
     db.session.commit()
     return {"ok": True, "key": key, "url": url}
+
+
+@bp.post("/admin/inline-promo-banner")
+@roles_required(*ADMIN_ROLES)
+def inline_promo_banner():
+    """Update one promo-banner field from ?edit=1 on the storefront."""
+    from app.services.promo_banners import update_promo_banner_field
+    data = request.get_json(silent=True) or {}
+    field = (data.get("field") or "").strip()
+    if not field:
+        return {"ok": False, "error": "which field?"}, 400
+    try:
+        cfg = update_promo_banner_field(field, data.get("value"), store=get_current_store())
+    except ValueError:
+        return {"ok": False, "error": "unknown field"}, 400
+    return {"ok": True, "field": field, "config": cfg}
 
 
 # ── On-page section styling (the editor bar, ?edit=1) ────────────────────
@@ -3267,10 +3491,16 @@ def staff_delete(sid):
 @bp.get("/admin/coupons")
 @roles_required(*ADMIN_ROLES)
 def coupons():
+    from sqlalchemy import or_
     store = _admin_store()
+    q = Coupon.query
+    filter_store = _optional_store_filter() or (store if not _can_switch() else None)
+    if filter_store:
+        q = q.filter(or_(Coupon.store_id.is_(None), Coupon.store_id == filter_store.id))
     return render_template("admin/coupons.html",
-                           coupons=Coupon.query.order_by(Coupon.created_at.desc()).all(),
+                           coupons=q.order_by(Coupon.created_at.desc()).all(),
                            kinds=COUPON_KINDS, stores=active_stores(),
+                           coupon_filter_store=filter_store,
                            **_shell(store))
 
 

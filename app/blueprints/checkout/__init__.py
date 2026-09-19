@@ -2,7 +2,7 @@
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, session, flash, jsonify, current_app
 
 from app.extensions import db
 from app import cart as cartlib
@@ -65,6 +65,16 @@ def _checkout_error(message):
     session["checkout_draft"] = _checkout_draft()
     flash(message, "error")
     return redirect("/checkout")
+
+
+def _checkout_email(raw=None):
+    """Normalized email from checkout form; empty if missing/invalid."""
+    from app.services.email_delivery import is_valid_email
+
+    email = (raw if raw is not None else request.form.get("email", "")).strip().lower()
+    if not is_valid_email(email):
+        return ""
+    return email
 
 
 def _render_checkout(store, form=None):
@@ -142,7 +152,7 @@ def checkout():
                 scheduled_for = datetime.strptime(request.form.get("scheduled_for", ""), "%Y-%m-%dT%H:%M")
             except (ValueError, TypeError):
                 return _checkout_error("Please choose a valid date and time for your scheduled order.")
-            if scheduled_for <= datetime.now():
+            if scheduled_for <= store.local_now():
                 return _checkout_error("Your scheduled time must be in the future.")
             if not store.is_open_at(scheduled_for):
                 return _checkout_error(f"{store.name} isn't open at that time - please pick a slot within opening hours "
@@ -184,11 +194,18 @@ def checkout():
                     % (min_order, s["subtotal"])
                 )
 
+        customer_email = _checkout_email()
+        if not customer_email:
+            return _checkout_error(
+                "Please enter a valid email address. We need it for your receipt, "
+                "order updates, and kitchen tickets."
+            )
+
         order = Order(
             store=store, user=current_user(), order_type=order_type,
             scheduled_for=scheduled_for,
             customer_name=request.form.get("name", "").strip(),
-            customer_email=request.form.get("email", "").strip(),
+            customer_email=customer_email,
             customer_phone=request.form.get("phone", "").strip(),
             address=addr["one_line"],
             address_line1=addr["line1"],
@@ -272,6 +289,22 @@ def checkout():
         if order.user:
             order.user.loyalty_points += int(float(order.total))
 
+        if order.customer_email:
+            try:
+                from app.services.subscribers import ensure_subscriber
+                ensure_subscriber(
+                    order.customer_email,
+                    store=store,
+                    source="order",
+                    ip_address=request.remote_addr,
+                )
+            except Exception:
+                current_app.logger.warning(
+                    "order subscriber add failed for %s",
+                    order.customer_email,
+                    exc_info=True,
+                )
+
         db.session.commit()
 
         from app.services.order_sync import sync_order_integrations
@@ -307,9 +340,16 @@ def checkout_payment_intent():
     if amount <= 0:
         return jsonify(ok=False, error="Invalid order total"), 400
 
+    email = _checkout_email(payload.get("email"))
+    if not email:
+        return jsonify(
+            ok=False,
+            error="Please enter a valid email address before paying with your card.",
+        ), 400
+
     result = create_payment_intent(
         store, amount,
-        metadata={"store": store.slug, "checkout": "1"},
+        metadata={"store": store.slug, "checkout": "1", "customer_email": email[:100]},
     )
     if result["status"] == "failed":
         err = (result.get("raw") or {}).get("error") or "Could not start card payment"

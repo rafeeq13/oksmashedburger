@@ -57,7 +57,7 @@
   <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
   {% block head_extra %}{% endblock %}
 </head>
-<body class="font-body bg-white text-ink antialiased"{% if lock_store_location %} data-lock-store="1"{% endif %}>
+<body class="font-body bg-white text-ink antialiased" data-needs-location="{{ 1 if needs_location else 0 }}"{% if lock_store_location %} data-lock-store="1"{% endif %}>
   {# Modern (Lucide) icon sprite. app.js swaps every fa-solid/fa-regular
      glyph for one of these; fa-brands stays on Font Awesome because
      Lucide deliberately ships no brand marks. #}
@@ -82,7 +82,14 @@
   {% include "partials/header.html" %}
   </div>
 
+  {# Mobile promo: full-width strip under sticky nav — not inside .ok-header #}
+  {% include "partials/mobile_promo_strip.html" %}
+
+  {% with placement='below_header' %}{% include "partials/deals_promo_banner_slot.html" %}{% endwith %}
+
   <main id="main" class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
+
+  {% with placement='above_footer' %}{% include "partials/deals_promo_banner_slot.html" %}{% endwith %}
 
   {% set _fs = pb_page_style('site', 'footer') %}
   <div class="pb-sec" data-page="site" data-section="footer" data-label="Footer" data-sectype="chrome"{% if _fs %} style="{{ _fs }}"{% endif %}>
@@ -102,6 +109,8 @@
   {# Sticky order bar on the mobile layout. Everywhere except the menu,
      which is already the ordering screen and has its own sticky bar. #}
   {% if request.path != "/menu" %}{% include "partials/mobile_order_cta.html" %}{% endif %}
+
+  {% include "partials/deals_promo_visit_popup.html" %}
 
   <div class="ok-veil" data-veil aria-hidden="true"></div>
   {% if inline_edit %}{% include "partials/inline_editor.html" %}{% endif %}

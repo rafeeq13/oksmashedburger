@@ -460,6 +460,15 @@ def create_app(config_object=None):
                         wanted.add(fam)
         except Exception:
             pass                       # a missing table must not break the page
+        try:
+            from .services.promo_banners import load_promo_banner
+            from .helpers import get_current_store
+            _pb_font = (load_promo_banner(get_current_store()).get("text_font") or "").strip()
+            _gf = by_stack.get(_pb_font)
+            if _gf:
+                wanted.add(_gf)
+        except Exception:
+            pass
         q = "&".join("family=" + f for f in sorted(wanted))
         return ("https://fonts.googleapis.com/css2?" + q + "&display=swap")
 
@@ -610,10 +619,11 @@ def create_app(config_object=None):
             fbq_events = pop_fbq_events()
         except Exception:
             fbq_events = []
+        _admin_perms = user_admin_permissions(_u) if _u else set()
         _inline = (bool(request.args.get("edit"))
                    and _u is not None and _u.role is not None
                    and can_access_admin(_u)
-                   and "pages" in user_admin_permissions(_u))
+                   and ("pages" in _admin_perms or "images" in _admin_perms))
 
         def pc(key, fallback=""):
             val = site.get(key) or pc_defaults.get(key) or fallback
@@ -647,6 +657,52 @@ def create_app(config_object=None):
         from .integrations.google_maps import store_google_maps_key
         from .helpers import footer_social_links, normalize_order_type, store_location_locked
         from .services.staff_permissions import can_access_admin
+        _promo_banner = None
+        _promo_cfg = None
+        _mobile_promo_strip = None
+        _promo_image_key = "promo_banner_image"
+        _promo_store = current
+        try:
+            from .services.promo_banners import (
+                load_promo_banner,
+                promo_banner_on_request,
+                promo_banner_visible,
+                promo_visit_popup_any_cfg,
+                INLINE_IMAGE_KEY,
+            )
+            from .services.promo_page_targets import promo_shown_on_path
+            from .services.mobile_header_deals import (
+                load_mobile_header_deals, visible as mobile_header_deals_visible,
+            )
+            _promo_image_key = INLINE_IMAGE_KEY
+            _promo_cfg = load_promo_banner(_promo_store)
+            _needs_loc = not session.get("context_set")
+            _show_promo = promo_banner_on_request(
+                _promo_cfg, feats, request.path,
+                needs_location=_needs_loc, inline_edit=_inline,
+            )
+            _promo_banner = None
+            if _show_promo:
+                _eff_cfg = _promo_cfg
+                if _needs_loc and not promo_banner_visible(
+                    _promo_cfg, feats, request.path, inline_edit=_inline,
+                ):
+                    _eff_cfg = promo_visit_popup_any_cfg(feats) or _promo_cfg
+                _promo_banner = dict(_eff_cfg)
+                _promo_banner["auto_open_on_page"] = promo_shown_on_path(
+                    _promo_banner.get("show_pages"), request.path,
+                )
+                if _promo_store:
+                    _promo_banner["store_slug"] = _promo_store.slug
+                    _promo_banner["store_name"] = _promo_store.name
+            _mhdr_cfg = load_mobile_header_deals()
+            _mobile_promo_strip = (
+                _mhdr_cfg
+                if mobile_header_deals_visible(_mhdr_cfg, request.path, inline_edit=_inline)
+                else None
+            )
+        except Exception:
+            app.logger.exception("promo_banner context failed")
         return {
             "brand_name": app.config["BRAND_NAME"],
             "logo_url": _asset("brand_logo", "img/logo.png"),
@@ -697,6 +753,15 @@ def create_app(config_object=None):
             "lock_store_location": store_location_locked(),
             "show_admin_link": can_access_admin(user),
             "fbq_events": fbq_events,
+            "promo_banner": _promo_banner,
+            "promo_banner_image_key": _promo_image_key,
+            "promo_banner_inline_cfg": (
+                {**_promo_cfg, "store_name": _promo_store.name}
+                if (_inline and _promo_cfg and _promo_store) else
+                (_promo_cfg if (_inline and _promo_cfg) else None)
+            ),
+            "mobile_promo_strip": _mobile_promo_strip,
+            "mobile_header_deals": None,
         }
 
     # ── CLI ─────────────────────────────────────────────────────

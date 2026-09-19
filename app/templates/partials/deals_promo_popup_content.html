@@ -1,0 +1,88 @@
+{% if promo_banner and promo_banner.placement == 'visit_popup' %}
+{% set _pbs = pb_page_style('site', 'promo_banner') %}
+{% set _headline_style = 'color: ' ~ promo_banner.text_color ~ '; font-size: ' ~ promo_banner.text_size ~ 'px;' %}
+{% if promo_banner.text_font %}{% set _headline_style = _headline_style ~ ' font-family: ' ~ promo_banner.text_font ~ ';' %}{% endif %}
+{% set _join_bg = 'transparent' if promo_banner.subscribe_bar_transparent else promo_banner.subscribe_bar_bg_color %}
+{% set _join_eff = promo_banner.popup_join_width_px if promo_banner.popup_join_width_px > 0 else (promo_banner.popup_modal_width_px - 32) %}
+{% set _popup_input = promo_banner.subscribe_input_color|lower %}
+{% if _popup_input in ['#fff', '#ffffff'] %}
+{% set _popup_input = '#111111' %}
+{% endif %}
+{% set _offer_vars = (
+  '--offer-headline-bg: ' ~ promo_banner.bg_color
+  ~ '; --offer-overlay: ' ~ promo_banner.overlay
+  ~ '; --offer-min-h: ' ~ promo_banner.height ~ 'px'
+  ~ '; --offer-cta-bg: ' ~ promo_banner.deals_link_color
+  ~ '; --offer-cta-text: ' ~ promo_banner.deals_btn_text_color
+  ~ '; --offer-deals-size: ' ~ promo_banner.deals_link_size ~ 'px'
+  ~ '; --offer-email-size: ' ~ promo_banner.subscribe_input_size ~ 'px'
+  ~ '; --offer-btn-size: ' ~ promo_banner.subscribe_btn_size ~ 'px'
+  ~ '; --offer-field-border: ' ~ promo_banner.subscribe_border_color
+  ~ '; --offer-input: ' ~ _popup_input
+  ~ '; --offer-placeholder: ' ~ promo_banner.subscribe_placeholder_color
+  ~ '; --offer-field-bg: #ffffff'
+  ~ '; --offer-btn-bg: ' ~ promo_banner.subscribe_btn_bg_color
+  ~ '; --offer-btn-text: ' ~ promo_banner.subscribe_btn_text_color
+  ~ '; --offer-join-bg: ' ~ _join_bg
+  ~ '; --offer-m-headline: ' ~ promo_banner.mobile_text_size ~ 'px'
+  ~ '; --offer-m-deals: ' ~ promo_banner.mobile_deals_link_size ~ 'px'
+  ~ '; --offer-m-email: ' ~ promo_banner.mobile_subscribe_input_size ~ 'px'
+  ~ '; --offer-m-btn: ' ~ promo_banner.mobile_subscribe_btn_size ~ 'px'
+  ~ '; --offer-close-size: ' ~ promo_banner.popup_close_size ~ 'px'
+  ~ '; --offer-close-bg: ' ~ promo_banner.popup_close_bg_color
+  ~ '; --offer-close-color: ' ~ promo_banner.popup_close_color
+  ~ '; --offer-popup-w: ' ~ promo_banner.popup_modal_width_px ~ 'px'
+  ~ '; --offer-popup-min-h: ' ~ promo_banner.popup_modal_min_height_px ~ 'px'
+  ~ '; --offer-join-w: ' ~ _join_eff ~ 'px'
+  ~ '; --offer-form-gap: ' ~ promo_banner.popup_subscribe_gap_px ~ 'px'
+  ~ '; --offer-field-h: ' ~ promo_banner.popup_field_height_px ~ 'px'
+  ~ '; --offer-btn-h: ' ~ promo_banner.popup_btn_height_px ~ 'px'
+  ~ '; --offer-btn-min-w: ' ~ promo_banner.popup_btn_min_width_px ~ 'px'
+  ~ '; --offer-email-min-pct: ' ~ promo_banner.popup_email_width_pct ~ '%'
+  ~ ';') %}
+<div class="pb-sec" data-page="site" data-section="promo_banner" data-label="Deals promo banner" data-sectype="chrome"{% if _pbs %} style="{{ _pbs }}"{% endif %}>
+  <article class="ok-offer-modal__card" style="{{ _offer_vars }}">
+    <h2 id="okOfferModalTitle" class="visually-hidden">Deals and offers</h2>
+
+    {% if promo_banner.use_image and promo_banner.image %}
+    <img src="{{ promo_banner.image | vasset }}" alt="" class="ok-offer-modal__photo ok-deals-promo-img" style="object-position: {{ promo_banner.image_position }};" loading="lazy" decoding="async"{% if inline_edit %} data-ie-slot="{{ promo_banner_image_key }}" title="Click to change this picture"{% endif %}>
+    {% else %}
+    <span class="ok-offer-modal__photo ok-offer-modal__photo--fill" style="background: {{ promo_banner.bg_color }};"></span>
+    {% endif %}
+    <span class="ok-offer-modal__veil{% if promo_banner.overlay <= 0 %} ok-offer-modal__veil--none{% endif %}" aria-hidden="true"></span>
+
+    <button type="button" class="ok-offer-modal__x" data-deals-promo-close aria-label="Close">
+      <span class="ok-offer-modal__x-glyph" aria-hidden="true"></span>
+    </button>
+
+    <div class="ok-offer-modal__stack">
+      {% if promo_banner.show_text and promo_banner.text %}
+      <p class="ok-offer-modal__headline ok-deals-promo-headline" style="{{ _headline_style }}">
+        {% if inline_edit %}<span class="ok-ie" data-promo="text" title="Click to edit banner text">{{ promo_banner.text }}</span>{% else %}{{ promo_banner.text }}{% endif %}
+      </p>
+      {% endif %}
+      {% if promo_banner.show_deals_link and promo_banner.link %}
+      <a href="{{ promo_banner.link }}" class="ok-offer-modal__shop ok-deals-promo-deals-cta"{% if inline_edit %} onclick="return false;"{% endif %}>
+        {% if inline_edit %}<span class="ok-ie" data-pc="promo_banner_deals_link" title="Click to edit link label">{{ pc('promo_banner_deals_link', 'View deals') }}</span>{% else %}{{ pc('promo_banner_deals_link', 'View deals') }}{% endif %}
+      </a>
+      {% endif %}
+
+      {% if promo_banner.show_subscribe %}
+      <div class="ok-offer-modal__join{% if not promo_banner.popup_subscribe_join_bg %} ok-offer-modal__join--plain{% endif %}">
+        <form method="post" action="/subscribe" class="ok-offer-modal__form"{% if inline_edit %} onclick="return false;"{% endif %}>
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="source" value="promo_banner">
+          <input type="hidden" name="redirect" value="/deals">
+          {% if current_store %}<input type="hidden" name="store_slug" value="{{ current_store.slug }}">{% endif %}
+          <label class="visually-hidden" for="okOfferModalEmail">Email</label>
+          <input id="okOfferModalEmail" type="email" name="email" required autocomplete="email" placeholder="Email" class="ok-offer-modal__email ok-deals-promo-sub-input">
+          <button type="submit" class="ok-offer-modal__submit">
+            <span class="ok-offer-modal__submit-text ok-deals-promo-sub-btn">{% if inline_edit %}<span class="ok-ie" data-promo="subscribe_label" title="Click to edit button text">{{ promo_banner.subscribe_label }}</span>{% else %}{{ promo_banner.subscribe_label }}{% endif %}</span>
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </article>
+</div>
+{% endif %}

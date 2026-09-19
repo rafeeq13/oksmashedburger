@@ -32,6 +32,17 @@ def set_location(slug):
     return redirect(request.args.get("next") or "/menu")
 
 
+@bp.get("/api/deals-promo-popup")
+def api_deals_promo_popup():
+    """Visit-popup HTML after location is saved (used by app.js on the home page)."""
+    from app.services.promo_banners import deals_visit_popup_partial_context
+
+    ctx = deals_visit_popup_partial_context()
+    if not ctx:
+        return "", 204
+    return render_template("partials/deals_promo_visit_popup.html", **ctx)
+
+
 @bp.get("/api/select-store/<slug>")
 def api_select_store(slug):
     """Set the current store WITHOUT redirecting (used by the locations page so

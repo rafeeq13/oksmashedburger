@@ -192,9 +192,14 @@ def _build_fulfillments(order, store):
 
 
 def build_square_order(order, store):
+    from app.services.email_delivery import is_valid_email
+
     cfg = store_square_config(store)
     location_id = (cfg.get("location_id") or "").strip()
     currency = (order.currency or "USD").upper()
+    email = (order.customer_email or "").strip().lower()
+    if not is_valid_email(email):
+        raise ValueError("customer_email required for Square order sync")
     body = {
         "location_id": location_id,
         "reference_id": (order.number or "")[:40],
@@ -205,7 +210,7 @@ def build_square_order(order, store):
             "store_slug": store.slug if store else "",
             "order_type": order.order_type or "",
             "customer_name": (order.customer_name or "")[:100],
-            "customer_email": (order.customer_email or "")[:100],
+            "customer_email": email[:100],
             "customer_phone": (order.customer_phone or "")[:30],
             "payment_method": order.payment_method or "",
             "source": "website",
@@ -269,7 +274,11 @@ def push_order(store, order, stripe_ref=None):
         return {"status": "skipped", "reference": None,
                 "raw": {"error": "Square location_id + access_token required"}}
 
-    sq_order, location_id, currency = build_square_order(order, store)
+    try:
+        sq_order, location_id, currency = build_square_order(order, store)
+    except ValueError as exc:
+        return {"status": "failed", "reference": None, "raw": {"error": str(exc)}}
+
     created = _request(store, "POST", "/v2/orders", {
         "idempotency_key": str(uuid.uuid4()),
         "order": sq_order,

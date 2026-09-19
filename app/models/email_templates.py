@@ -708,7 +708,11 @@ def render(tpl_key, ctx, rows=None, cta_href=None, brand=None):
     cta_label = format_text(
         get_field(tpl_key, "cta_label", brand) or get_field(tpl_key, "cta", brand) or get_layout("default_cta_label", brand),
         ctx)
-    cta_url_raw = get_field(tpl_key, "cta_url", brand) or get_layout("default_cta_url", brand) or (cta_href or "")
+    cta_url_raw = get_field(tpl_key, "cta_url", brand)
+    if not cta_url_raw and tpl_key == "subscribed":
+        cta_url_raw = cta_href or "/deals"
+    if not cta_url_raw:
+        cta_url_raw = get_layout("default_cta_url", brand) or (cta_href or "")
     cta_url = format_text(cta_url_raw, ctx)
     if cta_url and cta_url.startswith("/"):
         try:
