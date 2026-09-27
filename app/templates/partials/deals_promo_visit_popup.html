@@ -1,7 +1,7 @@
 {% if promo_banner and promo_banner.placement == 'visit_popup' %}
 <div id="okDealsPromoPopup" class="ok-offer-modal{% if inline_edit %} is-open{% endif %}"{% if not inline_edit %} hidden{% endif %}
      data-store-slug="{{ current_store.slug if current_store else '' }}"
-     data-promo-auto-open="{{ 0 if needs_location else (1 if promo_banner.get('auto_open_on_page', true) else 0) }}"
+     data-promo-auto-open="{{ 1 if promo_banner.get('auto_open_on_page', true) else 0 }}"
      aria-hidden="{% if inline_edit %}false{% else %}true{% endif %}">
   <button type="button" class="ok-offer-modal__dim" data-deals-promo-close tabindex="-1" aria-label="Close"></button>
   <div class="ok-offer-modal__wrap" role="dialog" aria-modal="true" aria-labelledby="okOfferModalTitle">

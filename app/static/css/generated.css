@@ -124,7 +124,8 @@
 /* ---- hand-written tail (must be appended AFTER generation) ---- */
 .ok-nofocus:focus{outline:none}
 .ok-checkable{transition:background-color .15s ease,border-color .15s ease}
-.ok-checkable:has(:checked){border-color:var(--ok-yellow)!important;background-color:rgba(255,243,204,.5)!important}
+.ok-checkable:has(input[type="radio"]:checked),
+.ok-checkable:has(input[type="checkbox"]:checked){border-color:var(--ok-yellow)!important;background-color:rgba(255,243,204,.5)!important}
 .ok-divide-y > * + *{border-top:1px solid var(--ok-line)}
 .ok-grayscale-35{filter:grayscale(.35)}
 .ok-hovergroup:hover .ok-ungray{filter:grayscale(0)}

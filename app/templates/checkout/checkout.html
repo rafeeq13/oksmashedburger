@@ -14,7 +14,7 @@
 {% block content %}
 {% set form = form or {} %}
 {% set sel_order_type = form.get('order_type') or order_type %}
-{% set sel_fulfillment = form.get('fulfillment') or ('asap' if store and store.open_now else 'scheduled') %}
+{% set sel_fulfillment = form.get('fulfillment') or ('scheduled' if form.get('scheduled_for') else ('asap' if store and store.open_now else 'scheduled')) %}
 {% set addr_line1 = form.get('address_line1') or (default_address.line1 if default_address else '') %}
 {% set addr_line2 = form.get('address_line2') or (default_address.line2 if default_address else '') %}
 {% set addr_city = form.get('address_city') or (default_address.city if default_address else 'Philadelphia') %}
@@ -100,7 +100,27 @@
             </label>
             <label data-checkout-schedule-option class="ok-choice ok-choice--stack ok-pointer transition ok-checkable ok-bc-varokline{% if not store or not store.scheduling_open %} d-none{% endif %}">
               <span class="d-flex align-items-center ok-gap-3"><input type="radio" name="fulfillment" value="scheduled" class="ok-w-5 ok-h-5 accent-okyellow flex-shrink-0" {% if sel_fulfillment == 'scheduled' %}checked{% endif %}><span class="fw-semibold d-flex align-items-center gap-2"><i class="fa-solid fa-calendar-day text-gold"></i> Schedule</span></span>
-              <input type="datetime-local" name="scheduled_for" aria-label="Date and time for a scheduled order" class="ok-input ok-mt-25 ok-fs-sm w-100" min="{{ min_schedule }}" value="{{ form.get('scheduled_for') or default_schedule }}">
+              <input type="hidden" name="scheduled_for" data-checkout-scheduled-for value="{{ form.get('scheduled_for') or '' }}">
+              {% if sched_days %}
+              <div class="ok-grid ok-grid-2 ok-gap-25 ok-mt-25 w-100" data-checkout-sched-picks>
+                <label class="d-block ok-min-w-0 mb-0">
+                  <span class="ok-label ok-fs-xs">Day</span>
+                  <select id="checkoutSchedDay" class="ok-input ok-select ok-fs-sm w-100" aria-label="Scheduled day">
+                    {% for d in sched_days %}
+                    <option value="{{ d.date }}">{{ d.label }}</option>
+                    {% endfor %}
+                  </select>
+                </label>
+                <label class="d-block ok-min-w-0 mb-0">
+                  <span class="ok-label ok-fs-xs">Time</span>
+                  <select id="checkoutSchedTime" class="ok-input ok-select ok-fs-sm w-100" aria-label="Scheduled time"></select>
+                </label>
+              </div>
+              <p class="ok-fs-xs text-muted-warm ok-mt-2 mb-0" data-checkout-sched-hours></p>
+              <script type="application/json" id="checkoutSchedData">{{ sched_days|tojson }}</script>
+              {% else %}
+              <p class="ok-fs-xs text-ok-red ok-mt-25 mb-0">No bookable times in the next few days.</p>
+              {% endif %}
             </label>
           </div>
           <p class="ok-hint ok-mt-3 text-ok-red{% if not store or store.open_now or not store.scheduling_open %} d-none{% endif %}" data-checkout-schedule-hint><i class="fa-solid fa-circle-exclamation"></i> Closed for immediate orders, schedule one within opening hours (today: <span data-checkout-today-hours>{{ store.today_hours if store else '' }}</span>).</p>
@@ -280,6 +300,111 @@ if (typeof fbq === "function") {
 (function () {
   var form = document.querySelector('form[action="/checkout"]');
   if (!form) return;
+
+  // ----- Schedule: same day/time slots as menu (session schedule_at pre-fills) -----
+  (function () {
+    var daySel = document.getElementById("checkoutSchedDay");
+    var timeSel = document.getElementById("checkoutSchedTime");
+    var hidden = form.querySelector("[data-checkout-scheduled-for]");
+    var hoursNote = form.querySelector("[data-checkout-sched-hours]");
+    if (!daySel || !timeSel || !hidden) return;
+    var DAYS = (function () {
+      var tag = document.getElementById("checkoutSchedData");
+      try { return tag ? JSON.parse(tag.textContent) : []; } catch (e) { return []; }
+    })();
+
+    function syncHidden() {
+      hidden.value = timeSel.value || "";
+      if (hidden.value) {
+        fetch("/api/schedule?schedule_at=" + encodeURIComponent(hidden.value), { credentials: "same-origin" }).catch(function () {});
+      }
+    }
+
+    function fillTimes(keep) {
+      var day = DAYS.filter(function (d) { return d.date === daySel.value; })[0];
+      timeSel.innerHTML = "";
+      if (!day) {
+        hidden.value = "";
+        return;
+      }
+      day.slots.forEach(function (sl) {
+        var o = document.createElement("option");
+        o.value = sl.value;
+        o.textContent = sl.label;
+        timeSel.appendChild(o);
+      });
+      if (keep && day.slots.some(function (s) { return s.value === keep; })) {
+        timeSel.value = keep;
+      } else if (day.slots[0]) {
+        timeSel.value = day.slots[0].value;
+      }
+      if (hoursNote) {
+        hoursNote.textContent = day.label + " · open " + day.hours
+          + " · last slot is 15 minutes before closing";
+      }
+      syncHidden();
+    }
+
+    function applyDays(days, keepValue) {
+      DAYS = days || [];
+      var keep = keepValue || hidden.value || "";
+      daySel.innerHTML = "";
+      DAYS.forEach(function (d) {
+        var opt = document.createElement("option");
+        opt.value = d.date;
+        opt.textContent = d.label;
+        daySel.appendChild(opt);
+      });
+      if (keep && DAYS.some(function (d) { return d.date === keep.slice(0, 10); })) {
+        daySel.value = keep.slice(0, 10);
+      } else if (DAYS[0]) {
+        daySel.value = DAYS[0].date;
+      }
+      fillTimes(keep);
+    }
+
+    var saved = (hidden.value || "").trim();
+    if (saved && DAYS.some(function (d) { return d.date === saved.slice(0, 10); })) {
+      daySel.value = saved.slice(0, 10);
+    }
+    fillTimes(saved);
+
+    function syncFulfillmentRadios() {
+      var schedRadio = form.querySelector('input[name="fulfillment"][value="scheduled"]');
+      var asapRadio = form.querySelector('input[name="fulfillment"][value="asap"]');
+      if (!schedRadio || !(hidden.value || "").trim()) return;
+      schedRadio.checked = true;
+      if (asapRadio) asapRadio.checked = false;
+    }
+    syncFulfillmentRadios();
+
+    daySel.addEventListener("change", function () { fillTimes(null); });
+    timeSel.addEventListener("change", syncHidden);
+
+    form.querySelectorAll('input[name="fulfillment"]').forEach(function (r) {
+      r.addEventListener("change", function () {
+        if (r.value === "asap" && r.checked) {
+          fetch("/api/schedule?schedule_at=", { credentials: "same-origin" }).catch(function () {});
+        } else if (r.value === "scheduled" && r.checked) {
+          syncHidden();
+        }
+      });
+    });
+
+    window.refreshCheckoutScheduleSlots = function (done) {
+      fetch("/api/schedule-slots", {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { "X-Requested-With": "fetch" },
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.ok && d.days) applyDays(d.days, hidden.value);
+          if (done) done();
+        })
+        .catch(function () { if (done) done(); });
+    };
+  })();
 
   // ----- Tip + Delivery/Pickup: keep summary totals live -----
   var totalEl = form.querySelector("[data-total-display]");
@@ -540,6 +665,9 @@ if (typeof fbq === "function") {
     if (d.scheduling_open != null) {
       var schedOption = form.querySelector("[data-checkout-schedule-option]");
       if (schedOption) schedOption.classList.toggle("d-none", !d.scheduling_open);
+      if (d.scheduling_open && window.refreshCheckoutScheduleSlots) {
+        window.refreshCheckoutScheduleSlots();
+      }
     }
     var schedHint = form.querySelector("[data-checkout-schedule-hint]");
     if (schedHint && d.open_now != null && d.scheduling_open != null) {

@@ -26,7 +26,7 @@
     var startY = window.scrollY || window.pageYOffset;
     var maxY = Math.max(0, root.scrollHeight - window.innerHeight);
     toY = Math.max(0, Math.min(toY, maxY));
-    var dist = toY | startY;
+    var dist = toY - startY;
     if (Math.abs(dist) < 2) return;
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) { window.scrollTo(0, toY); return; }
     var prev = root.style.scrollBehavior;
@@ -42,7 +42,67 @@
     }
     requestAnimationFrame(step);
   }
-  function smoothScrollToEl(el) { animateScrollTo(window.scrollY + el.getBoundingClientRect().top | stickyOffset(), 900); }
+  function isMenuMobileViewport() {
+    return !!(window.matchMedia && window.matchMedia("(max-width: 767px)").matches);
+  }
+
+  /** Sticky chrome above menu category sections (mobile vs desktop). */
+  function menuCategoryScrollOffset() {
+    var mobile = isMenuMobileViewport();
+    var gap = mobile ? 6 : 12;
+    var total = gap;
+    var hdr = document.getElementById("okHeader");
+    if (hdr) total += hdr.getBoundingClientRect().height;
+    if (mobile) {
+      var promo = document.querySelector(".ok-mob-promo-strip");
+      if (promo) {
+        var pr = promo.getBoundingClientRect();
+        if (pr.height > 0 && pr.bottom > 0) total += pr.height;
+      }
+    }
+    var stick = document.querySelector(".ok-menu-stick");
+    if (stick) total += stick.getBoundingClientRect().height;
+    return total;
+  }
+
+  function scrollToMenuSection(el) {
+    if (!el) return;
+    var offset = menuCategoryScrollOffset();
+    var rect = el.getBoundingClientRect();
+    var startY = window.scrollY || window.pageYOffset;
+    var y = startY + rect.top - offset;
+    var maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    y = Math.max(0, Math.min(y, maxY));
+
+    if (isMenuMobileViewport()) {
+      // Last categories (e.g. Dessert): never snap to page bottom / footer.
+      if (y >= maxY - 4) {
+        var want = startY + rect.top - offset;
+        if (rect.top >= offset - 8 && rect.top <= offset + 48) return;
+        y = Math.min(want, maxY);
+        if (want > maxY && rect.top < window.innerHeight * 0.85) {
+          y = Math.max(0, Math.min(startY + rect.top - offset, maxY));
+        }
+      }
+    }
+
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      window.scrollTo(0, y);
+      return;
+    }
+    animateScrollTo(y, isMenuMobileViewport() ? 480 : 680);
+  }
+
+  function smoothScrollToEl(el) {
+    if (!el) return;
+    if (el.hasAttribute("data-menu-section")) {
+      scrollToMenuSection(el);
+      return;
+    }
+    var y = window.scrollY + el.getBoundingClientRect().top - stickyOffset();
+    animateScrollTo(y, 900);
+  }
 
   function initAccountNav() {
     var nav = document.querySelector(".ok-account-nav");
@@ -62,11 +122,11 @@
       var max = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
       var linkLeft = link.offsetLeft;
       if (scroller !== nav) {
-        linkLeft = link.getBoundingClientRect().left | scroller.getBoundingClientRect().left + scroller.scrollLeft;
+        linkLeft = link.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
       }
       var next = link.nextElementSibling;
       while (next && !next.classList.contains("ok-account-nav__link")) next = next.nextElementSibling;
-      var left = linkLeft | pad;
+      var left = linkLeft - pad;
       if (next) {
         var showNext = linkLeft + link.offsetWidth + peek - scroller.clientWidth;
         if (showNext > scroller.scrollLeft) left = Math.min(max, showNext);
@@ -358,14 +418,12 @@
   // `optimistic` (name/city/zip) updates the UI instantly before the request returns.
   function selectStore(slug, optimistic) {
     if (!slug) return;
-    var promoAfterPick = document.body.getAttribute("data-needs-location") === "1";
     if (optimistic) document.dispatchEvent(new CustomEvent("ok:store", { detail: Object.assign({ slug: slug }, optimistic) }));
     return fetch("/api/select-store/" + encodeURIComponent(slug), { credentials: "same-origin" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d && d.ok) {
           document.dispatchEvent(new CustomEvent("ok:store", { detail: d }));
-          if (promoAfterPick) ensureDealsPromoPopAfterStorePick(d);
           if (d.cart_unavailable && d.cart_unavailable.length) {
             var msg = "These items aren't available at " + (d.name || "this location") + ": "
               + d.cart_unavailable.join(", ")
@@ -422,12 +480,16 @@
   }
 
   function ensureLocAutocomplete(done) {
-    var root = document.querySelector("[data-loc-autocomplete]");
-    if (!root) { if (done) done(); return; }
-    var mapsKey = root.getAttribute("data-maps-key");
+    var roots = document.querySelectorAll("[data-loc-autocomplete]");
+    if (!roots.length) { if (done) done(); return; }
+    var mapsKey = roots[0].getAttribute("data-maps-key");
     if (!mapsKey) { if (done) done(); return; }
     function ready() {
-      if (window.OK && OK.initLocationPicker && !root._locInit) OK.initLocationPicker(root);
+      if (window.OK && OK.initLocationPicker) {
+        document.querySelectorAll("[data-loc-autocomplete]").forEach(function (root) {
+          OK.initLocationPicker(root);
+        });
+      }
       if (done) done();
     }
     if (document.querySelector('script[src*="address-autocomplete.js"]') && window.OK && OK.initLocationPicker) {
@@ -437,7 +499,6 @@
     }
     var s = document.createElement("script");
     s.src = "/static/js/address-autocomplete.js";
-    s.defer = true;
     s.onload = ready;
     s.onerror = function () { if (done) done(); };
     document.head.appendChild(s);
@@ -565,35 +626,101 @@
       Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
+  function locStoreCoords(card) {
+    var la = parseFloat(card.dataset.lat), lo = parseFloat(card.dataset.lng);
+    if (isNaN(la) || isNaN(lo)) return { lat: NaN, lng: NaN };
+    if (Math.abs(la) > 90 && Math.abs(lo) <= 90) return { lat: lo, lng: la };
+    return { lat: la, lng: lo };
+  }
+  function locSortPageByDistance(userLat, userLng, cards) {
+    var list = document.getElementById("locList");
+    if (!list || isNaN(userLat) || isNaN(userLng)) return null;
+    var nearest = null, nearestDist = Infinity;
+    cards.forEach(function (c) {
+      var sc = locStoreCoords(c);
+      var lbl = c.querySelector("[data-distance-label]");
+      if (isNaN(sc.lat) || isNaN(sc.lng)) {
+        delete c.dataset.dist;
+        if (lbl) { lbl.textContent = ""; lbl.style.display = "none"; }
+        return;
+      }
+      var d = locMiles(userLat, userLng, sc.lat, sc.lng);
+      c.dataset.dist = String(d);
+      if (lbl) {
+        lbl.textContent = d < 0.05 ? "You're here" : d.toFixed(1) + " mi away";
+        lbl.style.display = "";
+      }
+      if (d < nearestDist) { nearestDist = d; nearest = c; }
+    });
+    cards.slice().sort(function (a, b) {
+      return (parseFloat(a.dataset.dist) || Infinity) - (parseFloat(b.dataset.dist) || Infinity);
+    }).forEach(function (c) { list.appendChild(c); });
+    return nearest;
+  }
+  function locSearchContext() {
+    var pageRoot = document.getElementById("locPageFind");
+    if (pageRoot) {
+      return {
+        onPage: true,
+        el: pageRoot.querySelector("[data-loc-search]"),
+        cards: Array.prototype.slice.call(document.querySelectorAll("#locList [data-loc]")),
+        mapsRoot: pageRoot.querySelector("[data-loc-autocomplete]") || pageRoot,
+      };
+    }
+    var m = document.getElementById("locModal");
+    return {
+      onPage: false,
+      el: document.getElementById("locZip"),
+      cards: m ? Array.prototype.slice.call(m.querySelectorAll("[data-loc-pick]")) : [],
+      mapsRoot: m ? m.querySelector("[data-loc-autocomplete]") : null,
+    };
+  }
+
+  function locRevealOnPage(card) {
+    if (!card) return;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.add("ok-ring-2", "ring-okyellow");
+    setTimeout(function () {
+      card.classList.remove("ok-ring-2", "ring-okyellow");
+    }, 3200);
+  }
+
   function locFind() {
-    var m = document.getElementById("locModal"); if (!m) return;
-    var el = document.getElementById("locZip");
+    var ctx = locSearchContext();
+    var el = ctx.el;
     var zip = (el && el.dataset.locZip) || ((el && el.value) || "").trim();
     if (!zip && !(el && el.dataset.locLat && el.dataset.locLng)) { if (el) el.focus(); return; }
-    var cards = Array.prototype.slice.call(m.querySelectorAll("[data-loc-pick]"));
+    var cards = ctx.cards;
     if (!cards.length) return;
     var lat = el && parseFloat(el.dataset.locLat);
     var lng = el && parseFloat(el.dataset.locLng);
     if (!isNaN(lat) && !isNaN(lng)) {
-      var nearest = null, nearestDist = Infinity;
-      cards.forEach(function (c) {
-        var slat = parseFloat(c.dataset.lat), slng = parseFloat(c.dataset.lng);
-        if (isNaN(slat) || isNaN(slng)) return;
-        var d = locMiles(lat, lng, slat, slng);
-        if (d < nearestDist) { nearestDist = d; nearest = c; }
-      });
-      if (nearest) { locPick(nearest); return; }
+      var nearest = ctx.onPage
+        ? locSortPageByDistance(lat, lng, cards)
+        : (function () {
+          var best = null, bestDist = Infinity;
+          cards.forEach(function (c) {
+            var sc = locStoreCoords(c);
+            if (isNaN(sc.lat) || isNaN(sc.lng)) return;
+            var d = locMiles(lat, lng, sc.lat, sc.lng);
+            if (d < bestDist) { bestDist = d; best = c; }
+          });
+          return best;
+        })();
+      if (nearest) {
+        if (ctx.onPage) locRevealOnPage(nearest);
+        else locPick(nearest);
+        return;
+      }
     }
     var q = (el && el.dataset.locQuery) || zip.toLowerCase(), best = null;
-    // exact delivery-zone ZIP first, then the store's own ZIP prefix,
-    // then anything in the name/address, so a street number or a
-    // neighbourhood name finds the right store too.
     cards.forEach(function (c) { if (!best && (c.dataset.zips || "").split(",").indexOf(zip) !== -1) best = c; });
     if (!best) cards.forEach(function (c) { if (!best && (c.dataset.zip || "") === zip) best = c; });
     if (!best) cards.forEach(function (c) { if (!best && (c.dataset.search || "").indexOf(q) !== -1) best = c; });
     if (!best && /^\d{3}/.test(zip)) cards.forEach(function (c) { if (!best && (c.dataset.zip || "").slice(0, 3) === zip.slice(0, 3)) best = c; });
     if (!best) { if (window.OK && OK.toast) OK.toast("No store matches that address"); return; }
-    locPick(best);
+    if (ctx.onPage) locRevealOnPage(best);
+    else locPick(best);
   }
   function locGeoFail(msg) {
     if (window.OK && OK.toast) OK.toast(msg);
@@ -604,9 +731,11 @@
       locGeoFail("Location is not available in this browser.");
       return;
     }
-    var m = document.getElementById("locModal");
-    var el = document.getElementById("locZip");
-    if (!m || !el) return;
+    var pageFind = document.getElementById("locPageFind");
+    var root = (btn && btn.closest("[data-loc-autocomplete]"))
+      || (pageFind && btn && pageFind.contains(btn) ? pageFind : null);
+    var el = (root && root.querySelector("[data-loc-search]")) || document.getElementById("locZip");
+    if (!el) return;
     var original = btn ? btn.innerHTML : "";
     if (btn) {
       btn.setAttribute("aria-busy", "true");
@@ -624,8 +753,9 @@
         if (btn) { btn.removeAttribute("aria-busy"); btn.innerHTML = original; }
         locFind();
       }
-      var root = document.querySelector("[data-loc-autocomplete]");
-      var mapsKey = root && root.getAttribute("data-maps-key");
+      var mapsRoot = (root && root.getAttribute("data-maps-key") ? root : null)
+        || document.querySelector("[data-loc-autocomplete][data-maps-key]");
+      var mapsKey = mapsRoot && mapsRoot.getAttribute("data-maps-key");
       if (mapsKey && window.OK && OK.reverseGeocode) {
         OK.reverseGeocode(mapsKey, lat, lng).then(function (label) {
           done(label || "Your location");
@@ -644,12 +774,16 @@
     modernIcons();
 
     document.addEventListener("ok-loc-search", function () { locFind(); });
-    var locZipEl = document.getElementById("locZip");
-    if (locZipEl) {
-      locZipEl.addEventListener("keydown", function (e) {
+    ensureLocAutocomplete();
+    function bindLocEnter(inp) {
+      if (!inp || inp._okLocEnter) return;
+      inp._okLocEnter = true;
+      inp.addEventListener("keydown", function (e) {
         if (e.key === "Enter") { e.preventDefault(); locFind(); }
       });
     }
+    bindLocEnter(document.getElementById("locZip"));
+    bindLocEnter(document.getElementById("locSearch"));
 
     var hd = document.getElementById("okHeader");
     if (hd) window.addEventListener("scroll", function () { hd.classList.toggle("is-scrolled", window.scrollY > 8); });
@@ -897,17 +1031,30 @@
       if (otBtn) {
         if (otBtn.disabled || otBtn.getAttribute("aria-disabled") === "true") return;
         var otGroup = otBtn.closest("[data-ordertype-group]");
-        if (otGroup) otGroup.querySelectorAll("[data-ordertype]").forEach(function (x) {
-          var on = x === otBtn;
-          x.classList.toggle("bg-ink", on);
-          x.classList.toggle("text-white", on);
-          x.classList.toggle("text-ink", !on);
-          x.classList.toggle("ok-shadow-md", on);
-        });
-        fetch("/api/order-type/" + encodeURIComponent(otBtn.getAttribute("data-ordertype")), { credentials: "same-origin" })
+        var otVal = otBtn.getAttribute("data-ordertype");
+        function styleOrderTypeButtons(activeBtn) {
+          if (!otGroup) return;
+          var cartPill = otGroup.closest("[data-cart-summary]");
+          otGroup.querySelectorAll("[data-ordertype]").forEach(function (x) {
+            var on = x === activeBtn;
+            x.classList.toggle("is-active", on);
+            if (cartPill) {
+              x.classList.toggle("bg-ink", on);
+              x.classList.toggle("text-white", on);
+              x.classList.toggle("ok-shadow-md", on);
+              x.classList.toggle("text-ink", !on);
+              x.classList.remove("text-muted-warm");
+            } else {
+              x.classList.toggle("text-muted-warm", !on);
+            }
+          });
+        }
+        styleOrderTypeButtons(otBtn);
+        fetch("/api/order-type/" + encodeURIComponent(otVal), { credentials: "same-origin" })
           .then(function (r) { return r.json(); })
           .then(function (d) {
-            if (d && d.ok && (location.pathname || "").replace(/\/$/, "") === "/cart") location.reload();
+            if (!d || !d.ok) return;
+            if (d.cart && window.OK && OK.updateCartSummary) OK.updateCartSummary(d.cart);
           })
           .catch(function () {});
       }
@@ -1157,7 +1304,7 @@
   }
 
   var _promoAfterLocationSlug = null;
-  var _promoBlockedUntilStorePick = document.body.getAttribute("data-needs-location") === "1";
+  var _promoBlockedUntilStorePick = false;
 
   function locModalOpenForPromo() {
     var m = document.getElementById("locModal");
@@ -1296,38 +1443,13 @@
       return;
     }
 
-    var needsLoc = document.body.getAttribute("data-needs-location") === "1";
-    var hasStore = !!((_storeSlug || pop.getAttribute("data-store-slug") || "").trim());
     var autoOnPage = pop.getAttribute("data-promo-auto-open") !== "0";
-
-    if (needsLoc && !hasStore) {
-      _promoBlockedUntilStorePick = true;
-      pop.setAttribute("hidden", "");
-      pop.classList.remove("is-open");
-      pop.setAttribute("aria-hidden", "true");
-      requestAnimationFrame(function () {
-        if (window.OK && OK.openLocation) OK.openLocation();
-      });
-      document.addEventListener("ok:store", function (e) {
-        var d = e.detail;
-        if (!d || !d.slug || !d.ok) return;
-        ensureDealsPromoPopAfterStorePick(d);
-      });
-      return;
-    }
 
     if (!autoOnPage) return;
 
-    if (_promoBlockedUntilStorePick) return;
-
     if (okDealsPromoShouldSkip(promoDismissKey())) return;
-    if (_promoAfterLocationSlug) return;
     if (locModalOpenForPromo()) {
-      document.addEventListener("ok:store", function (e) {
-        var d = e.detail;
-        if (!d || !d.slug || !d.ok) return;
-        ensureDealsPromoPopAfterStorePick(d);
-      }, { once: true });
+      setTimeout(function () { openDealsPromoPopElement(pop, 400); }, 200);
       return;
     }
     setTimeout(openPop, 700);
@@ -1406,8 +1528,8 @@
       var margin = 8, pad = 8;
       var left = r.left + window.scrollX + r.width / 2 - tw / 2;
       left = Math.max(window.scrollX + pad, Math.min(left, window.scrollX + document.documentElement.clientWidth - tw - pad));
-      var top = r.top + window.scrollY | th | margin, placeName = "top";
-      if (r.top | th | margin < 0) { top = r.bottom + window.scrollY + margin; placeName = "bottom"; }
+      var top = r.top + window.scrollY - th - margin, placeName = "top";
+      if (r.top - th - margin < 0) { top = r.bottom + window.scrollY + margin; placeName = "bottom"; }
       tip.style.top = top + "px"; tip.style.left = left + "px";
       tip.setAttribute("data-place", placeName);
       // arrow points at the trigger's centre
@@ -1478,5 +1600,44 @@
     else start();
   })();
 
-  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, refreshDealsPage: refreshDealsPage, openItemModal: function (slug) { loadItem(slug); }, showModal: showModal };
+  function updateCartSummary(c) {
+    var root = document.querySelector("[data-cart-summary]");
+    if (!root || !c) return;
+    function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+    var sub = root.querySelector("[data-cart-subtotal]");
+    if (sub) sub.textContent = money(c.subtotal);
+    var tax = root.querySelector("[data-cart-tax]");
+    if (tax) tax.textContent = money(c.tax);
+    var taxRate = root.querySelector("[data-cart-tax-rate]");
+    if (taxRate) taxRate.textContent = String(Math.round((Number(c.tax_rate) || 0) * 1000) / 10);
+    var discRow = root.querySelector("[data-cart-discount-row]");
+    var disc = root.querySelector("[data-cart-discount]");
+    if (discRow && disc) {
+      var dAmt = Number(c.order_discount) || 0;
+      discRow.classList.toggle("d-none", dAmt <= 0);
+      disc.textContent = "−" + money(dAmt);
+    }
+    var delRow = root.querySelector("[data-cart-delivery-row]");
+    var delFee = root.querySelector("[data-cart-delivery-fee]");
+    if (delRow && delFee) {
+      var isDel = c.order_type === "delivery";
+      delRow.classList.toggle("d-none", !isDel);
+      if (isDel) {
+        delFee.innerHTML = c.delivery_free
+          ? '<span class="text-ok-green">FREE</span>'
+          : money(c.delivery_fee);
+      }
+    }
+    var gcRow = root.querySelector("[data-cart-giftcard-row]");
+    var gc = root.querySelector("[data-cart-giftcard]");
+    if (gcRow && gc) {
+      var gAmt = Number(c.giftcard_applied) || 0;
+      gcRow.classList.toggle("d-none", gAmt <= 0);
+      gc.textContent = "−" + money(gAmt);
+    }
+    var total = root.querySelector("[data-cart-total]");
+    if (total) total.textContent = money(c.total);
+  }
+
+  window.OK = { toast: toast, hydratePlaceholders: hydratePlaceholders, placeholder: makePlaceholder, icons: function () {}, openLocation: function () { openLocation(true); }, selectStore: selectStore, refreshDealsPage: refreshDealsPage, openItemModal: function (slug) { loadItem(slug); }, showModal: showModal, updateCartSummary: updateCartSummary };
 })();

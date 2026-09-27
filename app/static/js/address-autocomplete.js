@@ -211,6 +211,8 @@
   }
 
   function attachLocationSearch(search, list, onPlace) {
+    if (!search || search._okLocPlaces) return;
+    search._okLocPlaces = true;
     var service = new google.maps.places.AutocompleteService();
     var placesService = new google.maps.places.PlacesService(document.createElement("div"));
     var timer = null;
@@ -218,8 +220,7 @@
     var items = [];
     var lastLen = 0;
     var seq = 0;
-    // Philly metro | local results return faster than a country-wide search
-    var locBias = { north: 40.25, south: 39.75, east: -74.85, west: -75.55 };
+    var phillyCenter = new google.maps.LatLng(39.9526, -75.1652);
 
     function hideList() {
       list.classList.add("d-none");
@@ -267,8 +268,8 @@
       service.getPlacePredictions({
         input: q,
         componentRestrictions: { country: "us" },
-        locationBias: locBias,
-        types: ["geocode"]
+        location: phillyCenter,
+        radius: 80000
       }, function (predictions, status) {
         if (my !== seq) return;
         if ((search.value || "").trim() !== q) return;
@@ -349,7 +350,8 @@
         document.dispatchEvent(new CustomEvent("ok-loc-search"));
       });
     }).catch(function () {
-      /* manual ZIP / address entry still works via Find */
+      root._locInit = false;
+      if (window.OK && OK.toast) OK.toast("Could not load Google Maps for address search.");
     });
   }
 

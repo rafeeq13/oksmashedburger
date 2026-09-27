@@ -1176,9 +1176,10 @@ def test_the_store_picker_stays_out_of_the_editor(app):
     for path in ("/?edit=1", "/?pbedit=1"):
         html = c.get(path).get_data(as_text=True)
         assert "OK.openLocation" not in html, "%s still opens the store picker" % path
-    # a first-time visitor is still asked
+    # first visit: promo may auto-open; location picker must not hijack the landing
     plain = app.test_client().get("/").get_data(as_text=True)
-    assert ("OK.openLocation" in plain) or ("needs_location" not in plain)
+    if 'data-needs-location="1"' in plain:
+        assert "OK.openLocation" not in plain
 
 
 def test_opening_hours_live_in_one_place(app):

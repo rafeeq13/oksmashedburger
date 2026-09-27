@@ -62,7 +62,7 @@
     </div>
 
     <!-- SUMMARY -->
-    <aside class="ok-card ok-p-5 ok-positi-sticky-lg ok-top-7rem-lg">
+    <aside class="ok-card ok-p-5 ok-positi-sticky-lg ok-top-7rem-lg" data-cart-summary>
       <h2 class="font-display fw-bold ok-fs-lg ok-mb-3">Order summary</h2>
       {% if store %}<p class="ok-fs-sm text-muted-warm ok-mb-3 d-flex align-items-center ok-gap-15"><i class="fa-solid fa-location-dot text-gold"></i> {{ store.name }}</p>{% endif %}
 
@@ -121,14 +121,14 @@
 
       <div class="divider ok-my-3"></div>
       <div class="ok-stack-2 ok-fs-sm">
-        <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold">${{ '%.2f'|format(summary.subtotal) }}</span></div>
-        {% if summary.order_discount %}<div class="d-flex justify-content-between text-ok-green"><span>Discount</span><span class="fw-semibold">−${{ '%.2f'|format(summary.order_discount) }}</span></div>{% endif %}
-        <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax ({{ (summary.tax_rate * 100)|round(1) }}%)</span><span class="fw-semibold">${{ '%.2f'|format(summary.tax) }}</span></div>
-        {% if order_type == 'delivery' %}<div class="d-flex justify-content-between"><span class="text-muted-warm">Delivery fee</span><span class="fw-semibold">{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>{% endif %}
-        {% if summary.giftcard.applied %}<div class="d-flex justify-content-between text-ok-green"><span>Gift card</span><span class="fw-semibold">−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>{% endif %}
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Subtotal</span><span class="fw-semibold" data-cart-subtotal>${{ '%.2f'|format(summary.subtotal) }}</span></div>
+        <div class="d-flex justify-content-between text-ok-green{% if not summary.order_discount %} d-none{% endif %}" data-cart-discount-row><span>Discount</span><span class="fw-semibold" data-cart-discount>−${{ '%.2f'|format(summary.order_discount) }}</span></div>
+        <div class="d-flex justify-content-between"><span class="text-muted-warm">Tax (<span data-cart-tax-rate>{{ (summary.tax_rate * 100)|round(1) }}</span>%)</span><span class="fw-semibold" data-cart-tax>${{ '%.2f'|format(summary.tax) }}</span></div>
+        <div class="d-flex justify-content-between{% if order_type != 'delivery' %} d-none{% endif %}" data-cart-delivery-row><span class="text-muted-warm">Delivery fee</span><span class="fw-semibold" data-cart-delivery-fee>{% if summary.promo.delivery_discount %}<span class="text-ok-green">FREE</span>{% else %}${{ '%.2f'|format(summary.delivery_fee) }}{% endif %}</span></div>
+        <div class="d-flex justify-content-between text-ok-green{% if not summary.giftcard.applied %} d-none{% endif %}" data-cart-giftcard-row><span>Gift card</span><span class="fw-semibold" data-cart-giftcard>−${{ '%.2f'|format(summary.giftcard.applied) }}</span></div>
       </div>
       <div class="divider ok-my-3"></div>
-      <div class="d-flex justify-content-between align-items-center ok-mb-5"><span class="font-display fw-bold ok-fs-lg">Total</span><span class="font-display ok-fw-800 ok-fs-2xl">${{ '%.2f'|format(summary.total) }}</span></div>
+      <div class="d-flex justify-content-between align-items-center ok-mb-5"><span class="font-display fw-bold ok-fs-lg">Total</span><span class="font-display ok-fw-800 ok-fs-2xl" data-cart-total>${{ '%.2f'|format(summary.total) }}</span></div>
       {% set can_checkout = store and (store.accepts_delivery or store.accepts_pickup) %}
       {% if can_checkout %}
       <a href="/checkout" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>

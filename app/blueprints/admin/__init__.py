@@ -7,7 +7,7 @@ import os
 import re
 import secrets
 from decimal import Decimal, InvalidOperation
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, time
 from collections import Counter
 
 from flask import Blueprint, render_template, request, redirect, flash, abort, Response, current_app, jsonify, url_for
@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 
 from app.extensions import db
 from app.auth import current_user, roles_required
-from app.helpers import active_stores, get_current_store
+from app.helpers import active_stores, get_current_store, order_dt_local
 from app.security import style_value_ok
 from app.models.store import Store, StoreIntegration, StoreHours, StoreDeliveryZone, normalize_map_embed
 from app.models.menu import (
@@ -204,8 +204,152 @@ def _pct_delta(cur, prev):
     return round((cur - prev) / prev * 100)
 
 
-PERIODS = {"today": 1, "7d": 7, "30d": 30, "all": None}
-PERIOD_LABELS = {"today": "today", "7d": "last 7 days", "30d": "last 30 days", "all": "all time"}
+DASHBOARD_PERIODS = frozenset({"today", "yesterday", "7d", "30d", "last_month", "all"})
+PERIOD_LABELS = {
+    "today": "today",
+    "yesterday": "yesterday",
+    "7d": "this week (Mon–Sun)",
+    "30d": "last 30 days",
+    "last_month": "last month",
+    "all": "all time",
+}
+
+
+def _dashboard_tz(store):
+    from zoneinfo import ZoneInfo
+
+    tz_name = (store.timezone if store else None) or "America/New_York"
+    try:
+        return ZoneInfo(tz_name)
+    except Exception:
+        return ZoneInfo("America/New_York")
+
+
+def _dashboard_now(store):
+    tz = _dashboard_tz(store)
+    if store:
+        local = store.local_now()
+        return datetime.combine(local.date(), local.time(), tzinfo=tz)
+    return datetime.now(timezone.utc)
+
+
+def _local_midnight(day, tz):
+    return datetime.combine(day, time.min, tzinfo=tz)
+
+
+def _order_created_local(order, store):
+    dt = order_dt_local(order, "created_at")
+    if not dt:
+        return None
+    tz = _dashboard_tz(store)
+    return dt.astimezone(tz)
+
+
+def _order_in_window(order, store, start, end, inclusive_end=False):
+    dt = _order_created_local(order, store)
+    if not dt or dt < start:
+        return False
+    if inclusive_end:
+        return dt <= end
+    return dt < end
+
+
+def _dashboard_period_windows(period, store):
+    """Return (current_start, current_end, prev_start, prev_end, inclusive_end) in store TZ."""
+    tz = _dashboard_tz(store)
+    now = _dashboard_now(store)
+    today = now.date()
+
+    if period == "today":
+        start = _local_midnight(today, tz)
+        end = now
+        yday = today - timedelta(days=1)
+        prev_start = _local_midnight(yday, tz)
+        prev_end = prev_start + (end - start)
+        return start, end, prev_start, prev_end, True
+
+    if period == "yesterday":
+        yday = today - timedelta(days=1)
+        start = _local_midnight(yday, tz)
+        end = _local_midnight(today, tz)
+        prev_start = _local_midnight(yday - timedelta(days=1), tz)
+        prev_end = start
+        return start, end, prev_start, prev_end, False
+
+    if period == "7d":
+        monday = today - timedelta(days=today.weekday())
+        sunday = monday + timedelta(days=6)
+        start = _local_midnight(monday, tz)
+        week_end = _local_midnight(sunday + timedelta(days=1), tz)
+        end = min(now, week_end)
+        prev_monday = monday - timedelta(days=7)
+        prev_start = _local_midnight(prev_monday, tz)
+        prev_end = prev_start + (end - start)
+        return start, end, prev_start, prev_end, True
+
+    if period == "30d":
+        start = _local_midnight(today - timedelta(days=29), tz)
+        end = now
+        span = end - start
+        prev_end = start
+        prev_start = prev_end - span
+        return start, end, prev_start, prev_end, True
+
+    if period == "last_month":
+        first_this = today.replace(day=1)
+        last_day_prev = first_this - timedelta(days=1)
+        start = _local_midnight(last_day_prev.replace(day=1), tz)
+        end = _local_midnight(first_this, tz)
+        prev_end = start
+        prev_start = _local_midnight((start.date() - timedelta(days=1)).replace(day=1), tz)
+        return start, end, prev_start, prev_end, False
+
+    return None
+
+
+def _filter_orders_period(orders, store, period):
+    bounds = _dashboard_period_windows(period, store)
+    if not bounds:
+        return orders, []
+    start, end, pstart, pend, inclusive = bounds
+    window = [o for o in orders if _order_in_window(o, store, start, end, inclusive)]
+    prevw = [o for o in orders if _order_in_window(o, store, pstart, pend, inclusive)]
+    return window, prevw
+
+
+def _dashboard_week_series(orders, paid, store):
+    """Mon–Sun bars for the current calendar week (store local)."""
+    tz = _dashboard_tz(store)
+    now = _dashboard_now(store)
+    today = now.date()
+    monday = today - timedelta(days=today.weekday())
+    series, max_rev = [], 0.0
+    for i in range(7):
+        d = monday + timedelta(days=i)
+        day_start = _local_midnight(d, tz)
+        day_end = _local_midnight(d + timedelta(days=1), tz)
+        if d > today:
+            d_rev, d_cnt = 0.0, 0
+        else:
+            d_rev = sum(
+                float(o.total) for o in paid
+                if _order_in_window(o, store, day_start, min(now, day_end), inclusive_end=True)
+            )
+            d_cnt = sum(
+                1 for o in orders
+                if _order_in_window(o, store, day_start, min(now, day_end), inclusive_end=True)
+            )
+        series.append({
+            "label": day_start.strftime("%a"),
+            "date": day_start.strftime("%b %d"),
+            "revenue": d_rev,
+            "count": d_cnt,
+        })
+        max_rev = max(max_rev, d_rev)
+    for s in series:
+        s["pct"] = round(s["revenue"] / max_rev * 100) if max_rev else 0
+    week_rev = sum(s["revenue"] for s in series)
+    return series, week_rev
 
 
 @bp.get("/admin")
@@ -214,20 +358,15 @@ def index():
     store = _admin_store()
     orders = (Order.query.filter_by(store_id=store.id).order_by(Order.created_at.desc()).all()
               if store else [])
-    today = datetime.now(timezone.utc).date()
     paid = [o for o in orders if o.payment_status == "paid"]
 
-    # Period window scopes KPIs / pipeline / top sellers / comparison; delta is
-    # this period vs the immediately-preceding equal-length period.
     period = request.args.get("period", "all")
-    plen = PERIODS.get(period)
-    if plen:
-        start = today - timedelta(days=plen - 1)
-        prev_start = start - timedelta(days=plen)
-        window = [o for o in orders if o.created_at.date() >= start]
-        prevw = [o for o in orders if prev_start <= o.created_at.date() < start]
+    if period not in DASHBOARD_PERIODS:
+        period = "all"
+    if period == "all":
+        window, prevw = orders, []
     else:
-        start, window, prevw = None, orders, []
+        window, prevw = _filter_orders_period(orders, store, period)
 
     w_paid = [o for o in window if o.payment_status == "paid"]
     revenue = sum(float(o.total) for o in w_paid)
@@ -242,18 +381,7 @@ def index():
         "total": len(orders), "period": period, "period_label": PERIOD_LABELS.get(period, "all time"),
     }
 
-    # 7-day revenue + order-count trend (fixed window, oldest → newest)
-    series, max_rev = [], 0.0
-    for i in range(6, -1, -1):
-        d = today - timedelta(days=i)
-        d_rev = sum(float(o.total) for o in paid if o.created_at.date() == d)
-        d_cnt = sum(1 for o in orders if o.created_at.date() == d)
-        series.append({"label": d.strftime("%a"), "date": d.strftime("%b %d"),
-                       "revenue": d_rev, "count": d_cnt})
-        max_rev = max(max_rev, d_rev)
-    for s in series:
-        s["pct"] = round(s["revenue"] / max_rev * 100) if max_rev else 0
-    week_rev = sum(s["revenue"] for s in series)
+    series, week_rev = _dashboard_week_series(orders, paid, store)
 
     # Status pipeline + top sellers (scoped to the selected period)
     counts = Counter(o.status for o in window)
@@ -274,11 +402,13 @@ def index():
     if _can_switch():
         for s in active_stores():
             so = Order.query.filter_by(store_id=s.id).all()
-            if start:
-                so = [o for o in so if o.created_at.date() >= start]
+            if period == "all":
+                period_so = so
+            else:
+                period_so, _ = _filter_orders_period(so, s, period)
             store_perf.append({
-                "store": s, "orders": len(so),
-                "revenue": sum(float(o.total) for o in so if o.payment_status == "paid"),
+                "store": s, "orders": len(period_so),
+                "revenue": sum(float(o.total) for o in period_so if o.payment_status == "paid"),
                 "active": sum(1 for o in so if o.status not in ("completed", "cancelled")),
             })
 
@@ -289,7 +419,7 @@ def index():
         "admin/index.html", kpis=kpis, series=series, week_rev=week_rev,
         status_rows=status_rows, top_items=top_items, recent=orders[:8],
         store_perf=store_perf, sold_out=sold_out, unpaid=unpaid,
-        now_label=datetime.now(timezone.utc).strftime("%A, %b %d"), **_shell(store))
+        now_label=_dashboard_now(store).strftime("%A, %b %d · %I:%M %p"), **_shell(store))
 
 
 @bp.post("/admin/store/status")
@@ -344,8 +474,10 @@ def hours_save():
             h = StoreHours(store=store, day_of_week=d)
             db.session.add(h)
         h.is_closed = bool(request.form.get(f"closed_{d}"))
-        h.open_time = (request.form.get(f"open_{d}") or "11:00")
-        h.close_time = (request.form.get(f"close_{d}") or "23:00")
+        from app.models.store import _normalize_hm
+
+        h.open_time = _normalize_hm(request.form.get(f"open_{d}") or "11:00")
+        h.close_time = _normalize_hm(request.form.get(f"close_{d}") or "23:00")
     db.session.commit()
     flash(f"{store.name} opening hours updated.", "success")
     return redirect("/admin/settings" + _qs(store) + "#hours")

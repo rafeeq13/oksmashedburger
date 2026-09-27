@@ -667,7 +667,6 @@ def create_app(config_object=None):
                 load_promo_banner,
                 promo_banner_on_request,
                 promo_banner_visible,
-                promo_visit_popup_any_cfg,
                 INLINE_IMAGE_KEY,
             )
             from .services.promo_page_targets import promo_shown_on_path
@@ -683,12 +682,7 @@ def create_app(config_object=None):
             )
             _promo_banner = None
             if _show_promo:
-                _eff_cfg = _promo_cfg
-                if _needs_loc and not promo_banner_visible(
-                    _promo_cfg, feats, request.path, inline_edit=_inline,
-                ):
-                    _eff_cfg = promo_visit_popup_any_cfg(feats) or _promo_cfg
-                _promo_banner = dict(_eff_cfg)
+                _promo_banner = dict(_promo_cfg)
                 _promo_banner["auto_open_on_page"] = promo_shown_on_path(
                     _promo_banner.get("show_pages"), request.path,
                 )

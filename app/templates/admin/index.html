@@ -25,7 +25,7 @@ endif -%}
 <!-- Period selector -->
 {% set pbase = '?store=' + admin_store.slug + '&' if qs else '?' %}
 <div class="d-flex gap-2 overflow-x-auto hide-scrollbar mb-4">
-  {% for pv, pl in [('today','Today'), ('7d','7 days'), ('30d','30 days'), ('all','All time')] %}
+  {% for pv, pl in [('today','Today'), ('yesterday','Yesterday'), ('7d','This week'), ('30d','30 days'), ('last_month','Last month'), ('all','All time')] %}
   <a href="/admin{{ pbase }}period={{ pv }}"
     class="chip flex-shrink-0 {% if kpis.period == pv %}is-active{% endif %}">{{ pl }}</a>
   {% endfor %}
@@ -131,7 +131,7 @@ endif -%}
   <div class="ok-card ok-p-5 ok-col-span-lg-2">
     <div class="d-flex align-items-center justify-content-between ok-mb-5">
       <div>
-        <h3 class="font-display fw-bold ok-fs-lg">Revenue · last 7 days</h3>
+        <h3 class="font-display fw-bold ok-fs-lg">Revenue · this week (Mon–Sun)</h3>
         <p class="ok-fs-xs text-muted-warm">Paid orders</p>
       </div>
       <div class="text-end">

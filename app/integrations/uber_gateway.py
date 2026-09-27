@@ -197,10 +197,7 @@ def _delivery_body(store, order, quote_id=None):
         body["quote_id"] = quote_id
     if order.notes:
         body["dropoff_notes"] = str(order.notes)[:280]
-    tip_cents = int(round(float(order.tip or 0) * 100))
-    if tip_cents > 0:
-        # Uber Direct caps driver tip at $5.00 (500 cents).
-        body["tip"] = min(tip_cents, 500)
+    # Tips stay with the restaurant (checkout / payouts); never pass to Uber Direct.
     if order.address_lat and order.address_lng:
         body["dropoff_latitude"] = float(order.address_lat)
         body["dropoff_longitude"] = float(order.address_lng)

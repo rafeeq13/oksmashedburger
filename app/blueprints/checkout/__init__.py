@@ -1,6 +1,6 @@
 """Checkout → order creation → per-store payment → confirmation."""
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import Blueprint, render_template, request, redirect, session, flash, jsonify, current_app
 
@@ -19,6 +19,20 @@ from app.integrations.config import integration_env, should_simulate
 from app.address import address_from_form
 
 bp = Blueprint("checkout", __name__)
+
+
+def _merge_session_schedule(store, form):
+    """Pre-fill checkout from menu schedule (session schedule_at)."""
+    form = dict(form or {})
+    if not store:
+        return form
+    session_val = (session.get("schedule_at") or "").strip()
+    sched = (form.get("scheduled_for") or "").strip() or session_val
+    if sched and store.accepts_schedule_at(sched):
+        form["scheduled_for"] = sched
+        # Menu schedule wins over a stale draft that still had ASAP selected.
+        form["fulfillment"] = "scheduled"
+    return form
 
 
 def _checkout_draft():
@@ -78,7 +92,7 @@ def _checkout_email(raw=None):
 
 
 def _render_checkout(store, form=None):
-    form = form or {}
+    form = _merge_session_schedule(store, form or {})
     ot = form.get("order_type") or get_order_type()
     if ot:
         session["order_type"] = ot
@@ -108,12 +122,11 @@ def _render_checkout(store, form=None):
         from app.models.address import UserAddress
         default_address = (UserAddress.query.filter_by(user_id=u.id, is_default=True).first()
                            or UserAddress.query.filter_by(user_id=u.id).first())
-    now = datetime.now()
+    sched_days = store.schedule_days(store.local_now()) if store else []
     return render_template(
         "checkout/checkout.html", store=store, summary=s, user=u, form=form,
         default_address=default_address,
-        min_schedule=(now + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M"),
-        default_schedule=(now + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M"),
+        sched_days=sched_days,
         stripe_pub_key=store_stripe_config(store).get("publishable_key", ""),
         stripe_connected=is_connected(store),
         stripe_checkout_mode=stripe_checkout_mode(store) if store else "off",
@@ -148,15 +161,17 @@ def checkout():
         if fulfillment == "scheduled":
             if not (store and store.scheduling_open):
                 return _checkout_error("Scheduled ordering isn't available for this store right now.")
+            sched_val = (request.form.get("scheduled_for") or "").strip()
+            if not sched_val or not store.accepts_schedule_at(sched_val):
+                return _checkout_error(
+                    "Please choose a pickup time within our opening hours "
+                    "(same slots as on the menu)."
+                )
             try:
-                scheduled_for = datetime.strptime(request.form.get("scheduled_for", ""), "%Y-%m-%dT%H:%M")
+                scheduled_for = datetime.strptime(sched_val, "%Y-%m-%dT%H:%M")
             except (ValueError, TypeError):
                 return _checkout_error("Please choose a valid date and time for your scheduled order.")
-            if scheduled_for <= store.local_now():
-                return _checkout_error("Your scheduled time must be in the future.")
-            if not store.is_open_at(scheduled_for):
-                return _checkout_error(f"{store.name} isn't open at that time - please pick a slot within opening hours "
-                      f"({store.today_hours} today).")
+            session["schedule_at"] = sched_val
         else:  # ASAP
             if not (store and store.open_now):
                 return _checkout_error(f"{store.name if store else 'This store'} is closed for immediate orders - "
@@ -317,6 +332,7 @@ def checkout():
 
         cartlib.clear()
         session.pop("checkout_draft", None)
+        session.pop("schedule_at", None)
         session["last_order_id"] = order.id
         flash(f"Order {order.number} placed! 🎉", "success")
         return redirect("/order-confirmed")

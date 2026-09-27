@@ -14,7 +14,7 @@ INLINE_IMAGE_KEY = "promo_banner_image"
 PROMO_IMAGE_SPEC = {"build_size": "2800×440"}
 
 DEFAULT_PROMO_BANNER = {
-    "enabled": True,
+    "enabled": False,
     "placement": "visit_popup",
     "height": 88,
     "width": "container",
@@ -174,7 +174,7 @@ def normalize_promo_banner(raw):
     )
     popup_join_width_px = _clamp_int(base.get("popup_join_width_px"), 0, 0, 520)
     return {
-        "enabled": bool(base.get("enabled", True)),
+        "enabled": bool(base.get("enabled", DEFAULT_PROMO_BANNER["enabled"])),
         "placement": placement,
         "height": _clamp_int(base.get("height"), DEFAULT_PROMO_BANNER["height"], 16, 220),
         "width": width,
@@ -297,8 +297,6 @@ def _promo_banner_has_content(cfg):
 
 
 def _promo_banner_base_ok(cfg, features, path, inline_edit=False):
-    if inline_edit:
-        return True
     if not features.get("deals"):
         return False
     if not cfg.get("enabled"):
@@ -313,8 +311,6 @@ def _promo_banner_base_ok(cfg, features, path, inline_edit=False):
 def promo_banner_visible(cfg, features, path, inline_edit=False):
     if not _promo_banner_base_ok(cfg, features, path, inline_edit=inline_edit):
         return False
-    if inline_edit:
-        return True
     if not promo_shown_on_path(cfg.get("show_pages"), path):
         return False
     return True
@@ -344,12 +340,13 @@ def promo_visit_popup_any_cfg(features):
 
 
 def promo_visit_popup_before_location(cfg, features, needs_location=False, inline_edit=False):
-    """Include visit-popup markup on first visit so it can open right after store pick."""
-    if inline_edit or not needs_location:
+    """Include visit-popup markup on first visit so it can auto-open on landing."""
+    if not needs_location:
         return False
-    if _promo_banner_base_ok(cfg, features, "/", inline_edit=False) and cfg.get("placement") == "visit_popup":
-        return True
-    return promo_visit_popup_any_cfg(features) is not None
+    return (
+        _promo_banner_base_ok(cfg, features, "/", inline_edit=False)
+        and cfg.get("placement") == "visit_popup"
+    )
 
 
 def promo_banner_on_request(cfg, features, path, needs_location=False, inline_edit=False):
@@ -361,8 +358,8 @@ def promo_banner_on_request(cfg, features, path, needs_location=False, inline_ed
 
 
 def promo_banner_after_location_pick(cfg, features):
-    """Visit popup right after the customer picks a store (any page, incl. home)."""
-    return _visit_popup_cfg_for_store(features, None) is not None or (
+    """Visit popup after store pick — only when this location's banner is enabled."""
+    return (
         _promo_banner_base_ok(cfg, features, "/", inline_edit=False)
         and cfg.get("placement") == "visit_popup"
     )

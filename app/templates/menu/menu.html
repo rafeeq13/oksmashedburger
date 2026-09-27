@@ -21,28 +21,25 @@
         <div class="font-display fw-bold ok-fs-lg text-ink ok-lh-tight" data-store-name>{{ store.name }}</div>
         <div class="ok-fs-sm text-muted-warm d-flex align-items-baseline ok-gap-15 ok-min-w-0 flex-wrap">
           <span class="text-truncate ok-min-w-0" data-store-address>{{ store.full_address }}</span>
-          <button data-open="location" class="ok-menu-cta text-nowrap flex-shrink-0">Change location</button>
+          <button type="button" data-open="location" class="ok-menu-cta text-nowrap flex-shrink-0">Change location</button>
         </div>
       </div>
       </div>
-      {% if schedule_at %}
-      <div class="d-flex align-items-center ok-gap-15 ok-fs-sm flex-wrap w-100 ok-menu-sched-actions">
-        <span class="badge badge-yellow"><i class="fa-solid fa-clock"></i> Scheduled</span>
-        <span data-sched-label class="fw-semibold text-ink">{{ schedule_at|nice_when }}</span>
-        <button type="button" data-sched-edit class="ok-menu-cta text-nowrap">Change time</button>
-        {% if store.open_now %}
-        <button type="button" data-sched-clear class="ok-menu-cta ok-menu-cta--muted text-nowrap">Order ASAP instead</button>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
 
-    <!-- delivery / pickup segmented toggle -->
-    <div class="d-flex align-items-center gap-1 bg-cream-60 rounded-pill p-1 ok-aligns-auto-lg" data-ordertype-group>
-      {% for val, icon, label in [('delivery','car','Delivery'), ('pickup','bag-shopping','Pickup')] %}
-      {% set ot_enabled = (val == 'delivery' and store.accepts_delivery) or (val == 'pickup' and store.accepts_pickup) %}
-      <button type="button" data-ordertype="{{ val }}" class="ok-px-35 ok-paddin-1rem-md py-2 rounded-pill ok-fs-sm fw-semibold d-inline-flex align-items-center gap-2 transition {% if ot_enabled and order_type == val %}bg-ink text-white ok-shadow-md{% else %}text-ink{% endif %}"{% if not ot_enabled %} disabled aria-disabled="true"{% endif %}><i class="fa-solid fa-{{ icon }}"></i> <span>{{ label }}</span></button>
-      {% endfor %}
+    <!-- delivery / pickup (+ order later: own row on phone, inline from lg) -->
+    <div class="ok-menu-ordertype-stack w-100 ok-aligns-auto-lg{% if schedule_at %} is-scheduled{% endif %}" data-ordertype-group>
+      <div class="ok-menu-ordertype-main d-flex align-items-stretch flex-nowrap">
+        {% for val, label in [('pickup','Pickup'), ('delivery','Delivery')] %}
+        {% set ot_enabled = (val == 'delivery' and store.accepts_delivery) or (val == 'pickup' and store.accepts_pickup) %}
+        <button type="button" data-ordertype="{{ val }}" class="ok-menu-seg-btn ok-fs-sm fw-semibold d-inline-flex align-items-center justify-content-center transition ok-min-w-0 {% if ot_enabled and order_type == val %}is-active{% else %}text-muted-warm{% endif %}"{% if not ot_enabled %} disabled aria-disabled="true"{% endif %}><span class="text-truncate">{{ label }}</span></button>
+        {% endfor %}
+      </div>
+      {% if store.scheduling_open %}
+      <div class="ok-menu-ordertype-sched">
+        <button type="button" data-sched-open class="ok-fs-sm transition ok-min-w-0 w-100{% if schedule_at %} is-sched-set{% endif %}" aria-haspopup="dialog" aria-controls="schedModal" title="{% if schedule_at %}Change scheduled time{% else %}Schedule for later{% endif %}"><i class="fa-regular fa-clock flex-shrink-0"></i> <span class="text-truncate" data-sched-btn-label>{% if schedule_at %}{{ schedule_at|nice_when }}{% else %}Schedule your order{% endif %}</span></button>
+      </div>
+      {% endif %}
     </div>
   </div>
   {% else %}
@@ -147,9 +144,8 @@
 {% endif %}
 </div>{# /menu_list #}
 
-{# available whenever this store takes scheduled orders, so an
-   already-scheduled customer can still change the time #}
-{% if store and store.scheduling_open %}
+{# Schedule modal — opened only via "Order later" when scheduling is enabled #}
+{% if store and (store.scheduling_open or schedule_at) %}
 <!-- Schedule-first modal: store is closed for ASAP, pick a time before ordering -->
 <div class="drawer-backdrop" data-sched-close id="schedBackdrop"></div>
 <div id="schedModal" class="position-fixed ok-fill ok-z-82 ok-grid ok-place-center ok-p-3 ok-modal">
@@ -205,6 +201,9 @@
     <button type="button" id="schedConfirm" class="btn btn-primary btn-block"><i class="fa-solid fa-calendar-check"></i>
       {% if schedule_at %}Update time{% elif store.open_now %}Save for later{% else %}Continue{% endif %}
     </button>
+    {% if store.open_now %}
+    <button type="button" data-sched-clear class="ok-menu-cta ok-menu-cta--muted w-100 text-center ok-mt-3">Order ASAP instead</button>
+    {% endif %}
   </div>
 </div>
 {% endif %}
@@ -249,10 +248,9 @@
 })();
 </script>
 
-{% if store and store.scheduling_open %}
+{% if store %}
 <script>
-// Schedule-first: store is closed for ASAP and no time picked yet. Clicking any
-// item opens the schedule modal first, then the item modal.
+// Schedule modal: opens only when the customer taps "Order later".
 (function () {
   var modal = document.getElementById("schedModal");
   if (!modal) return;
@@ -266,6 +264,39 @@
   })();
 
   // repopulate the time list whenever the day changes
+  function applyDays(days, keepValue) {
+    DAYS = days || [];
+    if (!daySel) return;
+    var keep = keepValue || (timeSel && timeSel.value) || "";
+    daySel.innerHTML = "";
+    DAYS.forEach(function (d) {
+      var opt = document.createElement("option");
+      opt.value = d.date;
+      opt.textContent = d.label;
+      daySel.appendChild(opt);
+    });
+    if (keep && DAYS.some(function (d) { return d.date === keep.slice(0, 10); })) {
+      daySel.value = keep.slice(0, 10);
+    } else if (DAYS[0]) {
+      daySel.value = DAYS[0].date;
+    }
+    fillTimes(keep);
+  }
+
+  function refreshSchedFromServer(done) {
+    fetch("/api/schedule-slots", {
+      credentials: "same-origin",
+      cache: "no-store",
+      headers: { "X-Requested-With": "fetch" },
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok && d.days) applyDays(d.days);
+        if (done) done();
+      })
+      .catch(function () { if (done) done(); });
+  }
+
   function fillTimes(keep) {
     if (!daySel || !timeSel) return;
     var day = DAYS.filter(function (d) { return d.date === daySel.value; })[0];
@@ -277,7 +308,10 @@
       timeSel.appendChild(o);
     });
     if (keep) timeSel.value = keep;
-    if (hoursNote) hoursNote.textContent = day.label + " · open " + day.hours;
+    if (hoursNote) {
+      hoursNote.textContent = day.label + " · open " + day.hours
+        + " · last pickup slot is 15 minutes before closing";
+    }
   }
   function currentValue() { return timeSel ? timeSel.value : ""; }
   var confirmBtn = document.getElementById("schedConfirm");
@@ -295,13 +329,38 @@
   }
 
 
-  // explicit "Change time" / "Order ASAP instead" from the store card
+  function schedBtnLabelFromPick() {
+    if (!daySel || !timeSel || !timeSel.value) return "";
+    var dayTxt = (daySel.options[daySel.selectedIndex] || {}).text || "";
+    var timeTxt = (timeSel.options[timeSel.selectedIndex] || {}).text || "";
+    return dayTxt && timeTxt ? dayTxt + " at " + timeTxt : timeSel.value.replace("T", " at ");
+  }
+
+  function updateSchedLaterBtn(label) {
+    var btn = document.querySelector("[data-sched-open]");
+    if (!btn) return;
+    var span = btn.querySelector("[data-sched-btn-label]");
+    var text = (label || "").trim();
+    if (span) span.textContent = text || "Schedule your order";
+    btn.title = text ? "Change scheduled time" : "Schedule for later";
+    btn.classList.toggle("is-sched-set", !!text);
+    var stack = document.querySelector(".ok-menu-ordertype-stack");
+    if (stack) stack.classList.toggle("is-scheduled", !!text);
+  }
+
   document.addEventListener("click", function (e) {
-    if (e.target.closest("[data-sched-edit]")) { e.preventDefault(); pendingSlug = null; open(true); }
+    if (e.target.closest("[data-sched-open]")) { e.preventDefault(); pendingSlug = null; open(true); }
     if (e.target.closest("[data-sched-clear]")) {
       e.preventDefault();
       fetch("/api/schedule?schedule_at=", { credentials: "same-origin" })
-        .then(function () { location.reload(); })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.ok) {
+            scheduled = false;
+            updateSchedLaterBtn("");
+            open(false);
+          }
+        })
         .catch(function () {});
     }
   });
@@ -310,30 +369,25 @@
   // it grew out of is long gone.
   var dayPick = document.getElementById("schedDay");
 
-  function open(o) {
-    // same left-in / right-out motion as every other popup
+  function showSchedModal(openIt) {
     if (window.OK && OK.showModal) {
-      OK.showModal(modal, backdrop, o);
+      OK.showModal(modal, backdrop, openIt);
     } else {
-      modal.style.visibility = o ? "visible" : "hidden";
-      modal.style.opacity = o ? "1" : "0";
-      modal.style.pointerEvents = o ? "auto" : "none";
-      if (backdrop) backdrop.classList.toggle("is-open", o);
+      modal.style.visibility = openIt ? "visible" : "hidden";
+      modal.style.opacity = openIt ? "1" : "0";
+      modal.style.pointerEvents = openIt ? "auto" : "none";
+      if (backdrop) backdrop.classList.toggle("is-open", openIt);
     }
-    if (o && dayPick) setTimeout(function () { dayPick.focus(); }, 60);
+    if (openIt && dayPick) setTimeout(function () { dayPick.focus(); }, 60);
   }
 
-  // Capture phase → runs before app.js's item handler, so we can open the
-  // schedule modal instead of the item modal until a time is chosen.
-  document.addEventListener("click", function (e) {
-    if (scheduled) return;
-    var it = e.target.closest("[data-item]");
-    if (!it) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    pendingSlug = it.getAttribute("data-item");
-    open(true);
-  }, true);
+  function open(o) {
+    if (!o) {
+      showSchedModal(false);
+      return;
+    }
+    refreshSchedFromServer(function () { showSchedModal(true); });
+  }
 
   document.querySelectorAll("[data-sched-close]").forEach(function (b) { b.addEventListener("click", function () { open(false); }); });
 
@@ -347,17 +401,12 @@
         if (d && d.ok) {
           scheduled = true;
           open(false);
-          var lbl = document.querySelector("[data-sched-label]");
-          if (lbl) lbl.textContent = (timeSel.options[timeSel.selectedIndex] || {}).text
-            ? daySel.options[daySel.selectedIndex].text + " at " + timeSel.options[timeSel.selectedIndex].text
-            : val.replace("T", " at ");
+          updateSchedLaterBtn(schedBtnLabelFromPick());
           if (pendingSlug) {
             if (window.OK && OK.toast) OK.toast("Scheduled, now build your order");
             if (window.OK && OK.openItemModal) OK.openItemModal(pendingSlug);
-          } else {
-            if (window.OK && OK.toast) OK.toast("Time updated");
-            // the badge only exists after the first pick | show it now
-            if (!lbl) location.reload();
+          } else if (window.OK && OK.toast) {
+            OK.toast("Time updated");
           }
         }
       })

@@ -32,6 +32,15 @@ def set_location(slug):
     return redirect(request.args.get("next") or "/menu")
 
 
+@bp.get("/api/schedule-slots")
+def api_schedule_slots():
+    """Fresh schedule picker options from this store's admin opening hours."""
+    store = get_current_store()
+    if not store:
+        return jsonify({"ok": False, "error": "no_store"}), 404
+    return jsonify({"ok": True, "days": store.schedule_days(), "store": store.slug})
+
+
 @bp.get("/api/deals-promo-popup")
 def api_deals_promo_popup():
     """Visit-popup HTML after location is saved (used by app.js on the home page)."""
@@ -96,6 +105,8 @@ def api_schedule():
 @bp.get("/api/order-type/<otype>")
 def api_order_type(otype):
     """Switch delivery / pickup without a reload."""
+    from app import cart as cartlib
+
     if otype not in ORDER_TYPES:
         return {"ok": False}, 400
     store = get_current_store()
@@ -103,7 +114,22 @@ def api_order_type(otype):
         return {"ok": False, "error": "That order type isn't available at this location."}, 400
     session["order_type"] = otype
     session["context_set"] = True
-    return {"ok": True, "order_type": otype}
+    out = {"ok": True, "order_type": otype}
+    if cartlib.get_cart() and store:
+        s = cartlib.summary(store, order_type=otype)
+        promo = s["promo"]
+        out["cart"] = {
+            "order_type": otype,
+            "subtotal": s["subtotal"],
+            "tax": s["tax"],
+            "tax_rate": s["tax_rate"],
+            "order_discount": s["order_discount"],
+            "delivery_fee": s["delivery_fee"],
+            "delivery_free": bool(promo.get("delivery_discount")),
+            "giftcard_applied": s["giftcard"]["applied"],
+            "total": s["total"],
+        }
+    return out
 
 
 @bp.get("/api/delivery-quote")

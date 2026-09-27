@@ -49,14 +49,44 @@ def coords_from_map_url(url):
     return None
 
 
+def _normalize_hm(s):
+    """Admin time inputs may post HH:MM or HH:MM:SS — store as HH:MM."""
+    raw = str(s or "").strip()
+    if len(raw) >= 8 and raw[2] == ":" and raw[5] == ":":
+        return raw[:5]
+    if len(raw) >= 5 and raw[2] == ":":
+        return raw[:5]
+    return raw
+
+
 def _parse_hm(s):
     """Parse 'HH:MM' opening-hours string to time."""
+    s = _normalize_hm(s)
     if not s:
         return None
     try:
-        return datetime.strptime(str(s).strip(), "%H:%M").time()
+        return datetime.strptime(s, "%H:%M").time()
     except (ValueError, TypeError):
         return None
+
+
+def _schedule_bounds(day, open_time_str, close_time_str, close_buffer_min=15):
+    """Return (first_slot_dt, last_slot_dt) for one calendar day, or (None, None)."""
+    o = _parse_hm(open_time_str)
+    c = _parse_hm(close_time_str)
+    if o is None or c is None:
+        return None, None
+    start = datetime.combine(day, o)
+    if c == _time(0, 0):
+        end = datetime.combine(day + timedelta(days=1), _time(0, 0))
+    elif c <= o:
+        end = datetime.combine(day, c) + timedelta(days=1)
+    else:
+        end = datetime.combine(day, c)
+    last_slot = end - timedelta(minutes=close_buffer_min)
+    if last_slot < start:
+        return None, None
+    return start, last_slot
 
 
 def _store_tz(store):
@@ -289,6 +319,7 @@ class Store(TimestampMixin, db.Model):
     SCHED_DAYS = 7           # how far ahead a customer may book
     SCHED_STEP = 15          # minutes between slots
     SCHED_LEAD = 30          # minimum notice, so the kitchen can make it
+    SCHED_CLOSE_BUFFER = 15  # last slot is at least this long before close
 
     def schedule_days(self, now=None):
         """[{date, label, slots:[{value,label}]}] for the next SCHED_DAYS days.
@@ -304,28 +335,27 @@ class Store(TimestampMixin, db.Model):
             h = self.hours_for(day.weekday())
             if not h or h.is_closed:
                 continue
-            o, c = _parse_hm(h.open_time), _parse_hm(h.close_time)
-            if o is None or c is None:
+            start, last_slot = _schedule_bounds(
+                day, h.open_time, h.close_time, self.SCHED_CLOSE_BUFFER,
+            )
+            if start is None or last_slot is None:
                 continue
-            start = datetime.combine(day, o)
-            # a close time at or before the open time means it runs past midnight
-            end = datetime.combine(day, c)
-            if c <= o:
-                end += timedelta(days=1)
-
             slots, t = [], start
-            while t < end:
-                if t >= earliest:
-                    slots.append({"value": t.strftime("%Y-%m-%dT%H:%M"),
-                                  "label": t.strftime("%I:%M %p").lstrip("0")})
-                t += timedelta(minutes=self.SCHED_STEP)
+            step = timedelta(minutes=self.SCHED_STEP)
+            if day == now.date():
+                while t < earliest:
+                    t += step
+            while t <= last_slot:
+                slots.append({"value": t.strftime("%Y-%m-%dT%H:%M"),
+                              "label": t.strftime("%I:%M %p").lstrip("0")})
+                t += step
             if not slots:
                 continue
             out.append({
                 "date": day.isoformat(),
                 "label": ("Today" if offset == 0 else
                           "Tomorrow" if offset == 1 else day.strftime("%a %b %d")),
-                "hours": "%s–%s" % (h.open_time, h.close_time),
+                "hours": "%s–%s" % (_normalize_hm(h.open_time), _normalize_hm(h.close_time)),
                 "slots": slots,
             })
         return out

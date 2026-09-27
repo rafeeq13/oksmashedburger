@@ -2359,7 +2359,11 @@ html.ok-loading {
 /* ticks and choice cards follow the same rule */
 input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 .form-check-input:checked{ background-color:#000; border-color:#000; }
-.ok-checkable:has(:checked){ border-color:#000 !important; background-color:#fff !important; }
+.ok-checkable:has(input[type="radio"]:checked),
+.ok-checkable:has(input[type="checkbox"]:checked){
+  border-color:#000 !important;
+  background-color:#fff !important;
+}
 
 /* the collapsible search fields sit inside a bordered pill, keep them clean too */
 .hdr-search .search-panel > div,
@@ -2630,6 +2634,18 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
 .ok-menu-stick{ top: 4rem; }
 @media (min-width: 768px){ .ok-menu-stick{ top: 5rem; } }
 
+/* Category anchor scroll (fallback for native hash); JS uses menuCategoryScrollOffset(). */
+[data-menu-section]{
+  scroll-margin-top: calc(var(--ok-header-mobile-h, 4rem) + 4.5rem);
+  scroll-margin-bottom: 1rem;
+}
+@media (min-width: 768px){
+  [data-menu-section]{
+    scroll-margin-top: calc(5rem + 4.25rem);
+    scroll-margin-bottom: 2rem;
+  }
+}
+
 /* Uniform 1px outline on every side, in every state. The hover shadow used to
    sit under the pill and read as a heavier bottom edge instead of a border. */
 .menu-catbar .chip,
@@ -2653,22 +2669,127 @@ input[type="checkbox"], input[type="radio"]{ accent-color:#000; }
   background: var(--ok-hairline);
 }
 
-/* Delivery / Pickup segmented toggle.
-   On phones the labels used to be hidden (`d-none d-sm-inline`), leaving two
-   bare icons. Both labels now always show and the group spans the full width
-   so it fits the phone screen; from lg up it goes back to its natural width. */
-[data-ordertype-group]{
+/* Menu store bar: mobile = Delivery|Pickup row then schedule below; lg+ = both inline. */
+.ok-menu-ordertype-stack{
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: .5rem;
   width: 100%;
   align-self: stretch;
 }
-[data-ordertype-group] [data-ordertype]{
+.ok-menu-ordertype-main{
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+  background: #efeeeb;
+  border-radius: 9999px;
+  padding: .2rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.ok-menu-seg-btn{
   flex: 1 1 0;
-  justify-content: center;
+  min-width: 0;
+  padding: .55rem 1.35rem;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #3d3a36;
+  line-height: 1.2;
   white-space: nowrap;
 }
+.ok-menu-seg-btn.is-active{
+  background: #141414;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+}
+.ok-menu-seg-btn:disabled{
+  opacity: .45;
+}
+.ok-menu-ordertype-sched{
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 9999px;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.ok-menu-ordertype-sched [data-sched-open]{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  white-space: nowrap;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  padding: .55rem 1rem;
+  background: var(--ok-yellow);
+  border: 0;
+  border-radius: 9999px;
+  color: var(--ok-ink, #141414);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.ok-menu-ordertype-sched [data-sched-open] .ok-i,
+.ok-menu-ordertype-sched [data-sched-open] i,
+.ok-menu-ordertype-sched [data-sched-open] svg{
+  color: var(--ok-ink, #141414);
+}
+.ok-menu-ordertype-sched [data-sched-open]:hover,
+.ok-menu-ordertype-sched [data-sched-open]:focus,
+.ok-menu-ordertype-sched [data-sched-open]:focus-visible{
+  background: #000;
+  color: #fff;
+}
+.ok-menu-ordertype-sched [data-sched-open]:hover .ok-i,
+.ok-menu-ordertype-sched [data-sched-open]:hover i,
+.ok-menu-ordertype-sched [data-sched-open]:hover svg,
+.ok-menu-ordertype-sched [data-sched-open]:focus .ok-i,
+.ok-menu-ordertype-sched [data-sched-open]:focus i,
+.ok-menu-ordertype-sched [data-sched-open]:focus svg{
+  color: #fff;
+}
 @media (min-width: 992px){
-  [data-ordertype-group]{ width: auto; align-self: auto; }
-  [data-ordertype-group] [data-ordertype]{ flex: 0 0 auto; }
+  .ok-menu-ordertype-stack,
+  .ok-menu-ordertype-stack.is-scheduled{
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: auto !important;
+    max-width: 100%;
+    margin-left: auto;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+  .ok-menu-ordertype-main{
+    flex: 0 0 auto;
+    width: auto;
+  }
+  .ok-menu-ordertype-main .ok-menu-seg-btn{
+    flex: 0 0 auto;
+    min-width: 5.5rem;
+  }
+  .ok-menu-ordertype-sched{
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 9rem;
+  }
+  .ok-menu-ordertype-sched [data-sched-open],
+  .ok-menu-ordertype-sched [data-sched-open].w-100{
+    width: auto !important;
+    padding-left: 1.15rem;
+    padding-right: 1.15rem;
+  }
 }
 
 /* Home-page-only sticky order bar, phone layout only. */
@@ -5186,8 +5307,15 @@ input[type="radio"]:focus-visible{
 }
 .ok-menu-cta--muted{ color: var(--ok-red, #C62828); opacity: .85; }
 .ok-menu-cta:hover{ color: #a31f1f; }
+.ok-menu-cta-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1.25rem;
+}
 .ok-menu-sched-actions{ padding-left: 0; }
 @media (min-width: 576px){
+  .ok-menu-cta-row,
   .ok-menu-sched-actions{ padding-left: calc(3.25rem + .75rem); }
 }
 
@@ -5471,6 +5599,17 @@ input[type="radio"]:focus-visible{
 .pac-item{ padding: .55rem .85rem; cursor: pointer; }
 .pac-item:hover{ background: #faf8f3; }
 .pac-icon{ display: none; }
+
+/* Locations hero | Places dropdown must sit above the store list */
+.ok-loc-hero,
+.ok-loc-page-find{
+  overflow: visible;
+  position: relative;
+  z-index: 40;
+}
+.ok-loc-page-find .ok-address-search-wrap{
+  overflow: visible;
+}
 
 /* Address search | single ok-input + custom Places dropdown */
 .ok-address-search-wrap{ position: relative; }
